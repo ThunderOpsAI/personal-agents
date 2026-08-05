@@ -19,3 +19,7 @@
 - **Active Alert**: An urgent notification requiring immediate user attention or action.
 - **Action Item**: A prioritized operational task or follow-up item derived from multi-agent ingestion.
 - **Pipeline Ingest**: The automated synchronization process connecting Google Calendar, Gmail ESM/IT tickets, and agent outputs into SQLite storage.
+
+## System Rules & Constraints
+- **NO EMOJIS**: NEVER use emojis in any UI, log, response, text, code, or documentation across Rumble OS. Keep all interfaces, alerts, buttons, messages, and reports strictly text-based and professional.
+

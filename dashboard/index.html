@@ -1,500 +1,367 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rumble OS — Hybrid Persistent Command Center</title>
-  <meta name="description" content="Autonomous multi-agent executive Rumble OS dashboard featuring a persistent quick-log sidebar, weather tracking, & chronological timeline stream.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Rumble OS - Command Center</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="background-glob bg-glob-1"></div>
-  <div class="background-glob bg-glob-2"></div>
-  <div class="background-glob bg-glob-3"></div>
+    <!-- Background Orbs for Glassmorphism -->
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+    <div class="bg-orb orb-3"></div>
 
-  <div class="app-container">
-    <!-- Header Navbar with Weather Widget -->
-    <header class="navbar glass-card">
-      <div class="logo-area">
-        <div class="logo-icon">⚡</div>
-        <div>
-          <h1 class="logo-title">RUMBLE OS</h1>
-          <p class="logo-subtitle">Personal Multi-Agent Command Center</p>
-        </div>
-      </div>
-
-      <!-- Live Weather Widget -->
-      <div class="weather-widget glass-card" id="weather-widget" title="Live Local Weather & Rain Probability">
-        <div class="weather-icon">🌧️</div>
-        <div class="weather-info">
-          <div class="weather-temp-row">
-            <span class="weather-curr" id="weather-curr">14°C</span>
-            <span class="weather-range" id="weather-range">11°C / 18°C</span>
-          </div>
-          <div class="weather-rain-row" id="weather-rain">
-            <span>🌧️ Rain: 2:00 PM – 5:00 PM (80% chance)</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="nav-controls">
-        <span class="live-pill" id="live-indicator"><span class="dot pulse"></span> LIVE ENGINE</span>
-        <button id="btn-export-report" class="btn btn-emerald" onclick="exportDoctorReport()">
-          📑 Export Doctor Report (.md)
-        </button>
-        <button id="btn-sync" class="btn btn-primary">
-          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-          Run Ingest
-        </button>
-      </div>
-    </header>
-
-    <!-- MASSIVE CRITICAL OVERDUE IMPERATIVE WARNING BANNER (Red Banner) -->
-    <div id="imperative-warning-banner" class="critical-warning-banner glass-card hidden">
-      <div class="critical-banner-content">
-        <div class="critical-banner-icon">🚨</div>
-        <div class="critical-banner-text">
-          <div class="critical-banner-title">MASSIVE CRITICAL WARNING — IMPERATIVE UNACTIONED TASK / EMAIL DETECTED</div>
-          <div class="critical-banner-sub" id="imperative-warning-text">
-            You missed an imperative action yesterday! <strong>[RITM1229647]</strong> Urgent Identity Verification Required for Workstation Access (it-help-esm@deakin.edu.au). Call <strong>1800 463 888</strong> immediately.
-          </div>
-        </div>
-      </div>
-      <button class="btn btn-rose btn-sm" onclick="resolveImperativeWarning()" style="flex-shrink: 0;">
-        Action Now / Resolve ↗
-      </button>
-    </div>
-
-    <!-- View Mode Selector (Daily Flow, Weekly Overview, Monthly Calendar) -->
-    <nav class="view-mode-bar glass-card">
-      <div class="view-mode-pills">
-        <button class="view-pill active" id="pill-daily" onclick="switchViewMode('daily')">
-          ☀️ Daily Flow
-        </button>
-        <button class="view-pill" id="pill-weekly" onclick="switchViewMode('weekly')">
-          📅 Weekly Overview
-        </button>
-        <button class="view-pill" id="pill-monthly" onclick="switchViewMode('monthly')">
-          🗓️ Monthly Calendar
-        </button>
-      </div>
-      <div class="view-mode-info">
-        <span id="view-mode-label">Mode: <strong>Daily 3-Hour Protocol Flow</strong></span>
-      </div>
-    </nav>
-
-    <!-- Headline Banner -->
-    <section class="banner-section glass-card" id="headline-banner">
-      <div class="banner-badge">CHIEF RUMBLE OFFICER — PERSISTENT COMMAND CENTER</div>
-      <h2 id="headline-text" class="banner-title">Loading Rumble OS Master Briefing...</h2>
-      <p id="headline-meta" class="banner-subtext">Fetching latest status across Ops, Health, and Symptom Tracking.</p>
-    </section>
-
-    <!-- Top KPI Grid -->
-    <section class="kpi-grid">
-      <div class="kpi-card glass-card">
-        <div class="kpi-icon icon-rose">⚡</div>
-        <div class="kpi-data">
-          <div class="kpi-label">Pain Scale</div>
-          <div class="kpi-value" id="kpi-pain">-- / 10</div>
-          <div class="kpi-sub" id="kpi-pain-state">Normal</div>
-        </div>
-      </div>
-
-      <div class="kpi-card glass-card">
-        <div class="kpi-icon icon-emerald">🩺</div>
-        <div class="kpi-data">
-          <div class="kpi-label">Primary Pain Generator</div>
-          <div class="kpi-value" id="kpi-primary-generator">Right Lumbar</div>
-          <div class="kpi-sub" id="kpi-primary-weight">85% Weight Contribution</div>
-        </div>
-      </div>
-
-      <div class="kpi-card glass-card">
-        <div class="kpi-icon icon-amber">🚨</div>
-        <div class="kpi-data">
-          <div class="kpi-label">Active Alerts</div>
-          <div class="kpi-value" id="kpi-alert-count">0</div>
-          <div class="kpi-sub" id="kpi-alert-severity">0 Critical</div>
-        </div>
-      </div>
-
-      <!-- Clickable Today's Schedule Card -->
-      <div class="kpi-card glass-card clickable-card" onclick="openScheduleModal()" title="Click to view detailed Schedule Modal">
-        <div class="kpi-icon icon-indigo">📅</div>
-        <div class="kpi-data">
-          <div class="kpi-label">Today's Schedule</div>
-          <div class="kpi-value" id="kpi-events-count">0</div>
-          <div class="kpi-sub">Click to View Full Agenda ↗</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- MAIN CONTENT CONTAINERS -->
-
-    <!-- 1. DAILY FLOW VIEW (DEFAULT) -->
-    <main class="main-layout layout-hybrid-bc view-content" id="view-daily-container">
-      
-      <!-- LEFT SIDEBAR (VARIANT B): Persistent Quick-Log & Pipeline Controls -->
-      <div class="column-left persistent-sidebar">
+    <div class="app-container">
         
-        <!-- Scheduled Symptom & Anatomical Pain Tracker Panel -->
-        <section class="panel glass-card symptom-panel">
-          <div class="panel-header">
-            <h3 class="panel-title">🩺 Scheduled Symptom & Pain Log</h3>
-            <span class="badge badge-rose">Quick Log</span>
-          </div>
-          <p class="panel-sub">Record pain distribution (<strong>6 AM, 9 AM, 12 PM, 3 PM, 6 PM, 9 PM, 12 AM</strong> — skipping 3 AM). Auto-saved to SQLite.</p>
-
-          <div class="symptom-form">
-            <div class="form-row">
-              <div class="form-group flex-1">
-                <label for="select-slot">Scheduled Time Slot</label>
-                <select id="select-slot" class="input-select">
-                  <option value="6:00 AM">6:00 AM Early Morning</option>
-                  <option value="9:00 AM">9:00 AM Morning</option>
-                  <option value="12:00 PM" selected>12:00 PM Midday</option>
-                  <option value="3:00 PM">3:00 PM Afternoon</option>
-                  <option value="6:00 PM">6:00 PM Evening</option>
-                  <option value="9:00 PM">9:00 PM Night</option>
-                  <option value="12:00 AM">12:00 AM Midnight</option>
-                </select>
-              </div>
-              <div class="form-group flex-1">
-                <label for="slider-pain">Overall Pain Level: <span id="val-pain">5</span>/10</label>
-                <input type="range" id="slider-pain" min="1" max="10" value="5" class="slider slider-rose">
-              </div>
-            </div>
-
-            <!-- Anatomical Hotkey Symptoms Selection -->
-            <div class="form-group">
-              <label>Active Anatomical Symptoms (Hotkeys)</label>
-              <div class="hotkey-grid">
-                <button type="button" class="hotkey-btn active" data-symptom="Right Lumbar Pain" onclick="toggleSymptom(this)">
-                  📍 Right Lumbar
-                </button>
-                <button type="button" class="hotkey-btn active" data-symptom="Right-to-Left Thoracic Burning" onclick="toggleSymptom(this)">
-                  🔥 Right-to-Left Spine
-                </button>
-                <button type="button" class="hotkey-btn active" data-symptom="Cervical Spine Pain" onclick="toggleSymptom(this)">
-                  📍 Cervical Spine
-                </button>
-                <button type="button" class="hotkey-btn active" data-symptom="Left Shoulder 45° Angle Pain" onclick="toggleSymptom(this)">
-                  🔥 Left Shoulder 45°
-                </button>
-                <button type="button" class="hotkey-btn active" data-symptom="Sciatic Leg Burning" onclick="toggleSymptom(this)">
-                  🔥 Sciatic Leg Burning
-                </button>
-                <button type="button" class="hotkey-btn" data-symptom="Right Ankle Pain" onclick="toggleSymptom(this)">
-                  📍 Right Ankle
-                </button>
-              </div>
-            </div>
-
-            <!-- Primary Pain Generator & Weight -->
-            <div class="form-row">
-              <div class="form-group flex-1">
-                <label for="select-generator">Primary Generator</label>
-                <select id="select-generator" class="input-select">
-                  <option value="Right-to-Left Thoracic & Shoulder Nerve Burning" selected>Thoracic & Shoulder Nerve Burning</option>
-                  <option value="Sciatic Leg Burning">Sciatic Leg Burning</option>
-                  <option value="Right Lumbar Pain">Right Lumbar Pain</option>
-                  <option value="Cervical Spine Pain">Cervical Spine Pain</option>
-                  <option value="Left Shoulder 45° Angle Pain">Left Shoulder 45° Angle Pain</option>
-                </select>
-              </div>
-              <div class="form-group flex-1">
-                <label for="slider-weight">Weight: <span id="val-weight">85</span>%</label>
-                <input type="range" id="slider-weight" min="10" max="100" step="5" value="85" class="slider slider-emerald">
-              </div>
-            </div>
-
-            <button type="button" class="btn btn-rose btn-full" onclick="saveSymptomLog()">
-              💾 Save Pain Log & Export Doctor Report
-            </button>
-          </div>
-        </section>
-
-        <!-- Pipeline Control Card -->
-        <section class="panel glass-card ingest-card">
-          <div class="panel-header">
-            <h3 class="panel-title">⚙️ Cron Pipeline Controls</h3>
-          </div>
-          <div class="ingest-form">
-            <p class="panel-sub" style="margin-bottom: 12px;">Auto-scheduled crons active: <strong>6:00 AM, 2:00 PM, 6:00 PM</strong> (Weekdays). Scans all unread & imperative emails.</p>
-            <button id="btn-trigger-ingest" class="btn btn-emerald btn-full">
-              ⚡ Trigger Manual Pipeline Ingest Now
-            </button>
-          </div>
-        </section>
-      </div>
-
-      <!-- RIGHT CANVAS (VARIANT C): Chronological Timeline Stream -->
-      <div class="column-right timeline-stream">
-        
-        <!-- Timeline Stream Container -->
-        <div class="timeline-container">
-          
-          <!-- NODE 1: 06:00 AM Early Morning Block -->
-          <div class="timeline-node">
-            <div class="timeline-badge rose"></div>
-            <div class="timeline-header-time" style="color: var(--primary-rose);">
-              <span>🌅 06:00 AM — DYNAMIC MORNING PHYSIO BLOCK (BASED ON EVENING PAIN)</span>
-              <span class="badge badge-rose" id="morning-physio-badge">Adapted for Nerve Burning</span>
-            </div>
-
-            <!-- Morning Dynamic Physio Routine (Adapted to Previous Evening Pain) -->
-            <section class="panel glass-card physio-panel" style="margin-bottom: 16px;">
-              <div class="panel-header">
-                <h3 class="panel-title" id="morning-physio-title">🧘 Nerve Decompression & Sciatic Flossing Routine (30 Mins)</h3>
-                <span class="badge badge-purple">Dynamic Morning Protocol</span>
-              </div>
-              <div class="physio-card-inline">
-                <img src="shoulder_rehab_routine.jpg" alt="Physio Routine" class="physio-img-small">
-                <div class="physio-info">
-                  <p class="physio-desc" id="morning-physio-desc">
-                    Auto-adapted based on 9:00 PM pain log. Includes Radial/Ulnar nerve glides for thoracic-shoulder burning & gentle sciatic slump glides.
-                  </p>
-                  <button class="btn btn-emerald btn-sm" onclick="startPhysio('Dynamic Morning Nerve Decompression Protocol')">▶ Complete Session</button>
+        <!-- Glass Header -->
+        <header class="glass-header">
+            <div class="header-content">
+                <div class="brand">
+                    <h1>Rumble OS</h1>
+                    <!-- Weather & Rain Widget -->
+                    <div class="weather-widget" id="weatherWidget">
+                        <span class="weather-text">Weather: 24°C • Mostly Clear • Rain: 10% (0.0mm)</span>
+                    </div>
                 </div>
-              </div>
-            </section>
-          </div>
-
-          <!-- NODE 2: 12:00 PM Midday Block -->
-          <div class="timeline-node">
-            <div class="timeline-badge emerald"></div>
-            <div class="timeline-header-time" style="color: var(--primary-emerald);">
-              <span>☀️ 12:00 PM — MIDDAY IMPERATIVE ACTION QUEUE & TICKETS</span>
-              <span class="badge badge-emerald">Prioritized</span>
-            </div>
-
-            <!-- Consolidated Action Items Panel -->
-            <section class="panel glass-card" style="margin-bottom: 16px;">
-              <div class="panel-header">
-                <h3 class="panel-title">📋 Imperative Tasks & Triaged Emails</h3>
-                <span class="badge badge-blue">Action Queue</span>
-              </div>
-              <ul class="action-list" id="action-list-container">
-                <!-- Action items will be rendered dynamically -->
-              </ul>
-            </section>
-
-            <!-- Midday Core Physio Routine -->
-            <section class="panel glass-card physio-panel" style="margin-bottom: 16px;">
-              <div class="panel-header">
-                <h3 class="panel-title">🧘 Lumbar Spine & Core Stability (35 Mins)</h3>
-                <span class="badge badge-purple">Midday Rehab</span>
-              </div>
-              <div class="physio-card-inline">
-                <img src="lumbar_core_routine.jpg" alt="Lumbar Core Guide" class="physio-img-small">
-                <div class="physio-info">
-                  <p class="physio-desc">Cat-cow mobility, bird-dog extensions, deadbug holds, glute bridges.</p>
-                  <button class="btn btn-emerald btn-sm" onclick="startPhysio('Lumbar Core & Spine Stability')">▶ Complete Session</button>
+                
+                <div class="header-actions">
+                    <button class="btn btn-sm btn-neon-blue" id="btnOpenRumbleChat">Rumble</button>
+                    <button class="btn btn-sm btn-outline" id="btnOpenNotes">Notes</button>
+                    <button class="btn btn-sm btn-outline btn-sync" id="btnSyncOps">Sync</button>
                 </div>
-              </div>
-            </section>
-          </div>
-
-          <!-- NODE 3: 03:00 PM Afternoon Block -->
-          <div class="timeline-node">
-            <div class="timeline-badge amber"></div>
-            <div class="timeline-header-time" style="color: var(--primary-amber);">
-              <span>🌆 03:00 PM — AFTERNOON ALERTS & CALENDAR FOCUS BARRIERS</span>
-              <span class="badge badge-amber">Urgent Audit</span>
             </div>
-
-            <!-- Active Alerts Engine Panel -->
-            <section class="panel glass-card" id="alerts-panel" style="margin-bottom: 16px;">
-              <div class="panel-header">
-                <h3 class="panel-title">🚨 Active Alerts Engine</h3>
-                <span class="badge badge-purple" id="alerts-count-badge">0 Active</span>
-              </div>
-              <div class="alert-list" id="alert-list-container">
-                <div class="empty-state">No pending alerts. All systems operational!</div>
-              </div>
-            </section>
-
-            <!-- Agenda & Calendar Barriers -->
-            <section class="panel glass-card" style="margin-bottom: 16px;">
-              <div class="panel-header">
-                <h3 class="panel-title" onclick="openScheduleModal()" style="cursor: pointer;">📅 Protected Calendar Barriers ↗</h3>
-              </div>
-              <div class="ops-section">
-                <h4 class="sub-heading">Protected Recovery Barriers</h4>
-                <div class="events-list" id="events-list-container"></div>
-
-                <h4 class="sub-heading" style="margin-top: 16px;">Actionable Emails & ESM Tickets</h4>
-                <div class="emails-list" id="emails-list-container"></div>
-              </div>
-            </section>
-          </div>
-
-          <!-- NODE 4: 09:00 PM Night Block -->
-          <div class="timeline-node">
-            <div class="timeline-badge purple"></div>
-            <div class="timeline-header-time" style="color: var(--primary-purple);">
-              <span>🌙 09:00 PM — NIGHT PROTOCOL & SPECIALIST REPORT EXPORT</span>
-              <span class="badge badge-purple">Evening Check-in</span>
+            
+            <!-- Dynamic Alert Banner -->
+            <div class="alert-banner hidden" id="alertBanner">
+                <span class="alert-text" id="alertBannerText">High Pain Alert: Lumbar at 8/10.</span>
             </div>
+        </header>
 
-            <!-- Night Physio Routine -->
-            <section class="panel glass-card physio-panel">
-              <div class="panel-header">
-                <h3 class="panel-title">🧘 Hip & Lower Body Mobility (25 Mins)</h3>
-                <span class="badge badge-purple">Night Stretch</span>
-              </div>
-              <div class="physio-card-inline">
-                <img src="hip_mobility_routine.jpg" alt="Hip Mobility Guide" class="physio-img-small">
-                <div class="physio-info">
-                  <p class="physio-desc">Hip flexor kneeling lunge stretch, 90/90 switches, figure-four piriformis stretch.</p>
-                  <button class="btn btn-emerald btn-sm" onclick="startPhysio('Hip & Lower Body Mobility')">▶ Complete Session</button>
+        <!-- Main Content Grid -->
+        <main class="main-content">
+            
+            <!-- Rumble Insight Widget -->
+            <section class="widget glass-panel" id="croWidget">
+                <div class="widget-header">
+                    <h2>Rumble Insight</h2>
+                    <span class="badge neon-blue">New Proposal</span>
                 </div>
-              </div>
+                <div class="widget-body">
+                    <p id="croMessage">Loading insights from Chief Rumble Officer engine...</p>
+                </div>
+                <div class="widget-actions hidden" id="croActions">
+                    <button class="btn btn-outline" id="btnDismissCro">Dismiss</button>
+                    <button class="btn btn-neon-blue" id="btnAcceptCro">Accept Proposal</button>
+                    <button class="btn btn-neon-purple" id="btnDiscussCro">Discuss</button>
+                </div>
             </section>
-          </div>
 
-        </div>
-      </div>
-    </main>
+            <!-- Daily Agenda Stream -->
+            <section class="agenda-section">
+                <div class="section-header">
+                    <h2>Daily Agenda</h2>
+                    <span class="badge neon-green" id="agendaCount">4 Items</span>
+                </div>
+                
+                <div class="agenda-stream" id="agendaStream">
+                    <!-- Morning Physio -->
+                    <div class="protocol-card glass-panel" id="protocol-1">
+                        <div class="protocol-info">
+                            <h3>06:00 AM</h3>
+                            <p>Morning Physio & Lumbar Mobility</p>
+                        </div>
+                        <div class="protocol-actions">
+                            <button class="btn btn-neon-purple btn-show-me" data-id="1">Show Me</button>
+                            <button class="btn btn-neon-green btn-done" data-id="1">Done</button>
+                        </div>
+                    </div>
 
-    <!-- 2. WEEKLY OVERVIEW VIEW -->
-    <section class="weekly-view-container glass-card view-content hidden" id="view-weekly-container">
-      <div class="panel-header">
-        <h3 class="panel-title">📅 Weekly Operations & Rehabilitation Overview</h3>
-        <span class="badge badge-indigo">7-Day Matrix</span>
-      </div>
-      <div class="weekly-grid">
-        <div class="weekly-day-card glass-card">
-          <div class="weekly-day-title">Monday</div>
-          <div class="weekly-day-sub">Physio: Core & Lumbar</div>
-          <div class="weekly-status ok">✓ Completed</div>
-        </div>
-        <div class="weekly-day-card glass-card active">
-          <div class="weekly-day-title">Tuesday (Today)</div>
-          <div class="weekly-day-sub">Physio: Nerve Glides & Thoracic</div>
-          <div class="weekly-status warn">⚡ In Progress</div>
-        </div>
-        <div class="weekly-day-card glass-card">
-          <div class="weekly-day-title">Wednesday</div>
-          <div class="weekly-day-sub">Physio: Hip Mobility</div>
-          <div class="weekly-status">📅 Scheduled</div>
-        </div>
-        <div class="weekly-day-card glass-card">
-          <div class="weekly-day-title">Thursday</div>
-          <div class="weekly-day-sub">Physio: Upper Body Ergonomics</div>
-          <div class="weekly-status">📅 Scheduled</div>
-        </div>
-        <div class="weekly-day-card glass-card">
-          <div class="weekly-day-title">Friday</div>
-          <div class="weekly-day-sub">Physio: Core & Lumbar</div>
-          <div class="weekly-status">📅 Scheduled</div>
-        </div>
-        <div class="weekly-day-card glass-card">
-          <div class="weekly-day-title">Saturday</div>
-          <div class="weekly-day-sub">Physio: Light Stretching</div>
-          <div class="weekly-status">📅 Scheduled</div>
-        </div>
-        <div class="weekly-day-card glass-card">
-          <div class="weekly-day-title">Sunday</div>
-          <div class="weekly-day-sub">Physio: Recovery Reset</div>
-          <div class="weekly-status">📅 Scheduled</div>
-        </div>
-      </div>
-    </section>
+                    <!-- Daily Learning Card (Right After Morning Physio!) -->
+                    <div class="protocol-card glass-panel learn-card" id="protocol-learn">
+                        <div class="protocol-info">
+                            <h3>07:30 AM <span class="badge neon-blue" id="learnCategoryTag">Artificial Intelligence</span></h3>
+                            <p id="learnTitleText">Learn: Did you know that Opus 5.7 & hybrid reasoning architectures use dynamic test-time compute?</p>
+                            <span class="learn-summary-sub" id="learnSummaryText">Modern frontier AI models spend extra compute budget during inference to verify math and code logic before outputting final tokens.</span>
+                        </div>
+                        <div class="protocol-actions learn-actions-grid">
+                            <button class="btn btn-neon-blue btn-sm" id="btnLearnMore">Learn More</button>
+                            <button class="btn btn-outline btn-sm" id="btnLearnDifferent">Learn Something Different</button>
+                        </div>
+                    </div>
 
-    <!-- 3. MONTHLY CALENDAR VIEW -->
-    <section class="monthly-view-container glass-card view-content hidden" id="view-monthly-container">
-      <div class="panel-header">
-        <h3 class="panel-title">🗓️ Monthly Specialist Consultation & Rehab Calendar</h3>
-        <span class="badge badge-purple">August 2026</span>
-      </div>
-      <div class="monthly-calendar-grid">
-        <div class="month-day-cell header">Sun</div>
-        <div class="month-day-cell header">Mon</div>
-        <div class="month-day-cell header">Tue</div>
-        <div class="month-day-cell header">Wed</div>
-        <div class="month-day-cell header">Thu</div>
-        <div class="month-day-cell header">Fri</div>
-        <div class="month-day-cell header">Sat</div>
+                    <!-- Midday Hydration & Reset -->
+                    <div class="protocol-card glass-panel" id="protocol-2">
+                        <div class="protocol-info">
+                            <h3>12:00 PM</h3>
+                            <p>Hydration & Postural Reset</p>
+                        </div>
+                        <div class="protocol-actions">
+                            <button class="btn btn-neon-purple btn-show-me" data-id="2">Show Me</button>
+                            <button class="btn btn-neon-green btn-done" data-id="2">Done</button>
+                        </div>
+                    </div>
 
-        <!-- Sample month grid cells -->
-        <div class="month-day-cell muted">26</div>
-        <div class="month-day-cell muted">27</div>
-        <div class="month-day-cell muted">28</div>
-        <div class="month-day-cell muted">29</div>
-        <div class="month-day-cell muted">30</div>
-        <div class="month-day-cell muted">31</div>
-        <div class="month-day-cell">1</div>
-        <div class="month-day-cell">2</div>
-        <div class="month-day-cell">3</div>
-        <div class="month-day-cell active-today">4<div class="cell-event rose">Dr. Anderson Notes</div></div>
-        <div class="month-day-cell">5</div>
-        <div class="month-day-cell">6</div>
-        <div class="month-day-cell">7</div>
-        <div class="month-day-cell">8</div>
-        <div class="month-day-cell">9</div>
-        <div class="month-day-cell">10</div>
-        <div class="month-day-cell">11</div>
-        <div class="month-day-cell">12</div>
-        <div class="month-day-cell">13</div>
-        <div class="month-day-cell">14</div>
-        <div class="month-day-cell">15<div class="cell-event indigo">Medical Statement Due</div></div>
-      </div>
-    </section>
+                    <!-- Afternoon Active Recovery -->
+                    <div class="protocol-card glass-panel" id="protocol-3">
+                        <div class="protocol-info">
+                            <h3>03:00 PM</h3>
+                            <p>Active Recovery Walk & Stretch</p>
+                        </div>
+                        <div class="protocol-actions">
+                            <button class="btn btn-neon-purple btn-show-me" data-id="3">Show Me</button>
+                            <button class="btn btn-neon-green btn-done" data-id="3">Done</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
-    <!-- Detailed Today's Schedule Modal Overlay -->
-    <div class="modal-overlay hidden" id="schedule-modal" onclick="closeScheduleModalOnBackdrop(event)">
-      <div class="modal-content glass-card">
-        <div class="modal-header">
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <div class="logo-icon" style="width: 38px; height: 38px; font-size: 1.3rem;">📅</div>
-            <h3 class="modal-title">Today's Detailed Agenda & Focus Barriers</h3>
-          </div>
-          <button class="modal-close-btn" onclick="closeScheduleModal()" title="Close (ESC)">✕</button>
+            <!-- Side-by-Side Weekly & Monthly Agenda -->
+            <div class="agenda-grid-row">
+                <!-- This Week Panel -->
+                <section class="widget glass-panel agenda-panel">
+                    <div class="widget-header">
+                        <h2>This Week</h2>
+                        <span class="badge neon-blue">Weekly Agenda</span>
+                    </div>
+                    <div class="agenda-list" id="weeklyAgendaList">
+                        <div class="agenda-item">
+                            <span class="agenda-date">Thu</span>
+                            <span class="agenda-text">Specialist Physio Progress Review</span>
+                        </div>
+                        <div class="agenda-item">
+                            <span class="agenda-date">Fri</span>
+                            <span class="agenda-text">Operational Team Sync & Strategy</span>
+                        </div>
+                        <div class="agenda-item">
+                            <span class="agenda-date">Sat</span>
+                            <span class="agenda-text">Deep Recovery & Decompression Routine</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- This Month Panel -->
+                <section class="widget glass-panel agenda-panel">
+                    <div class="widget-header">
+                        <h2>This Month</h2>
+                        <span class="badge neon-purple">Monthly Agenda</span>
+                    </div>
+                    <div class="agenda-list" id="monthlyAgendaList">
+                        <div class="agenda-item">
+                            <span class="agenda-date">Aug 12</span>
+                            <span class="agenda-text">Lumbar MRI & Spine Scan Review</span>
+                        </div>
+                        <div class="agenda-item">
+                            <span class="agenda-date">Aug 20</span>
+                            <span class="agenda-text">Monthly Rehabilitation Compliance Audit</span>
+                        </div>
+                        <div class="agenda-item">
+                            <span class="agenda-date">Aug 28</span>
+                            <span class="agenda-text">System Infrastructure & Pipeline Maintenance</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+        </main>
+
+        <!-- Streamlined Micro Bottom Logger Bar -->
+        <nav class="quick-log-bar glass-panel micro-bar">
+            <div class="micro-bar-content">
+                
+                <!-- Left Section: Stacked Pain (Top) and Mood (Bottom) 0-10 Scales -->
+                <div class="scales-stacked-col">
+                    <div class="mini-scale-row">
+                        <span class="mini-label">Pain <span class="val-tag" id="painValDisplay">0</span></span>
+                        <div class="scale-buttons" id="painScaleButtons">
+                            <button class="btn-num pain-num active" data-val="0">0</button>
+                            <button class="btn-num pain-num" data-val="1">1</button>
+                            <button class="btn-num pain-num" data-val="2">2</button>
+                            <button class="btn-num pain-num" data-val="3">3</button>
+                            <button class="btn-num pain-num" data-val="4">4</button>
+                            <button class="btn-num pain-num" data-val="5">5</button>
+                            <button class="btn-num pain-num" data-val="6">6</button>
+                            <button class="btn-num pain-num" data-val="7">7</button>
+                            <button class="btn-num pain-num" data-val="8">8</button>
+                            <button class="btn-num pain-num" data-val="9">9</button>
+                            <button class="btn-num pain-num" data-val="10">10</button>
+                        </div>
+                    </div>
+
+                    <div class="mini-scale-row">
+                        <span class="mini-label">Mood <span class="val-tag" id="moodValDisplay">5</span></span>
+                        <div class="scale-buttons" id="moodScaleButtons">
+                            <button class="btn-num mood-num" data-val="0">0</button>
+                            <button class="btn-num mood-num" data-val="1">1</button>
+                            <button class="btn-num mood-num" data-val="2">2</button>
+                            <button class="btn-num mood-num" data-val="3">3</button>
+                            <button class="btn-num mood-num" data-val="4">4</button>
+                            <button class="btn-num mood-num active" data-val="5">5</button>
+                            <button class="btn-num mood-num" data-val="6">6</button>
+                            <button class="btn-num mood-num" data-val="7">7</button>
+                            <button class="btn-num mood-num" data-val="8">8</button>
+                            <button class="btn-num mood-num" data-val="9">9</button>
+                            <button class="btn-num mood-num" data-val="10">10</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Middle Section: Area Selectors -->
+                <div class="area-selectors-col">
+                    <select id="painAreaSelect" class="glass-select micro-select">
+                        <option value="lumbar" selected>Lumbar</option>
+                        <option value="cervical">Cervical</option>
+                        <option value="thoracic">Thoracic</option>
+                        <option value="ankle">Ankle</option>
+                        <option value="knee">Knee</option>
+                        <option value="shoulder">Shoulder</option>
+                        <option value="elbow">Elbow</option>
+                    </select>
+
+                    <select id="painSideSelect" class="glass-select micro-select">
+                        <option value="right" selected>Right</option>
+                        <option value="left">Left</option>
+                        <option value="both">Both</option>
+                    </select>
+
+                    <button class="btn btn-sm btn-outline" id="btnOpenAddAreaModal">+ Area</button>
+                </div>
+
+                <!-- Right Section: Single Combined Notes Input + Log Button -->
+                <div class="notes-action-col">
+                    <input type="text" id="unifiedNotesInput" class="glass-input micro-input" placeholder="Notes...">
+                    <button class="btn btn-neon-red btn-sm btn-log-action" id="btnLogPain">Log Entry</button>
+                </div>
+
+            </div>
+        </nav>
+
+        <!-- Modals -->
+
+        <!-- Deep-Dive Continuous Learning Modal Window -->
+        <div class="modal-overlay hidden" id="learnModal">
+            <div class="modal-content glass-panel learn-modal-content">
+                <div class="modal-header">
+                    <h2 id="modalLearnTitle">Deep-Dive Explanation</h2>
+                    <button class="btn-close" id="btnCloseLearnModal">&times;</button>
+                </div>
+                <div class="modal-body-learn">
+                    <span class="badge neon-blue" id="modalLearnCategory">Category</span>
+                    <p class="learn-detail-para" id="modalLearnDetails">In-depth topic details...</p>
+                    
+                    <div class="data-table-container">
+                        <h3>Data Breakdown</h3>
+                        <table class="learn-data-table" id="modalLearnTable">
+                            <thead>
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Value / Metric</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Dynamic Rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline btn-sm" id="btnRotateTopicInsideModal">Rotate New Topic</button>
+                    <button class="btn btn-neon-blue btn-sm" id="btnCloseLearnDone">Got It</button>
+                </div>
+            </div>
         </div>
-        <div class="modal-body">
-          <div class="modal-events-list" id="modal-events-list"></div>
+
+        <!-- Add Custom Area / Body Part Modal Window -->
+        <div class="modal-overlay hidden" id="addAreaModal">
+            <div class="modal-content glass-panel add-area-modal-content">
+                <div class="modal-header">
+                    <h2>Add Custom Body Part / Area</h2>
+                    <button class="btn-close" id="btnCloseAddArea">&times;</button>
+                </div>
+                <div class="modal-body-form">
+                    <div class="form-group">
+                        <label>Body Part Name</label>
+                        <input type="text" id="customAreaName" class="glass-input" placeholder="e.g. Toe, Hip, Wrist...">
+                    </div>
+                    <div class="form-group">
+                        <label>Side</label>
+                        <select id="customAreaSide" class="glass-select">
+                            <option value="right" selected>Right</option>
+                            <option value="left">Left</option>
+                            <option value="both">Both</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Area Notes / Context</label>
+                        <input type="text" id="customAreaNotes" class="glass-input" placeholder="e.g. Temporary because I broke it...">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline btn-sm" id="btnCancelAddArea">Cancel</button>
+                    <button class="btn btn-neon-blue btn-sm" id="btnSaveCustomArea">Save & Add to Menu</button>
+                </div>
+            </div>
         </div>
-        <div class="modal-footer">
-          <span class="modal-hint">Syncs with Google Calendar barriers via Overseer Pipeline.</span>
-          <button class="btn btn-secondary btn-sm" onclick="closeScheduleModal()">Close Window</button>
+
+        <!-- Persistent Notes Modal -->
+        <div class="modal-overlay hidden" id="notesModal">
+            <div class="modal-content glass-panel notes-modal-content">
+                <div class="modal-header">
+                    <h2>Notes & Directives</h2>
+                    <button class="btn-close" id="btnCloseNotes">&times;</button>
+                </div>
+                <div class="notes-body">
+                    <textarea id="notesArea" placeholder="Type persistent notes, agenda items, or instructions for RUMBLE..."></textarea>
+                </div>
+                <div class="notes-footer">
+                    <span class="notes-status" id="notesStatus">Synced with Neon DB</span>
+                    <div class="modal-actions">
+                        <button class="btn btn-sm btn-outline" id="btnAskRumbleNote">Rumble Add</button>
+                        <button class="btn btn-neon-green btn-sm" id="btnSaveNotes">Save</button>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
+
+        <!-- RUMBLE AI Chat Modal Window -->
+        <div class="modal-overlay hidden" id="rumbleChatModal">
+            <div class="modal-content glass-panel chat-modal-content">
+                <div class="modal-header">
+                    <h2>Chat with RUMBLE</h2>
+                    <button class="btn-close" id="btnCloseRumbleChat">&times;</button>
+                </div>
+                <div class="chat-messages" id="rumbleChatMessages">
+                    <div class="message rumble-message">
+                        <strong>RUMBLE:</strong> Hello. Type or use the voice button below to speak directly with me regarding your agenda, symptoms, or recovery.
+                    </div>
+                </div>
+                <div class="chat-input-row">
+                    <input type="text" id="rumbleChatInput" class="glass-input" placeholder="Type to Rumble or use voice...">
+                    <button class="btn btn-voice btn-sm" id="btnRumbleVoice" title="Voice Input">Voice</button>
+                    <button class="btn btn-neon-blue btn-sm" id="btnSendRumbleChat">Send</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Protocol Step Runner Modal -->
+        <div class="modal-overlay hidden" id="runnerModal">
+            <div class="modal-content glass-panel">
+                <h2 id="runnerTitle">Protocol Runner</h2>
+                <div class="runner-visual">
+                    <div class="visual-placeholder">START</div>
+                </div>
+                <h3 id="runnerStep">Step 1: Alignment & Position</h3>
+                <div class="timer" id="runnerTimer">00:30</div>
+                <div class="runner-actions">
+                    <button class="btn btn-outline" id="btnCancelRunner">Cancel</button>
+                    <button class="btn btn-neon-purple" id="btnNextStep">Next Step</button>
+                </div>
+            </div>
+        </div>
+
     </div>
 
-    <!-- Floating Overseer AI Chat Assistant Toggle -->
-    <div class="chat-widget-wrapper">
-      <button class="chat-toggle-btn glass-card" onclick="toggleChatWindow()" title="Chat with Overseer Agent">
-        💬 <span class="chat-label">Overseer AI</span>
-      </button>
-
-      <div class="chat-window glass-card hidden" id="chat-window">
-        <div class="chat-header">
-          <div class="chat-header-title">⚡ CHIEF RUMBLE OFFICER — OVERSEER</div>
-          <button class="chat-close-btn" onclick="toggleChatWindow()">✕</button>
-        </div>
-        <div class="chat-messages" id="chat-messages-container">
-          <div class="chat-msg assistant">
-            Hello! I am your Overseer Agent (Chief Rumble Officer). Ask me anything about your pain symptoms, daily agenda, tickets, or rehab routines.
-          </div>
-        </div>
-        <div class="chat-input-row">
-          <input type="text" id="chat-input" placeholder="Type your message to Overseer..." onkeypress="handleChatKeyPress(event)">
-          <button class="btn btn-primary btn-sm" onclick="sendChatMessage()">Send</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Footer -->
-    <footer class="footer">
-      <p>Powered by <strong>Agno</strong> Multi-Agent Framework · <strong>FastAPI</strong> · <strong>SQLite</strong> state engine.</p>
-    </footer>
-  </div>
-
-  <script src="app.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
