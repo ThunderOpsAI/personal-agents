@@ -13,7 +13,13 @@ import os
 from pathlib import Path
 from typing import Any, Optional
 
-import fitz  # PyMuPDF
+try:
+    import fitz  # PyMuPDF
+    FITZ_AVAILABLE = True
+except ImportError:
+    fitz = None
+    FITZ_AVAILABLE = False
+
 import urllib.request
 import urllib.parse
 from agno.agent import Agent
