@@ -1,7 +1,7 @@
 """
-Persistent SQLite State Store for Rumble OS.
+Persistent State Store for Rumble OS.
 
-Manages data storage in `data/life_os.db` for:
+Manages data storage in Neon PostgreSQL / SQLite for:
   • `MasterLifeBrief` snapshots & historical trends
   • Active and resolved `LifeAlert` queue
   • Structured `ActionItemRecord` tasks with persistence & routing
@@ -13,10 +13,13 @@ from __future__ import annotations
 
 import json
 import sqlite3
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
+from sqlalchemy import text
+from src.storage.db import engine, init_db, is_postgres
 from src.schemas.life_os import (
     ActionCategory,
     ActionItemRecord,
@@ -32,7 +35,7 @@ REPORTS_DIR = Path(__file__).resolve().parent.parent.parent / "agent_reports"
 
 
 class LifeOSStore:
-    """SQLite persistence engine for Rumble OS Master Briefs, Alert Engine, and Symptom Tracking."""
+    """Persistence engine for Rumble OS Master Briefs, Alert Engine, and Symptom Tracking."""
 
     def __init__(self, db_path: Optional[str | Path] = None) -> None:
         self.db_path = Path(db_path) if db_path else DEFAULT_DB_PATH
@@ -40,126 +43,69 @@ class LifeOSStore:
         REPORTS_DIR.mkdir(parents=True, exist_ok=True)
         self._init_db()
 
-    def _get_connection(self) -> sqlite3.Connection:
-        conn = sqlite3.connect(self.db_path)
-        conn.row_factory = sqlite3.Row
-        return conn
-
     def _init_db(self) -> None:
-        """Initialize database schema tables."""
-        with self._get_connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS master_briefs (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    timestamp TEXT NOT NULL,
-                    date TEXT NOT NULL,
-                    headline_summary TEXT NOT NULL,
-                    raw_brief_json TEXT NOT NULL
-                )
-                """
-            )
-            cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS alerts (
-                    id TEXT PRIMARY KEY,
-                    timestamp TEXT NOT NULL,
-                    severity TEXT NOT NULL,
-                    category TEXT NOT NULL,
-                    title TEXT NOT NULL,
-                    summary TEXT NOT NULL,
-                    action_required TEXT NOT NULL,
-                    resolved INTEGER NOT NULL DEFAULT 0
-                )
-                """
-            )
-            cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS action_items (
-                    id TEXT PRIMARY KEY,
-                    brief_id INTEGER,
-                    text TEXT NOT NULL,
-                    category TEXT NOT NULL,
-                    completed INTEGER NOT NULL DEFAULT 0,
-                    linked_id TEXT,
-                    spoon_cost REAL NOT NULL DEFAULT 0.0
-                )
-                """
-            )
-            cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS symptom_logs (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    timestamp TEXT NOT NULL,
-                    date TEXT NOT NULL,
-                    time_slot TEXT NOT NULL,
-                    total_pain_level INTEGER NOT NULL,
-                    primary_generator TEXT NOT NULL,
-                    primary_percentage INTEGER NOT NULL,
-                    active_symptoms_json TEXT NOT NULL,
-                    notes TEXT
-                )
-                """
-            )
-            conn.commit()
+        """Initialize database schema tables via SQLAlchemy init_db."""
+        init_db()
 
     def save_brief(self, brief: MasterLifeBrief) -> int:
         """Persist a new MasterLifeBrief snapshot and save its active alerts and action items."""
         now_iso = brief.timestamp or datetime.now(timezone.utc).isoformat()
         brief_json = brief.model_dump_json()
 
-        with self._get_connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                """
+        with engine.connect() as conn:
+            stmt = text("""
                 INSERT INTO master_briefs (timestamp, date, headline_summary, raw_brief_json)
-                VALUES (?, ?, ?, ?)
-                """,
-                (now_iso, brief.date, brief.headline_summary, brief_json),
-            )
-            brief_id = cursor.lastrowid
+                VALUES (:timestamp, :date, :headline_summary, :raw_brief_json)
+            """)
+            conn.execute(stmt, {
+                "timestamp": now_iso,
+                "date": brief.date,
+                "headline_summary": brief.headline_summary,
+                "raw_brief_json": brief_json,
+            })
             conn.commit()
 
-        # Save active alerts
+            # Retrieve inserted ID
+            res = conn.execute(text("SELECT id FROM master_briefs ORDER BY id DESC LIMIT 1"))
+            row = res.mappings().first()
+            brief_id = row["id"] if row else 1
+
         for alert in brief.active_alerts:
             self.save_alert(alert)
 
-        # Save action records
         for item in brief.action_records:
             self.save_action_item(item, brief_id=brief_id)
 
-        # Log symptom state
         if brief.symptom_state:
             self.log_symptoms(brief.symptom_state)
 
         return brief_id
 
     def log_symptoms(self, state: SymptomPainState) -> SymptomPainState:
-        """Record a structured 3-hour anatomical pain log entry in SQLite."""
+        """Record a structured anatomical pain log entry."""
         now_iso = state.timestamp or datetime.now(timezone.utc).isoformat()
         symptoms_json = json.dumps(state.active_symptoms)
 
-        with self._get_connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                """
+        with engine.connect() as conn:
+            stmt = text("""
                 INSERT INTO symptom_logs (timestamp, date, time_slot, total_pain_level, primary_generator, primary_percentage, active_symptoms_json, notes)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-                (
-                    now_iso,
-                    state.date,
-                    state.time_slot,
-                    state.total_pain_level,
-                    state.primary_generator,
-                    state.primary_percentage,
-                    symptoms_json,
-                    state.notes or "",
-                ),
-            )
+                VALUES (:timestamp, :date, :time_slot, :total_pain_level, :primary_generator, :primary_percentage, :active_symptoms_json, :notes)
+            """)
+            conn.execute(stmt, {
+                "timestamp": now_iso,
+                "date": state.date,
+                "time_slot": state.time_slot,
+                "total_pain_level": state.total_pain_level,
+                "primary_generator": state.primary_generator,
+                "primary_percentage": state.primary_percentage,
+                "active_symptoms_json": symptoms_json,
+                "notes": state.notes or "",
+            })
             conn.commit()
-            record_id = cursor.lastrowid
+
+            res = conn.execute(text("SELECT id FROM symptom_logs ORDER BY id DESC LIMIT 1"))
+            row = res.mappings().first()
+            record_id = row["id"] if row else 1
             state.id = record_id
 
         self.export_medical_report_markdown()
@@ -167,21 +113,19 @@ class LifeOSStore:
 
     def get_latest_symptoms(self) -> SymptomPainState:
         """Fetch the most recent symptom/pain record."""
-        with self._get_connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute("SELECT * FROM symptom_logs ORDER BY id DESC LIMIT 1")
-            row = cursor.fetchone()
+        with engine.connect() as conn:
+            res = conn.execute(text("SELECT * FROM symptom_logs ORDER BY id DESC LIMIT 1"))
+            row = res.mappings().first()
             if not row:
-                # Default baseline record
                 return SymptomPainState(
                     timestamp=datetime.now(timezone.utc).isoformat(),
                     date=datetime.now().strftime("%Y-%m-%d"),
-                    time_slot="12:00 PM",
-                    total_pain_level=5,
-                    primary_generator="Right Lumbar Pain",
-                    primary_percentage=85,
-                    active_symptoms=["Right Lumbar Pain", "Cervical Spine Pain", "Right Shoulder Pain", "Left Knee Pain", "Right Ankle Pain"],
-                    notes="Baseline pain tracking initialized.",
+                    time_slot="baseline",
+                    total_pain_level=0,
+                    primary_generator="None",
+                    primary_percentage=0,
+                    active_symptoms=[],
+                    notes="",
                 )
             return SymptomPainState(
                 id=row["id"],
@@ -197,10 +141,9 @@ class LifeOSStore:
 
     def get_symptoms_history(self, limit: int = 20) -> list[SymptomPainState]:
         """Fetch historical symptom records."""
-        with self._get_connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute("SELECT * FROM symptom_logs ORDER BY id DESC LIMIT ?", (limit,))
-            rows = cursor.fetchall()
+        with engine.connect() as conn:
+            res = conn.execute(text("SELECT * FROM symptom_logs ORDER BY id DESC LIMIT :limit"), {"limit": limit})
+            rows = res.mappings().all()
             return [
                 SymptomPainState(
                     id=r["id"],
@@ -232,84 +175,96 @@ class LifeOSStore:
             "| :--- | :--- | :--- | :--- | :--- | :--- | :--- |",
         ]
 
-        for s in history:
-            symptoms_str = ", ".join(s.active_symptoms)
-            lines.append(
-                f"| {s.date} | {s.time_slot} | **{s.total_pain_level}/10** | {s.primary_generator} | {s.primary_percentage}% | {symptoms_str} | {s.notes or 'N/A'} |"
-            )
+        if not history:
+            lines.append("| N/A | Baseline | 0/10 | None | 0% | No pain logs recorded | None |")
+        else:
+            for s in history:
+                symptoms_str = ", ".join(s.active_symptoms) if s.active_symptoms else "None"
+                lines.append(
+                    f"| {s.date} | {s.time_slot} | **{s.total_pain_level}/10** | {s.primary_generator} | {s.primary_percentage}% | {symptoms_str} | {s.notes or 'N/A'} |"
+                )
 
         report_path.write_text("\n".join(lines), encoding="utf-8")
         return report_path
 
     def save_alert(self, alert: LifeAlert) -> None:
-        """Insert or update a LifeAlert in SQLite."""
+        """Insert or update a LifeAlert."""
         alert_id = alert.id or f"alert_{datetime.now(timezone.utc).timestamp()}"
-        with self._get_connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                """
-                INSERT OR REPLACE INTO alerts (id, timestamp, severity, category, title, summary, action_required, resolved)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-                (
-                    alert_id,
-                    alert.timestamp,
-                    alert.severity.value,
-                    alert.category.value,
-                    alert.title,
-                    alert.summary,
-                    alert.action_required,
-                    1 if alert.resolved else 0,
-                ),
-            )
+        with engine.connect() as conn:
+            if is_postgres:
+                stmt = text("""
+                    INSERT INTO alerts (id, timestamp, severity, category, title, summary, action_required, resolved)
+                    VALUES (:id, :timestamp, :severity, :category, :title, :summary, :action_required, :resolved)
+                    ON CONFLICT (id) DO UPDATE SET
+                    timestamp = EXCLUDED.timestamp, severity = EXCLUDED.severity, category = EXCLUDED.category,
+                    title = EXCLUDED.title, summary = EXCLUDED.summary, action_required = EXCLUDED.action_required,
+                    resolved = EXCLUDED.resolved
+                """)
+            else:
+                stmt = text("""
+                    INSERT OR REPLACE INTO alerts (id, timestamp, severity, category, title, summary, action_required, resolved)
+                    VALUES (:id, :timestamp, :severity, :category, :title, :summary, :action_required, :resolved)
+                """)
+
+            conn.execute(stmt, {
+                "id": alert_id,
+                "timestamp": alert.timestamp,
+                "severity": alert.severity.value,
+                "category": alert.category.value,
+                "title": alert.title,
+                "summary": alert.summary,
+                "action_required": alert.action_required,
+                "resolved": 1 if alert.resolved else 0,
+            })
             conn.commit()
 
     def save_action_item(self, item: ActionItemRecord, brief_id: Optional[int] = None) -> None:
-        """Insert or update an ActionItemRecord in SQLite."""
-        with self._get_connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                """
-                INSERT OR REPLACE INTO action_items (id, brief_id, text, category, completed, linked_id, spoon_cost)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-                """,
-                (
-                    item.id,
-                    brief_id,
-                    item.text,
-                    item.category.value,
-                    1 if item.completed else 0,
-                    item.linked_id,
-                    0.0,
-                ),
-            )
+        """Insert or update an ActionItemRecord."""
+        with engine.connect() as conn:
+            if is_postgres:
+                stmt = text("""
+                    INSERT INTO action_items (id, brief_id, text, category, completed, linked_id, spoon_cost)
+                    VALUES (:id, :brief_id, :text, :category, :completed, :linked_id, :spoon_cost)
+                    ON CONFLICT (id) DO UPDATE SET
+                    brief_id = EXCLUDED.brief_id, text = EXCLUDED.text, category = EXCLUDED.category,
+                    completed = EXCLUDED.completed, linked_id = EXCLUDED.linked_id, spoon_cost = EXCLUDED.spoon_cost
+                """)
+            else:
+                stmt = text("""
+                    INSERT OR REPLACE INTO action_items (id, brief_id, text, category, completed, linked_id, spoon_cost)
+                    VALUES (:id, :brief_id, :text, :category, :completed, :linked_id, :spoon_cost)
+                """)
+
+            conn.execute(stmt, {
+                "id": item.id,
+                "brief_id": brief_id,
+                "text": item.text,
+                "category": item.category.value,
+                "completed": 1 if item.completed else 0,
+                "linked_id": item.linked_id,
+                "spoon_cost": 0.0,
+            })
             conn.commit()
 
     def resolve_alert(self, alert_id: str) -> bool:
         """Mark an alert as resolved."""
-        with self._get_connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                "UPDATE alerts SET resolved = 1 WHERE id = ?",
-                (alert_id,),
-            )
+        with engine.connect() as conn:
+            stmt = text("UPDATE alerts SET resolved = 1 WHERE id = :alert_id")
+            res = conn.execute(stmt, {"alert_id": alert_id})
             conn.commit()
-            return cursor.rowcount > 0
+            return res.rowcount > 0
 
     def toggle_action_item(self, item_id: str, completed: bool) -> tuple[bool, Optional[ActionItemRecord]]:
         """Toggle an action item's completion status."""
-        with self._get_connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                "UPDATE action_items SET completed = ? WHERE id = ?",
-                (1 if completed else 0, item_id),
-            )
+        with engine.connect() as conn:
+            stmt = text("UPDATE action_items SET completed = :completed WHERE id = :item_id")
+            res = conn.execute(stmt, {"completed": 1 if completed else 0, "item_id": item_id})
             conn.commit()
-            if cursor.rowcount == 0:
+            if res.rowcount == 0:
                 return False, None
 
-            cursor.execute("SELECT * FROM action_items WHERE id = ?", (item_id,))
-            r = cursor.fetchone()
+            res_item = conn.execute(text("SELECT * FROM action_items WHERE id = :item_id"), {"item_id": item_id})
+            r = res_item.mappings().first()
             if not r:
                 return True, None
 
@@ -324,12 +279,9 @@ class LifeOSStore:
 
     def get_active_alerts(self) -> list[LifeAlert]:
         """Fetch all unresolved alerts ordered by severity and timestamp."""
-        with self._get_connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                "SELECT * FROM alerts WHERE resolved = 0 ORDER BY timestamp DESC"
-            )
-            rows = cursor.fetchall()
+        with engine.connect() as conn:
+            res = conn.execute(text("SELECT * FROM alerts WHERE resolved = 0 ORDER BY timestamp DESC"))
+            rows = res.mappings().all()
 
         alerts = []
         for r in rows:
@@ -349,19 +301,15 @@ class LifeOSStore:
 
     def get_latest_brief(self) -> Optional[MasterLifeBrief]:
         """Fetch the most recent MasterLifeBrief snapshot."""
-        with self._get_connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                "SELECT * FROM master_briefs ORDER BY id DESC LIMIT 1"
-            )
-            row = cursor.fetchone()
+        with engine.connect() as conn:
+            res = conn.execute(text("SELECT * FROM master_briefs ORDER BY id DESC LIMIT 1"))
+            row = res.mappings().first()
             if not row:
                 return None
             data = json.loads(row["raw_brief_json"])
             brief = MasterLifeBrief.model_validate(data)
             brief.id = row["id"]
 
-            # Merge live database alerts into active_alerts
             brief.active_alerts = self.get_active_alerts()
             brief.symptom_state = self.get_latest_symptoms()
             return brief

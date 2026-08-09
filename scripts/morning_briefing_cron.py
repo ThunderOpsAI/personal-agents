@@ -34,32 +34,22 @@ def generate_morning_briefing(energy_level: int = 6, pain_level: int = 3) -> Bri
     """Aggregate data across daily ops agents & tools to construct a daily BriefingReport."""
     today_str = date.today().isoformat()
 
-    # 1. Fetch Calendar Events via tool (mock mode for cron/dry-run safety)
-    cal_raw = google_calendar(action="list", mock=True)
+    # 1. Fetch Calendar Events via tool
+    cal_raw = google_calendar(action="list", mock=False)
     events_data = json.loads(cal_raw) if isinstance(cal_raw, str) else cal_raw
-    schedule = [CalendarEvent(**evt) for evt in events_data]
+    schedule = [CalendarEvent(**evt) for evt in events_data if isinstance(evt, dict)]
 
     # 2. Fetch Triaged Emails via tool
-    gmail_raw = chat_with_gmail(action="list", mock=True)
+    gmail_raw = chat_with_gmail(action="list", mock=False)
     emails_data = json.loads(gmail_raw) if isinstance(gmail_raw, str) else gmail_raw
-    emails = [EmailSummary(**msg) for msg in emails_data]
+    emails = [EmailSummary(**msg) for msg in emails_data if isinstance(msg, dict)]
     high_priority_emails = [e for e in emails if e.priority == EmailPriority.HIGH or e.action_required]
 
     # 3. Habit Coach Spoon Calculation
     spoon_state = HabitCoach.calculate_spoon_state(energy_level=energy_level, pain_level=pain_level)
 
     # 4. Pending Medical Bills
-    pending_bills = [
-        EOBRecord(
-            claim_id="CLM-9948",
-            provider_name="City Health Hospital",
-            patient_responsibility=120.0,
-            insurance_paid=480.0,
-            service_date="2026-07-10",
-            flagged_discrepancy=False,
-            notes="Statement due Aug 15.",
-        )
-    ]
+    pending_bills = []
 
     action_items = [
         f"Target maximum {spoon_state.recommended_focus_hours} hours focus time today.",

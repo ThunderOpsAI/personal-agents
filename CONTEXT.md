@@ -22,4 +22,6 @@
 
 ## System Rules & Constraints
 - **NO EMOJIS**: NEVER use emojis in any UI, log, response, text, code, or documentation across Rumble OS. Keep all interfaces, alerts, buttons, messages, and reports strictly text-based and professional.
+- **STRICT PRODUCTION DATA RULE**: Do NOT use mock, dummy, or fallback data anywhere in Rumble OS. All dashboard cards, health/pain logs, emails, calendar events, and briefing metrics MUST fetch and render live data from Neon PostgreSQL (`NEON_DATABASE_URL`), the live Render backend, or active external APIs (Google Workspace OAuth2).
+
 

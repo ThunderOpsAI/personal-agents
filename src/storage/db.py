@@ -23,6 +23,8 @@ def init_db():
         with engine.connect() as conn:
             conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector;"))
             conn.commit()
+    else:
+        engine.dispose()
     Base.metadata.create_all(bind=engine)
 
 def get_db():

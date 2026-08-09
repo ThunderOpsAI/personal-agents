@@ -66,52 +66,16 @@
                 </div>
                 
                 <div class="agenda-stream" id="agendaStream">
-                    <!-- Morning Physio -->
-                    <div class="protocol-card glass-panel" id="protocol-1">
-                        <div class="protocol-info">
-                            <h3>06:00 AM</h3>
-                            <p>Morning Physio & Lumbar Mobility</p>
-                        </div>
-                        <div class="protocol-actions">
-                            <button class="btn btn-neon-purple btn-show-me" data-id="1">Show Me</button>
-                            <button class="btn btn-neon-green btn-done" data-id="1">Done</button>
-                        </div>
-                    </div>
-
-                    <!-- Daily Learning Card (Right After Morning Physio!) -->
+                    <!-- Daily Learning Card -->
                     <div class="protocol-card glass-panel learn-card" id="protocol-learn">
                         <div class="protocol-info">
                             <h3>07:30 AM <span class="badge neon-blue" id="learnCategoryTag">Artificial Intelligence</span></h3>
-                            <p id="learnTitleText">Learn: Did you know that Opus 5.7 & hybrid reasoning architectures use dynamic test-time compute?</p>
-                            <span class="learn-summary-sub" id="learnSummaryText">Modern frontier AI models spend extra compute budget during inference to verify math and code logic before outputting final tokens.</span>
+                            <p id="learnTitleText">Loading continuous learning topic...</p>
+                            <span class="learn-summary-sub" id="learnSummaryText">Fetching topic details...</span>
                         </div>
                         <div class="protocol-actions learn-actions-grid">
                             <button class="btn btn-neon-blue btn-sm" id="btnLearnMore">Learn More</button>
                             <button class="btn btn-outline btn-sm" id="btnLearnDifferent">Learn Something Different</button>
-                        </div>
-                    </div>
-
-                    <!-- Midday Hydration & Reset -->
-                    <div class="protocol-card glass-panel" id="protocol-2">
-                        <div class="protocol-info">
-                            <h3>12:00 PM</h3>
-                            <p>Hydration & Postural Reset</p>
-                        </div>
-                        <div class="protocol-actions">
-                            <button class="btn btn-neon-purple btn-show-me" data-id="2">Show Me</button>
-                            <button class="btn btn-neon-green btn-done" data-id="2">Done</button>
-                        </div>
-                    </div>
-
-                    <!-- Afternoon Active Recovery -->
-                    <div class="protocol-card glass-panel" id="protocol-3">
-                        <div class="protocol-info">
-                            <h3>03:00 PM</h3>
-                            <p>Active Recovery Walk & Stretch</p>
-                        </div>
-                        <div class="protocol-actions">
-                            <button class="btn btn-neon-purple btn-show-me" data-id="3">Show Me</button>
-                            <button class="btn btn-neon-green btn-done" data-id="3">Done</button>
                         </div>
                     </div>
                 </div>
@@ -126,18 +90,7 @@
                         <span class="badge neon-blue">Weekly Agenda</span>
                     </div>
                     <div class="agenda-list" id="weeklyAgendaList">
-                        <div class="agenda-item">
-                            <span class="agenda-date">Thu</span>
-                            <span class="agenda-text">Specialist Physio Progress Review</span>
-                        </div>
-                        <div class="agenda-item">
-                            <span class="agenda-date">Fri</span>
-                            <span class="agenda-text">Operational Team Sync & Strategy</span>
-                        </div>
-                        <div class="agenda-item">
-                            <span class="agenda-date">Sat</span>
-                            <span class="agenda-text">Deep Recovery & Decompression Routine</span>
-                        </div>
+                        <!-- Dynamic Agenda Items -->
                     </div>
                 </section>
 
@@ -148,21 +101,34 @@
                         <span class="badge neon-purple">Monthly Agenda</span>
                     </div>
                     <div class="agenda-list" id="monthlyAgendaList">
-                        <div class="agenda-item">
-                            <span class="agenda-date">Aug 12</span>
-                            <span class="agenda-text">Lumbar MRI & Spine Scan Review</span>
-                        </div>
-                        <div class="agenda-item">
-                            <span class="agenda-date">Aug 20</span>
-                            <span class="agenda-text">Monthly Rehabilitation Compliance Audit</span>
-                        </div>
-                        <div class="agenda-item">
-                            <span class="agenda-date">Aug 28</span>
-                            <span class="agenda-text">System Infrastructure & Pipeline Maintenance</span>
-                        </div>
+                        <!-- Dynamic Agenda Items -->
                     </div>
                 </section>
             </div>
+
+            <!-- Budget Widget -->
+            <section class="widget glass-panel" id="budgetWidget">
+                <div class="widget-header">
+                    <h2>Budget Overview</h2>
+                    <span class="badge neon-green" id="budgetTotalSpent">Spent: $0</span>
+                </div>
+                <div class="budget-body" id="budgetSummary" style="margin-bottom: 14px; display: flex; flex-wrap: wrap; gap: 8px;">
+                    <!-- Dynamic Summary -->
+                </div>
+                <div class="budget-form" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <input type="text" id="budgetDesc" class="glass-input" placeholder="Description" style="flex: 1; min-width: 150px; padding: 8px;">
+                    <input type="number" id="budgetAmount" class="glass-input" placeholder="Amount" style="width: 100px; padding: 8px;">
+                    <select id="budgetCategory" class="glass-select" style="padding: 8px;">
+                        <option value="Groceries">Groceries</option>
+                        <option value="Medical">Medical</option>
+                        <option value="Transport">Transport</option>
+                        <option value="Entertainment">Entertainment</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <input type="text" id="budgetNotes" class="glass-input" placeholder="Notes" style="flex: 1; min-width: 150px; padding: 8px;">
+                    <button class="btn btn-neon-green" id="btnLogBudget">Add Expense</button>
+                </div>
+            </section>
 
         </main>
 

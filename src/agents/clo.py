@@ -56,71 +56,28 @@ class ChiefRumbleOfficer:
         """Fetch real emails, schedule, bills, and energy state."""
         today_str = date.today().isoformat()
 
-        # Determine whether to use live Google API credentials
-        creds = get_google_credentials() if self.use_live_google_data else None
-        is_mock = creds is None
-
-        # 1. Schedule Highlights (Live Calendar or Mock fallback)
+        # 1. Schedule Highlights from Google Calendar
         try:
-            cal_raw = google_calendar(action="list", mock=is_mock)
+            cal_raw = google_calendar(action="list", mock=False)
             events_data = json.loads(cal_raw) if isinstance(cal_raw, str) else cal_raw
             schedule = [CalendarEvent(**evt) for evt in events_data if isinstance(evt, dict)]
         except Exception:
             schedule = []
 
-        # 2. Triaged Emails (Live Gmail or Mock fallback)
+        # 2. Triaged Emails from Gmail
         try:
-            gmail_raw = chat_with_gmail(action="list", max_results=10, mock=is_mock)
+            gmail_raw = chat_with_gmail(action="list", max_results=10, mock=False)
             emails_data = json.loads(gmail_raw) if isinstance(gmail_raw, str) else gmail_raw
             emails = [EmailSummary(**msg) for msg in emails_data if isinstance(msg, dict)]
             high_priority = [e for e in emails if e.priority == EmailPriority.HIGH or e.action_required or e.is_imperative]
         except Exception:
-            high_priority = [
-                EmailSummary(
-                    id="msg-esm-1229",
-                    sender="it-help-esm@deakin.edu.au",
-                    sender_domain="deakin.edu.au",
-                    subject="IMPERATIVE: Urgent Identity Verification Required for Workstation Access",
-                    ticket_number="RITM1229647",
-                    status="UNACTIONED OVERDUE",
-                    snippet="Secondary device provisioning and hardware token reset requires phone identity verification.",
-                    exact_body_summary="Your request RITM1229647 for YubiKey hardware token reset and secondary workstation access has passed initial approval and requires immediate phone identity verification before final dispatch.",
-                    clear_action_required="Call Deakin eSolutions Help Desk at 1800 463 888 and quote reference code RITM1229647 immediately to confirm identity.",
-                    priority=EmailPriority.HIGH,
-                    action_required=True,
-                    is_imperative=True,
-                ),
-                EmailSummary(
-                    id="msg-esm-8957",
-                    sender="it-help-esm@deakin.edu.au",
-                    sender_domain="deakin.edu.au",
-                    subject="Annual Security Credential Renewal & Privileged Access Audit",
-                    ticket_number="FID8957636",
-                    status="Action Pending",
-                    snippet="Mandatory 90-day security re-authentication for elevated API & database access.",
-                    exact_body_summary="Mandatory 90-day security re-authentication for elevated API & database environment access. Access will be throttled if identity confirmation is not completed.",
-                    clear_action_required="Log into Deakin Identity Portal or call IT Support at 1800 463 888 with ticket ID FID8957636.",
-                    priority=EmailPriority.MEDIUM,
-                    action_required=True,
-                    is_imperative=False,
-                )
-            ]
+            high_priority = []
 
         # 3. Habit Coach Calculation
         spoon_state = HabitCoach.calculate_spoon_state(energy_level=energy_level, pain_level=pain_level)
 
         # 4. Medical Billing / EOB Records
-        pending_bills = [
-            EOBRecord(
-                claim_id="CLM-9948",
-                provider_name="City Health Hospital",
-                patient_responsibility=120.0,
-                insurance_paid=480.0,
-                service_date="2026-07-10",
-                flagged_discrepancy=False,
-                notes="Statement due Aug 15.",
-            )
-        ]
+        pending_bills = []
 
         action_items = [
             f"Target {spoon_state.recommended_focus_hours} hours focus time today.",
@@ -143,7 +100,7 @@ class ChiefRumbleOfficer:
         medical_query: Optional[str] = None,
         energy_level: int = 6,
         pain_level: int = 5,
-        use_mock_cmo: bool = True,
+        use_mock_cmo: bool = False,
     ) -> MasterLifeBrief:
         """Run complete multi-domain ingest pipeline to generate, evaluate alerts, and persist a MasterLifeBrief."""
         now_iso = datetime.now(timezone.utc).isoformat()
@@ -159,22 +116,11 @@ class ChiefRumbleOfficer:
 
         # 3. Collect Medical Briefing
         medical_brief: Optional[PersonalAdvisorBrief] = None
-        if medical_query or use_mock_cmo:
-            if use_mock_cmo or not medical_query:
-                medical_brief = PersonalAdvisorBrief(
-                    primary_synthesis=(
-                        f"Primary pain generator identified as {symptom_state.primary_generator} ({symptom_state.primary_percentage}% contribution). "
-                        "Maintain lumbar stabilization protocol and posture balance."
-                    ),
-                    direct_recommendations=[],
-                    contraindications_and_risks=[],
-                    questions_for_doctor=None,
-                )
-            else:
-                cmo_agent = create_cmo_agent(debug_mode=self.debug_mode)
-                cmo_resp = cmo_agent.run(medical_query)
-                if hasattr(cmo_resp, "content") and isinstance(cmo_resp.content, PersonalAdvisorBrief):
-                    medical_brief = cmo_resp.content
+        if medical_query:
+            cmo_agent = create_cmo_agent(debug_mode=self.debug_mode)
+            cmo_resp = cmo_agent.run(medical_query)
+            if hasattr(cmo_resp, "content") and isinstance(cmo_resp.content, PersonalAdvisorBrief):
+                medical_brief = cmo_resp.content
 
         # 4. Evaluate Alerts via Alert Engine
         active_alerts = self.alert_engine.evaluate_all(

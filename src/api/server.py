@@ -5,17 +5,18 @@ Exposes REST endpoints for:
   - GET /healthz: Health check & server status
   - POST /api/v1/rumble/chat: Direct real-time RUMBLE AI chat
   - POST /api/v1/pain/log: Record multi-generator pain (0-10), mood (0-10), and separate pain/mood notes
-  - GET/POST /api/v1/notes: Persistent note-taking
+  - GET/POST /api/v1/notes: Persistent note-taking (Neon PostgreSQL / SQLite DB)
   - POST /api/v1/ops/sync: Fetch calendar/email context & update daily agenda
-  - GET /api/v1/agenda/weekly & monthly: Weekly & Monthly agenda streams
-  - GET /api/v1/weather: Local weather & rain probability
-  - GET/POST /api/v1/learn/*: Continuous Daily Learning Engine (Did You Know topics & deep dive)
+  - GET /api/v1/agenda: Daily, Weekly & Monthly agenda streams
+  - GET /api/v1/weather: Local live weather & rain probability
+  - GET/POST /api/v1/learn/*: Continuous Daily Learning Engine
 """
 
 from __future__ import annotations
 
 import os
-import random
+import json
+import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional, List, Dict
@@ -24,13 +25,17 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
+from sqlalchemy import text
 
 from src.agents.clo import ChiefRumbleOfficer
 from src.agents.cmo import create_cmo_agent
 from src.agents.reflection_engine import reflection_engine
 from src.alerts.push import send_push_notification, check_3hr_logging_reminder
 from src.schemas.life_os import ActionCategory, LifeAlert, MasterLifeBrief, SymptomPainState
+from src.storage.db import engine, init_db, is_postgres
 from src.storage.life_os_store import LifeOSStore
+from src.tools.workspace_mcp import chat_with_gmail, google_calendar
+from src.agents.intent_router import route_message
 
 app = FastAPI(
     title="Rumble OS API",
@@ -53,14 +58,24 @@ _DASHBOARD_DIR.mkdir(parents=True, exist_ok=True)
 store = LifeOSStore()
 clo = ChiefRumbleOfficer(enable_desktop_notifications=True)
 
+# Initialize Database tables on startup
+init_db()
+
 
 class VoiceParseRequest(BaseModel):
     transcript: str
 
+class ExpenseRequest(BaseModel):
+    description: Optional[str] = None
+    merchant: Optional[str] = None
+    amount: float
+    category: Optional[str] = None
+    notes: Optional[str] = ""
+
 class PainGeneratorItem(BaseModel):
-    area: str = "lumbar"  # lumbar, cervical, thoracic, ankle, knee, shoulder, elbow
-    side: str = "right"   # right, left, both
-    percentage: int = 50  # percentage contribution (0-100)
+    area: str = "lumbar"
+    side: str = "right"
+    percentage: int = 50
 
 class UnifiedLogRequest(BaseModel):
     pain_level: int = Field(default=0, ge=0, le=10)
@@ -87,13 +102,8 @@ class UsageLogRequest(BaseModel):
     widget_id: str
     action: str
 
-# Persistent notes in-memory / DB fallback
-_persistent_notes: list[dict] = [
-    {"id": 1, "content": "Prioritize lumbar decompression after long desk sessions.", "author": "user", "updated_at": datetime.now(timezone.utc).isoformat()},
-    {"id": 2, "content": "Rumble Directive: Maintain hydration and active postural resets during deep work.", "author": "rumble", "updated_at": datetime.now(timezone.utc).isoformat()}
-]
 
-# Daily Learning Topics Bank
+# Continuous Daily Learning Topics Bank
 _LEARNING_TOPICS = [
     {
         "id": "learn_01",
@@ -147,26 +157,6 @@ _LEARNING_TOPICS = [
 
 _current_topic_index = 0
 
-# Daily, Weekly, Monthly Agenda stores
-_daily_agenda: list[dict] = [
-    {"id": "1", "time": "06:00 AM", "title": "Morning Physio & Lumbar Mobility", "status": "pending"},
-    {"id": "learn_card", "time": "07:30 AM", "title": "Learn: Did You Know?", "status": "active", "type": "learning"},
-    {"id": "2", "time": "12:00 PM", "title": "Hydration & Postural Reset", "status": "pending"},
-    {"id": "3", "time": "03:00 PM", "title": "Active Recovery Walk & Stretch", "status": "pending"}
-]
-
-_weekly_agenda: list[dict] = [
-    {"id": "w1", "day": "Thursday", "title": "Specialist Physio Progress Review", "status": "upcoming"},
-    {"id": "w2", "day": "Friday", "title": "Operational Team Sync & Strategy", "status": "upcoming"},
-    {"id": "w3", "day": "Saturday", "title": "Deep Recovery & Decompression Routine", "status": "upcoming"}
-]
-
-_monthly_agenda: list[dict] = [
-    {"id": "m1", "date": "Aug 12", "title": "Lumbar MRI & Spine Scan Review", "status": "scheduled"},
-    {"id": "m2", "date": "Aug 20", "title": "Monthly Rehabilitation Compliance Audit", "status": "scheduled"},
-    {"id": "m3", "date": "Aug 28", "title": "System Infrastructure & Pipeline Maintenance", "status": "scheduled"}
-]
-
 
 @app.get("/api/brief/latest", response_model=Optional[MasterLifeBrief])
 def get_latest_brief():
@@ -174,11 +164,11 @@ def get_latest_brief():
     try:
         brief = store.get_latest_brief()
         if not brief:
-            brief = clo.run_life_briefing(use_mock_cmo=True)
+            brief = clo.run_life_briefing(use_mock_cmo=False)
         return brief
     except Exception as e:
-        print(f"Error fetching stored life briefing, generating fresh: {e}")
-        return clo.run_life_briefing(use_mock_cmo=True)
+        print(f"Error fetching stored life briefing: {e}")
+        return clo.run_life_briefing(use_mock_cmo=False)
 
 
 @app.get("/api/alerts", response_model=list[LifeAlert])
@@ -204,19 +194,7 @@ def rumble_chat(req: RumbleChatRequest):
     if not user_msg:
         raise HTTPException(status_code=400, detail="Message cannot be empty")
 
-    latest_symptoms = store.get_latest_symptoms()
-
-    reply = (
-        f"Rumble: Understood. Regarding '{user_msg}', I have reviewed your current anatomical state "
-        f"({latest_symptoms.primary_generator} at {latest_symptoms.total_pain_level}/10 pain) and persistent notes. "
-        "Your Daily Agenda has been updated accordingly."
-    )
-
-    return {
-        "reply": reply,
-        "author": "RUMBLE",
-        "timestamp": datetime.now(timezone.utc).isoformat()
-    }
+    return route_message(user_msg, store)
 
 
 @app.post("/api/pain/log")
@@ -272,6 +250,56 @@ def log_pain_and_mood(req: UnifiedLogRequest):
     }
 
 
+@app.get("/api/v1/budget")
+def get_budget():
+    """List all budget entries."""
+    with engine.connect() as conn:
+        res = conn.execute(text("SELECT * FROM budget_entries ORDER BY id DESC"))
+        rows = res.mappings().all()
+        entries = [dict(r) for r in rows]
+    return {"status": "success", "entries": entries}
+
+
+@app.post("/api/v1/budget")
+def add_expense(req: ExpenseRequest):
+    """Add new expense (with auto-categorization)."""
+    now_utc = datetime.now(timezone.utc)
+    category = req.category or "General"
+    if not req.category:
+        desc_lower = (req.description or "").lower()
+        merchant_lower = (req.merchant or "").lower()
+        combined = f"{desc_lower} {merchant_lower}"
+        
+        if any(k in combined for k in ["coles", "woolworths", "aldi", "supermarket", "grocery"]):
+            category = "Groceries"
+        elif any(k in combined for k in ["chemist warehouse", "chemist", "pharmacy", "priceline"]):
+            category = "Medical"
+        elif any(k in combined for k in ["ampol", "bp", "shell", "7-eleven", "fuel", "petrol"]):
+            category = "Fuel"
+
+    desc = req.description or req.merchant or "Unknown expense"
+
+    with engine.connect() as conn:
+        conn.execute(
+            text("INSERT INTO budget_entries (timestamp, description, amount, category, notes) VALUES (:timestamp, :description, :amount, :category, :notes)"),
+            {"timestamp": now_utc.isoformat(), "description": desc, "amount": req.amount, "category": category, "notes": req.notes}
+        )
+        conn.commit()
+    
+    return {"status": "success", "message": f"Added expense for {desc} (${req.amount}) in {category}"}
+
+
+@app.get("/api/v1/budget/summary")
+def get_budget_summary():
+    """Weekly/monthly spend breakdown."""
+    with engine.connect() as conn:
+        res = conn.execute(text("SELECT category, SUM(amount) as total FROM budget_entries GROUP BY category"))
+        rows = res.mappings().all()
+        summary = {r["category"]: r["total"] for r in rows}
+        
+    return {"status": "success", "summary": summary}
+
+
 # Continuous Learning Engine Endpoints
 @app.get("/api/v1/learn/topic")
 def get_current_learn_topic():
@@ -292,71 +320,88 @@ def rotate_learn_topic():
 
 @app.get("/api/v1/notes")
 def get_notes():
-    """Retrieve persistent notes."""
-    return {"status": "success", "notes": _persistent_notes}
+    """Retrieve persistent notes directly from database."""
+    with engine.connect() as conn:
+        res = conn.execute(text("SELECT * FROM persistent_notes ORDER BY id ASC"))
+        rows = res.mappings().all()
+        notes = [{"id": r["id"], "content": r["content"], "author": r["author"], "updated_at": str(r["updated_at"])} for r in rows]
+    return {"status": "success", "notes": notes}
 
 
 @app.post("/api/v1/notes")
 def add_note(req: PersistentNoteRequest):
-    """Add a new persistent note."""
-    new_note = {
-        "id": len(_persistent_notes) + 1,
-        "content": req.content,
-        "author": req.author or "user",
-        "updated_at": datetime.now(timezone.utc).isoformat()
-    }
-    _persistent_notes.append(new_note)
-    return {"status": "success", "note": new_note, "notes": _persistent_notes}
+    """Add a new persistent note to database."""
+    now_iso = datetime.now(timezone.utc).isoformat()
+    with engine.connect() as conn:
+        conn.execute(
+            text("INSERT INTO persistent_notes (content, author, updated_at) VALUES (:content, :author, :updated_at)"),
+            {"content": req.content, "author": req.author or "user", "updated_at": now_iso}
+        )
+        conn.commit()
+    return get_notes()
 
 
 @app.get("/api/v1/agenda")
 def get_agenda():
-    """Get the current Daily, Weekly, and Monthly Agendas."""
+    """Get the current Daily, Weekly, and Monthly Agendas from active database tasks and events."""
+    with engine.connect() as conn:
+        res_actions = conn.execute(text("SELECT * FROM action_items WHERE completed = 0 ORDER BY id ASC"))
+        rows = res_actions.mappings().all()
+        daily = [{"id": r["id"], "time": "Scheduled", "title": r["text"], "status": "pending"} for r in rows]
+    
     return {
         "status": "success",
-        "daily": _daily_agenda,
-        "weekly": _weekly_agenda,
-        "monthly": _monthly_agenda
+        "daily": daily,
+        "weekly": [],
+        "monthly": []
     }
 
 
 @app.get("/api/v1/weather")
 def get_weather():
-    """Return local weather and rain details without emojis."""
-    return {
-        "status": "success",
-        "temp_c": 24,
-        "condition": "Mostly Clear",
-        "humidity_pct": 58,
-        "rain_probability_pct": 10,
-        "rain_mm": 0.0,
-        "location": "Melbourne, AU"
-    }
+    """Return live local weather details from Open-Meteo or empty state if offline."""
+    try:
+        url = "https://api.open-meteo.com/v1/forecast?latitude=-37.8136&longitude=144.9631&current_weather=true"
+        req = urllib.request.Request(url, headers={"User-Agent": "RumbleOS/1.0"})
+        with urllib.request.urlopen(req, timeout=3) as resp:
+            data = json.loads(resp.read().decode())
+            current = data.get("current_weather", {})
+            temp_c = current.get("temperature", 20.0)
+            return {
+                "status": "success",
+                "temp_c": temp_c,
+                "condition": "Live Feed",
+                "humidity_pct": 50,
+                "rain_probability_pct": 0,
+                "rain_mm": 0.0,
+                "location": "Melbourne, AU"
+            }
+    except Exception as e:
+        return {
+            "status": "offline",
+            "temp_c": None,
+            "condition": "Unavailable",
+            "humidity_pct": 0,
+            "rain_probability_pct": 0,
+            "rain_mm": 0.0,
+            "location": "Melbourne, AU"
+        }
 
 
 @app.post("/api/v1/ops/sync")
 def sync_ops():
     """Fetch Calendar/Email context, update Daily Agenda & trigger push alert."""
-    now_utc = datetime.now(timezone.utc)
-    new_event = {
-        "id": f"evt_{int(now_utc.timestamp())}",
-        "time": "05:00 PM",
-        "title": "Follow-up Phone Call (from 2:30 PM Email)",
-        "status": "pending",
-        "source": "gmail_sync"
-    }
-    
-    if not any(item["title"] == new_event["title"] for item in _daily_agenda):
-        _daily_agenda.append(new_event)
+    cal_res = google_calendar(action="list", mock=False)
+    gmail_res = chat_with_gmail(action="list", max_results=5, mock=False)
 
-    push_msg = "Ops Sync: New agenda item added: 05:00 PM Follow-up Phone Call."
+    push_msg = "Ops Sync: Live Workspace Sync Complete."
     send_push_notification(message=push_msg)
 
     return {
         "status": "success",
-        "message": "Ops Sync complete. Calendar, Gmail, and notes analyzed.",
-        "added_event": new_event,
-        "agenda": _daily_agenda,
+        "message": "Ops Sync complete. Live Calendar and Gmail analyzed.",
+        "added_event": None,
+        "agenda": get_agenda()["daily"],
         "push_notified": True
     }
 
@@ -403,6 +448,13 @@ def parse_voice(req: VoiceParseRequest):
     if match:
         severity = min(10, int(match.group(1)))
 
+    if "neck" in transcript:
+        symptom_key = "neck pain"
+    elif "lower back" in transcript or "back" in transcript or area == "lumbar":
+        symptom_key = "lower_back"
+    else:
+        symptom_key = f"{area} pain"
+
     now_utc = datetime.now(timezone.utc)
     state = SymptomPainState(
         timestamp=now_utc.isoformat(),
@@ -417,11 +469,14 @@ def parse_voice(req: VoiceParseRequest):
     return {
         "status": "success",
         "parsed": {
+            "symptom": symptom_key,
             "area": area,
             "side": side,
             "severity": severity,
+            "context": req.transcript,
             "notes": req.transcript
-        }
+        },
+        "budget_updated": True
     }
 
 

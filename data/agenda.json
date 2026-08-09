@@ -1,0 +1,25 @@
+{
+  "daily": [
+    {
+      "id": "task_1",
+      "time": "08:00 AM",
+      "title": "Morning Rehab Routine & Hydration",
+      "status": "pending",
+      "category": "rehab"
+    },
+    {
+      "id": "task_2",
+      "time": "12:30 PM",
+      "title": "Midday Lumbar Micro-Break & Walk",
+      "status": "pending",
+      "category": "break"
+    },
+    {
+      "id": "task_3",
+      "time": "06:00 PM",
+      "title": "Evening Core Activation & Journal",
+      "status": "pending",
+      "category": "rehab"
+    }
+  ]
+}

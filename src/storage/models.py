@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Column, Integer, String, Text, Date, DateTime, JSON
+from sqlalchemy import Column, Integer, String, Text, Date, DateTime, JSON, Boolean, Float
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.types import TypeDecorator
@@ -75,3 +75,57 @@ class DashboardUsageLog(Base):
     context = Column(JSONVariant)
     timestamp = Column(DateTime)
 
+class MasterBriefModel(Base):
+    __tablename__ = 'master_briefs'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    timestamp = Column(String, nullable=False)
+    date = Column(String, nullable=False)
+    headline_summary = Column(Text, nullable=False)
+    raw_brief_json = Column(Text, nullable=False)
+
+class AlertModel(Base):
+    __tablename__ = 'alerts'
+
+    id = Column(String, primary_key=True)
+    timestamp = Column(String, nullable=False)
+    severity = Column(String, nullable=False)
+    category = Column(String, nullable=False)
+    title = Column(String, nullable=False)
+    summary = Column(Text, nullable=False)
+    action_required = Column(Text, nullable=False)
+    resolved = Column(Integer, default=0)
+
+class ActionItemModel(Base):
+    __tablename__ = 'action_items'
+
+    id = Column(String, primary_key=True)
+    brief_id = Column(Integer, nullable=True)
+    text = Column(Text, nullable=False)
+    category = Column(String, nullable=False)
+    completed = Column(Integer, default=0)
+    linked_id = Column(String, nullable=True)
+    spoon_cost = Column(Float, default=0.0)
+
+class SymptomLogModel(Base):
+    __tablename__ = 'symptom_logs'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    timestamp = Column(String, nullable=False)
+    date = Column(String, nullable=False)
+    time_slot = Column(String, nullable=False)
+    total_pain_level = Column(Integer, nullable=False)
+    primary_generator = Column(String, nullable=False)
+    primary_percentage = Column(Integer, nullable=False)
+    active_symptoms_json = Column(Text, nullable=False)
+    notes = Column(Text, nullable=True)
+
+class BudgetEntryModel(Base):
+    __tablename__ = 'budget_entries'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    timestamp = Column(String, nullable=False)
+    description = Column(String, nullable=False)
+    amount = Column(Float, nullable=False)
+    category = Column(String, nullable=False)
+    notes = Column(Text, nullable=True)

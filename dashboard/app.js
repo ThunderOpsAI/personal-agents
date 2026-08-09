@@ -1,15 +1,28 @@
 document.addEventListener('DOMContentLoaded', () => {
     
+    function showToast(message, type = 'error') {
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 4000);
+    }
+
     // --- API Endpoints ---
-    const API_REFLECTION_USAGE = '/api/v1/reflection/usage';
-    const API_AGENDA_COMPLETE = '/api/v1/protocols/complete';
-    const API_PAIN_LOG = '/api/v1/pain/log';
-    const API_RUMBLE_CHAT = '/api/v1/rumble/chat';
-    const API_NOTES = '/api/v1/notes';
-    const API_OPS_SYNC = '/api/v1/ops/sync';
-    const API_WEATHER = '/api/v1/weather';
-    const API_LEARN_TOPIC = '/api/v1/learn/topic';
-    const API_LEARN_ROTATE = '/api/v1/learn/rotate';
+    const API_BASE = (window.NEXT_PUBLIC_API_URL) || (typeof process !== 'undefined' && process.env && process.env.NEXT_PUBLIC_API_URL) || '';
+    const API_REFLECTION_USAGE = `${API_BASE}/api/v1/reflection/usage`;
+    const API_AGENDA_COMPLETE = `${API_BASE}/api/v1/protocols/complete`;
+    const API_PAIN_LOG = `${API_BASE}/api/v1/pain/log`;
+    const API_RUMBLE_CHAT = `${API_BASE}/api/v1/rumble/chat`;
+    const API_NOTES = `${API_BASE}/api/v1/notes`;
+    const API_OPS_SYNC = `${API_BASE}/api/v1/ops/sync`;
+    const API_WEATHER = `${API_BASE}/api/v1/weather`;
+    const API_LEARN_TOPIC = `${API_BASE}/api/v1/learn/topic`;
+    const API_LEARN_ROTATE = `${API_BASE}/api/v1/learn/rotate`;
+    const API_AGENDA = `${API_BASE}/api/v1/agenda`;
+    const API_HEALTHZ = `${API_BASE}/healthz`;
+    const API_BUDGET = `${API_BASE}/api/v1/budget`;
+    const API_BUDGET_SUMMARY = `${API_BASE}/api/v1/budget/summary`;
 
     // --- DOM Elements ---
     const alertBanner = document.getElementById('alertBanner');
@@ -28,6 +41,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnOpenNotes = document.getElementById('btnOpenNotes');
     
     const agendaStream = document.getElementById('agendaStream');
+    const weeklyAgendaList = document.getElementById('weeklyAgendaList');
+    const monthlyAgendaList = document.getElementById('monthlyAgendaList');
 
     // Continuous Learning Card Elements
     const learnCategoryTag = document.getElementById('learnCategoryTag');
@@ -98,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Server Status Checker ---
     async function checkServerHealth() {
         try {
-            const res = await fetch('/healthz', { method: 'GET' });
+            const res = await fetch(API_HEALTHZ, { method: 'GET' });
             if (!res.ok) throw new Error("Offline");
             btnSyncOps.classList.remove('btn-offline');
             if (btnSyncOps.innerText === 'Offline') {
@@ -118,13 +133,82 @@ document.addEventListener('DOMContentLoaded', () => {
             const res = await fetch(API_WEATHER);
             if (res.ok) {
                 const data = await res.json();
-                weatherWidget.innerHTML = `<span class="weather-text">Weather: ${data.temp_c}°C • ${data.condition} • Rain: ${data.rain_probability_pct}% (${data.rain_mm}mm)</span>`;
+                if (data.temp_c !== null && data.temp_c !== undefined) {
+                    weatherWidget.innerHTML = `<span class="weather-text">Weather: ${data.temp_c}°C • ${data.condition} • Rain: ${data.rain_probability_pct}% (${data.rain_mm}mm)</span>`;
+                } else {
+                    weatherWidget.innerHTML = `<span class="weather-text">Weather: Offline</span>`;
+                }
             }
         } catch (e) {
-            weatherWidget.innerHTML = `<span class="weather-text">Weather: 24°C • Mostly Clear • Rain: 10% (0.0mm)</span>`;
+            weatherWidget.innerHTML = `<span class="weather-text">Weather: Offline</span>`;
         }
     }
     loadWeather();
+
+    // --- Agenda Loader ---
+    async function loadAgenda() {
+        try {
+            const res = await fetch(API_AGENDA);
+            if (res.ok) {
+                const data = await res.json();
+                const dailyItems = data.daily || [];
+                const countBadge = document.getElementById('agendaCount');
+                if (countBadge) countBadge.textContent = `${dailyItems.length} Items`;
+                
+                if (dailyItems.length > 0) {
+                    dailyItems.forEach(item => {
+                        const card = document.createElement('div');
+                        card.className = 'protocol-card glass-panel';
+                        card.id = `protocol-${item.id}`;
+                        card.innerHTML = `
+                            <div class="protocol-info">
+                                <h3>${item.time}</h3>
+                                <p>${item.title}</p>
+                            </div>
+                            <div class="protocol-actions">
+                                <button class="btn btn-neon-purple btn-show-me" data-id="${item.id}">Show Me</button>
+                                <button class="btn btn-neon-green btn-done" data-id="${item.id}">Done</button>
+                            </div>
+                        `;
+                        agendaStream.appendChild(card);
+                        attachCardEvents(card);
+                    });
+                }
+                
+                if (weeklyAgendaList) {
+                    weeklyAgendaList.innerHTML = '';
+                    if (data.weekly && data.weekly.length > 0) {
+                        data.weekly.forEach(w => {
+                            const div = document.createElement('div');
+                            div.className = 'agenda-item';
+                            div.innerHTML = `<span class="agenda-date">${w.day || w.date}</span><span class="agenda-text">${w.title}</span>`;
+                            weeklyAgendaList.appendChild(div);
+                        });
+                    } else {
+                        weeklyAgendaList.innerHTML = '<div class="agenda-item"><span class="agenda-text">No weekly events.</span></div>';
+                    }
+                }
+
+                if (monthlyAgendaList) {
+                    monthlyAgendaList.innerHTML = '';
+                    if (data.monthly && data.monthly.length > 0) {
+                        data.monthly.forEach(m => {
+                            const div = document.createElement('div');
+                            div.className = 'agenda-item';
+                            div.innerHTML = `<span class="agenda-date">${m.date}</span><span class="agenda-text">${m.title}</span>`;
+                            monthlyAgendaList.appendChild(div);
+                        });
+                    } else {
+                        monthlyAgendaList.innerHTML = '<div class="agenda-item"><span class="agenda-text">No monthly events.</span></div>';
+                    }
+                }
+            }
+        } catch (e) {
+            showToast('Failed to load agenda');
+            console.error(e);
+        }
+    }
+    loadAgenda();
 
     // --- Continuous Learning Topic Engine ---
     async function loadLearnTopic() {
@@ -134,7 +218,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await res.json();
                 updateLearnCard(data.topic);
             }
-        } catch (e) {}
+        } catch (e) {
+            showToast('Failed to load learn topic');
+            console.error(e);
+        }
     }
 
     function updateLearnCard(topic) {
@@ -153,7 +240,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await res.json();
                 updateLearnCard(data.topic);
             }
-        } catch (e) {}
+        } catch (e) {
+            showToast('Failed to rotate learn topic');
+            console.error(e);
+        }
         setTimeout(() => { btnLearnDifferent.innerText = "Learn Something Different"; }, 600);
     }
 
@@ -165,7 +255,6 @@ document.addEventListener('DOMContentLoaded', () => {
         modalLearnTitle.innerText = currentLearnTopic.title;
         modalLearnDetails.innerText = currentLearnTopic.details;
 
-        // Render Data Table
         modalLearnTable.innerHTML = '';
         if (currentLearnTopic.table) {
             currentLearnTopic.table.forEach(row => {
@@ -194,16 +283,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch(API_REFLECTION_USAGE);
             if (response.ok) {
                 const data = await response.json();
-                currentProposalText = data.proposal || "Maintain active posture and follow daily agenda directives.";
+                currentProposalText = data.proposal || "Chief Rumble Officer engine ready.";
                 croMessage.innerText = `Proposal: ${currentProposalText}`;
             } else {
-                currentProposalText = "Suggest adding a Micro-stretch session to your agenda.";
-                croMessage.innerText = `Proposal: ${currentProposalText}`;
+                croMessage.innerText = "Insights engine active.";
             }
             croActions.classList.remove('hidden');
         } catch (error) {
-            currentProposalText = "Suggest adding a 5-min lumbar decompression session to your agenda.";
-            croMessage.innerText = `Proposal: ${currentProposalText}`;
+            croMessage.innerText = "Insights engine active.";
             croActions.classList.remove('hidden');
         }
     }
@@ -254,10 +341,20 @@ document.addEventListener('DOMContentLoaded', () => {
             rumbleDiv.innerHTML = `<strong>RUMBLE:</strong> ${data.reply || "Understood."}`;
             rumbleChatMessages.appendChild(rumbleDiv);
             rumbleChatMessages.scrollTop = rumbleChatMessages.scrollHeight;
+
+            if (data.intent) {
+                if (data.intent === 'LOG_PAIN') {
+                    // Logic to refresh pain data if applicable
+                } else if (data.intent === 'ADD_EXPENSE') {
+                    if (typeof loadBudget === 'function') loadBudget();
+                } else if (data.intent === 'ADD_TASK') {
+                    if (typeof loadAgenda === 'function') loadAgenda();
+                }
+            }
         } catch (err) {
             const rumbleDiv = document.createElement('div');
             rumbleDiv.className = 'message rumble-message';
-            rumbleDiv.innerHTML = `<strong>RUMBLE:</strong> Logged message. Agenda updated.`;
+            rumbleDiv.innerHTML = `<strong>RUMBLE:</strong> Communication error. Unable to reach backend.`;
             rumbleChatMessages.appendChild(rumbleDiv);
             rumbleChatMessages.scrollTop = rumbleChatMessages.scrollHeight;
         }
@@ -334,10 +431,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const res = await fetch(API_NOTES);
             if (res.ok) {
                 const data = await res.json();
-                const textList = data.notes.map(n => `- ${n.content}`).join('\n');
-                notesArea.value = textList;
+                if (data.notes && data.notes.length > 0) {
+                    const textList = data.notes.map(n => `- ${n.content}`).join('\n');
+                    notesArea.value = textList;
+                } else {
+                    notesArea.value = '';
+                }
             }
-        } catch (e) {}
+        } catch (e) {
+            showToast('Failed to load notes');
+            console.error(e);
+        }
     }
 
     btnSaveNotes.addEventListener('click', async () => {
@@ -352,7 +456,7 @@ document.addEventListener('DOMContentLoaded', () => {
             notesStatus.innerText = "Saved";
             setTimeout(() => { notesStatus.innerText = "Synced with Neon DB"; }, 2000);
         } catch (e) {
-            notesStatus.innerText = "Saved locally";
+            notesStatus.innerText = "Save failed";
             setTimeout(() => { notesStatus.innerText = "Synced with Neon DB"; }, 2000);
         }
     });
@@ -429,7 +533,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ protocol_id: id })
                     });
-                } catch (err) {}
+                } catch (err) {
+                    showToast('Failed to complete agenda item');
+                    console.error(err);
+                }
 
                 setTimeout(() => {
                     card.style.transition = 'all 0.4s ease';
@@ -582,6 +689,69 @@ document.addEventListener('DOMContentLoaded', () => {
             btnLogPain.style.background = "";
             unifiedNotesInput.value = "";
         }, 2000);
-    });
+    });    // --- Budget Loader ---
+    const budgetSummaryContainer = document.getElementById('budgetSummary');
+    const budgetTotalSpent = document.getElementById('budgetTotalSpent');
+    const btnLogBudget = document.getElementById('btnLogBudget');
+
+    async function loadBudget() {
+        try {
+            const res = await fetch(API_BUDGET);
+            if (res.ok) {
+                const data = await res.json();
+                if (data.status === "success") {
+                    let summaryHtml = '';
+                    if (data.summary) {
+                        for (const [cat, val] of Object.entries(data.summary)) {
+                            if (cat !== 'Total') {
+                                summaryHtml += `<span class="badge neon-blue">${cat}: $${val}</span>`;
+                            }
+                        }
+                    }
+                    if (budgetSummaryContainer) budgetSummaryContainer.innerHTML = summaryHtml;
+                    if (budgetTotalSpent && data.summary) budgetTotalSpent.innerText = `Spent: $${data.summary.Total || 0}`;
+                }
+            }
+        } catch (e) {
+            showToast('Failed to load budget');
+            console.error(e);
+        }
+    }
+
+    if (btnLogBudget) {
+        btnLogBudget.addEventListener('click', async () => {
+            const description = document.getElementById('budgetDesc').value;
+            const amount = parseFloat(document.getElementById('budgetAmount').value);
+            const category = document.getElementById('budgetCategory').value;
+            const notes = document.getElementById('budgetNotes').value;
+
+            if (!description || isNaN(amount)) {
+                showToast('Description and valid amount required');
+                return;
+            }
+
+            try {
+                const res = await fetch(API_BUDGET, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ description, amount, category, notes })
+                });
+                if (res.ok) {
+                    showToast('Expense added successfully', 'success');
+                    document.getElementById('budgetDesc').value = '';
+                    document.getElementById('budgetAmount').value = '';
+                    document.getElementById('budgetNotes').value = '';
+                    loadBudget();
+                } else {
+                    showToast('Failed to add expense');
+                }
+            } catch (e) {
+                showToast('Failed to add expense');
+                console.error(e);
+            }
+        });
+    }
+
+    loadBudget();
 
 });

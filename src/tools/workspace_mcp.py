@@ -1,8 +1,8 @@
 """
 FastMCP Google Workspace Tools.
 
-Defines local MCP tools for Gmail (`chat_with_gmail`) and Google Calendar (`google_calendar`),
-including mock fallback capability for dry-run testing and offline operation.
+Defines local MCP tools for Gmail (`chat_with_gmail`) and Google Calendar (`google_calendar`)
+connecting to live Google Workspace APIs via OAuth2.
 """
 
 from __future__ import annotations
@@ -15,65 +15,13 @@ from src.tools.google_auth import get_google_credentials
 
 mcp = FastMCP("Google Workspace MCP Server")
 
-# Mock store for dry-run / offline testing
-MOCK_EMAILS = [
-    {
-        "id": "msg_001",
-        "sender": "dr.smith@clinic.com",
-        "subject": "Lab Results & Follow-up Appointment",
-        "snippet": "Your recent blood panel results are ready. Please review and schedule a follow-up.",
-        "priority": "High",
-        "action_required": True,
-        "summary": "Doctor Smith sent lab results with follow-up request.",
-    },
-    {
-        "id": "msg_002",
-        "sender": "billing@healthsystem.org",
-        "subject": "Statement of Account - Claim #9948",
-        "snippet": "Your EOB is ready. Outstanding balance of $120.00 is due by Aug 15.",
-        "priority": "Medium",
-        "action_required": True,
-        "summary": "Medical bill statement for Claim #9948 ($120.00).",
-    },
-    {
-        "id": "msg_003",
-        "sender": "newsletter@healthdigest.com",
-        "subject": "Weekly Wellness Tips",
-        "snippet": "Top 5 posture exercises for desk workers.",
-        "priority": "Low",
-        "action_required": False,
-        "summary": "Wellness newsletter.",
-    },
-]
-
-MOCK_CALENDAR_EVENTS = [
-    {
-        "id": "evt_001",
-        "summary": "Deep Focus / Spoons Recovery Block",
-        "start_time": "2026-07-22T09:00:00+10:00",
-        "end_time": "2026-07-22T11:30:00+10:00",
-        "location": "Home Office",
-        "is_protected_block": True,
-        "description": "Shielded energy recovery & deep work block.",
-    },
-    {
-        "id": "evt_002",
-        "summary": "Physical Therapy Session",
-        "start_time": "2026-07-22T14:00:00+10:00",
-        "end_time": "2026-07-22T15:00:00+10:00",
-        "location": "Movement Rehab Clinic",
-        "is_protected_block": False,
-        "description": "Lower back rehab exercises with therapist.",
-    },
-]
-
 
 @mcp.tool()
 def chat_with_gmail(
     action: str = "list",
     max_results: int = 5,
     query: Optional[str] = None,
-    mock: bool = True,
+    mock: bool = False,
 ) -> str:
     """
     Read, search, and triage emails from Gmail.
@@ -82,21 +30,11 @@ def chat_with_gmail(
     - action: 'list' or 'search'
     - max_results: Number of messages to fetch
     - query: Search query string (e.g., 'label:UNREAD')
-    - mock: If True, uses mock data for dry-run testing
+    - mock: Deprecated parameter kept for signature compatibility
     """
-    if mock:
-        emails = MOCK_EMAILS
-        if query:
-            q_lower = query.lower()
-            emails = [
-                e for e in MOCK_EMAILS
-                if q_lower in e["subject"].lower() or q_lower in e["snippet"].lower()
-            ]
-        return json.dumps(emails[:max_results], indent=2)
-
     creds = get_google_credentials()
     if not creds:
-        return json.dumps({"error": "Google credentials not available. Run with mock=True for dry-run testing."})
+        return json.dumps({"error": "Google Workspace credentials not available. Please authorize via OAuth2."})
 
     try:
         from googleapiclient.discovery import build
@@ -113,7 +51,6 @@ def chat_with_gmail(
             subject = headers.get("subject", "(No Subject)")
             snippet = detail.get("snippet", "")
             
-            # Simple priority heuristic based on keywords or ticket patterns
             is_high = any(k in subject.lower() or k in snippet.lower() for k in ["urgent", "action", "ticket", "ritm", "fid", "due", "important", "deakin"])
             
             summaries.append({
@@ -139,7 +76,7 @@ def google_calendar(
     start_time: Optional[str] = None,
     end_time: Optional[str] = None,
     is_protected: bool = False,
-    mock: bool = True,
+    mock: bool = False,
 ) -> str:
     """
     Inspect or update Google Calendar events.
@@ -151,38 +88,11 @@ def google_calendar(
     - start_time: Start time ISO string (for create)
     - end_time: End time ISO string (for create)
     - is_protected: Marks event as a protected recovery/focus block
-    - mock: If True, uses mock storage for dry-run testing
+    - mock: Deprecated parameter kept for signature compatibility
     """
-    global MOCK_CALENDAR_EVENTS
-
-    if mock:
-        if action == "list":
-            return json.dumps(MOCK_CALENDAR_EVENTS, indent=2)
-        elif action == "create":
-            if not summary or not start_time or not end_time:
-                return json.dumps({"error": "summary, start_time, and end_time required for create"})
-            new_evt = {
-                "id": f"evt_{len(MOCK_CALENDAR_EVENTS) + 1:03d}",
-                "summary": summary,
-                "start_time": start_time,
-                "end_time": end_time,
-                "location": "TBD",
-                "is_protected_block": is_protected,
-                "description": "Created via Executive Assistant",
-            }
-            MOCK_CALENDAR_EVENTS.append(new_evt)
-            return json.dumps({"status": "success", "event": new_evt})
-        elif action == "delete":
-            if not event_id:
-                return json.dumps({"error": "event_id required for delete"})
-            MOCK_CALENDAR_EVENTS = [e for e in MOCK_CALENDAR_EVENTS if e["id"] != event_id]
-            return json.dumps({"status": "success", "deleted_id": event_id})
-        else:
-            return json.dumps({"error": f"Unknown action '{action}'"})
-
     creds = get_google_credentials()
     if not creds:
-        return json.dumps({"error": "Google credentials not available. Run with mock=True for dry-run testing."})
+        return json.dumps({"error": "Google Workspace credentials not available. Please authorize via OAuth2."})
 
     try:
         from googleapiclient.discovery import build
