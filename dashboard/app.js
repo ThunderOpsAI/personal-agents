@@ -23,6 +23,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const API_HEALTHZ = `${API_BASE}/healthz`;
     const API_BUDGET = `${API_BASE}/api/v1/budget`;
     const API_BUDGET_SUMMARY = `${API_BASE}/api/v1/budget/summary`;
+    const API_EXERCISE_SUGGEST = `${API_BASE}/api/v1/exercises/suggest`;
+    const API_EXERCISE_RELIEF = `${API_BASE}/api/v1/exercises/relief-delta`;
+    const API_EXERCISE_REJECT = `${API_BASE}/api/v1/exercises/reject`;
 
     // --- DOM Elements ---
     const alertBanner = document.getElementById('alertBanner');
@@ -39,6 +42,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnOpenRumbleChat = document.getElementById('btnOpenRumbleChat');
     const btnSyncOps = document.getElementById('btnSyncOps');
     const btnOpenNotes = document.getElementById('btnOpenNotes');
+    const btnOpenPainLog = document.getElementById('btnOpenPainLog');
+    const btnOpenExercises = document.getElementById('btnOpenExercises');
     
     const agendaStream = document.getElementById('agendaStream');
     const weeklyAgendaList = document.getElementById('weeklyAgendaList');
@@ -78,6 +83,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const painSideSelect = document.getElementById('painSideSelect');
     const unifiedNotesInput = document.getElementById('unifiedNotesInput');
     const btnLogPain = document.getElementById('btnLogPain');
+    const painLogModal = document.getElementById('painLogModal');
+    const btnClosePainLog = document.getElementById('btnClosePainLog');
+    const btnCancelPainLog = document.getElementById('btnCancelPainLog');
+    const btnAddPainLocation = document.getElementById('btnAddPainLocation');
+    const painLocations = document.getElementById('painLocations');
+    const painWeightTotal = document.getElementById('painWeightTotal');
+    const moodEmojiButtons = document.querySelectorAll('.mood-emoji');
+    let selectedMoodEmoji = 'Neutral';
 
     // Add Area Modal Elements
     const addAreaModal = document.getElementById('addAreaModal');
@@ -88,6 +101,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const customAreaName = document.getElementById('customAreaName');
     const customAreaSide = document.getElementById('customAreaSide');
     const customAreaNotes = document.getElementById('customAreaNotes');
+
+    const exerciseModal = document.getElementById('exerciseModal');
+    const btnCloseExercises = document.getElementById('btnCloseExercises');
+    const exerciseSuggestions = document.getElementById('exerciseSuggestions');
+    const reliefModal = document.getElementById('reliefModal');
+    const btnCloseRelief = document.getElementById('btnCloseRelief');
+    const btnSkipRelief = document.getElementById('btnSkipRelief');
+    const btnSaveRelief = document.getElementById('btnSaveRelief');
+    const afterPainScore = document.getElementById('afterPainScore');
+    const reliefExerciseName = document.getElementById('reliefExerciseName');
+    let pendingProtocol = null;
 
     const runnerModal = document.getElementById('runnerModal');
     const btnCancelRunner = document.getElementById('btnCancelRunner');
@@ -422,6 +446,44 @@ document.addEventListener('DOMContentLoaded', () => {
         notesModal.classList.remove('hidden');
     });
 
+    function closePainLog() { painLogModal.classList.add('hidden'); }
+    btnOpenPainLog.addEventListener('click', () => painLogModal.classList.remove('hidden'));
+    btnClosePainLog.addEventListener('click', closePainLog);
+    btnCancelPainLog.addEventListener('click', closePainLog);
+
+    function updatePainWeightTotal() {
+        const total = [...painLocations.querySelectorAll('.pain-percentage')]
+            .reduce((sum, input) => sum + (parseInt(input.value, 10) || 0), 0);
+        painWeightTotal.innerText = `Total: ${total}%`;
+        painWeightTotal.classList.toggle('weight-invalid', total !== 100);
+        return total;
+    }
+
+    function wirePainLocationRow(row) {
+        row.querySelector('.pain-percentage').addEventListener('input', updatePainWeightTotal);
+        row.querySelector('.remove-location').addEventListener('click', () => {
+            if (painLocations.children.length > 1) row.remove();
+            updatePainWeightTotal();
+        });
+    }
+    wirePainLocationRow(painLocations.querySelector('.pain-location-row'));
+    btnAddPainLocation.addEventListener('click', () => {
+        const first = painLocations.querySelector('.pain-location-row');
+        const row = first.cloneNode(true);
+        row.querySelector('.pain-percentage').value = '0';
+        row.querySelector('.pain-area-select').value = 'knee';
+        row.querySelector('.pain-side-select').value = 'left';
+        painLocations.appendChild(row);
+        wirePainLocationRow(row);
+        updatePainWeightTotal();
+    });
+
+    moodEmojiButtons.forEach(button => button.addEventListener('click', () => {
+        moodEmojiButtons.forEach(item => item.classList.remove('active'));
+        button.classList.add('active');
+        selectedMoodEmoji = button.dataset.emoji;
+    }));
+
     btnCloseNotes.addEventListener('click', () => {
         notesModal.classList.add('hidden');
     });
@@ -526,25 +588,40 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.classList.add('completed');
                 doneBtn.innerText = "Done";
                 doneBtn.disabled = true;
+                pendingProtocol = { id, name: card.querySelector('.protocol-info p')?.innerText || id, beforePain: currentPainLevel || 1, card, doneBtn };
+                reliefExerciseName.innerText = pendingProtocol.name;
+                afterPainScore.value = pendingProtocol.beforePain;
+                reliefModal.classList.remove('hidden');
+            });
+        }
+    }
 
-                try {
-                    await fetch(API_AGENDA_COMPLETE, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ protocol_id: id })
-                    });
-                } catch (err) {
-                    showToast('Failed to complete agenda item');
-                    console.error(err);
-                }
-
+    async function finishPendingProtocol(withRelief) {
+        if (!pendingProtocol) return;
+        const payload = { protocol_id: pendingProtocol.id };
+        if (withRelief) {
+            payload.before_pain = pendingProtocol.beforePain;
+            payload.after_pain = parseInt(afterPainScore.value, 10);
+        }
+        try {
+            const res = await fetch(API_AGENDA_COMPLETE, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+            });
+            if (!res.ok) throw new Error('Completion failed');
+            const card = pendingProtocol.card;
+            reliefModal.classList.add('hidden');
+            pendingProtocol = null;
+            if (card) {
                 setTimeout(() => {
                     card.style.transition = 'all 0.4s ease';
                     card.style.opacity = '0';
                     card.style.transform = 'translateX(100%)';
                     setTimeout(() => card.remove(), 400);
-                }, 400);
-            });
+                }, 200);
+            }
+        } catch (err) {
+            showToast('Failed to complete agenda item');
+            console.error(err);
         }
     }
 
@@ -609,7 +686,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- 6. Custom Body Part Modal Window ---
-    btnOpenAddAreaModal.addEventListener('click', () => {
+    if (btnOpenAddAreaModal) btnOpenAddAreaModal.addEventListener('click', () => {
         addAreaModal.classList.remove('hidden');
         customAreaName.value = '';
         customAreaNotes.value = '';
@@ -619,10 +696,10 @@ document.addEventListener('DOMContentLoaded', () => {
         addAreaModal.classList.add('hidden');
     };
 
-    btnCloseAddArea.addEventListener('click', closeCustomAreaModal);
-    btnCancelAddArea.addEventListener('click', closeCustomAreaModal);
+    if (btnCloseAddArea) btnCloseAddArea.addEventListener('click', closeCustomAreaModal);
+    if (btnCancelAddArea) btnCancelAddArea.addEventListener('click', closeCustomAreaModal);
 
-    btnSaveCustomArea.addEventListener('click', () => {
+    if (btnSaveCustomArea) btnSaveCustomArea.addEventListener('click', () => {
         const name = customAreaName.value.trim();
         const side = customAreaSide.value;
         const notes = customAreaNotes.value.trim();
@@ -651,14 +728,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 7. Log Entry Submission ---
     btnLogPain.addEventListener('click', async () => {
-        const area = painAreaSelect.value;
-        const side = painSideSelect.value;
-        const userNotes = unifiedNotesInput.value.trim();
-        
-        let combinedNotes = userNotes;
-        if (customAreaContextMap[area]) {
-            combinedNotes = combinedNotes ? `${combinedNotes} (${customAreaContextMap[area]})` : customAreaContextMap[area];
+        const total = updatePainWeightTotal();
+        if (total !== 100) {
+            showToast('Location percentages must total 100%');
+            return;
         }
+        const generators = [...painLocations.querySelectorAll('.pain-location-row')].map(row => ({
+            area: row.querySelector('.pain-area-select').value,
+            side: row.querySelector('.pain-side-select').value,
+            percentage: parseInt(row.querySelector('.pain-percentage').value, 10)
+        }));
+        const userNotes = unifiedNotesInput.value.trim();
 
         btnLogPain.innerText = "Logged";
         btnLogPain.style.background = "var(--neon-green)";
@@ -669,19 +749,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     pain_level: currentPainLevel,
-                    generators: [{ area, side, percentage: 100 }],
-                    pain_notes: combinedNotes,
+                    generators,
+                    pain_notes: userNotes,
                     mood_level: currentMoodLevel,
-                    mood_notes: combinedNotes
+                    mood_notes: userNotes,
+                    mood_emoji: selectedMoodEmoji
                 })
             });
             const data = await res.json();
+            if (!res.ok) throw new Error(data.detail || 'Pain log failed');
             if (data.alert_triggered) {
                 alertBannerText.innerText = data.alert_message;
                 alertBanner.classList.remove('hidden');
             }
+            closePainLog();
+            showToast('Pain log saved to live database', 'success');
         } catch (e) {
-            console.log("Logged entry locally.");
+            showToast(e.message || 'Pain log could not be saved');
         }
 
         setTimeout(() => {
@@ -689,7 +773,72 @@ document.addEventListener('DOMContentLoaded', () => {
             btnLogPain.style.background = "";
             unifiedNotesInput.value = "";
         }, 2000);
-    });    // --- Budget Loader ---
+    });
+
+    // --- 8. Proactive Exercise Recommendations ---
+    async function loadExerciseSuggestions() {
+        exerciseModal.classList.remove('hidden');
+        exerciseSuggestions.innerHTML = '<p class="form-hint">Loading recommendations from your latest pain log...</p>';
+        try {
+            const res = await fetch(API_EXERCISE_SUGGEST, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    pain_level: currentPainLevel,
+                    generators: [...painLocations.querySelectorAll('.pain-location-row')].map(row => ({
+                        area: row.querySelector('.pain-area-select').value,
+                        side: row.querySelector('.pain-side-select').value,
+                        percentage: parseInt(row.querySelector('.pain-percentage').value, 10) || 0
+                    }))
+                })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.detail || 'Recommendation request failed');
+            exerciseSuggestions.innerHTML = '';
+            data.suggestions.forEach(exercise => {
+                const card = document.createElement('article');
+                card.className = 'exercise-card';
+                card.innerHTML = `<div><h3>${exercise.name}</h3><p>${exercise.instruction}</p><small>${exercise.duration_minutes} min · ${exercise.intensity}</small></div><div class="exercise-actions"><button class="btn btn-neon-green btn-sm exercise-done">Done</button><button class="btn btn-outline btn-sm exercise-reject">Dismiss</button><div class="reject-reasons hidden"><button class="btn btn-sm btn-outline reject-reason" data-reason="Too tired">Too tired</button><button class="btn btn-sm btn-outline reject-reason" data-reason="Hurts">Hurts</button></div></div>`;
+                card.querySelector('.exercise-done').addEventListener('click', () => {
+                    pendingProtocol = { id: exercise.id, name: exercise.name, beforePain: currentPainLevel };
+                    reliefExerciseName.innerText = exercise.name;
+                    afterPainScore.value = currentPainLevel;
+                    exerciseModal.classList.add('hidden');
+                    reliefModal.classList.remove('hidden');
+                });
+                const reasons = card.querySelector('.reject-reasons');
+                card.querySelector('.exercise-reject').addEventListener('click', () => reasons.classList.toggle('hidden'));
+                reasons.querySelectorAll('.reject-reason').forEach(button => button.addEventListener('click', async () => {
+                    await fetch(API_EXERCISE_REJECT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ exercise_id: exercise.id, reason: button.dataset.reason }) });
+                    card.remove();
+                }));
+                exerciseSuggestions.appendChild(card);
+            });
+        } catch (error) {
+            exerciseSuggestions.innerHTML = `<p class="form-hint">${error.message}</p>`;
+        }
+    }
+    btnOpenExercises.addEventListener('click', loadExerciseSuggestions);
+    btnCloseExercises.addEventListener('click', () => exerciseModal.classList.add('hidden'));
+    btnCloseRelief.addEventListener('click', () => reliefModal.classList.add('hidden'));
+    btnSkipRelief.addEventListener('click', () => {
+        if (pendingProtocol?.card) finishPendingProtocol(false);
+        else reliefModal.classList.add('hidden');
+    });
+    btnSaveRelief.addEventListener('click', async () => {
+        if (!pendingProtocol) return;
+        const after = parseInt(afterPainScore.value, 10);
+        if (!after || after < 1 || after > 10) return showToast('Enter a pain score from 1 to 10');
+        if (pendingProtocol.card) {
+            await finishPendingProtocol(true);
+            return;
+        }
+        await fetch(API_EXERCISE_RELIEF, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ exercise_id: pendingProtocol.id, before_pain: pendingProtocol.beforePain, after_pain: after }) });
+        reliefModal.classList.add('hidden');
+        pendingProtocol = null;
+        showToast('Relief delta saved for future recommendations', 'success');
+    });
+
+    // --- 9. Budget Loader ---
     const budgetSummaryContainer = document.getElementById('budgetSummary');
     const budgetTotalSpent = document.getElementById('budgetTotalSpent');
     const btnLogBudget = document.getElementById('btnLogBudget');

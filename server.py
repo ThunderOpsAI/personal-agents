@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import os
 import json
-import random
 import re
 import urllib.request
 from datetime import datetime, timezone
@@ -49,52 +48,12 @@ def save_json(filepath: Path, data: Any) -> None:
     temp_path.replace(filepath)
 
 def init_data_store():
-    load_json(PAIN_FILE, [
-        {
-            "id": 1,
-            "pain_score": 4,
-            "mood": 7,
-            "location_breakdown": {"lumbar": 80, "cervical": 20},
-            "notes": "Mild right lumbar tightness in morning",
-            "timestamp": datetime.now(timezone.utc).isoformat()
-        }
-    ])
-    load_json(BUDGET_FILE, [
-        {
-            "id": 1,
-            "description": "Coles Express",
-            "amount": 64.50,
-            "category": "Groceries",
-            "notes": "Weekly essential groceries",
-            "timestamp": datetime.now(timezone.utc).isoformat()
-        },
-        {
-            "id": 2,
-            "description": "Chemist Warehouse",
-            "amount": 28.95,
-            "category": "Medical",
-            "notes": "Magnesium supplements & pain patches",
-            "timestamp": datetime.now(timezone.utc).isoformat()
-        }
-    ])
-    load_json(NOTES_FILE, [
-        {
-            "id": 1,
-            "title": "Physio Follow-up",
-            "content": "Ask physiotherapist about eccentric calf raises and lumbar decompression progression.",
-            "category": "follow_up",
-            "author": "user",
-            "timestamp": datetime.now(timezone.utc).isoformat()
-        }
-    ])
+    # The legacy local server starts empty; it must never seed demo data.
+    load_json(PAIN_FILE, [])
+    load_json(BUDGET_FILE, [])
+    load_json(NOTES_FILE, [])
     load_json(VOICE_FILE, [])
-    load_json(AGENDA_FILE, {
-        "daily": [
-            {"id": "task_1", "time": "08:00 AM", "title": "Morning Rehab Routine & Hydration", "status": "pending", "category": "rehab"},
-            {"id": "task_2", "time": "12:30 PM", "title": "Midday Lumbar Micro-Break & Walk", "status": "pending", "category": "break"},
-            {"id": "task_3", "time": "06:00 PM", "title": "Evening Core Activation & Journal", "status": "pending", "category": "rehab"}
-        ]
-    })
+    load_json(AGENDA_FILE, {"daily": []})
 
 init_data_store()
 
@@ -376,17 +335,22 @@ def get_agenda():
 @app.get("/api/weather")
 @app.get("/api/v1/weather")
 def get_weather():
-    return {
-        "status": "success",
-        "temp_c": 22.0,
-        "condition": "Mostly Clear",
-        "location": "Melbourne, AU",
-        "rain_probability_pct": 10,
-        "rain_mm": 0.0,
-        "drying_recommendation_3day": {
-            "best_days": ["Tuesday", "Thursday", "Saturday"]
-        }
-    }
+    url = ("https://api.open-meteo.com/v1/forecast?latitude=-36.3536&longitude=146.3225"
+           "&current=temperature_2m,precipitation&hourly=precipitation_probability"
+           "&forecast_days=1&timezone=Australia%2FMelbourne")
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "RumbleOS/1.0"})
+        with urllib.request.urlopen(req, timeout=5) as response:
+            data = json.loads(response.read().decode())
+        current = data["current"]
+        index = data["hourly"]["time"].index(current["time"])
+        return {"status": "success", "temp_c": current["temperature_2m"],
+                "rain_probability_pct": data["hourly"]["precipitation_probability"][index],
+                "rain_mm": current["precipitation"],
+                "location": "Wangaratta, Victoria, Australia"}
+    except Exception as exc:
+        return {"status": "offline", "temp_c": None, "rain_probability_pct": None,
+                "rain_mm": None, "location": "Wangaratta, Victoria, Australia", "error": str(exc)}
 
 @app.get("/api/notes")
 @app.get("/api/v1/notes")
@@ -471,7 +435,7 @@ def learn_rotate():
             "table": [{"Tip": "Water first thing", "Amount": "500mL"}]
         }
     ]
-    return {"status": "success", "topic": random.choice(topics)}
+    return {"status": "success", "topic": topics[0]}
 
 @app.post("/api/v1/protocols/complete")
 def complete_protocol(payload: Dict[str, Any]):
@@ -480,5 +444,3 @@ def complete_protocol(payload: Dict[str, Any]):
 from fastapi.staticfiles import StaticFiles
 if (DASHBOARD_DIR / "index.html").exists():
     app.mount("/", StaticFiles(directory=str(DASHBOARD_DIR), html=True), name="dashboard")
-
-

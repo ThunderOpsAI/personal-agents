@@ -25,6 +25,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
+from pydantic import model_validator
 from sqlalchemy import text
 
 from src.agents.clo import ChiefRumbleOfficer
@@ -36,6 +37,7 @@ from src.storage.db import engine, init_db, is_postgres
 from src.storage.life_os_store import LifeOSStore
 from src.tools.workspace_mcp import chat_with_gmail, google_calendar
 from src.agents.intent_router import route_message
+from src.agents.rehab_coach import RehabCoach
 
 app = FastAPI(
     title="Rumble OS API",
@@ -83,6 +85,15 @@ class UnifiedLogRequest(BaseModel):
     pain_notes: Optional[str] = ""
     mood_level: int = Field(default=5, ge=0, le=10)
     mood_notes: Optional[str] = ""
+    mood_emoji: Optional[str] = Field(default=None, max_length=8)
+
+    @model_validator(mode="after")
+    def validate_generator_weights(self):
+        if not self.generators:
+            raise ValueError("At least one anatomical location is required")
+        if sum(item.percentage for item in self.generators) != 100:
+            raise ValueError("Anatomical location percentages must total 100")
+        return self
 
 class PersistentNoteRequest(BaseModel):
     content: str
@@ -101,6 +112,30 @@ class NotificationPushRequest(BaseModel):
 class UsageLogRequest(BaseModel):
     widget_id: str
     action: str
+
+
+class ExerciseSuggestRequest(BaseModel):
+    pain_level: int = Field(..., ge=0, le=10)
+    generators: list[PainGeneratorItem] = Field(default_factory=list)
+    limit: int = Field(default=5, ge=3, le=5)
+
+
+class ExerciseReliefRequest(BaseModel):
+    exercise_id: str = Field(..., min_length=1)
+    before_pain: int = Field(..., ge=1, le=10)
+    after_pain: int = Field(..., ge=1, le=10)
+    context: str = ""
+
+
+class ExerciseRejectionRequest(BaseModel):
+    exercise_id: str = Field(..., min_length=1)
+    reason: str = Field(..., min_length=1, max_length=80)
+    context: str = ""
+
+
+class RecalibrationDecisionRequest(BaseModel):
+    approved: bool
+    summary: str = Field(..., min_length=1)
 
 
 # Continuous Daily Learning Topics Bank
@@ -156,6 +191,7 @@ _LEARNING_TOPICS = [
 ]
 
 _current_topic_index = 0
+rehab_coach = RehabCoach()
 
 
 @app.get("/api/brief/latest", response_model=Optional[MasterLifeBrief])
@@ -216,7 +252,10 @@ def log_pain_and_mood(req: UnifiedLogRequest):
     else:
         gen_strings = ["Lumbar (Right) (100%)"]
 
-    clinical_notes = f"Pain Notes: {req.pain_notes or 'None'}. Mood Rating: {req.mood_level}/10. Mood Notes: {req.mood_notes or 'None'}."
+    clinical_notes = (
+        f"Pain Notes: {req.pain_notes or 'None'}. Mood Rating: {req.mood_level}/10. "
+        f"Mood: {req.mood_emoji or 'not selected'}. Mood Notes: {req.mood_notes or 'None'}."
+    )
 
     state = SymptomPainState(
         timestamp=now_utc.isoformat(),
@@ -243,6 +282,7 @@ def log_pain_and_mood(req: UnifiedLogRequest):
             "pain_notes": req.pain_notes,
             "mood_level": req.mood_level,
             "mood_notes": req.mood_notes,
+            "mood_emoji": req.mood_emoji,
             "timestamp": now_utc.isoformat()
         },
         "alert_triggered": alert_triggered,
@@ -349,6 +389,13 @@ def get_agenda():
         rows = res_actions.mappings().all()
         daily = [{"id": r["id"], "time": "Scheduled", "title": r["text"], "status": "pending"} for r in rows]
     
+    daily.append({
+        "id": "meditation_nightly",
+        "time": "09:00 PM",
+        "title": "Meditation Protocol",
+        "status": "pending",
+        "category": "recovery",
+    })
     return {
         "status": "success",
         "daily": daily,
@@ -359,33 +406,77 @@ def get_agenda():
 
 @app.get("/api/v1/weather")
 def get_weather():
-    """Return live local weather details from Open-Meteo or empty state if offline."""
+    """Return exact live Open-Meteo observations for Wangaratta, Victoria."""
+    latitude, longitude = -36.3536, 146.3225
+    location = "Wangaratta, Victoria, Australia"
     try:
-        url = "https://api.open-meteo.com/v1/forecast?latitude=-37.8136&longitude=144.9631&current_weather=true"
+        url = (
+            "https://api.open-meteo.com/v1/forecast?latitude=-36.3536&longitude=146.3225"
+            "&current=temperature_2m,precipitation&hourly=precipitation_probability"
+            "&forecast_days=1&timezone=Australia%2FMelbourne"
+        )
         req = urllib.request.Request(url, headers={"User-Agent": "RumbleOS/1.0"})
-        with urllib.request.urlopen(req, timeout=3) as resp:
+        with urllib.request.urlopen(req, timeout=5) as resp:
             data = json.loads(resp.read().decode())
-            current = data.get("current_weather", {})
-            temp_c = current.get("temperature", 20.0)
+            current = data["current"]
+            hourly = data["hourly"]
+            current_time = current["time"]
+            hour_index = hourly["time"].index(current_time)
             return {
                 "status": "success",
-                "temp_c": temp_c,
-                "condition": "Live Feed",
-                "humidity_pct": 50,
-                "rain_probability_pct": 0,
-                "rain_mm": 0.0,
-                "location": "Melbourne, AU"
+                "temp_c": current["temperature_2m"],
+                "condition": "Live Open-Meteo observation",
+                "rain_probability_pct": hourly["precipitation_probability"][hour_index],
+                "rain_mm": current["precipitation"],
+                "location": location,
+                "coordinates": {"latitude": latitude, "longitude": longitude},
             }
     except Exception as e:
         return {
             "status": "offline",
             "temp_c": None,
             "condition": "Unavailable",
-            "humidity_pct": 0,
-            "rain_probability_pct": 0,
-            "rain_mm": 0.0,
-            "location": "Melbourne, AU"
+            "rain_probability_pct": None,
+            "rain_mm": None,
+            "location": location,
+            "coordinates": {"latitude": latitude, "longitude": longitude},
+            "error": str(e),
         }
+
+
+@app.post("/api/exercises/suggest")
+@app.post("/api/v1/exercises/suggest")
+def suggest_exercises(req: ExerciseSuggestRequest):
+    """Suggest 3-5 exercises using the current pain log and learned preferences."""
+    suggestions = rehab_coach.suggest(req.pain_level, [item.model_dump() for item in req.generators], req.limit)
+    return {"status": "success", "suggestions": suggestions}
+
+
+@app.post("/api/exercises/relief-delta")
+@app.post("/api/v1/exercises/relief-delta")
+def log_exercise_relief_delta(req: ExerciseReliefRequest):
+    doc_id = rehab_coach.log_relief_delta(req.exercise_id, req.before_pain, req.after_pain, req.context)
+    return {"status": "success", "document_id": doc_id, "relief_delta": req.before_pain - req.after_pain}
+
+
+@app.post("/api/exercises/reject")
+@app.post("/api/v1/exercises/reject")
+def reject_exercise(req: ExerciseRejectionRequest):
+    doc_id = rehab_coach.log_rejection(req.exercise_id, req.reason, req.context)
+    return {"status": "success", "document_id": doc_id}
+
+
+@app.get("/api/exercises/recalibration")
+@app.get("/api/v1/exercises/recalibration")
+def get_exercise_recalibration():
+    return rehab_coach.weekly_recalibration()
+
+
+@app.post("/api/exercises/recalibration/decision")
+@app.post("/api/v1/exercises/recalibration/decision")
+def decide_exercise_recalibration(req: RecalibrationDecisionRequest):
+    doc_id = rehab_coach.record_recalibration_decision(req.approved, req.summary)
+    return {"status": "success", "document_id": doc_id, "approved": req.approved}
 
 
 @app.post("/api/v1/ops/sync")
@@ -482,11 +573,15 @@ def parse_voice(req: VoiceParseRequest):
 
 class ProtocolCompleteRequest(BaseModel):
     protocol_id: str
+    before_pain: Optional[int] = Field(default=None, ge=1, le=10)
+    after_pain: Optional[int] = Field(default=None, ge=1, le=10)
 
 
 @app.post("/api/v1/protocols/complete")
 @app.post("/api/v1/agenda/complete")
 def complete_protocol(req: ProtocolCompleteRequest):
+    if req.before_pain is not None and req.after_pain is not None:
+        rehab_coach.log_relief_delta(req.protocol_id, req.before_pain, req.after_pain, "agenda protocol")
     return {"status": "success", "message": f"Agenda item {req.protocol_id} marked as Done."}
 
 

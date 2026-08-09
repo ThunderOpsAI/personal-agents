@@ -45,9 +45,10 @@ Render requires `NEON_DATABASE_URL`; optional integrations use `OPENAI_API_KEY`,
 
 ## Data and Safety Invariants
 
-- Do not introduce mock, dummy, fallback, or seeded values into production dashboard paths.
+- **Strict production-data rule:** Remove mock, dummy, fallback, and seeded data from Rumble OS production paths globally. Dashboard cards, health/pain logs, notes, budgets, agendas, briefings, exercise feedback, and weather must use Neon PostgreSQL, ChromaDB, or live external APIs. Test fixtures may use isolated test doubles only.
 - Database initialization must be safe for the configured Neon/PostgreSQL environment.
 - Health logs, notes, budget entries, agenda items, and generated reports must remain auditable.
 - Email sending and calendar writes require explicit user confirmation; reads may use live OAuth credentials when available.
 - Medical reports belong in `agent_reports/` with clear dates/versioning and the existing medical disclaimer.
-- **NO EMOJIS:** Keep Rumble OS UI, logs, responses, code, and documentation text-based and professional.
+- **NO DECORATIVE EMOJIS:** Keep Rumble OS UI, logs, responses, code, and documentation text-based and professional; the fixed mood selector is the sole intentional symbol exception.
+- Exercise recommendations are preference-aware but not a diagnosis. Show a clinician-facing disclaimer where appropriate, and never recommend pushing through worsening pain.

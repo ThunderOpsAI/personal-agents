@@ -132,74 +132,14 @@
 
         </main>
 
-        <!-- Streamlined Micro Bottom Logger Bar -->
-        <nav class="quick-log-bar glass-panel micro-bar">
-            <div class="micro-bar-content">
-                
-                <!-- Left Section: Stacked Pain (Top) and Mood (Bottom) 0-10 Scales -->
-                <div class="scales-stacked-col">
-                    <div class="mini-scale-row">
-                        <span class="mini-label">Pain <span class="val-tag" id="painValDisplay">0</span></span>
-                        <div class="scale-buttons" id="painScaleButtons">
-                            <button class="btn-num pain-num active" data-val="0">0</button>
-                            <button class="btn-num pain-num" data-val="1">1</button>
-                            <button class="btn-num pain-num" data-val="2">2</button>
-                            <button class="btn-num pain-num" data-val="3">3</button>
-                            <button class="btn-num pain-num" data-val="4">4</button>
-                            <button class="btn-num pain-num" data-val="5">5</button>
-                            <button class="btn-num pain-num" data-val="6">6</button>
-                            <button class="btn-num pain-num" data-val="7">7</button>
-                            <button class="btn-num pain-num" data-val="8">8</button>
-                            <button class="btn-num pain-num" data-val="9">9</button>
-                            <button class="btn-num pain-num" data-val="10">10</button>
-                        </div>
-                    </div>
-
-                    <div class="mini-scale-row">
-                        <span class="mini-label">Mood <span class="val-tag" id="moodValDisplay">5</span></span>
-                        <div class="scale-buttons" id="moodScaleButtons">
-                            <button class="btn-num mood-num" data-val="0">0</button>
-                            <button class="btn-num mood-num" data-val="1">1</button>
-                            <button class="btn-num mood-num" data-val="2">2</button>
-                            <button class="btn-num mood-num" data-val="3">3</button>
-                            <button class="btn-num mood-num" data-val="4">4</button>
-                            <button class="btn-num mood-num active" data-val="5">5</button>
-                            <button class="btn-num mood-num" data-val="6">6</button>
-                            <button class="btn-num mood-num" data-val="7">7</button>
-                            <button class="btn-num mood-num" data-val="8">8</button>
-                            <button class="btn-num mood-num" data-val="9">9</button>
-                            <button class="btn-num mood-num" data-val="10">10</button>
-                        </div>
-                    </div>
+        <!-- Compact footer -->
+        <nav class="quick-log-bar glass-panel micro-bar" aria-label="Quick actions">
+            <div class="compact-footer-content">
+                <span class="footer-status">Rumble OS live data controls</span>
+                <div class="footer-actions">
+                    <button class="btn btn-neon-red btn-sm" id="btnOpenPainLog">Log Pain</button>
+                    <button class="btn btn-neon-purple btn-sm" id="btnOpenExercises">Explore Exercises</button>
                 </div>
-
-                <!-- Middle Section: Area Selectors -->
-                <div class="area-selectors-col">
-                    <select id="painAreaSelect" class="glass-select micro-select">
-                        <option value="lumbar" selected>Lumbar</option>
-                        <option value="cervical">Cervical</option>
-                        <option value="thoracic">Thoracic</option>
-                        <option value="ankle">Ankle</option>
-                        <option value="knee">Knee</option>
-                        <option value="shoulder">Shoulder</option>
-                        <option value="elbow">Elbow</option>
-                    </select>
-
-                    <select id="painSideSelect" class="glass-select micro-select">
-                        <option value="right" selected>Right</option>
-                        <option value="left">Left</option>
-                        <option value="both">Both</option>
-                    </select>
-
-                    <button class="btn btn-sm btn-outline" id="btnOpenAddAreaModal">+ Area</button>
-                </div>
-
-                <!-- Right Section: Single Combined Notes Input + Log Button -->
-                <div class="notes-action-col">
-                    <input type="text" id="unifiedNotesInput" class="glass-input micro-input" placeholder="Notes...">
-                    <button class="btn btn-neon-red btn-sm btn-log-action" id="btnLogPain">Log Entry</button>
-                </div>
-
             </div>
         </nav>
 
@@ -235,6 +175,63 @@
                     <button class="btn btn-outline btn-sm" id="btnRotateTopicInsideModal">Rotate New Topic</button>
                     <button class="btn btn-neon-blue btn-sm" id="btnCloseLearnDone">Got It</button>
                 </div>
+            </div>
+        </div>
+
+        <!-- Pain logging slide-up widget -->
+        <div class="modal-overlay hidden slide-up-overlay" id="painLogModal">
+            <div class="modal-content glass-panel slide-up-widget pain-log-widget">
+                <div class="modal-header">
+                    <h2>Log Pain</h2>
+                    <button class="btn-close" id="btnClosePainLog">&times;</button>
+                </div>
+                <div class="modal-body-form">
+                    <div class="form-group">
+                        <label>Pain level <span class="val-tag" id="painValDisplay">0</span>/10</label>
+                        <div class="scale-buttons scale-buttons-modal" id="painScaleButtons">
+                            <button class="btn-num pain-num active" data-val="0">0</button><button class="btn-num pain-num" data-val="1">1</button><button class="btn-num pain-num" data-val="2">2</button><button class="btn-num pain-num" data-val="3">3</button><button class="btn-num pain-num" data-val="4">4</button><button class="btn-num pain-num" data-val="5">5</button><button class="btn-num pain-num" data-val="6">6</button><button class="btn-num pain-num" data-val="7">7</button><button class="btn-num pain-num" data-val="8">8</button><button class="btn-num pain-num" data-val="9">9</button><button class="btn-num pain-num" data-val="10">10</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Anatomical locations and relative weight</label>
+                        <div id="painLocations">
+                            <div class="pain-location-row">
+                                <select class="glass-select pain-area-select" id="painAreaSelect"><option value="lumbar">Lumbar</option><option value="cervical">Cervical</option><option value="thoracic">Thoracic</option><option value="ankle">Ankle</option><option value="knee">Knee</option><option value="shoulder">Shoulder</option><option value="elbow">Elbow</option><option value="hip">Hip</option></select>
+                                <select class="glass-select pain-side-select" id="painSideSelect"><option value="right">Right</option><option value="left">Left</option><option value="both">Both</option></select>
+                                <input class="glass-input pain-percentage" type="number" min="1" max="100" value="100" aria-label="Pain percentage">
+                                <span>%</span><button class="btn btn-sm btn-outline remove-location" type="button" aria-label="Remove location">Remove</button>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-outline" id="btnAddPainLocation" type="button">+ Add location</button>
+                        <small id="painWeightTotal" class="form-hint">Total: 100%</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Mood</label>
+                        <div class="mood-emoji-selector" id="moodEmojiSelector"><button type="button" class="mood-emoji active" data-emoji="🙂" aria-label="Neutral mood">🙂</button><button type="button" class="mood-emoji" data-emoji="😌" aria-label="Calm mood">😌</button><button type="button" class="mood-emoji" data-emoji="😔" aria-label="Low mood">😔</button><button type="button" class="mood-emoji" data-emoji="😣" aria-label="Stressed mood">😣</button></div>
+                        <div class="scale-buttons scale-buttons-modal" id="moodScaleButtons"><button class="btn-num mood-num" data-val="0">0</button><button class="btn-num mood-num" data-val="1">1</button><button class="btn-num mood-num" data-val="2">2</button><button class="btn-num mood-num" data-val="3">3</button><button class="btn-num mood-num" data-val="4">4</button><button class="btn-num mood-num active" data-val="5">5</button><button class="btn-num mood-num" data-val="6">6</button><button class="btn-num mood-num" data-val="7">7</button><button class="btn-num mood-num" data-val="8">8</button><button class="btn-num mood-num" data-val="9">9</button><button class="btn-num mood-num" data-val="10">10</button></div>
+                    </div>
+                    <textarea id="unifiedNotesInput" class="glass-input notes-textarea" placeholder="Notes..."></textarea>
+                </div>
+                <div class="modal-footer"><button class="btn btn-outline" id="btnCancelPainLog">Cancel</button><button class="btn btn-neon-red" id="btnLogPain">Save pain log</button></div>
+            </div>
+        </div>
+
+        <!-- Exercise recommendation slide-up widget -->
+        <div class="modal-overlay hidden slide-up-overlay" id="exerciseModal">
+            <div class="modal-content glass-panel slide-up-widget exercise-widget">
+                <div class="modal-header"><h2>Explore Exercises</h2><button class="btn-close" id="btnCloseExercises">&times;</button></div>
+                <p class="form-hint">Suggestions are based on your latest live pain log and learned feedback.</p>
+                <div id="exerciseSuggestions" class="exercise-list"><p class="form-hint">Loading recommendations...</p></div>
+            </div>
+        </div>
+
+        <!-- Before/after relief delta widget -->
+        <div class="modal-overlay hidden" id="reliefModal">
+            <div class="modal-content glass-panel">
+                <div class="modal-header"><h2>Log Relief Delta</h2><button class="btn-close" id="btnCloseRelief">&times;</button></div>
+                <p id="reliefExerciseName" class="form-hint"></p>
+                <div class="form-group"><label>New pain score after routine (1-10)</label><input id="afterPainScore" class="glass-input" type="number" min="1" max="10" value="5"></div>
+                <div class="modal-footer"><button class="btn btn-outline" id="btnSkipRelief">Skip</button><button class="btn btn-neon-green" id="btnSaveRelief">Save outcome</button></div>
             </div>
         </div>
 

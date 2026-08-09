@@ -31,6 +31,7 @@ from src.schemas.life_os import (
 from src.schemas.medical import PersonalAdvisorBrief
 from src.schemas.ops import BriefingReport, CalendarEvent, EOBRecord, EmailPriority, EmailSummary, SpoonState
 from src.storage.life_os_store import LifeOSStore
+from src.agents.rehab_coach import RehabCoach
 from src.tools.google_auth import get_google_credentials
 from src.tools.workspace_mcp import chat_with_gmail, google_calendar
 
@@ -51,6 +52,7 @@ class ChiefRumbleOfficer:
         self.alert_engine = AlertEngine(enable_desktop_notifications=enable_desktop_notifications)
         self.debug_mode = debug_mode
         self.use_live_google_data = use_live_google_data
+        self.rehab_coach = RehabCoach()
 
     def collect_ops_report(self, energy_level: int = 6, pain_level: int = 5) -> tuple[BriefingReport, SpoonState]:
         """Fetch real emails, schedule, bills, and energy state."""
@@ -154,6 +156,13 @@ class ChiefRumbleOfficer:
                         text=rec_text,
                         category=ActionCategory.MEDICAL,
                     )
+                )
+
+        if date.today().weekday() == 6:
+            recalibration = self.rehab_coach.weekly_recalibration()
+            if recalibration["rules"] or recalibration["constraints"]:
+                consolidated_actions.append(
+                    "Sunday exercise recalibration is ready for explicit approval or rejection."
                 )
 
         for alert in active_alerts:
