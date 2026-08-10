@@ -95,8 +95,8 @@ def test_exercise_feedback_loop_and_recalibration():
 def test_agenda_contains_nightly_meditation():
     response = client.get("/api/v1/agenda")
     assert response.status_code == 200
-    meditation = [item for item in response.json()["daily"] if item["id"] == "meditation_nightly"]
-    assert meditation and meditation[0]["time"] == "09:00 PM"
+    meditation = [item for item in response.json()["daily"] if item["title"] == "Meditation Protocol"]
+    assert {item["time"] for item in meditation} == {"09:00 PM", "12:00 AM"}
 
 
 def test_weather_parses_exact_open_meteo_response(monkeypatch):

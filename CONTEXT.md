@@ -1,54 +1,74 @@
-# Domain Context: Rumble OS
+# Rumble OS Product Context
 
-## System Boundary and Source of Truth
+## Purpose and source of truth
 
-Rumble OS is the dashboard product in `dashboard/` plus the production FastAPI service in `src/api/server.py`. The root-level `server.py` is a legacy/local JSON-backed server and is not the Render production entrypoint. Production data must come from Neon PostgreSQL (`NEON_DATABASE_URL`) or live external integrations; seeded JSON data in `data/` is not production data.
+Rumble OS is a personal operations and recovery dashboard. The production source of truth is the static frontend in `dashboard/`, the FastAPI service in `src/api/server.py`, Neon PostgreSQL, ChromaDB, and live external integrations.
 
-## Deployment Topology
+The root `server.py` is a legacy/local JSON-backed server. It is not the Render production entrypoint and must not seed production flows.
 
-- **Frontend:** Vercel static deployment from `dashboard/`, configured by the root `vercel.json`.
-- **Backend:** Render web service named `rumble-os-backend`, configured by `render.yaml`, running `uvicorn src.api.server:app --host 0.0.0.0 --port $PORT`.
-- **Public backend URL:** `https://rumble-os-backend.onrender.com`.
-- **Routing:** Vercel rewrites `/api/*` and `/healthz` to the Render backend. The dashboard normally uses same-origin relative API paths.
-- **Health check:** `GET /healthz`.
-- **Keep-alive:** `.github/workflows/keep_alive.yml` pings the Render health endpoint every 14 minutes to reduce free-tier cold starts.
-- **Deployment automation:** `.github/workflows/deploy.yml` runs lint, tests, and a frontend build check on pushes/PRs. It does not itself deploy to Vercel or Render; those services must be connected to the GitHub repository separately.
+## Architecture and deployment
 
-The repository proves that deployment is configured, not that a current deployment is healthy. A live-status claim requires checking the Vercel URL and the Render `/healthz` response.
+- Frontend: `dashboard/`, deployed to Vercel.
+- Backend: `src/api/server.py`, deployed to Render as `rumble-os-backend`.
+- Backend command: `uvicorn src.api.server:app --host 0.0.0.0 --port $PORT`.
+- Health endpoint: `/healthz`.
+- API routes: `/api/...` and `/api/v1/...`.
+- Persistence: Neon PostgreSQL through `NEON_DATABASE_URL`; ChromaDB through `RUMBLE_CHROMA_PATH` for learned rehabilitation preferences.
+- Workspace reads: live Gmail and Google Calendar OAuth integrations.
+- Weather: direct Open-Meteo HTTP API, no LLM weather inference.
+- Vercel rewrites `/api/*` and `/healthz` to `https://rumble-os-backend.onrender.com`.
 
-## Glossary
+## Hard product non-negotiables
 
-### Dashboard Layout & Surface Architecture
+### Daily learning and recovery
 
-- **Executive Command Center:** Unified dashboard for personal operations, schedule, health monitoring, and rehabilitation protocols.
-- **Hybrid Sidebar & Timeline Layout:** Persistent left Quick-Log Sidebar with a right-hand Chronological Timeline Stream.
-- **Persistent Quick-Log Sidebar:** Sidebar for pain logging, generator tracking, doctor report exports, and pipeline sync.
-- **Chronological Timeline Stream:** Time-ordered stream grouping daily actions into protocol blocks.
+1. The general Learning card presents three rotating suggestions. The user can rotate them or enter a topic of their own choice.
+2. A separate Yoga routine is scheduled every day at 09:00 AM. It offers three choices and adapts to current pain, surgery history, clinician restrictions, and learned feedback.
+3. A Meditation Protocol is injected into the chronological agenda at 09:00 PM and 12:00 AM every night.
+4. Every week contains three hydrotherapy pool sessions. The user’s session today is retained and Rumble selects two additional days; the user can adjust the schedule before calendar writes.
 
-### Health & Recovery
+### Pain logging and learning loop
 
-- **Pain Generator:** Anatomical structure or region identified as contributing to the dominant symptom load, with a percentage weight.
-- **Symptom Log:** Record of pain severity, anatomical locations, primary generator, generator weight, and notes.
-- **Physio Routine:** Structured, time-bounded rehabilitation protocol.
-- **Doctor Report:** Markdown synthesis of pain logs, generator trends, and physio compliance for a clinician.
+- Pain entries accept a 1–10 pain score, multiple anatomical locations, side, and relative percentage weights that must total 100%.
+- Pain entries also accept the mood selector and notes.
+- Exercise suggestions return 3–5 preference-aware ad-hoc routines from `RehabCoach` and `VectorPreferenceStore`.
+- Completing a routine prompts for a new 1–10 pain score and stores the before/after relief delta in ChromaDB.
+- Dismissing a routine records a rejection reason such as `Too tired` or `Hurts`.
+- Sunday morning briefing presents learned rules for explicit approval or rejection.
+- Medical and rehabilitation guidance is decision support, not diagnosis, and must include clinician-review guidance where appropriate.
 
-### Operations & Tasks
+### Live weather and washing agenda
 
-- **Chief Rumble Officer Assessment:** Executive synthesis of system health, active alerts, and immediate priorities.
-- **Active Alert:** Urgent notification requiring attention or action.
-- **Action Item:** Prioritized task derived from multi-agent ingestion.
-- **Pipeline Ingest:** Synchronization of Google Calendar, Gmail, and agent outputs into application storage.
+- All weather displayed in Rumble OS must be live.
+- Location is fixed to Wangaratta, Victoria, Australia: latitude `-36.3536`, longitude `146.3225`.
+- Open-Meteo supplies current temperature, current precipitation, current precipitation probability, and a seven-day forecast.
+- Rumble selects exactly two washing days per week from the lowest forecast precipitation probabilities and displays the selected dates and forecast percentages.
+- If weather is unavailable, show an explicit unavailable state; never guess conditions.
 
-## Runtime Configuration
+### Agenda and calendar
 
-Render requires `NEON_DATABASE_URL`; optional integrations use `OPENAI_API_KEY`, `AGNO_API_KEY`, `TELEGRAM_BOT_TOKEN`, and `NTFY_TOPIC`. Google OAuth credentials and token storage are required for live Gmail and Calendar operations. Never commit these values or token files. Keep `.env.example` aligned with actual required variables.
+- Daily agenda includes live pending action items, daily yoga, nightly meditation, hydrotherapy, and relevant user tasks such as “Call Deakin to unlock MFA.”
+- Weekly and monthly panels pull live Google Calendar events.
+- Calendar reads may occur with available OAuth credentials. Calendar creation, modification, or deletion requires explicit user confirmation and must return the provider Event ID.
+- Completed daily items expose Dismiss. Dismiss removes the item from the active stream without destroying audit history.
 
-## Data and Safety Invariants
+## Data, safety, and privacy invariants
 
-- **Strict production-data rule:** Remove mock, dummy, fallback, and seeded data from Rumble OS production paths globally. Dashboard cards, health/pain logs, notes, budgets, agendas, briefings, exercise feedback, and weather must use Neon PostgreSQL, ChromaDB, or live external APIs. Test fixtures may use isolated test doubles only.
-- Database initialization must be safe for the configured Neon/PostgreSQL environment.
-- Health logs, notes, budget entries, agenda items, and generated reports must remain auditable.
-- Email sending and calendar writes require explicit user confirmation; reads may use live OAuth credentials when available.
-- Medical reports belong in `agent_reports/` with clear dates/versioning and the existing medical disclaimer.
-- **NO DECORATIVE EMOJIS:** Keep Rumble OS UI, logs, responses, code, and documentation text-based and professional; the fixed mood selector is the sole intentional symbol exception.
-- Exercise recommendations are preference-aware but not a diagnosis. Show a clinician-facing disclaimer where appropriate, and never recommend pushing through worsening pain.
+- Production data must come only from Neon PostgreSQL, ChromaDB, or live external APIs. No mock, dummy, demo, seeded, or hard-coded user data is permitted in production UI or API paths.
+- Empty states and integration failures must be explicit and visible.
+- Never expose secrets, OAuth tokens, database URLs, or service credentials.
+- Medical reports are persisted under `agent_reports/` with dates, versions, clean structure, and the existing disclaimer.
+- Keep product UI, logs, responses, code, and docs professional and free of decorative emoji; the mood selector is the sole intentional symbol exception.
+
+## Runtime configuration
+
+Required production configuration includes `NEON_DATABASE_URL`. Optional integrations include `OPENAI_API_KEY`, `AGNO_API_KEY`, `TELEGRAM_BOT_TOKEN`, and `NTFY_TOPIC`. Google OAuth credentials and token storage are required for live Gmail and Calendar reads/writes.
+
+## Verification standard
+
+The repository proves configuration, not deployment health. A deployment claim requires checking the deployed frontend, Render `/healthz`, and at least one read-only API request. Local development uses:
+
+```bash
+source .venv/bin/activate
+uvicorn src.api.server:app --host 0.0.0.0 --port 8000
+```

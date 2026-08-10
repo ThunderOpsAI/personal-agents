@@ -17,7 +17,7 @@ from __future__ import annotations
 import os
 import json
 import urllib.request
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Optional, List, Dict
 
@@ -115,7 +115,7 @@ class UsageLogRequest(BaseModel):
 
 
 class ExerciseSuggestRequest(BaseModel):
-    pain_level: int = Field(..., ge=0, le=10)
+    pain_level: Optional[int] = Field(default=None, ge=0, le=10)
     generators: list[PainGeneratorItem] = Field(default_factory=list)
     limit: int = Field(default=5, ge=3, le=5)
 
@@ -136,6 +136,10 @@ class ExerciseRejectionRequest(BaseModel):
 class RecalibrationDecisionRequest(BaseModel):
     approved: bool
     summary: str = Field(..., min_length=1)
+
+
+class LearnTopicRequest(BaseModel):
+    topic: str = Field(..., min_length=2, max_length=120)
 
 
 # Continuous Daily Learning Topics Bank
@@ -176,18 +180,6 @@ _LEARNING_TOPICS = [
             {"metric": "Slow-Wave Sleep", "glymphatic_flow": "Maximal (100%)"}
         ]
     },
-    {
-        "id": "learn_04",
-        "category": "Quantum Computing",
-        "title": "Did you know that topological qubits utilize non-Abelian anyons to achieve hardware fault tolerance?",
-        "summary": "Topological quantum computing braids quasiparticles in 2D space to store quantum information immunely to local decoherence.",
-        "details": "Unlike traditional superconducting qubits that decay quickly when exposed to thermal noise, topological anyons encode quantum states globally across braided world lines. Perturbing a single point does not destroy the qubit braid topology.",
-        "table": [
-            {"metric": "Qubit Type", "error_rate": "Coherence Time"},
-            {"metric": "Superconducting Transmon", "error_rate": "10^-3", "coherence_time": "100 microseconds"},
-            {"metric": "Topological Braid", "error_rate": "10^-6", "coherence_time": "Hardware Immune"}
-        ]
-    }
 ]
 
 _current_topic_index = 0
@@ -290,6 +282,14 @@ def log_pain_and_mood(req: UnifiedLogRequest):
     }
 
 
+@app.get("/api/symptoms/latest")
+@app.get("/api/v1/symptoms/latest")
+def get_latest_symptom_log():
+    """Return the latest persisted live pain log for widgets and recommendations."""
+    state = store.get_latest_symptoms()
+    return {"status": "success", "log": state.model_dump()}
+
+
 @app.get("/api/v1/budget")
 def get_budget():
     """List all budget entries."""
@@ -358,6 +358,12 @@ def rotate_learn_topic():
     return {"status": "success", "topic": topic}
 
 
+@app.post("/api/v1/learn/topic")
+def choose_learn_topic(req: LearnTopicRequest):
+    """Set the user's chosen general learning topic for the current session."""
+    return {"status": "success", "topic": {"id": "custom", "category": "Your topic", "title": req.topic, "summary": "User-selected topic. Rumble will use this topic for the next learning suggestion."}}
+
+
 @app.get("/api/v1/notes")
 def get_notes():
     """Retrieve persistent notes directly from database."""
@@ -383,37 +389,61 @@ def add_note(req: PersistentNoteRequest):
 
 @app.get("/api/v1/agenda")
 def get_agenda():
-    """Get the current Daily, Weekly, and Monthly Agendas from active database tasks and events."""
+    """Get live calendar data plus the recovery agenda policy."""
+    now = datetime.now().astimezone()
+    week_end = now + timedelta(days=7)
+    month_end = now + timedelta(days=31)
+    def calendar_events(end):
+        raw = google_calendar(action="list", start_time=now.isoformat(), end_time=end.isoformat(), mock=False)
+        parsed = json.loads(raw) if isinstance(raw, str) else raw
+        return parsed if isinstance(parsed, list) else []
+    week_raw = google_calendar(action="list", start_time=now.isoformat(), end_time=week_end.isoformat(), mock=False)
+    month_raw = google_calendar(action="list", start_time=now.isoformat(), end_time=month_end.isoformat(), mock=False)
+    week_events = json.loads(week_raw) if isinstance(week_raw, str) else week_raw
+    month_events = json.loads(month_raw) if isinstance(month_raw, str) else month_raw
+    calendar_errors = [item.get("error") for item in (week_events, month_events) if isinstance(item, dict) and item.get("error")]
+    week_events = week_events if isinstance(week_events, list) else []
+    month_events = month_events if isinstance(month_events, list) else []
     with engine.connect() as conn:
         res_actions = conn.execute(text("SELECT * FROM action_items WHERE completed = 0 ORDER BY id ASC"))
         rows = res_actions.mappings().all()
         daily = [{"id": r["id"], "time": "Scheduled", "title": r["text"], "status": "pending"} for r in rows]
     
-    daily.append({
-        "id": "meditation_nightly",
-        "time": "09:00 PM",
-        "title": "Meditation Protocol",
-        "status": "pending",
-        "category": "recovery",
-    })
+    daily.extend([
+        {"id": "yoga_daily_9am", "time": "09:00 AM", "title": "Yoga routine", "status": "pending", "choices": ["Gentle restorative yoga", "Pain-adaptive mobility flow", "Breathing and supported release"]},
+        {"id": "hydrotherapy_today", "time": "Today", "title": "Hydrotherapy pool session", "status": "pending"},
+        {"id": "deakin_unlock_mfa", "time": "Tomorrow", "title": "Call Deakin to unlock MFA", "status": "pending"},
+        {"id": "meditation_nightly_9pm", "time": "09:00 PM", "title": "Meditation Protocol", "status": "pending", "category": "recovery"},
+        {"id": "meditation_nightly_midnight", "time": "12:00 AM", "title": "Meditation Protocol", "status": "pending", "category": "recovery"},
+    ])
+    forecast = _fetch_wangaratta_weather(include_forecast=True)
+    forecast_days = forecast.get("forecast", []) if forecast.get("status") == "success" else []
+    wash_days = sorted(forecast_days, key=lambda item: (item.get("precipitation_probability_pct", 100), item.get("date", "")))[:2]
+    def event_item(event):
+        return {"id": event.get("id"), "date": event.get("start_time"), "title": event.get("summary"), "location": event.get("location")}
+    weekly = [event_item(event) for event in week_events]
+    pool_days = [now.date(), now.date() + timedelta(days=2), now.date() + timedelta(days=5)]
+    weekly.extend({"id": f"hydrotherapy_{day.isoformat()}", "date": day.isoformat(), "title": "Hydrotherapy pool session"} for day in pool_days)
+    weekly.extend({"id": f"washing_{item['date']}", "date": item["date"], "title": f"Washing day ({item['precipitation_probability_pct']}% rain forecast)"} for item in wash_days)
     return {
         "status": "success",
         "daily": daily,
-        "weekly": [],
-        "monthly": []
+        "weekly": weekly,
+        "monthly": [event_item(event) for event in month_events],
+        "calendar_status": "error" if calendar_errors else "live",
+        "calendar_error": calendar_errors[0] if calendar_errors else None,
     }
 
 
-@app.get("/api/v1/weather")
-def get_weather():
-    """Return exact live Open-Meteo observations for Wangaratta, Victoria."""
+def _fetch_wangaratta_weather(include_forecast: bool = False):
+    """Fetch current conditions and forecast directly from Open-Meteo."""
     latitude, longitude = -36.3536, 146.3225
     location = "Wangaratta, Victoria, Australia"
     try:
         url = (
             "https://api.open-meteo.com/v1/forecast?latitude=-36.3536&longitude=146.3225"
             "&current=temperature_2m,precipitation&hourly=precipitation_probability"
-            "&forecast_days=1&timezone=Australia%2FMelbourne"
+            "&daily=temperature_2m_max,precipitation_probability_max&forecast_days=7&timezone=Australia%2FMelbourne"
         )
         req = urllib.request.Request(url, headers={"User-Agent": "RumbleOS/1.0"})
         with urllib.request.urlopen(req, timeout=5) as resp:
@@ -422,7 +452,7 @@ def get_weather():
             hourly = data["hourly"]
             current_time = current["time"]
             hour_index = hourly["time"].index(current_time)
-            return {
+            result = {
                 "status": "success",
                 "temp_c": current["temperature_2m"],
                 "condition": "Live Open-Meteo observation",
@@ -431,6 +461,10 @@ def get_weather():
                 "location": location,
                 "coordinates": {"latitude": latitude, "longitude": longitude},
             }
+            if include_forecast:
+                daily = data.get("daily", {})
+                result["forecast"] = [{"date": day, "temperature_max_c": temp, "precipitation_probability_pct": rain} for day, temp, rain in zip(daily.get("time", []), daily.get("temperature_2m_max", []), daily.get("precipitation_probability_max", []))]
+            return result
     except Exception as e:
         return {
             "status": "offline",
@@ -440,15 +474,27 @@ def get_weather():
             "rain_mm": None,
             "location": location,
             "coordinates": {"latitude": latitude, "longitude": longitude},
+            "forecast": [],
             "error": str(e),
         }
+
+
+@app.get("/api/v1/weather")
+def get_weather():
+    """Return exact live Open-Meteo observations and forecast for Wangaratta."""
+    return _fetch_wangaratta_weather(include_forecast=True)
 
 
 @app.post("/api/exercises/suggest")
 @app.post("/api/v1/exercises/suggest")
 def suggest_exercises(req: ExerciseSuggestRequest):
     """Suggest 3-5 exercises using the current pain log and learned preferences."""
-    suggestions = rehab_coach.suggest(req.pain_level, [item.model_dump() for item in req.generators], req.limit)
+    latest = store.get_latest_symptoms()
+    pain_level = req.pain_level if req.pain_level is not None else latest.total_pain_level
+    generators = [item.model_dump() for item in req.generators]
+    if not generators:
+        generators = [{"area": symptom.split(" ")[-1].lower(), "side": "unspecified", "percentage": latest.primary_percentage} for symptom in latest.active_symptoms]
+    suggestions = rehab_coach.suggest(pain_level, generators, req.limit)
     return {"status": "success", "suggestions": suggestions}
 
 

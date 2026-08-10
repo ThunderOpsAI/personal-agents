@@ -98,7 +98,12 @@ def google_calendar(
         from googleapiclient.discovery import build
         service = build("calendar", "v3", credentials=creds)
         if action == "list":
-            events_result = service.events().list(calendarId="primary", maxResults=10, singleEvents=True, orderBy="startTime").execute()
+            list_kwargs = {"calendarId": "primary", "maxResults": 250, "singleEvents": True, "orderBy": "startTime"}
+            if start_time:
+                list_kwargs["timeMin"] = start_time
+            if end_time:
+                list_kwargs["timeMax"] = end_time
+            events_result = service.events().list(**list_kwargs).execute()
             items = events_result.get("items", [])
             formatted = []
             for item in items:

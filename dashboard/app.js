@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const API_REFLECTION_USAGE = `${API_BASE}/api/v1/reflection/usage`;
     const API_AGENDA_COMPLETE = `${API_BASE}/api/v1/protocols/complete`;
     const API_PAIN_LOG = `${API_BASE}/api/v1/pain/log`;
+    const API_LATEST_SYMPTOMS = `${API_BASE}/api/v1/symptoms/latest`;
     const API_RUMBLE_CHAT = `${API_BASE}/api/v1/rumble/chat`;
     const API_NOTES = `${API_BASE}/api/v1/notes`;
     const API_OPS_SYNC = `${API_BASE}/api/v1/ops/sync`;
@@ -55,6 +56,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const learnSummaryText = document.getElementById('learnSummaryText');
     const btnLearnMore = document.getElementById('btnLearnMore');
     const btnLearnDifferent = document.getElementById('btnLearnDifferent');
+    const btnChooseLearnTopic = document.getElementById('btnChooseLearnTopic');
+    const chooseLearnModal = document.getElementById('chooseLearnModal');
+    const learnTopicInput = document.getElementById('learnTopicInput');
 
     // Learn Modal Elements
     const learnModal = document.getElementById('learnModal');
@@ -158,7 +162,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (res.ok) {
                 const data = await res.json();
                 if (data.temp_c !== null && data.temp_c !== undefined) {
-                    weatherWidget.innerHTML = `<span class="weather-text">Weather: ${data.temp_c}°C • ${data.condition} • Rain: ${data.rain_probability_pct}% (${data.rain_mm}mm)</span>`;
+                    const washDays = (data.forecast || []).slice().sort((a, b) => a.precipitation_probability_pct - b.precipitation_probability_pct).slice(0, 2).map(day => day.date).join(' and ');
+                    weatherWidget.innerHTML = `<span class="weather-text">Wangaratta: ${data.temp_c}°C • Rain now ${data.rain_probability_pct}% • Wash: ${washDays || 'forecast unavailable'}</span>`;
                 } else {
                     weatherWidget.innerHTML = `<span class="weather-text">Weather: Offline</span>`;
                 }
@@ -188,10 +193,12 @@ document.addEventListener('DOMContentLoaded', () => {
                             <div class="protocol-info">
                                 <h3>${item.time}</h3>
                                 <p>${item.title}</p>
+                                ${item.choices ? `<small class="form-hint">Choose: ${item.choices.join(' · ')}</small>` : ''}
                             </div>
                             <div class="protocol-actions">
                                 <button class="btn btn-neon-purple btn-show-me" data-id="${item.id}">Show Me</button>
                                 <button class="btn btn-neon-green btn-done" data-id="${item.id}">Done</button>
+                                <button class="btn btn-outline btn-dismiss" data-id="${item.id}" disabled>Dismiss</button>
                             </div>
                         `;
                         agendaStream.appendChild(card);
@@ -209,7 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             weeklyAgendaList.appendChild(div);
                         });
                     } else {
-                        weeklyAgendaList.innerHTML = '<div class="agenda-item"><span class="agenda-text">No weekly events.</span></div>';
+                        weeklyAgendaList.innerHTML = `<div class="agenda-item"><span class="agenda-text">${data.calendar_status === 'error' ? 'Google Calendar authorization required.' : 'No events this week.'}</span></div>`;
                     }
                 }
 
@@ -223,7 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             monthlyAgendaList.appendChild(div);
                         });
                     } else {
-                        monthlyAgendaList.innerHTML = '<div class="agenda-item"><span class="agenda-text">No monthly events.</span></div>';
+                        monthlyAgendaList.innerHTML = `<div class="agenda-item"><span class="agenda-text">${data.calendar_status === 'error' ? 'Google Calendar authorization required.' : 'No events this month.'}</span></div>`;
                     }
                 }
             }
@@ -272,6 +279,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     btnLearnDifferent.addEventListener('click', rotateLearnTopic);
+    btnChooseLearnTopic.addEventListener('click', () => chooseLearnModal.classList.remove('hidden'));
+    document.getElementById('btnCloseChooseLearn').addEventListener('click', () => chooseLearnModal.classList.add('hidden'));
+    document.getElementById('btnCancelChooseLearn').addEventListener('click', () => chooseLearnModal.classList.add('hidden'));
+    document.getElementById('btnSaveChooseLearn').addEventListener('click', async () => {
+        const topic = learnTopicInput.value.trim();
+        if (!topic) return showToast('Enter a topic to continue');
+        const response = await fetch(`${API_BASE}/api/v1/learn/topic`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({topic}) });
+        if (!response.ok) return showToast('Could not save learning topic');
+        updateLearnCard((await response.json()).topic);
+        chooseLearnModal.classList.add('hidden');
+        learnTopicInput.value = '';
+    });
 
     function openLearnModal() {
         if (!currentLearnTopic) return;
@@ -588,6 +607,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.classList.add('completed');
                 doneBtn.innerText = "Done";
                 doneBtn.disabled = true;
+                const dismissBtn = card.querySelector('.btn-dismiss');
+                if (dismissBtn) {
+                    dismissBtn.disabled = false;
+                    dismissBtn.addEventListener('click', () => card.remove());
+                }
                 pendingProtocol = { id, name: card.querySelector('.protocol-info p')?.innerText || id, beforePain: currentPainLevel || 1, card, doneBtn };
                 reliefExerciseName.innerText = pendingProtocol.name;
                 afterPainScore.value = pendingProtocol.beforePain;
@@ -780,11 +804,23 @@ document.addEventListener('DOMContentLoaded', () => {
         exerciseModal.classList.remove('hidden');
         exerciseSuggestions.innerHTML = '<p class="form-hint">Loading recommendations from your latest pain log...</p>';
         try {
+            let latest = null;
+            try {
+                const latestRes = await fetch(API_LATEST_SYMPTOMS);
+                if (latestRes.ok) latest = (await latestRes.json()).log;
+            } catch (error) {
+                console.warn('Latest pain log unavailable', error);
+            }
+            const painLevel = latest?.total_pain_level ?? currentPainLevel;
+            const liveGenerators = latest?.active_symptoms?.map((value) => {
+                const match = value.match(/^(Left|Right|Both) ([^(]+) \((\d+)%\)$/i);
+                return match ? { side: match[1].toLowerCase(), area: match[2].trim().toLowerCase(), percentage: Number(match[3]) } : null;
+            }).filter(Boolean) || [];
             const res = await fetch(API_EXERCISE_SUGGEST, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    pain_level: currentPainLevel,
-                    generators: [...painLocations.querySelectorAll('.pain-location-row')].map(row => ({
+                    pain_level: painLevel,
+                    generators: liveGenerators.length ? liveGenerators : [...painLocations.querySelectorAll('.pain-location-row')].map(row => ({
                         area: row.querySelector('.pain-area-select').value,
                         side: row.querySelector('.pain-side-select').value,
                         percentage: parseInt(row.querySelector('.pain-percentage').value, 10) || 0
@@ -799,7 +835,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.className = 'exercise-card';
                 card.innerHTML = `<div><h3>${exercise.name}</h3><p>${exercise.instruction}</p><small>${exercise.duration_minutes} min · ${exercise.intensity}</small></div><div class="exercise-actions"><button class="btn btn-neon-green btn-sm exercise-done">Done</button><button class="btn btn-outline btn-sm exercise-reject">Dismiss</button><div class="reject-reasons hidden"><button class="btn btn-sm btn-outline reject-reason" data-reason="Too tired">Too tired</button><button class="btn btn-sm btn-outline reject-reason" data-reason="Hurts">Hurts</button></div></div>`;
                 card.querySelector('.exercise-done').addEventListener('click', () => {
-                    pendingProtocol = { id: exercise.id, name: exercise.name, beforePain: currentPainLevel };
+                    pendingProtocol = { id: exercise.id, name: exercise.name, beforePain: painLevel };
                     reliefExerciseName.innerText = exercise.name;
                     afterPainScore.value = currentPainLevel;
                     exerciseModal.classList.add('hidden');

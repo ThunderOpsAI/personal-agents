@@ -26,6 +26,7 @@ from rich.panel import Panel
 from src.agents.ops.habit_coach import HabitCoach
 from src.schemas.ops import BriefingReport, CalendarEvent, EOBRecord, EmailPriority, EmailSummary
 from src.tools.workspace_mcp import chat_with_gmail, google_calendar
+from src.agents.rehab_coach import RehabCoach
 
 console = Console()
 
@@ -51,11 +52,14 @@ def generate_morning_briefing(energy_level: int = 6, pain_level: int = 3) -> Bri
     # 4. Pending Medical Bills
     pending_bills = []
 
+    recalibration = RehabCoach().weekly_recalibration() if date.today().weekday() == 6 else None
     action_items = [
         f"Target maximum {spoon_state.recommended_focus_hours} hours focus time today.",
         "Review Dr. Smith lab results follow-up email.",
         "Protect 09:00 - 11:30 AM Recovery Block from meeting overrides.",
     ]
+    if recalibration:
+        action_items.append("Review and explicitly approve or reject the weekly learned exercise rules.")
 
     return BriefingReport(
         date=today_str,
