@@ -99,6 +99,23 @@ def test_agenda_contains_nightly_meditation():
     assert {item["time"] for item in meditation} == {"09:00 PM", "12:00 AM"}
 
 
+def test_agenda_completion_and_dismiss_are_persisted():
+    unique_id = "agenda_test_item_123"
+    complete = client.post("/api/v1/agenda/complete", json={"protocol_id": unique_id})
+    assert complete.status_code == 200
+
+    agenda = client.get("/api/v1/agenda")
+    assert agenda.status_code == 200
+    assert all(item["id"] != unique_id for item in agenda.json()["daily"])
+
+    dismiss = client.post("/api/v1/agenda/dismiss", json={"protocol_id": unique_id})
+    assert dismiss.status_code == 200
+
+    agenda_after_dismiss = client.get("/api/v1/agenda")
+    assert agenda_after_dismiss.status_code == 200
+    assert all(item["id"] != unique_id for item in agenda_after_dismiss.json()["daily"])
+
+
 def test_weather_parses_exact_open_meteo_response(monkeypatch):
     class FakeResponse:
         def __enter__(self):

@@ -623,12 +623,44 @@ class ProtocolCompleteRequest(BaseModel):
     after_pain: Optional[int] = Field(default=None, ge=1, le=10)
 
 
+class ProtocolDismissRequest(BaseModel):
+    protocol_id: str
+
+
+def _mark_agenda_item_state(protocol_id: str, completed: bool) -> None:
+    with engine.connect() as conn:
+        conn.execute(
+            text("""
+                INSERT INTO action_items (id, brief_id, text, category, completed, linked_id, spoon_cost)
+                VALUES (:id, :brief_id, :text, :category, :completed, :linked_id, :spoon_cost)
+                ON CONFLICT (id) DO UPDATE SET completed = EXCLUDED.completed
+            """),
+            {
+                "id": protocol_id,
+                "brief_id": None,
+                "text": protocol_id,
+                "category": "agenda",
+                "completed": 1 if completed else 0,
+                "linked_id": None,
+                "spoon_cost": 0.0,
+            },
+        )
+        conn.commit()
+
+
 @app.post("/api/v1/protocols/complete")
 @app.post("/api/v1/agenda/complete")
 def complete_protocol(req: ProtocolCompleteRequest):
     if req.before_pain is not None and req.after_pain is not None:
         rehab_coach.log_relief_delta(req.protocol_id, req.before_pain, req.after_pain, "agenda protocol")
+    _mark_agenda_item_state(req.protocol_id, completed=True)
     return {"status": "success", "message": f"Agenda item {req.protocol_id} marked as Done."}
+
+
+@app.post("/api/v1/agenda/dismiss")
+def dismiss_protocol(req: ProtocolDismissRequest):
+    _mark_agenda_item_state(req.protocol_id, completed=True)
+    return {"status": "success", "message": f"Agenda item {req.protocol_id} dismissed."}
 
 
 @app.post("/api/v1/notifications/push")

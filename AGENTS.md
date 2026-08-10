@@ -19,7 +19,7 @@ Read `CONTEXT.md` before changing terminology, agenda behavior, persistence, int
 * The general Learning card rotates through three suggestions and lets the user choose a topic.
 * A separate adaptive Yoga routine appears every day at 09:00 AM. Suggestions must account for live pain logs, surgeries, clinician restrictions, and learned rehabilitation feedback (Implemented via Subagent).
 * A Meditation Protocol appears every night at 09:00 PM and 12:00 AM (Implemented via Subagent).
-* Weekly agenda includes three hydrotherapy sessions: today's completed session plus two Rumble-selected days that the user may adjust.
+* Weekly agenda targets three hydrotherapy sessions. Rumble selects only the sessions still needed to reach three for the current week — e.g. if today's session is already completed, Rumble selects the remaining two; a week with none completed yet gets three Rumble-selected days. The user may adjust any Rumble-selected day before it is written to the calendar.
 * Weekly agenda includes exactly two washing days selected from the live Wangaratta forecast using the lowest precipitation probabilities.
 * Current weather and forecast must come directly from Open-Meteo for Wangaratta, Victoria, Australia: latitude `-36.3536`, longitude `146.3225`.
 * Weekly and monthly agenda panels must pull live Google Calendar events. If OAuth is unavailable, show an explicit authorization state; never silently invent events.
@@ -28,13 +28,32 @@ Read `CONTEXT.md` before changing terminology, agenda behavior, persistence, int
 
 ## Safety, Human-in-the-Loop, and external actions
 
-* All TypeScript tools that perform side-effects (calendar writes, email sends) must be declared with the `needsApproval` helper to durably pause execution until explicit user authorization.
+* `needsApproval` is required only for tools that create, modify, or send: Google Calendar event creation/modification/deletion, and email sends. It durably pauses execution until explicit user authorization.
+* Gmail and Google Calendar **reads** are not side-effecting and do not require `needsApproval`. They run on the automated retrieval schedule below without pausing for approval.
 * Medical output is decision support, not diagnosis. Preserve the medical disclaimer and recommend clinician review when appropriate.
 * Never recommend pushing through worsening pain or ignoring surgery/clinician restrictions.
 * Save every medical synthesis or rehabilitation protocol to `agent_reports/` with versioned, clean Markdown.
 * Confirm Google Calendar writes and email sends before execution; return the resulting Event ID or Message ID.
 * Never expose secrets from `.env`, OAuth files, database URLs, logs, commits, or reports.
 * For email or ticket summaries, always include sender/domain, subject/ticket number, read/actioned status, exact body summary, and clear action required.
+
+## Automated retrieval and agenda alerts
+
+* Gmail and Google Calendar are read automatically twice daily, at 06:00 and 14:00 Australia/Melbourne time.
+* Each retrieval evaluates new items for required action and, where action is required, injects an alert into the daily agenda at the relevant time slot rather than waiting for the user to check inbox or calendar manually.
+* Example: an email arriving that requires follow-up by 1:30 PM must surface as a visible agenda alert tied to that time, not just sit unread in Gmail.
+* Alert injection is a read-derived UI/agenda update, not a send or a calendar write, so it does not require `needsApproval`. Any resulting action the user takes (replying, creating a calendar event) does.
+
+## Orchestration and concurrency
+
+* Rumble OS build work is coordinated by an orchestrator agent that delegates to subagents per domain (agenda/persistence, controls/UI, yoga, learning, pain/rehab loop, weather/washing, calendar/email retrieval, verification).
+* Subagents that read or write the same file must never run concurrently. The orchestrator sequences any subagents with overlapping file scope one after another; only subagents with fully disjoint file scope may run in parallel.
+* Before dispatching subagents in parallel, the orchestrator must confirm their target files do not overlap. If overlap is uncertain, default to sequential.
+
+## Source-of-truth conflicts
+
+* Running code is the source of truth for current behavior. `CONTEXT.md` and `AGENTS.md` describe intended behavior.
+* If an agent finds code and documentation in conflict, it must not silently resolve the conflict in either direction (neither "fix the code to match the docs" nor "update the docs to match the code"). It must STOP and raise the conflict with the owner for a decision before proceeding.
 
 ## Engineering rules
 

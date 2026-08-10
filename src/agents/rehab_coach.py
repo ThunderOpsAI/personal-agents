@@ -76,7 +76,11 @@ class RehabCoach:
     def suggest(self, pain_level: int, generators: list[dict[str, Any]], limit: int = 5) -> list[dict[str, Any]]:
         areas = {str(item.get("area", "")).lower() for item in generators}
         query = f"pain {pain_level}/10; affected areas: {', '.join(sorted(areas)) or 'unspecified'}"
-        self.vector_store.query_preferences(query=query, n_results=12)
+        try:
+            self.vector_store.query_preferences(query=query, n_results=12)
+        except Exception:
+            # Fall back to the local preference store when embeddings are unavailable.
+            pass
         learned_records = self.vector_store.get_all_preferences()
         rejected = {
             item.get("metadata", {}).get("exercise_id")

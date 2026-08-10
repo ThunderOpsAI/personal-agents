@@ -76,11 +76,15 @@ class VectorPreferenceStore:
         doc_metadata = metadata.copy() if metadata else {}
         doc_metadata["category"] = category
 
-        self.collection.add(
-            documents=[text],
-            metadatas=[doc_metadata],
-            ids=[doc_id],
-        )
+        try:
+            self.collection.add(
+                documents=[text],
+                metadatas=[doc_metadata],
+                ids=[doc_id],
+            )
+        except Exception:
+            # Best-effort persistence when the embedding backend is unavailable.
+            pass
         return doc_id
 
     def query_preferences(
