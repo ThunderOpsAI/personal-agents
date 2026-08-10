@@ -14,7 +14,7 @@ import os
 from typing import Any, Dict, List, Optional
 
 from agno.agent import Agent
-from agno.models.openai import OpenAIChat
+from src.agents.model_config import DEFAULT_GEMINI_MODEL, gemini_model
 
 from src.schemas.ops import CalendarEvent, GuardrailDecision
 from src.tools.workspace_mcp import chat_with_gmail, google_calendar
@@ -66,12 +66,12 @@ def create_executive_assistant_agent(
     debug_mode: bool = False,
 ) -> Agent:
     """Build the Executive Personal Assistant agent equipped with FastMCP tools."""
-    resolved_model = model_id or os.getenv("ASSISTANT_MODEL_ID", "gpt-4o")
+    resolved_model = model_id or os.getenv("ASSISTANT_MODEL_ID", DEFAULT_GEMINI_MODEL)
 
     return Agent(
         name="ExecutiveAssistant",
         role="Executive Personal Assistant — Schedule & Email Manager",
-        model=OpenAIChat(id=resolved_model),
+        model=gemini_model(resolved_model),
         instructions=ASSISTANT_SYSTEM_PROMPT,
         tools=[chat_with_gmail, google_calendar],
         debug_mode=debug_mode,

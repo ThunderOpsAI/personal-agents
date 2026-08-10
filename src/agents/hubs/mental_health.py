@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Optional
 
 from agno.agent import Agent
-from agno.models.openai import OpenAIChat
+from src.agents.model_config import DEFAULT_GEMINI_MODEL, gemini_model
 
 from src.schemas.hubs import MentalHealthHubOutput
 from src.storage.spoon_store import DailySpoonState, SpoonStore
@@ -43,14 +43,14 @@ class MentalHealthHubAgent:
         db_path: Optional[str | Path] = None,
         debug_mode: bool = False,
     ) -> None:
-        self.model_id = model_id or os.getenv("MENTAL_HEALTH_MODEL_ID", "gpt-4o")
+        self.model_id = model_id or os.getenv("MENTAL_HEALTH_MODEL_ID", DEFAULT_GEMINI_MODEL)
         self.debug_mode = debug_mode
         self.store = SpoonStore(db_path=db_path)
         
         self.agent = Agent(
             name="MentalHealthHub",
             role="Mental Health & Daily Function Specialist",
-            model=OpenAIChat(id=self.model_id),
+            model=gemini_model(self.model_id),
             instructions=MENTAL_HEALTH_HUB_SYSTEM_PROMPT,
             output_schema=MentalHealthHubOutput,
             markdown=False,

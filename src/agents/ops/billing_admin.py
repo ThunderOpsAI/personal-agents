@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Optional, Union
 
 from agno.agent import Agent
-from agno.models.openai import OpenAIChat
+from src.agents.model_config import DEFAULT_GEMINI_MODEL, gemini_model
 
 from src.schemas.ops import EOBRecord
 
@@ -81,12 +81,12 @@ def create_billing_admin_agent(
     debug_mode: bool = False,
 ) -> Agent:
     """Build the Medical Billing Admin agent."""
-    resolved_model = model_id or os.getenv("BILLING_MODEL_ID", "gpt-4o")
+    resolved_model = model_id or os.getenv("BILLING_MODEL_ID", DEFAULT_GEMINI_MODEL)
 
     return Agent(
         name="BillingAdmin",
         role="Medical Billing Admin — EOB & Receipt Parser",
-        model=OpenAIChat(id=resolved_model),
+        model=gemini_model(resolved_model),
         instructions=BILLING_ADMIN_PROMPT,
         output_schema=EOBRecord,
         debug_mode=debug_mode,

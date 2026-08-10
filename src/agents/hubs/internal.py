@@ -23,7 +23,7 @@ except ImportError:
 import urllib.request
 import urllib.parse
 from agno.agent import Agent
-from agno.models.openai import OpenAIChat
+from src.agents.model_config import DEFAULT_GEMINI_MODEL, gemini_model
 
 from src.schemas.hubs import InternalHolisticHubOutput
 
@@ -108,7 +108,7 @@ class InternalHubAgent:
         chroma_path: Optional[str | Path] = None,
         debug_mode: bool = False,
     ) -> None:
-        self.model_id = model_id or os.getenv("INTERNAL_MODEL_ID", "gpt-4o")
+        self.model_id = model_id or os.getenv("INTERNAL_MODEL_ID", DEFAULT_GEMINI_MODEL)
         self.debug_mode = debug_mode
         self.chroma_path = Path(chroma_path) if chroma_path else Path(__file__).resolve().parent.parent.parent.parent / "data" / "chroma_db"
         self.chroma_path.mkdir(parents=True, exist_ok=True)
@@ -117,7 +117,7 @@ class InternalHubAgent:
         self.agent = Agent(
             name="InternalHub",
             role="Internal Medicine & Holistic Specialist",
-            model=OpenAIChat(id=self.model_id),
+            model=gemini_model(self.model_id),
             instructions=INTERNAL_HUB_SYSTEM_PROMPT,
             output_schema=InternalHolisticHubOutput,
             markdown=False,

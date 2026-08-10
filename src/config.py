@@ -19,12 +19,16 @@ _ENV_PATH = _PROJECT_ROOT / ".env"
 load_dotenv(dotenv_path=_ENV_PATH)
 
 
-def get_openai_api_key() -> str:
-    """Return the OpenAI API key or raise with a helpful message."""
-    key = os.getenv("OPENAI_API_KEY", "")
-    if not key or key.startswith("sk-..."):
+def get_gemini_api_key() -> str:
+    """Return the Gemini API key or raise with a helpful message."""
+    key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY", "")
+    if not key or key.startswith("your_"):
         raise EnvironmentError(
-            "OPENAI_API_KEY is not set. "
+            "GEMINI_API_KEY is not set. "
             "Copy .env.example → .env and add your real key."
         )
     return key
+
+
+# Backward-compatible alias for older callers; model agents now use Gemini.
+get_openai_api_key = get_gemini_api_key

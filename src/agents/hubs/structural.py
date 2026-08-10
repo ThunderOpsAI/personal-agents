@@ -14,7 +14,7 @@ from typing import Optional
 
 import fitz  # PyMuPDF
 from agno.agent import Agent
-from agno.models.openai import OpenAIChat
+from src.agents.model_config import DEFAULT_GEMINI_MODEL, gemini_model
 
 from src.schemas.hubs import StructuralHubOutput
 from src.schemas.medical import (
@@ -56,12 +56,12 @@ class StructuralHubAgent:
         model_id: Optional[str] = None,
         debug_mode: bool = False,
     ) -> None:
-        self.model_id = model_id or os.getenv("STRUCTURAL_MODEL_ID", "gpt-4o")
+        self.model_id = model_id or os.getenv("STRUCTURAL_MODEL_ID", DEFAULT_GEMINI_MODEL)
         self.debug_mode = debug_mode
         self.agent = Agent(
             name="StructuralHub",
             role="Structural & Surgical Specialist",
-            model=OpenAIChat(id=self.model_id),
+            model=gemini_model(self.model_id),
             instructions=STRUCTURAL_HUB_SYSTEM_PROMPT,
             output_schema=StructuralHubOutput,
             markdown=False,
@@ -115,7 +115,7 @@ class StructuralHubAgent:
 
                 # Call Gemini Multimodal
                 gemini_res = client.models.generate_content(
-                    model="gemini-2.0-flash",
+                    model=DEFAULT_GEMINI_MODEL,
                     contents=[
                         types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg"),
                         prompt,

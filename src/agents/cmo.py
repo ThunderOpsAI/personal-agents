@@ -4,7 +4,7 @@ Chief Medical Officer (CMO) Lead Orchestrator Agent.
 Factory function that builds the primary Agno `Agent` configured with:
   • The CMO persona system prompt.
   • Pydantic `PersonalAdvisorBrief` as the structured output schema.
-  • Configurable model backend (defaults to OpenAI gpt-4o).
+  • Configurable Gemini model backend (defaults to Gemini Flash-Lite).
   • Inter-Agent protocol for synthesizing sub-hub outputs.
 """
 
@@ -14,7 +14,7 @@ import os
 from typing import Optional
 
 from agno.agent import Agent
-from agno.models.openai import OpenAIChat
+from src.agents.model_config import DEFAULT_GEMINI_MODEL, gemini_model
 
 from src.agents.prompts import CMO_SYSTEM_PROMPT
 from src.schemas.hubs import (
@@ -37,7 +37,7 @@ def create_cmo_agent(
     ----------
     model_id : str | None
         OpenAI model identifier. Falls back to ``CMO_MODEL_ID`` env var,
-        then to ``"gpt-4o"`` as the default.
+        then to the shared Gemini Flash-Lite default.
     debug_mode : bool
         When True, enables Agno's verbose debug logging.
 
@@ -47,12 +47,12 @@ def create_cmo_agent(
         A fully-configured Agno agent ready to accept medical queries via
         ``agent.run()`` and return ``PersonalAdvisorBrief`` objects.
     """
-    resolved_model = model_id or os.getenv("CMO_MODEL_ID", "gpt-4o")
+    resolved_model = model_id or os.getenv("CMO_MODEL_ID", DEFAULT_GEMINI_MODEL)
 
     agent = Agent(
         name="CMO",
         role="Chief Medical Officer — Expert Personal Medical Research Analyst & Strategist",
-        model=OpenAIChat(id=resolved_model),
+        model=gemini_model(resolved_model),
         instructions=CMO_SYSTEM_PROMPT,
         output_schema=PersonalAdvisorBrief,
         markdown=False,  # We want raw JSON, not markdown-wrapped output

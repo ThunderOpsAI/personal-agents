@@ -10,7 +10,7 @@ import os
 from typing import Optional
 
 from agno.agent import Agent
-from agno.models.openai import OpenAIChat
+from src.agents.model_config import DEFAULT_GEMINI_MODEL, gemini_model
 
 from src.schemas.ops import SpoonState
 
@@ -60,12 +60,12 @@ def create_habit_coach_agent(
     debug_mode: bool = False,
 ) -> Agent:
     """Build the Habit & Focus Coach agent."""
-    resolved_model = model_id or os.getenv("COACH_MODEL_ID", "gpt-4o")
+    resolved_model = model_id or os.getenv("COACH_MODEL_ID", DEFAULT_GEMINI_MODEL)
 
     return Agent(
         name="HabitCoach",
         role="Habit & Focus Coach — Energy & Spoon Manager",
-        model=OpenAIChat(id=resolved_model),
+        model=gemini_model(resolved_model),
         instructions=HABIT_COACH_PROMPT,
         output_schema=SpoonState,
         debug_mode=debug_mode,
