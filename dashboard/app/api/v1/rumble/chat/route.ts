@@ -16,7 +16,8 @@ export async function POST(request: Request) {
     }
 
     const chat = await sendConversationalChat(input.message);
-    return NextResponse.json({ status: "success", reply: chat.reply, intent: chat.intent ?? "CONVERSATION", data: chat.data });
+    const disclaimer = "Medical output is decision support, not diagnosis. Preserve clinician restrictions; recommend clinician review for worsening or concerning symptoms.";
+    return NextResponse.json({ status: "success", reply: chat.reply, intent: chat.intent ?? "CONVERSATION", disclaimer, data: chat.data });
   } catch (error) {
     if (error instanceof LiveIntegrationUnavailableError) {
       return NextResponse.json({ status: "unavailable", integration: error.integration, error: "The live Rumble service is currently unavailable." }, { status: 503 });

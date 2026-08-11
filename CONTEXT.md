@@ -68,4 +68,4 @@ Rumble OS is a personal operations and recovery dashboard. The production source
 
 ## Runtime configuration
 
-Required production configuration includes `NEON_DATABASE_URL`. Optional integrations include `OPENAI_API_KEY`, `AGNO_API_KEY`, `TELEGRAM_BOT_TOKEN`, and `NTFY_TOPIC`. Google OAuth credentials and token storage are required for live Gmail and Calendar reads/writes.
+Required production configuration includes `NEON_DATABASE_URL` and `GEMINI_API_KEY`. Gemini is the model backing `/api/v1/rumble/chat` dynamic agent responses. Optional integrations include `OPENAI_API_KEY`, `AGNO_API_KEY`, `TELEGRAM_BOT_TOKEN`, and `NTFY_TOPIC`. Google OAuth credentials and token storage are required for live Gmail and Calendar reads/writes.

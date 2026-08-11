@@ -53,7 +53,7 @@ export class LiveIntegrationUnavailableError extends Error {
   }
 }
 
-const MEDICAL_GUARDRAIL =
+export const MEDICAL_GUARDRAIL =
   "Medical output is decision support, not diagnosis. Preserve clinician restrictions; recommend clinician review for worsening or concerning symptoms.";
 
 function configuredUrl(name: "RUMBLE_EVE_CHAT_URL" | "RUMBLE_EVE_PAIN_LOG_URL" | "RUMBLE_EVE_REHAB_URL", integration: "chat" | "pain-log" | "exercises") {
@@ -86,6 +86,45 @@ async function postLiveJson(url: string, body: unknown, integration: "chat" | "p
 }
 
 export async function sendConversationalChat(message: string): Promise<EveChatResult> {
+  if (process.env.GEMINI_API_KEY) {
+    const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GEMINI_API_KEY}`;
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          systemInstruction: {
+            parts: [{ text: MEDICAL_GUARDRAIL }],
+          },
+          contents: [{ role: "user", parts: [{ text: message }] }],
+        }),
+      });
+    } catch {
+      throw new LiveIntegrationUnavailableError("chat", "Gemini API service unreachable");
+    }
+
+    if (!response.ok) {
+      throw new LiveIntegrationUnavailableError("chat", `Gemini API returned HTTP ${response.status}`);
+    }
+
+    let data: any;
+    try {
+      data = await response.json();
+    } catch {
+      throw new LiveIntegrationUnavailableError("chat", "Invalid JSON from Gemini API");
+    }
+
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (typeof text !== "string" || !text.trim()) {
+      throw new LiveIntegrationUnavailableError("chat", "Gemini API returned empty response");
+    }
+
+    const reply = text.includes(MEDICAL_GUARDRAIL) ? text : `${text}\n\n${MEDICAL_GUARDRAIL}`;
+    return { reply, intent: "CONVERSATION", data: { model, disclaimer: MEDICAL_GUARDRAIL } };
+  }
+
   const result = await postLiveJson(
     configuredUrl("RUMBLE_EVE_CHAT_URL", "chat"),
     { message, mode: "conversation", safety: { medical_guardrail: MEDICAL_GUARDRAIL } },
