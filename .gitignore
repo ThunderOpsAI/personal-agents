@@ -35,3 +35,11 @@ htmlcov/
 token.json
 credentials.json
 *.db
+
+# Debug artifacts generated during Rumble OS development
+RUMBLE OS debugging.docx
+~$MBLE OS debugging.docx
+
+# Next.js build artefacts and dependencies (should remain local)
+dashboard/.next/
+dashboard/node_modules/

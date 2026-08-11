@@ -1,0 +1,30 @@
+{
+  "name": "rumble-os-local",
+  "interface": {
+    "displayName": "Rumble OS Local Plugins"
+  },
+  "plugins": [
+    {
+      "name": "i-have-adhd",
+      "source": {
+        "source": "local",
+        "path": "./.agents/plugins/i-have-adhd"
+      },
+      "policy": {
+        "installation": "AVAILABLE"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "code-review-graph",
+      "source": {
+        "source": "local",
+        "path": "./.agents/plugins/code-review-graph"
+      },
+      "policy": {
+        "installation": "AVAILABLE"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}
