@@ -374,7 +374,10 @@ document.addEventListener('DOMContentLoaded', () => {
         rumbleChatModal.classList.add('hidden');
     });
 
-    async function sendRumbleChatMessage(textToSend) {
+    let pendingChatAction = null;
+
+
+    async function sendRumbleChatMessage(textToSend, explicitAction) {
         const msg = (textToSend || rumbleChatInput.value).trim();
         if (!msg) return;
 
@@ -385,27 +388,73 @@ document.addEventListener('DOMContentLoaded', () => {
         rumbleChatInput.value = '';
         rumbleChatMessages.scrollTop = rumbleChatMessages.scrollHeight;
 
+        const isConfirmation = explicitAction || (pendingChatAction && /^(?:yes|confirm|confirmed|save|commit|proceed|do it|add it)\b/i.test(msg));
+        const actionToCommit = explicitAction || (isConfirmation ? pendingChatAction : null);
+
+        const payload = {
+            message: msg,
+            proposal_context: currentProposalText,
+            ...(actionToCommit ? { confirm_action: actionToCommit } : {})
+        };
+
         try {
             const response = await fetch(API_RUMBLE_CHAT, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: msg, proposal_context: currentProposalText })
+                body: JSON.stringify(payload)
             });
             const data = await response.json();
             
             const rumbleDiv = document.createElement('div');
             rumbleDiv.className = 'message rumble-message';
             rumbleDiv.innerHTML = `<strong>RUMBLE:</strong> ${data.reply || "Understood."}`;
+
+            if (data.requires_confirmation && data.preview) {
+                pendingChatAction = data.preview;
+                const actionsRow = document.createElement('div');
+                actionsRow.style.cssText = 'margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;';
+                
+                const btnConfirm = document.createElement('button');
+                btnConfirm.className = 'btn btn-neon-green btn-sm';
+                btnConfirm.innerText = 'Confirm';
+                btnConfirm.onclick = () => {
+                    actionsRow.remove();
+                    sendRumbleChatMessage('Confirm', data.preview);
+                };
+
+                const btnCancel = document.createElement('button');
+                btnCancel.className = 'btn btn-outline btn-sm';
+                btnCancel.innerText = 'Cancel';
+                btnCancel.onclick = () => {
+                    pendingChatAction = null;
+                    actionsRow.remove();
+                    const cancelNote = document.createElement('small');
+                    cancelNote.style.color = 'var(--text-muted)';
+                    cancelNote.innerText = 'Action cancelled.';
+                    rumbleDiv.appendChild(cancelNote);
+                };
+
+                actionsRow.appendChild(btnConfirm);
+                actionsRow.appendChild(btnCancel);
+                rumbleDiv.appendChild(actionsRow);
+            } else if (actionToCommit && data.status === 'success') {
+                pendingChatAction = null;
+            }
+
             rumbleChatMessages.appendChild(rumbleDiv);
             rumbleChatMessages.scrollTop = rumbleChatMessages.scrollHeight;
 
             if (data.intent) {
-                if (data.intent === 'LOG_PAIN') {
-                    // Logic to refresh pain data if applicable
+                if (data.intent === 'ADD_NOTE' && actionToCommit) {
+                    if (typeof loadNotes === 'function') loadNotes();
+                    showToast('Note saved to notebook', 'success');
+                } else if (data.intent === 'LOG_PAIN' && actionToCommit) {
+                    showToast('Pain log recorded', 'success');
+                } else if (data.intent === 'ADD_TASK' && actionToCommit) {
+                    if (typeof loadAgenda === 'function') loadAgenda();
+                    showToast('Task added to agenda', 'success');
                 } else if (data.intent === 'ADD_EXPENSE') {
                     if (typeof loadBudget === 'function') loadBudget();
-                } else if (data.intent === 'ADD_TASK') {
-                    if (typeof loadAgenda === 'function') loadAgenda();
                 }
             }
         } catch (err) {
@@ -421,6 +470,7 @@ document.addEventListener('DOMContentLoaded', () => {
     rumbleChatInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') sendRumbleChatMessage();
     });
+
 
     // Voice Input inside Rumble Chat Modal
     let chatRecognition = null;
