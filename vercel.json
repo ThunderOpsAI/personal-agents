@@ -1,11 +1,6 @@
 {
   "version": 2,
-  "cleanUrls": true,
-  "crons": [
-    {
-      "path": "/api/v1/retrieval/scan?cron=true",
-      "schedule": "0 * * * *"
-    }
-  ]
+  "cleanUrls": true
 }
+
 
