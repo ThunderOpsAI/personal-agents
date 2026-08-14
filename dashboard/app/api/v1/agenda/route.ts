@@ -85,8 +85,15 @@ export async function GET(request: Request) {
       };
     });
 
+    const parseEventDate = (e: any): Date => {
+      const raw = typeof e.start === "string" ? e.start : e.start?.dateTime || e.start?.date || e.scheduled_time;
+      if (!raw) return now;
+      const d = new Date(raw);
+      return isNaN(d.getTime()) ? now : d;
+    };
+
     const weekly = calendarEvents.map((e: any) => {
-      const d = new Date(e.start || e.scheduled_time || now);
+      const d = parseEventDate(e);
       const dayStr = d.toLocaleDateString("en-AU", { weekday: "short", day: "numeric", month: "short", timeZone: "Australia/Melbourne" });
       return {
         date: d.toISOString().split("T")[0],
@@ -97,7 +104,7 @@ export async function GET(request: Request) {
     });
 
     const monthly = calendarEvents.map((e: any) => {
-      const d = new Date(e.start || e.scheduled_time || now);
+      const d = parseEventDate(e);
       const dateStr = d.toLocaleDateString("en-AU", { day: "numeric", month: "short", timeZone: "Australia/Melbourne" });
       return {
         date: dateStr,
@@ -105,6 +112,7 @@ export async function GET(request: Request) {
         type: "calendar",
       };
     });
+
 
     return NextResponse.json({
       status: "success",
