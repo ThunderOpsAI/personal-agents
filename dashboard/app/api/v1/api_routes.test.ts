@@ -201,7 +201,7 @@ describe("API Routes Suite (dashboard/app/api/v1/api_routes.test.ts)", () => {
   describe("5. Agenda API: GET & POST /api/v1/agenda", () => {
     it("supports creating, listing, and updating agenda items", async () => {
       // 1. GET empty items
-      const getRes1 = await agendaGet();
+      const getRes1 = await agendaGet(new Request("https://rumble.test/api/v1/agenda"));
       expect(getRes1.status).toBe(200);
       const getData1 = await getRes1.json();
       expect(getData1.status).toBe("success");
@@ -223,8 +223,9 @@ describe("API Routes Suite (dashboard/app/api/v1/api_routes.test.ts)", () => {
       expect(createData.item.title).toBe("Morning Stretching Routine");
       const createdId = createData.item.id;
 
-      // 3. GET list after creation
-      const getRes2 = await agendaGet();
+      // 3. GET verify created item
+      const getRes2 = await agendaGet(new Request("https://rumble.test/api/v1/agenda"));
+      expect(getRes2.status).toBe(200);
       const getData2 = await getRes2.json();
       expect(getData2.items).toHaveLength(1);
       expect(getData2.items[0].id).toBe(createdId);

@@ -1,14 +1,71 @@
 import { NextResponse } from "next/server";
 import { createAgendaItem, getAgendaItems, getDbStatus, updateAgendaItemStatus } from "../../../../lib/db";
 import { AgendaItemStatus } from "../../../../lib/schema";
+import { ensureStandingTasks } from "../../../../lib/agenda-engine";
+import { fetchLiveCalendarEvents, getGoogleAuthUrl } from "../../../../lib/google-auth";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const url = request && request.url ? new URL(request.url) : null;
+    const view = url?.searchParams.get("view") || "daily";
+
+
+
+
+    // 1. Fetch persistent agenda items from Neon / SQLite
     const items = await getAgendaItems();
     const dbStatus = getDbStatus();
+
+
+    // 2. Fetch live Google Calendar events within the view window
+    const now = new Date();
+    let timeMin: string | undefined;
+    let timeMax: string | undefined;
+
+    if (view === "daily") {
+      const startOfDay = new Date(now);
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date(now);
+      endOfDay.setHours(23, 59, 59, 999);
+      timeMin = startOfDay.toISOString();
+      timeMax = endOfDay.toISOString();
+    } else if (view === "weekly") {
+      const startOfWeek = new Date(now);
+      startOfWeek.setDate(now.getDate() - now.getDay());
+      startOfWeek.setHours(0, 0, 0, 0);
+      const endOfWeek = new Date(startOfWeek);
+      endOfWeek.setDate(startOfWeek.getDate() + 7);
+      timeMin = startOfWeek.toISOString();
+      timeMax = endOfWeek.toISOString();
+    } else if (view === "monthly") {
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+      timeMin = startOfMonth.toISOString();
+      timeMax = endOfMonth.toISOString();
+    }
+
+    const calendarResult = await fetchLiveCalendarEvents({ timeMin, timeMax });
+
+    let calendarStatus: "connected" | "auth_required" | "error" = "connected";
+    let calendarEvents: any[] = [];
+    let authUrl: string | undefined;
+
+    if (calendarResult.status === "auth_required") {
+      calendarStatus = "auth_required";
+      authUrl = calendarResult.authUrl || getGoogleAuthUrl();
+    } else if (calendarResult.status === "success") {
+      calendarEvents = calendarResult.events || [];
+    } else {
+      calendarStatus = "error";
+    }
+
     return NextResponse.json({
       status: "success",
+      view,
       items,
+      calendar_status: calendarStatus,
+      calendar_events: calendarEvents,
+      ...(authUrl ? { authUrl } : {}),
       db_status: dbStatus,
     });
   } catch (error) {
@@ -18,6 +75,7 @@ export async function GET() {
     );
   }
 }
+
 
 export async function POST(request: Request) {
   let body: any;

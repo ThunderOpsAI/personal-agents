@@ -1,16 +1,11 @@
 {
   "version": 2,
-  "framework": null,
-  "outputDirectory": "dashboard",
   "cleanUrls": true,
-  "rewrites": [
+  "crons": [
     {
-      "source": "/api/:path*",
-      "destination": "https://rumble-os-backend.onrender.com/api/:path*"
-    },
-    {
-      "source": "/healthz",
-      "destination": "https://rumble-os-backend.onrender.com/healthz"
+      "path": "/api/v1/retrieval/scan?cron=true",
+      "schedule": "0 * * * *"
     }
   ]
 }
+

@@ -1,5 +1,15 @@
 import { NextResponse } from "next/server";
 import { logPain } from "../../../../../lib/rehab-learning";
+import { createPainLog, getPainLogsFromDb } from "../../../../../lib/db";
+
+export async function GET() {
+  try {
+    const logs = await getPainLogsFromDb();
+    return NextResponse.json({ status: "success", logs });
+  } catch (error) {
+    return NextResponse.json({ status: "error", error: "Failed to retrieve pain logs" }, { status: 500 });
+  }
+}
 
 export async function POST(request: Request) {
   let body: any;
@@ -14,11 +24,27 @@ export async function POST(request: Request) {
   }
 
   const result = logPain(body);
-  if (!result.success) {
+  if (!result.success || !result.entry) {
     return NextResponse.json(
       { status: "error", error: "Validation failed", details: result.errors },
       { status: 400 }
     );
+  }
+
+  try {
+    await createPainLog({
+      id: result.entry.id,
+      score: result.entry.score,
+      locations: result.entry.locations.map((loc) => ({
+        area: loc.area,
+        side: loc.side,
+        percentage: loc.weight,
+      })),
+      mood: result.entry.mood,
+      notes: result.entry.notes,
+    });
+  } catch {
+    // Database write best effort if memory succeeded
   }
 
   return NextResponse.json(
@@ -26,3 +52,4 @@ export async function POST(request: Request) {
     { status: 201 }
   );
 }
+

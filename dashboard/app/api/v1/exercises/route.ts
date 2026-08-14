@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import { getLiveExerciseSuggestions, LiveIntegrationUnavailableError } from "../../../../lib/rumble-integrations";
 
-export const runtime = "edge";
-
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const painLevelStr = searchParams.get("pain_level");

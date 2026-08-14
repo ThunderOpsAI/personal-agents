@@ -85,64 +85,45 @@ async function postLiveJson(url: string, body: unknown, integration: "chat" | "p
   }
 }
 
-export async function sendConversationalChat(message: string): Promise<EveChatResult> {
-  if (process.env.GEMINI_API_KEY) {
-    const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GEMINI_API_KEY}`;
-    let response: Response;
-    try {
-      response = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          systemInstruction: {
-            parts: [{ text: MEDICAL_GUARDRAIL }],
-          },
-          contents: [{ role: "user", parts: [{ text: message }] }],
-        }),
-      });
-    } catch {
-      throw new LiveIntegrationUnavailableError("chat", "Gemini API service unreachable");
+export async function sendConversationalChat(message: string): Promise<EveChatResult & { requires_confirmation?: boolean; preview?: any }> {
+  if (process.env.RUMBLE_EVE_CHAT_URL && !process.env.GEMINI_API_KEY) {
+    const result = await postLiveJson(
+      configuredUrl("RUMBLE_EVE_CHAT_URL", "chat"),
+      { message, mode: "conversation", safety: { medical_guardrail: MEDICAL_GUARDRAIL } },
+      "chat",
+    );
+    if (!isRecord(result) || typeof result.reply !== "string" || !result.reply.trim()) {
+      throw new LiveIntegrationUnavailableError("chat", "chat integration returned an invalid response");
     }
-
-    if (!response.ok) {
-      throw new LiveIntegrationUnavailableError("chat", `Gemini API returned HTTP ${response.status}`);
-    }
-
-    let data: any;
-    try {
-      data = await response.json();
-    } catch {
-      throw new LiveIntegrationUnavailableError("chat", "Invalid JSON from Gemini API");
-    }
-
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (typeof text !== "string" || !text.trim()) {
-      throw new LiveIntegrationUnavailableError("chat", "Gemini API returned empty response");
-    }
-
-    const reply = text.includes(MEDICAL_GUARDRAIL) ? text : `${text}\n\n${MEDICAL_GUARDRAIL}`;
-    return { reply, intent: "CONVERSATION", data: { model, disclaimer: MEDICAL_GUARDRAIL } };
+    return { reply: result.reply, intent: typeof result.intent === "string" ? result.intent : undefined, data: result.data };
   }
 
-  const result = await postLiveJson(
-    configuredUrl("RUMBLE_EVE_CHAT_URL", "chat"),
-    { message, mode: "conversation", safety: { medical_guardrail: MEDICAL_GUARDRAIL } },
-    "chat",
-  );
-  if (!isRecord(result) || typeof result.reply !== "string" || !result.reply.trim()) {
-    throw new LiveIntegrationUnavailableError("chat", "chat integration returned an invalid response");
-  }
-  return { reply: result.reply, intent: typeof result.intent === "string" ? result.intent : undefined, data: result.data };
+  // Use TypeScript Intent Router
+  const { routeChatMessage } = await import("./agents/intent-router");
+  const routed = await routeChatMessage(message);
+  return {
+    reply: routed.reply,
+    intent: routed.intent,
+    data: routed.data,
+    requires_confirmation: routed.requires_confirmation,
+    preview: routed.preview,
+  };
 }
 
 export async function persistConfirmedPainLog(log: ConfirmedPainLog): Promise<unknown> {
-  return postLiveJson(
-    configuredUrl("RUMBLE_EVE_PAIN_LOG_URL", "pain-log"),
-    { ...log, source: "rumble_chat", confirmed: true },
-    "pain-log",
-  );
+  if (process.env.RUMBLE_EVE_PAIN_LOG_URL) {
+    return postLiveJson(
+      configuredUrl("RUMBLE_EVE_PAIN_LOG_URL", "pain-log"),
+      { ...log, source: "rumble_chat", confirmed: true },
+      "pain-log",
+    );
+  }
+
+  const { executeConfirmedAction } = await import("./agents/intent-router");
+  const res = await executeConfirmedAction({ type: "pain_log", data: log });
+  return res.result;
 }
+
 
 export async function getLiveExerciseSuggestions(input: ExerciseSuggestionInput): Promise<ExerciseSuggestion[]> {
   const result = await postLiveJson(

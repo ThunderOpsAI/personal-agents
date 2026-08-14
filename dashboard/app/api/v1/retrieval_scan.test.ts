@@ -1,8 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { POST, GET } from "./retrieval/scan/route";
 import { closeDb, initDb, getAgendaItems } from "../../../lib/db";
-import * as gmailTools from "../../../../agent/tools/gmail";
-import * as calendarTools from "../../../../agent/tools/calendar";
+import * as googleAuth from "../../../lib/google-auth";
 import fs from "fs";
 import path from "path";
 
@@ -29,7 +28,8 @@ describe("API Route: POST /api/v1/retrieval/scan (dashboard/app/api/v1/retrieval
   });
 
   it("executes retrieval scan, extracts action alerts, and injects them into daily agenda", async () => {
-    vi.spyOn(gmailTools.getGmailMessages, "execute").mockResolvedValue({
+    vi.spyOn(googleAuth, "fetchLiveGmailMessages").mockResolvedValue({
+      status: "success",
       messages: [
         {
           id: "msg_hostplus_due_1330",
@@ -42,10 +42,10 @@ describe("API Route: POST /api/v1/retrieval/scan (dashboard/app/api/v1/retrieval
           actionRequired: true,
         },
       ],
-      oauthStatus: { authenticated: true },
     });
 
-    vi.spyOn(calendarTools.getCalendarEvents, "execute").mockResolvedValue({
+    vi.spyOn(googleAuth, "fetchLiveCalendarEvents").mockResolvedValue({
+      status: "success",
       events: [
         {
           id: "evt_action_req_1",
@@ -56,10 +56,9 @@ describe("API Route: POST /api/v1/retrieval/scan (dashboard/app/api/v1/retrieval
           status: "confirmed",
         },
       ],
-      oauthStatus: { authenticated: true },
     });
 
-    const response = await POST();
+    const response = await POST(new Request("https://rumble.test/api/v1/retrieval/scan"));
     expect(response.status).toBe(200);
 
     const data = await response.json();
@@ -83,16 +82,16 @@ describe("API Route: POST /api/v1/retrieval/scan (dashboard/app/api/v1/retrieval
   });
 
   it("supports GET /api/v1/retrieval/scan as well", async () => {
-    vi.spyOn(gmailTools.getGmailMessages, "execute").mockResolvedValue({
+    vi.spyOn(googleAuth, "fetchLiveGmailMessages").mockResolvedValue({
+      status: "success",
       messages: [],
-      oauthStatus: { authenticated: true },
     });
-    vi.spyOn(calendarTools.getCalendarEvents, "execute").mockResolvedValue({
+    vi.spyOn(googleAuth, "fetchLiveCalendarEvents").mockResolvedValue({
+      status: "success",
       events: [],
-      oauthStatus: { authenticated: true },
     });
 
-    const response = await GET();
+    const response = await GET(new Request("https://rumble.test/api/v1/retrieval/scan"));
     expect(response.status).toBe(200);
     const data = await response.json();
     expect(data.status).toBe("success");
@@ -100,14 +99,56 @@ describe("API Route: POST /api/v1/retrieval/scan (dashboard/app/api/v1/retrieval
   });
 
   it("returns 500 error status if retrieval execution throws exception", async () => {
-    vi.spyOn(gmailTools.getGmailMessages, "execute").mockRejectedValue(
+    vi.spyOn(googleAuth, "fetchLiveGmailMessages").mockRejectedValue(
       new Error("Gmail API error")
     );
 
-    const response = await POST();
+    const response = await POST(new Request("https://rumble.test/api/v1/retrieval/scan"));
     expect(response.status).toBe(500);
     const data = await response.json();
     expect(data.status).toBe("error");
     expect(data.error).toBe("Failed to execute retrieval scan");
   });
+
+
+
+  describe("DST-Safe Melbourne Timezone Handling", () => {
+    it("correctly evaluates 06:00 Melbourne time in non-DST winter (AEST UTC+10)", async () => {
+      const { getMelbourneHour, isRetrievalWindow } = await import("../../../lib/retrieval-schedule");
+      // 2026-07-15 06:00 AEST is 2026-07-14 20:00 UTC
+      const winterDate0600 = new Date("2026-07-14T20:00:00Z");
+      expect(getMelbourneHour(winterDate0600)).toBe(6);
+      expect(isRetrievalWindow(winterDate0600)).toBe(true);
+
+      // 2026-07-15 14:00 AEST is 2026-07-15 04:00 UTC
+      const winterDate1400 = new Date("2026-07-15T04:00:00Z");
+      expect(getMelbourneHour(winterDate1400)).toBe(14);
+      expect(isRetrievalWindow(winterDate1400)).toBe(true);
+
+      // 2026-07-15 10:00 AEST is outside window
+      const winterDate1000 = new Date("2026-07-15T00:00:00Z");
+      expect(getMelbourneHour(winterDate1000)).toBe(10);
+      expect(isRetrievalWindow(winterDate1000)).toBe(false);
+    });
+
+    it("correctly evaluates 06:00 Melbourne time in DST summer (AEDT UTC+11)", async () => {
+      const { getMelbourneHour, isRetrievalWindow } = await import("../../../lib/retrieval-schedule");
+      // 2026-01-15 06:00 AEDT is 2026-01-14 19:00 UTC
+      const summerDate0600 = new Date("2026-01-14T19:00:00Z");
+      expect(getMelbourneHour(summerDate0600)).toBe(6);
+      expect(isRetrievalWindow(summerDate0600)).toBe(true);
+
+      // 2026-01-15 14:00 AEDT is 2026-01-15 03:00 UTC
+      const summerDate1400 = new Date("2026-01-15T03:00:00Z");
+      expect(getMelbourneHour(summerDate1400)).toBe(14);
+      expect(isRetrievalWindow(summerDate1400)).toBe(true);
+
+      // 2026-01-15 10:00 AEDT is outside window
+      const summerDate1000 = new Date("2026-01-14T23:00:00Z");
+      expect(getMelbourneHour(summerDate1000)).toBe(10);
+      expect(isRetrievalWindow(summerDate1000)).toBe(false);
+    });
+  });
+
 });
+

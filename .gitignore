@@ -43,3 +43,5 @@ RUMBLE OS debugging.docx
 # Next.js build artefacts and dependencies (should remain local)
 dashboard/.next/
 dashboard/node_modules/
+*.tsbuildinfo
+

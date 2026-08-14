@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
 
-export const runtime = "edge";
-
 const LATITUDE = -36.3536;
 const LONGITUDE = 146.3225;
 const TIMEZONE = "Australia/Melbourne";

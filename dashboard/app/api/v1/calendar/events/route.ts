@@ -1,51 +1,35 @@
 import { NextResponse } from "next/server";
-
-export const runtime = "edge";
+import { fetchLiveCalendarEvents, getGoogleAuthUrl } from "../../../../../lib/google-auth";
 
 export async function GET(request: Request) {
-  const token = process.env.GOOGLE_CALENDAR_ACCESS_TOKEN || process.env.GOOGLE_OAUTH_TOKEN;
-  const calendarId = process.env.GOOGLE_CALENDAR_ID || "primary";
 
-  if (!token) {
+  const { searchParams } = new URL(request.url);
+  const timeMin = searchParams.get("timeMin") || undefined;
+  const timeMax = searchParams.get("timeMax") || undefined;
+
+  const result = await fetchLiveCalendarEvents({ timeMin, timeMax });
+
+  if (result.status === "auth_required") {
     return NextResponse.json(
-      { status: "auth_required", message: "Google Calendar authorization required" },
+      {
+        status: "auth_required",
+        message: result.message || "Google Calendar authorization required",
+        authUrl: result.authUrl || getGoogleAuthUrl(),
+      },
       { status: 401 }
     );
   }
 
-  const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events`;
-
-  try {
-    const res = await fetch(url, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (res.status === 401 || res.status === 403) {
-      return NextResponse.json(
-        { status: "auth_required", message: "Google Calendar authorization required" },
-        { status: res.status }
-      );
-    }
-
-    if (!res.ok) {
-      return NextResponse.json(
-        { status: "error", message: `Google Calendar API error: ${res.statusText}` },
-        { status: res.status }
-      );
-    }
-
-    const data = await res.json();
-    return NextResponse.json({
-      status: "success",
-      events: data.items || [],
-    });
-  } catch (error) {
+  if (result.status === "error") {
     return NextResponse.json(
-      { status: "error", message: "Failed to connect to Google Calendar service" },
+      { status: "error", message: result.message || "Failed to connect to Google Calendar service" },
       { status: 500 }
     );
   }
+
+  return NextResponse.json({
+    status: "success",
+    events: result.events || [],
+  });
 }
+

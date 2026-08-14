@@ -2,8 +2,6 @@ import { NextResponse } from "next/server";
 import { getLiveExerciseSuggestions, LiveIntegrationUnavailableError } from "../../../../../lib/rumble-integrations";
 import { parseExerciseSuggestionRequest } from "../../../../../lib/rumble-request-validation";
 
-export const runtime = "edge";
-
 export async function POST(request: Request) {
   const payload = await request.json().catch(() => null);
   const input = parseExerciseSuggestionRequest(payload);

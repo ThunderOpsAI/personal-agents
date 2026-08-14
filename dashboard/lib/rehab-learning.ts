@@ -1,5 +1,7 @@
 import fs from 'fs';
 import path from 'path';
+import { saveExercisePreference } from './db';
+
 
 export interface PainLocationWeight {
   area: string;
@@ -222,6 +224,8 @@ export function completeRoutine(input: RoutineCompletionInput): {
 
   chromaPreferenceStore.push(record);
   persistToChromaStoreFile(record);
+  saveExercisePreference(record).catch(() => {});
+
 
   // Generate Sunday Briefing Rule based on relief delta
   if (reliefDelta >= 2) {
