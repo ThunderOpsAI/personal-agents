@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Rumble OS - Command Center</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Background Orbs for Glassmorphism -->
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+    <div class="bg-orb orb-3"></div>
+
+    <div class="app-container">
+        
+        <!-- Glass Header -->
+        <header class="glass-header">
+            <div class="header-content">
+                <div class="brand">
+                    <h1>Rumble OS</h1>
+                    <!-- Weather & Rain Widget -->
+                    <div class="weather-widget" id="weatherWidget">
+                        <span class="weather-text">Weather: Loading live Wangaratta data...</span>
+                    </div>
+                </div>
+                
+                <div class="header-actions">
+                    <button class="btn btn-sm btn-neon-blue" id="btnOpenRumbleChat">Rumble</button>
+                    <button class="btn btn-sm btn-outline" id="btnOpenNotes">Notes</button>
+                    <button class="btn btn-sm btn-outline btn-sync" id="btnSyncOps">Sync</button>
+                </div>
+            </div>
+            
+            <!-- Dynamic Alert Banner -->
+            <div class="alert-banner hidden" id="alertBanner">
+                <span class="alert-text" id="alertBannerText">High Pain Alert: Lumbar at 8/10.</span>
+            </div>
+        </header>
+
+        <!-- Main Content Grid -->
+        <main class="main-content">
+            
+            <!-- Rumble Insight Widget -->
+            <section class="widget glass-panel" id="croWidget">
+                <div class="widget-header">
+                    <h2>Rumble Insight</h2>
+                    <span class="badge neon-blue">New Proposal</span>
+                </div>
+                <div class="widget-body">
+                    <p id="croMessage">Loading insights from Chief Rumble Officer engine...</p>
+                </div>
+                <div class="widget-actions hidden" id="croActions">
+                    <button class="btn btn-outline" id="btnDismissCro">Dismiss</button>
+                    <button class="btn btn-neon-blue" id="btnAcceptCro">Accept Proposal</button>
+                    <button class="btn btn-neon-purple" id="btnDiscussCro">Discuss</button>
+                </div>
+            </section>
+
+            <!-- Daily Agenda Stream -->
+            <section class="agenda-section">
+                <div class="section-header">
+                    <h2>Daily Agenda</h2>
+                    <span class="badge neon-green" id="agendaCount">4 Items</span>
+                </div>
+                
+                <div class="agenda-stream" id="agendaStream">
+                    <!-- Daily Learning Card -->
+                    <div class="protocol-card glass-panel learn-card" id="protocol-learn">
+                        <div class="protocol-info">
+                            <h3>07:30 AM <span class="badge neon-blue" id="learnCategoryTag">Artificial Intelligence</span></h3>
+                            <p id="learnTitleText">Loading continuous learning topic...</p>
+                            <span class="learn-summary-sub" id="learnSummaryText">Fetching topic details...</span>
+                        </div>
+                    <div class="protocol-actions learn-actions-grid">
+                        <button class="btn btn-neon-blue btn-sm" id="btnLearnMore">Learn More</button>
+                        <button class="btn btn-outline btn-sm" id="btnLearnDifferent">Rotate Suggestion</button>
+                        <button class="btn btn-outline btn-sm" id="btnChooseLearnTopic">Choose Topic</button>
+                    </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Side-by-Side Weekly & Monthly Agenda -->
+            <div class="agenda-grid-row">
+                <!-- This Week Panel -->
+                <section class="widget glass-panel agenda-panel">
+                    <div class="widget-header">
+                        <h2>This Week</h2>
+                        <span class="badge neon-blue">Weekly Agenda</span>
+                    </div>
+                    <div class="agenda-list" id="weeklyAgendaList">
+                        <!-- Dynamic Agenda Items -->
+                    </div>
+                </section>
+
+                <!-- This Month Panel -->
+                <section class="widget glass-panel agenda-panel">
+                    <div class="widget-header">
+                        <h2>This Month</h2>
+                        <span class="badge neon-purple">Monthly Agenda</span>
+                    </div>
+                    <div class="agenda-list" id="monthlyAgendaList">
+                        <!-- Dynamic Agenda Items -->
+                    </div>
+                </section>
+            </div>
+
+            <!-- Budget Widget -->
+            <section class="widget glass-panel" id="budgetWidget">
+                <div class="widget-header">
+                    <h2>Budget Overview</h2>
+                    <span class="badge neon-green" id="budgetTotalSpent">Spent: $0</span>
+                </div>
+                <div class="budget-body" id="budgetSummary" style="margin-bottom: 14px; display: flex; flex-wrap: wrap; gap: 8px;">
+                    <!-- Dynamic Summary -->
+                </div>
+                <div class="budget-form" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <input type="text" id="budgetDesc" class="glass-input" placeholder="Description" style="flex: 1; min-width: 150px; padding: 8px;">
+                    <input type="number" id="budgetAmount" class="glass-input" placeholder="Amount" style="width: 100px; padding: 8px;">
+                    <select id="budgetCategory" class="glass-select" style="padding: 8px;">
+                        <option value="Groceries">Groceries</option>
+                        <option value="Medical">Medical</option>
+                        <option value="Transport">Transport</option>
+                        <option value="Entertainment">Entertainment</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <input type="text" id="budgetNotes" class="glass-input" placeholder="Notes" style="flex: 1; min-width: 150px; padding: 8px;">
+                    <button class="btn btn-neon-green" id="btnLogBudget">Add Expense</button>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Compact footer -->
+        <nav class="quick-log-bar glass-panel micro-bar" aria-label="Quick actions">
+            <div class="compact-footer-content">
+                <span class="footer-status">Rumble OS live data controls</span>
+                <div class="footer-actions">
+                    <button class="btn btn-neon-red btn-sm" id="btnOpenPainLog">Log Pain</button>
+                    <button class="btn btn-neon-purple btn-sm" id="btnOpenExercises">Explore Exercises</button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Modals -->
+
+        <!-- Deep-Dive Continuous Learning Modal Window -->
+        <div class="modal-overlay hidden" id="learnModal">
+            <div class="modal-content glass-panel learn-modal-content">
+                <div class="modal-header">
+                    <h2 id="modalLearnTitle">Deep-Dive Explanation</h2>
+                    <button class="btn-close" id="btnCloseLearnModal">&times;</button>
+                </div>
+                <div class="modal-body-learn">
+                    <span class="badge neon-blue" id="modalLearnCategory">Category</span>
+                    <p class="learn-detail-para" id="modalLearnDetails">In-depth topic details...</p>
+                    
+                    <div class="data-table-container">
+                        <h3>Data Breakdown</h3>
+                        <table class="learn-data-table" id="modalLearnTable">
+                            <thead>
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Value / Metric</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Dynamic Rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline btn-sm" id="btnRotateTopicInsideModal">Rotate New Topic</button>
+                    <button class="btn btn-neon-blue btn-sm" id="btnCloseLearnDone">Got It</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-overlay hidden" id="chooseLearnModal">
+            <div class="modal-content glass-panel">
+                <div class="modal-header"><h2>Choose a learning topic</h2><button class="btn-close" id="btnCloseChooseLearn">&times;</button></div>
+                <div class="form-group"><label for="learnTopicInput">Topic</label><input id="learnTopicInput" class="glass-input" placeholder="e.g. Australian history, cooking, investing"></div>
+                <div class="modal-footer"><button class="btn btn-outline" id="btnCancelChooseLearn">Cancel</button><button class="btn btn-neon-blue" id="btnSaveChooseLearn">Use topic</button></div>
+            </div>
+        </div>
+
+        <!-- Pain logging slide-up widget -->
+        <div class="modal-overlay hidden slide-up-overlay" id="painLogModal">
+            <div class="modal-content glass-panel slide-up-widget pain-log-widget">
+                <div class="modal-header">
+                    <h2>Log Pain</h2>
+                    <button class="btn-close" id="btnClosePainLog">&times;</button>
+                </div>
+                <div class="modal-body-form">
+                    <div class="form-group">
+                        <label>Pain level <span class="val-tag" id="painValDisplay">0</span>/10</label>
+                        <div class="scale-buttons scale-buttons-modal" id="painScaleButtons">
+                            <button class="btn-num pain-num active" data-val="0">0</button><button class="btn-num pain-num" data-val="1">1</button><button class="btn-num pain-num" data-val="2">2</button><button class="btn-num pain-num" data-val="3">3</button><button class="btn-num pain-num" data-val="4">4</button><button class="btn-num pain-num" data-val="5">5</button><button class="btn-num pain-num" data-val="6">6</button><button class="btn-num pain-num" data-val="7">7</button><button class="btn-num pain-num" data-val="8">8</button><button class="btn-num pain-num" data-val="9">9</button><button class="btn-num pain-num" data-val="10">10</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Anatomical locations and relative weight</label>
+                        <div id="painLocations">
+                            <div class="pain-location-row">
+                                <select class="glass-select pain-area-select" id="painAreaSelect"><option value="lumbar">Lumbar</option><option value="cervical">Cervical</option><option value="thoracic">Thoracic</option><option value="ankle">Ankle</option><option value="knee">Knee</option><option value="shoulder">Shoulder</option><option value="elbow">Elbow</option><option value="hip">Hip</option></select>
+                                <select class="glass-select pain-side-select" id="painSideSelect"><option value="right">Right</option><option value="left">Left</option><option value="both">Both</option></select>
+                                <input class="glass-input pain-percentage" type="number" min="1" max="100" value="100" aria-label="Pain percentage">
+                                <span>%</span><button class="btn btn-sm btn-outline remove-location" type="button" aria-label="Remove location">Remove</button>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-outline" id="btnAddPainLocation" type="button">+ Add location</button>
+                        <small id="painWeightTotal" class="form-hint">Total: 100%</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Mood</label>
+                        <div class="mood-emoji-selector" id="moodEmojiSelector"><button type="button" class="mood-emoji active" data-emoji="🙂" aria-label="Neutral mood">🙂</button><button type="button" class="mood-emoji" data-emoji="😌" aria-label="Calm mood">😌</button><button type="button" class="mood-emoji" data-emoji="😔" aria-label="Low mood">😔</button><button type="button" class="mood-emoji" data-emoji="😣" aria-label="Stressed mood">😣</button></div>
+                        <div class="scale-buttons scale-buttons-modal" id="moodScaleButtons"><button class="btn-num mood-num" data-val="0">0</button><button class="btn-num mood-num" data-val="1">1</button><button class="btn-num mood-num" data-val="2">2</button><button class="btn-num mood-num" data-val="3">3</button><button class="btn-num mood-num" data-val="4">4</button><button class="btn-num mood-num active" data-val="5">5</button><button class="btn-num mood-num" data-val="6">6</button><button class="btn-num mood-num" data-val="7">7</button><button class="btn-num mood-num" data-val="8">8</button><button class="btn-num mood-num" data-val="9">9</button><button class="btn-num mood-num" data-val="10">10</button></div>
+                    </div>
+                    <textarea id="unifiedNotesInput" class="glass-input notes-textarea" placeholder="Notes..."></textarea>
+                </div>
+                <div class="modal-footer"><button class="btn btn-outline" id="btnCancelPainLog">Cancel</button><button class="btn btn-neon-red" id="btnLogPain">Save pain log</button></div>
+            </div>
+        </div>
+
+        <!-- Exercise recommendation slide-up widget -->
+        <div class="modal-overlay hidden slide-up-overlay" id="exerciseModal">
+            <div class="modal-content glass-panel slide-up-widget exercise-widget">
+                <div class="modal-header"><h2>Explore Exercises</h2><button class="btn-close" id="btnCloseExercises">&times;</button></div>
+                <p class="form-hint">Suggestions are based on your latest live pain log and learned feedback.</p>
+                <div id="exerciseSuggestions" class="exercise-list"><p class="form-hint">Loading recommendations...</p></div>
+            </div>
+        </div>
+
+        <!-- Before/after relief delta widget -->
+        <div class="modal-overlay hidden" id="reliefModal">
+            <div class="modal-content glass-panel">
+                <div class="modal-header"><h2>Log Relief Delta</h2><button class="btn-close" id="btnCloseRelief">&times;</button></div>
+                <p id="reliefExerciseName" class="form-hint"></p>
+                <div class="form-group"><label>New pain score after routine (1-10)</label><input id="afterPainScore" class="glass-input" type="number" min="1" max="10" value="5"></div>
+                <div class="modal-footer"><button class="btn btn-outline" id="btnSkipRelief">Skip</button><button class="btn btn-neon-green" id="btnSaveRelief">Save outcome</button></div>
+            </div>
+        </div>
+
+        <!-- Add Custom Area / Body Part Modal Window -->
+        <div class="modal-overlay hidden" id="addAreaModal">
+            <div class="modal-content glass-panel add-area-modal-content">
+                <div class="modal-header">
+                    <h2>Add Custom Body Part / Area</h2>
+                    <button class="btn-close" id="btnCloseAddArea">&times;</button>
+                </div>
+                <div class="modal-body-form">
+                    <div class="form-group">
+                        <label>Body Part Name</label>
+                        <input type="text" id="customAreaName" class="glass-input" placeholder="e.g. Toe, Hip, Wrist...">
+                    </div>
+                    <div class="form-group">
+                        <label>Side</label>
+                        <select id="customAreaSide" class="glass-select">
+                            <option value="right" selected>Right</option>
+                            <option value="left">Left</option>
+                            <option value="both">Both</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Area Notes / Context</label>
+                        <input type="text" id="customAreaNotes" class="glass-input" placeholder="e.g. Temporary because I broke it...">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline btn-sm" id="btnCancelAddArea">Cancel</button>
+                    <button class="btn btn-neon-blue btn-sm" id="btnSaveCustomArea">Save & Add to Menu</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Persistent Notes Modal -->
+        <div class="modal-overlay hidden" id="notesModal">
+            <div class="modal-content glass-panel notes-modal-content">
+                <div class="modal-header">
+                    <h2>Notes & Directives</h2>
+                    <button class="btn-close" id="btnCloseNotes">&times;</button>
+                </div>
+                <div class="notes-body">
+                    <textarea id="notesArea" placeholder="Type persistent notes, agenda items, or instructions for RUMBLE..."></textarea>
+                </div>
+                <div class="notes-footer">
+                    <span class="notes-status" id="notesStatus">Synced with Neon DB</span>
+                    <div class="modal-actions">
+                        <button class="btn btn-sm btn-outline" id="btnAskRumbleNote">Rumble Add</button>
+                        <button class="btn btn-neon-green btn-sm" id="btnSaveNotes">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RUMBLE AI Chat Modal Window -->
+        <div class="modal-overlay hidden" id="rumbleChatModal">
+            <div class="modal-content glass-panel chat-modal-content">
+                <div class="modal-header">
+                    <h2>Chat with RUMBLE</h2>
+                    <button class="btn-close" id="btnCloseRumbleChat">&times;</button>
+                </div>
+                <div class="chat-messages" id="rumbleChatMessages">
+                    <div class="message rumble-message">
+                        <strong>RUMBLE:</strong> Hello. Type or use the voice button below to speak directly with me regarding your agenda, symptoms, or recovery.
+                    </div>
+                </div>
+                <div class="chat-input-row">
+                    <input type="text" id="rumbleChatInput" class="glass-input" placeholder="Type to Rumble or use voice...">
+                    <button class="btn btn-voice btn-sm" id="btnRumbleVoice" title="Voice Input">Voice</button>
+                    <button class="btn btn-neon-blue btn-sm" id="btnSendRumbleChat">Send</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Protocol Step Runner Modal -->
+        <div class="modal-overlay hidden" id="runnerModal">
+            <div class="modal-content glass-panel">
+                <h2 id="runnerTitle">Protocol Runner</h2>
+                <div class="runner-visual">
+                    <div class="visual-placeholder">START</div>
+                </div>
+                <h3 id="runnerStep">Step 1: Alignment & Position</h3>
+                <div class="timer" id="runnerTimer">00:30</div>
+                <div class="runner-actions">
+                    <button class="btn btn-outline" id="btnCancelRunner">Cancel</button>
+                    <button class="btn btn-neon-purple" id="btnNextStep">Next Step</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
