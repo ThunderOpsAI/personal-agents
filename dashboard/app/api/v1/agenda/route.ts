@@ -46,25 +46,28 @@ export async function GET(request: Request) {
       timeMax = endOfMonth.toISOString();
     }
 
-    const calendarResult = await fetchLiveCalendarEvents({ timeMin, timeMax });
-
     let calendarStatus: "connected" | "auth_required" | "error" = "connected";
     let calendarEvents: any[] = [];
     let authUrl: string | undefined;
 
-    if (calendarResult.status === "auth_required") {
+    try {
+      const calendarResult = await fetchLiveCalendarEvents({ timeMin, timeMax });
+      if (calendarResult.status === "auth_required") {
+        calendarStatus = "auth_required";
+        authUrl = calendarResult.authUrl || getGoogleAuthUrl();
+      } else if (calendarResult.status === "success") {
+        calendarEvents = calendarResult.events || [];
+      } else {
+        calendarStatus = "error";
+      }
+    } catch {
       calendarStatus = "auth_required";
-      authUrl = calendarResult.authUrl || getGoogleAuthUrl();
-    } else if (calendarResult.status === "success") {
-      calendarEvents = calendarResult.events || [];
-    } else {
-      calendarStatus = "error";
+      authUrl = getGoogleAuthUrl();
     }
 
     const standingProcessed = ensureStandingTasks(ensureDailyStandingProtocols(rawItems, now), now);
 
     const daily = standingProcessed.map((item) => {
-
       const d = new Date(item.scheduled_time);
       const timeStr = isNaN(d.getTime())
         ? "09:00 AM"
@@ -115,13 +118,15 @@ export async function GET(request: Request) {
       ...(authUrl ? { authUrl } : {}),
       db_status: dbStatus,
     });
-  } catch (error) {
+  } catch (error: any) {
+    console.error("[AGENDA API ERROR]", error);
     return NextResponse.json(
-      { status: "error", error: "Failed to retrieve agenda items" },
+      { status: "error", error: error?.message || "Failed to retrieve agenda items" },
       { status: 500 }
     );
   }
 }
+
 
 
 
