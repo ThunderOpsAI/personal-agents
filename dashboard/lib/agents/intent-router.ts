@@ -1,12 +1,45 @@
+import fs from 'fs';
+import path from 'path';
 import { getAgendaItems, createAgendaItem, createNote, createPainLog, getNotes, getPainLogsFromDb } from '../db';
 import { logPain, PainLocationWeight, validatePainLog } from '../rehab-learning';
 import { selectWashingDays, WashingDay } from '../agenda-engine';
-import { fetchLiveGmailMessages } from '../google-auth';
-
-
+import { fetchLiveGmailMessages, fetchLiveCalendarEvents } from '../google-auth';
 
 export const MEDICAL_GUARDRAIL =
   "Medical output is decision support, not diagnosis. Preserve clinician restrictions; recommend clinician review for worsening or concerning symptoms.";
+
+export function exportPainReportToMarkdown(entry: {
+  score: number;
+  locations: Array<{ area: string; side?: string; percentage?: number; weight?: number }>;
+  mood?: string;
+  notes?: string;
+  timestamp?: string;
+}): void {
+  try {
+    const reportsDir = path.resolve(process.cwd(), '..', 'agent_reports');
+    if (!fs.existsSync(reportsDir)) {
+      fs.mkdirSync(reportsDir, { recursive: true });
+    }
+    const reportPath = path.join(reportsDir, 'medical_symptom_report.md');
+    const nowMel = new Date().toLocaleString('en-AU', { timeZone: 'Australia/Melbourne' });
+    const primaryLoc = entry.locations[0] || { area: 'unspecified', percentage: 100 };
+    const locSummary = entry.locations
+      .map(l => `${l.side && l.side !== 'unspecified' ? l.side + ' ' : ''}${l.area} (${l.percentage ?? l.weight ?? 0}%)`)
+      .join(', ');
+    const newRow = `| ${nowMel.split(',')[0]} | ${nowMel.split(',')[1]?.trim() || 'manual_log'} | **${entry.score}/10** | ${primaryLoc.side && primaryLoc.side !== 'unspecified' ? primaryLoc.side + ' ' : ''}${primaryLoc.area} | ${primaryLoc.percentage ?? primaryLoc.weight ?? 100}% | ${locSummary} | Notes: ${entry.notes || 'None'}. Mood: ${entry.mood || 'Not specified'}. |\n`;
+
+    if (!fs.existsSync(reportPath)) {
+      const header = `# Clinical Symptom & Anatomical Pain Tracking Report\n> **Generated Date**: ${nowMel}\n> **Patient ID**: Self-Tracked Rumble OS Log\n\n## Scheduled 3-Hour Pain Tracking Logs (9 AM, 12 PM, 3 PM, 9 PM)\n\n| Date | Time Slot | Overall Pain (1-10) | Primary Generator | Generator Weight | Active Anatomical Symptoms | Notes |\n| :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n`;
+      fs.writeFileSync(reportPath, header + newRow, 'utf8');
+    } else {
+      fs.appendFileSync(reportPath, newRow, 'utf8');
+    }
+  } catch (err) {
+    // Non-blocking in serverless environments if filesystem is read-only
+    console.warn('[Report Export Warning] Could not write to agent_reports:', err);
+  }
+}
+
 
 export type IntentType =
   | "GREETING"
@@ -488,26 +521,109 @@ export async function routeChatMessage(message: string): Promise<IntentRouteResu
     }
   }
 
-  // 7. MEDICAL_TRIAGE & PAIN_DISCUSSION & GREETING & GENERAL
-  // Ground with live system context and call Gemini
+  // 7. MEDICAL_TRIAGE & PAIN_DISCUSSION & GREETING & GENERAL & CONVERSATION
+  // Ground with comprehensive real live system context and call Gemini
   const nowMel = new Date().toLocaleString("en-AU", { timeZone: "Australia/Melbourne" });
-  let liveAgendaSnippet = "None";
+  
+  let liveAgendaText = "No active agenda items.";
   try {
     const items = await getAgendaItems();
-    const pending = items.filter(i => i.status === "pending").map(i => i.title);
-    if (pending.length > 0) liveAgendaSnippet = pending.join(", ");
+    const pending = items.filter(i => i.status === "pending");
+    if (pending.length > 0) {
+      liveAgendaText = pending
+        .map(i => `• ${i.title} (${i.item_type}) at ${new Date(i.scheduled_time).toLocaleTimeString("en-AU", { hour: "2-digit", minute: "2-digit", timeZone: "Australia/Melbourne" })}`)
+        .join("\n");
+    }
   } catch {}
 
-  const systemPrompt = `You are Rumble, an expert personal operations and rehabilitation AI assistant for Rumble OS.
+  let liveNotesText = "No recent notes.";
+  try {
+    const notes = (await getNotes()).slice(0, 5);
+    if (notes.length > 0) {
+      liveNotesText = notes.map(n => `• [${new Date(n.created_at).toLocaleDateString("en-AU")}] ${n.content}`).join("\n");
+    }
+  } catch {}
+
+
+  let livePainText = "No recent pain logs recorded.";
+  try {
+    const painLogs = await getPainLogsFromDb();
+    if (painLogs.length > 0) {
+      const pl = painLogs[0];
+
+      const locs = pl.locations.map((l: any) => `${l.side && l.side !== "unspecified" ? l.side + " " : ""}${l.area} (${l.percentage}%)`).join(", ");
+      livePainText = `Latest score: ${pl.score}/10 in ${locs} (Mood: ${pl.mood || "N/A"}, Notes: ${pl.notes || "None"})`;
+    }
+  } catch {}
+
+  let calendarText = "No live Google Calendar events scheduled for the next 30 days.";
+  try {
+    const calRes = await fetchLiveCalendarEvents();
+    if (calRes.status === "auth_required") {
+      calendarText = "Google Calendar is NOT connected (OAuth authorization required at /api/v1/auth/google).";
+    } else if (calRes.status === "success" && calRes.events && calRes.events.length > 0) {
+      calendarText = calRes.events
+        .map((e: any) => `• ${e.summary || "Event"} (${new Date(e.start).toLocaleString("en-AU", { timeZone: "Australia/Melbourne" })})`)
+        .join("\n");
+    }
+  } catch {}
+
+  let emailText = "No unread urgent emails.";
+  try {
+    const emailRes = await fetchLiveGmailMessages({ maxResults: 5 });
+    if (emailRes.status === "auth_required") {
+      emailText = "Gmail is NOT connected (OAuth authorization required at /api/v1/auth/google).";
+    } else if (emailRes.status === "success" && emailRes.messages && emailRes.messages.length > 0) {
+      emailText = emailRes.messages
+        .map((m: any) => `• From: ${m.from} | Subject: "${m.subject}" | Summary: ${m.snippet}`)
+        .join("\n");
+    }
+  } catch {}
+
+  let weatherText = "Weather forecast currently unavailable.";
+  try {
+    const washRes = await selectWashingDays();
+    if (washRes.status === "success") {
+      weatherText = washRes.days.map((d: any) => `• ${d.date}: ${d.precipitationProbability}% rain risk, max ${d.tempMax}°C`).join("\n");
+    }
+  } catch {}
+
+  const systemPrompt = `You are Rumble, the expert personal operations and rehabilitation AI assistant for Rumble OS.
 Current Time in Australia/Melbourne: ${nowMel}.
 Location: Wangaratta, Victoria, Australia.
-Active Agenda Items: ${liveAgendaSnippet}.
 
-Rules:
-1. Always preserve the medical disclaimer: "${MEDICAL_GUARDRAIL}".
-2. Never recommend pushing through worsening pain or ignoring surgery/clinician restrictions.
-3. Be professional, concise, empathetic, and direct. Do NOT use decorative emojis.
-4. If discussing symptoms without an explicit write request, provide decision support and remind the user they can explicitly say "Log pain" to record an entry.`;
+=== LIVE USER DATA (SOURCE OF TRUTH) ===
+[ACTIVE AGENDA ITEMS]
+${liveAgendaText}
+
+[RECENT USER NOTES]
+${liveNotesText}
+
+[LATEST HEALTH & PAIN LOG]
+${livePainText}
+
+[LIVE GOOGLE CALENDAR]
+${calendarText}
+
+[LIVE GMAIL INBOX]
+${emailText}
+
+[WANGARATTA WEATHER & WASHING FORECAST]
+${weatherText}
+
+=== STANDING NON-NEGOTIABLES ===
+1. Daily Adaptive Yoga: Every day at 09:00 AM (adapts to live pain logs and surgeon restrictions).
+2. Nightly Meditation Protocol: Every night at 09:00 PM (21:00) and 12:00 AM (00:00).
+3. Daily Continuous Learning Card: Every morning at 07:30 AM (rotates 3 topics or user choice).
+4. Weekly Hydrotherapy: 3 pool sessions targeted per week (Rumble calculates remaining sessions needed).
+5. Weekly Washing Days: 2 days chosen from live Wangaratta forecast using lowest precipitation probabilities.
+
+=== CRITICAL BEHAVIORAL & SAFETY RULES ===
+1. MEDICAL DISCLAIMER: "${MEDICAL_GUARDRAIL}". Always include this on any medical/recovery discussion.
+2. LIVE DATA ONLY: You MUST strictly use the real live events, emails, notes, and agenda items provided above. NEVER invent, hallucinate, mock, or guess doctor names, appointments, clinic locations, or emails.
+3. If Google Calendar or Gmail is not authorized or has no events, explicitly state that to the user without inventing appointments.
+4. If the user asks to add an item to their agenda, notes, or log pain, explain what will be done and confirm the details clearly.
+5. Be concise, direct, supportive, and professional. Free of decorative emojis.`;
 
   try {
     let reply = await callGemini(systemPrompt, message);
@@ -559,9 +675,12 @@ export async function executeConfirmedAction(action: ActionPreview | { type: str
       notes: logResult.entry.notes,
     });
 
+    // Automatically export to clean Markdown report in agent_reports/
+    exportPainReportToMarkdown(logResult.entry);
+
     return {
       success: true,
-      message: `Rumble: Confirmed and saved pain log (${score}/10) successfully.`,
+      message: `Rumble: Confirmed and saved pain log (${score}/10) successfully. Exported to medical symptom report.`,
       result: savedRecord,
     };
   }
@@ -593,3 +712,4 @@ export async function executeConfirmedAction(action: ActionPreview | { type: str
 
   throw new Error(`Unknown action type: ${(action as any).type}`);
 }
+

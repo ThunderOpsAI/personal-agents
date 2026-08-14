@@ -242,3 +242,82 @@ export function ensureStandingTasks(
 
   return [...existingAgendaItems, standingItem];
 }
+
+
+/**
+ * Ensures daily non-negotiable protocols (Learning, Yoga, Night Meditation, Midnight Meditation)
+ * are populated for the given date.
+ */
+export function ensureDailyStandingProtocols(
+
+  existingAgendaItems: AgendaItem[] = [],
+  baseDate: Date | string = new Date()
+): AgendaItem[] {
+  const refDate = typeof baseDate === 'string' ? new Date(baseDate) : new Date(baseDate);
+  const year = refDate.getFullYear();
+  const month = String(refDate.getMonth() + 1).padStart(2, '0');
+  const day = String(refDate.getDate()).padStart(2, '0');
+  const datePrefix = `${year}-${month}-${day}`;
+  const nowISO = new Date().toISOString();
+
+  const requiredProtocols = [
+    {
+      id: `learning_${datePrefix}`,
+      item_type: 'learning' as const,
+      title: 'Continuous Learning: Recovery & Neuroplasticity',
+      time: `${datePrefix}T07:30:00+10:00`,
+    },
+    {
+      id: `yoga_${datePrefix}`,
+      item_type: 'yoga' as const,
+      title: 'Daily Adaptive Yoga Routine',
+      time: `${datePrefix}T09:00:00+10:00`,
+    },
+    {
+      id: `meditation_night_${datePrefix}`,
+      item_type: 'meditation' as const,
+      title: 'Night Meditation Protocol',
+      time: `${datePrefix}T21:00:00+10:00`,
+    },
+    {
+      id: `meditation_midnight_${datePrefix}`,
+      item_type: 'meditation' as const,
+      title: 'Sleep & Relaxation Meditation',
+      time: `${datePrefix}T23:59:00+10:00`,
+    },
+  ];
+
+  let currentItems = [...existingAgendaItems];
+
+  for (const protocol of requiredProtocols) {
+    const exists = currentItems.some(
+      (item) =>
+        item.id === protocol.id ||
+        (item.item_type === protocol.item_type &&
+          item.scheduled_time.startsWith(datePrefix))
+    );
+
+    if (!exists) {
+      currentItems.push({
+        id: protocol.id,
+        item_type: protocol.item_type,
+        title: protocol.title,
+        scheduled_time: protocol.time,
+        status: 'pending',
+        completed_at: null,
+        dismissed_at: null,
+        audit_trail: [
+          {
+            timestamp: nowISO,
+            new_status: 'pending',
+            note: 'Daily standing protocol auto-injected',
+          },
+        ],
+        created_at: nowISO,
+      });
+    }
+  }
+
+  return currentItems;
+}
+

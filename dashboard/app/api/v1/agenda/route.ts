@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAgendaItem, getAgendaItems, getDbStatus, updateAgendaItemStatus } from "../../../../lib/db";
 import { AgendaItemStatus } from "../../../../lib/schema";
-import { ensureStandingTasks } from "../../../../lib/agenda-engine";
+import { ensureStandingTasks, ensureDailyStandingProtocols } from "../../../../lib/agenda-engine";
 import { fetchLiveCalendarEvents, getGoogleAuthUrl } from "../../../../lib/google-auth";
 
 export async function GET(request: Request) {
@@ -9,18 +9,21 @@ export async function GET(request: Request) {
     const url = request && request.url ? new URL(request.url) : null;
     const view = url?.searchParams.get("view") || "daily";
 
-
-
-
     // 1. Fetch persistent agenda items from Neon / SQLite
-    const items = await getAgendaItems();
+    const rawItems = await getAgendaItems();
+    const now = new Date();
+    const items = view === "daily" && url?.searchParams.get("view") === "daily"
+      ? ensureStandingTasks(ensureDailyStandingProtocols(rawItems, now), now)
+      : rawItems;
     const dbStatus = getDbStatus();
 
 
+
+
     // 2. Fetch live Google Calendar events within the view window
-    const now = new Date();
     let timeMin: string | undefined;
     let timeMax: string | undefined;
+
 
     if (view === "daily") {
       const startOfDay = new Date(now);
