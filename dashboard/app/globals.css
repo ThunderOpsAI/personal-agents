@@ -1,0 +1,20 @@
+:root { color-scheme: dark; font-family: Arial, sans-serif; background: #0f111a; color: #fff; }
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; }
+button { font: inherit; }
+.dashboard-shell { max-width: 960px; margin: 0 auto; padding: 2rem 1rem; }
+.dashboard-shell header p, .section-heading p, .exercise-card p, small { color: #c4c8d4; }
+.exercise-explorer { margin-top: 2rem; padding: 1.25rem; border: 1px solid #3a4257; border-radius: 1rem; background: #171b27; }
+.section-heading, .dialog-heading, .exercise-card { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+.exercise-list { display: grid; gap: .75rem; margin: 1.25rem 0 0; padding: 0; list-style: none; }
+.exercise-card { padding: 1rem; border: 1px solid #3a4257; border-radius: .75rem; }
+.exercise-card h3, .exercise-card p { margin: 0 0 .5rem; }
+.button { min-height: 2.5rem; padding: .5rem .875rem; border: 1px solid #44dbe9; border-radius: .5rem; background: #44dbe9; color: #071014; cursor: pointer; }
+.button.secondary { border-color: #aeb7cd; background: transparent; color: #fff; }
+.button:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+.button:disabled { cursor: wait; opacity: .6; }
+.dialog-backdrop { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; padding: 1rem; background: rgb(0 0 0 / .7); }
+.exercise-demo-dialog { width: min(100%, 42rem); max-height: min(90vh, 48rem); overflow: auto; padding: 1.25rem; border: 1px solid #56627d; border-radius: 1rem; background: #171b27; }
+.exercise-demo-dialog img, .exercise-demo-dialog video { display: block; width: 100%; max-height: 60vh; margin-top: 1rem; object-fit: contain; border-radius: .5rem; }
+.unavailable { padding: 1rem; border-left: 3px solid #f7c948; background: #302a1c; }
+@media (max-width: 600px) { .section-heading, .exercise-card { flex-direction: column; } .button { width: 100%; } }

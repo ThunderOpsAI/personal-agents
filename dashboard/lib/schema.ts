@@ -1,0 +1,136 @@
+export type AgendaItemStatus = 'pending' | 'completed' | 'dismissed';
+
+export interface AuditTrailEntry {
+  timestamp: string;
+  previous_status?: AgendaItemStatus | null;
+  new_status: AgendaItemStatus;
+  note?: string;
+}
+
+export interface AgendaItem {
+  id: string;
+  item_type: string;
+  title: string;
+  scheduled_time: string;
+  status: AgendaItemStatus;
+  completed_at: string | null;
+  dismissed_at: string | null;
+  audit_trail: AuditTrailEntry[];
+  created_at: string;
+}
+
+export interface CreateAgendaItemInput {
+  id?: string;
+  item_type: string;
+  title: string;
+  scheduled_time: string;
+  status?: AgendaItemStatus;
+  audit_trail?: AuditTrailEntry[];
+}
+
+export interface DatabaseStatus {
+  isFallback: boolean;
+  warning?: string;
+  provider: 'neon' | 'sqlite';
+}
+
+export const CREATE_AGENDA_ITEMS_TABLE_SQL = `
+CREATE TABLE IF NOT EXISTS agenda_items (
+    id TEXT PRIMARY KEY,
+    item_type TEXT NOT NULL,
+    title TEXT NOT NULL,
+    scheduled_time TEXT NOT NULL,
+    status TEXT NOT NULL CHECK (status IN ('pending', 'completed', 'dismissed')),
+    completed_at TEXT,
+    dismissed_at TEXT,
+    audit_trail TEXT NOT NULL DEFAULT '[]',
+    created_at TEXT NOT NULL
+);
+`;
+
+export interface Note {
+  id: string;
+  content: string;
+  author: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateNoteInput {
+  id?: string;
+  content: string;
+  author?: string;
+}
+
+export const CREATE_NOTES_TABLE_SQL = `
+CREATE TABLE IF NOT EXISTS notes (
+    id TEXT PRIMARY KEY,
+    content TEXT NOT NULL,
+    author TEXT NOT NULL DEFAULT 'user',
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+`;
+
+export interface PainLogRecord {
+  id: string;
+  score: number;
+  locations: Array<{
+    area: string;
+    side?: 'left' | 'right' | 'unspecified';
+    percentage: number;
+  }>;
+  mood?: string | null;
+  notes?: string | null;
+  created_at: string;
+}
+
+export interface CreatePainLogInput {
+  id?: string;
+  score: number;
+  locations: Array<{
+    area: string;
+    side?: 'left' | 'right' | 'unspecified';
+    percentage: number;
+    weight?: number;
+  }>;
+  mood?: string;
+  notes?: string;
+}
+
+export const CREATE_PAIN_LOGS_TABLE_SQL = `
+CREATE TABLE IF NOT EXISTS pain_logs (
+    id TEXT PRIMARY KEY,
+    score INTEGER NOT NULL,
+    locations TEXT NOT NULL,
+    mood TEXT,
+    notes TEXT,
+    created_at TEXT NOT NULL
+);
+`;
+
+export interface ExercisePreferenceRecord {
+  id: string;
+  routine_id: string;
+  routine_title: string;
+  pre_pain_score: number;
+  post_pain_score: number;
+  relief_delta: number;
+  notes?: string;
+  created_at: string;
+}
+
+export const CREATE_EXERCISE_PREFERENCES_TABLE_SQL = `
+CREATE TABLE IF NOT EXISTS exercise_preferences (
+    id TEXT PRIMARY KEY,
+    routine_id TEXT NOT NULL,
+    routine_title TEXT NOT NULL,
+    pre_pain_score INTEGER NOT NULL,
+    post_pain_score INTEGER NOT NULL,
+    relief_delta INTEGER NOT NULL,
+    notes TEXT,
+    created_at TEXT NOT NULL
+);
+`;
+
+

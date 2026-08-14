@@ -54,12 +54,12 @@ pip install -r requirements.txt
 
 # 4. Configure your API key
 cp .env.example .env
-# Edit .env and add your OPENAI_API_KEY
+# Edit .env and add your GEMINI_API_KEY
 
 # 5a. Dry-run test (no API key needed — validates schema round-trip)
 python scripts/test_cmo_harness.py --dry-run
 
-# 5b. Live test (requires OPENAI_API_KEY in .env)
+# 5b. Live test (requires GEMINI_API_KEY in .env)
 python scripts/test_cmo_harness.py
 
 # 5c. Custom query
