@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { logPain } from "../../../../../lib/rehab-learning";
 import { createPainLog, getPainLogsFromDb } from "../../../../../lib/db";
 
+import { exportPainReportToMarkdown } from "../../../../../lib/agents/intent-router";
+
 export async function GET() {
   try {
     const logs = await getPainLogsFromDb();
@@ -23,7 +25,20 @@ export async function POST(request: Request) {
     return NextResponse.json({ status: "error", error: "Payload must be an object" }, { status: 400 });
   }
 
-  const result = logPain(body);
+  const score = body.score ?? body.pain_level ?? body.painScore ?? body.pain;
+  const rawLocs = body.locations ?? body.generators ?? [];
+  const locations = Array.isArray(rawLocs)
+    ? rawLocs.map((l: any) => ({
+        area: l.area,
+        side: l.side || "unspecified",
+        weight: l.weight ?? l.percentage ?? 100,
+        percentage: l.percentage ?? l.weight ?? 100,
+      }))
+    : [];
+  const mood = body.mood ?? (body.mood_level !== undefined ? String(body.mood_level) : undefined);
+  const notes = body.notes ?? body.pain_notes ?? body.mood_notes ?? "";
+
+  const result = logPain({ score, locations, mood, notes });
   if (!result.success || !result.entry) {
     return NextResponse.json(
       { status: "error", error: "Validation failed", details: result.errors },
@@ -31,8 +46,9 @@ export async function POST(request: Request) {
     );
   }
 
+  let savedRecord = null;
   try {
-    await createPainLog({
+    savedRecord = await createPainLog({
       id: result.entry.id,
       score: result.entry.score,
       locations: result.entry.locations.map((loc) => ({
@@ -47,9 +63,24 @@ export async function POST(request: Request) {
     // Database write best effort if memory succeeded
   }
 
+  // Export to agent_reports
+  exportPainReportToMarkdown(result.entry);
+
+  const isHighPain = result.entry.score >= 7;
+  const primaryLoc = result.entry.locations[0];
+  const alertMessage = isHighPain && primaryLoc
+    ? `High Pain Alert: ${primaryLoc.side !== "unspecified" ? primaryLoc.side.toUpperCase() + " " : ""}${primaryLoc.area.toUpperCase()} at ${result.entry.score}/10. Agenda adjusted.`
+    : null;
+
   return NextResponse.json(
-    { status: "success", data: result.entry },
+    {
+      status: "success",
+      data: result.entry,
+      alert_triggered: isHighPain,
+      alert_message: alertMessage,
+    },
     { status: 201 }
   );
 }
+
 

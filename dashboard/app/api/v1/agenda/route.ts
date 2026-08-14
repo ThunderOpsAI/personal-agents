@@ -12,10 +12,9 @@ export async function GET(request: Request) {
     // 1. Fetch persistent agenda items from Neon / SQLite
     const rawItems = await getAgendaItems();
     const now = new Date();
-    const items = view === "daily" && url?.searchParams.get("view") === "daily"
-      ? ensureStandingTasks(ensureDailyStandingProtocols(rawItems, now), now)
-      : rawItems;
+    const items = rawItems;
     const dbStatus = getDbStatus();
+
 
 
 
@@ -62,10 +61,55 @@ export async function GET(request: Request) {
       calendarStatus = "error";
     }
 
+    const standingProcessed = ensureStandingTasks(ensureDailyStandingProtocols(rawItems, now), now);
+
+    const daily = standingProcessed.map((item) => {
+
+      const d = new Date(item.scheduled_time);
+      const timeStr = isNaN(d.getTime())
+        ? "09:00 AM"
+        : d.toLocaleTimeString("en-AU", { hour: "2-digit", minute: "2-digit", timeZone: "Australia/Melbourne" });
+      let choices: string[] | undefined;
+      if (item.item_type === "yoga") choices = ["Hip Flow", "Lumbar Core", "Shoulder Rehab"];
+      if (item.item_type === "learning") choices = ["Neuroplasticity", "Myofascial Release", "Breathing Mechanics"];
+      return {
+        id: item.id,
+        title: item.title,
+        time: timeStr,
+        item_type: item.item_type,
+        status: item.status,
+        choices,
+      };
+    });
+
+    const weekly = calendarEvents.map((e: any) => {
+      const d = new Date(e.start || e.scheduled_time || now);
+      const dayStr = d.toLocaleDateString("en-AU", { weekday: "short", day: "numeric", month: "short", timeZone: "Australia/Melbourne" });
+      return {
+        date: d.toISOString().split("T")[0],
+        day: dayStr,
+        title: e.summary || e.title || "Calendar Event",
+        type: "calendar",
+      };
+    });
+
+    const monthly = calendarEvents.map((e: any) => {
+      const d = new Date(e.start || e.scheduled_time || now);
+      const dateStr = d.toLocaleDateString("en-AU", { day: "numeric", month: "short", timeZone: "Australia/Melbourne" });
+      return {
+        date: dateStr,
+        title: e.summary || e.title || "Event",
+        type: "calendar",
+      };
+    });
+
     return NextResponse.json({
       status: "success",
       view,
       items,
+      daily,
+      weekly,
+      monthly,
       calendar_status: calendarStatus,
       calendar_events: calendarEvents,
       ...(authUrl ? { authUrl } : {}),
@@ -78,6 +122,7 @@ export async function GET(request: Request) {
     );
   }
 }
+
 
 
 export async function POST(request: Request) {

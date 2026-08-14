@@ -185,21 +185,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 const countBadge = document.getElementById('agendaCount');
                 if (countBadge) countBadge.textContent = `${dailyItems.length} Items`;
                 
+                // Clear existing dynamic cards (leave #protocol-learn)
+                document.querySelectorAll('.protocol-card:not(#protocol-learn)').forEach(c => c.remove());
+
                 if (dailyItems.length > 0) {
                     dailyItems.forEach(item => {
+                        if (item.item_type === 'learning' || item.id === 'protocol-learn') return;
+                        const isCompleted = item.status === 'completed';
+                        const isDismissed = item.status === 'dismissed';
+                        if (isDismissed) return;
+
                         const card = document.createElement('div');
-                        card.className = 'protocol-card glass-panel';
+                        card.className = `protocol-card glass-panel${isCompleted ? ' completed' : ''}`;
                         card.id = `protocol-${item.id}`;
                         card.innerHTML = `
                             <div class="protocol-info">
                                 <h3>${item.time}</h3>
                                 <p>${item.title}</p>
-                                ${item.choices ? `<small class="form-hint">Choose: ${item.choices.join(' · ')}</small>` : ''}
+                                ${item.choices ? `<small class="form-hint">Choices: ${item.choices.join(' · ')}</small>` : ''}
                             </div>
                             <div class="protocol-actions">
-                                <button class="btn btn-neon-purple btn-show-me" data-id="${item.id}">Show Me</button>
-                                <button class="btn btn-neon-green btn-done" data-id="${item.id}">Done</button>
-                                <button class="btn btn-outline btn-dismiss" data-id="${item.id}" disabled>Dismiss</button>
+                                <button class="btn btn-neon-purple btn-show-me" data-id="${item.id}" ${isCompleted ? 'disabled' : ''}>Show Me</button>
+                                <button class="btn btn-neon-green btn-done" data-id="${item.id}" ${isCompleted ? 'disabled' : ''}>${isCompleted ? 'Done' : 'Done'}</button>
+                                <button class="btn btn-outline btn-dismiss" data-id="${item.id}" ${isCompleted ? '' : 'disabled'}>Dismiss</button>
                             </div>
                         `;
                         agendaStream.appendChild(card);
@@ -216,8 +224,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             div.innerHTML = `<span class="agenda-date">${w.day || w.date}</span><span class="agenda-text">${w.title}</span>`;
                             weeklyAgendaList.appendChild(div);
                         });
+                    } else if (data.calendar_status === 'auth_required') {
+                        weeklyAgendaList.innerHTML = `<div class="agenda-item"><span class="agenda-text" style="color: var(--neon-blue);">Google Calendar authorization required to sync live events.</span></div>`;
                     } else {
-                        weeklyAgendaList.innerHTML = `<div class="agenda-item"><span class="agenda-text">${data.calendar_status === 'error' ? 'Google Calendar authorization required.' : 'No events this week.'}</span></div>`;
+                        weeklyAgendaList.innerHTML = `<div class="agenda-item"><span class="agenda-text">No calendar events scheduled this week.</span></div>`;
                     }
                 }
 
@@ -230,8 +240,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             div.innerHTML = `<span class="agenda-date">${m.date}</span><span class="agenda-text">${m.title}</span>`;
                             monthlyAgendaList.appendChild(div);
                         });
+                    } else if (data.calendar_status === 'auth_required') {
+                        monthlyAgendaList.innerHTML = `<div class="agenda-item"><span class="agenda-text" style="color: var(--neon-purple);">Google Calendar authorization required.</span></div>`;
                     } else {
-                        monthlyAgendaList.innerHTML = `<div class="agenda-item"><span class="agenda-text">${data.calendar_status === 'error' ? 'Google Calendar authorization required.' : 'No events this month.'}</span></div>`;
+                        monthlyAgendaList.innerHTML = `<div class="agenda-item"><span class="agenda-text">No calendar events scheduled this month.</span></div>`;
                     }
                 }
             }
@@ -240,6 +252,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error(e);
         }
     }
+
     loadAgenda();
 
     // --- Continuous Learning Topic Engine ---
