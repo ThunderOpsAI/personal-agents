@@ -1,0 +1,14 @@
+{
+  "name": "personal-agents-root",
+  "private": true,
+  "workspaces": [
+    "dashboard"
+  ],
+  "scripts": {
+    "dev": "npm --prefix dashboard run dev",
+    "build": "npm --prefix dashboard run build",
+    "lint": "npm --prefix dashboard run lint",
+    "typecheck": "npm --prefix dashboard run typecheck",
+    "test": "npm --prefix dashboard run test"
+  }
+}
