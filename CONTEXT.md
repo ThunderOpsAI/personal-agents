@@ -4,6 +4,9 @@
 
 Rumble OS is a personal operations and recovery dashboard. The production source of truth is the static frontend in `dashboard/`, Vercel Eve serverless workflows, Neon PostgreSQL, ChromaDB, and live external integrations.
 
+> **MVP V1 Baseline:**  
+> This version represents the stable **MVP V1** release baseline (Commit: `9a26f8db30987aed7e9cc1715cd363780cfbbbd4`). If issues arise in future development, reference/revert to this commit. **All further feature development or refactoring MUST be performed on a separate feature branch.**
+
 ## Architecture and deployment
 
 * Frontend: `dashboard/`, deployed to Vercel.
