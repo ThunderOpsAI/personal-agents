@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const API_LATEST_SYMPTOMS = `${API_BASE}/api/v1/symptoms/latest`;
     const API_RUMBLE_CHAT = `${API_BASE}/api/v1/rumble/chat`;
     const API_NOTES = `${API_BASE}/api/v1/notes`;
-    const API_OPS_SYNC = `${API_BASE}/api/v1/ops/sync`;
+    const API_OPS_SYNC = `${API_BASE}/api/v1/retrieval/scan`;
     const API_WEATHER = `${API_BASE}/api/v1/weather/forecast`;
     const API_LEARN_TOPIC = `${API_BASE}/api/v1/learn/topic`;
     const API_LEARN_ROTATE = `${API_BASE}/api/v1/learn/rotate`;
@@ -726,18 +726,57 @@ document.addEventListener('DOMContentLoaded', () => {
     let runnerInterval;
     function startRunnerModal(id) {
         runnerModal.classList.remove('hidden');
-        runnerStep.innerText = "Step 1: Alignment & Position";
-        let timeLeft = 30;
-        runnerTimer.innerText = `00:${timeLeft}`;
+        
+        let steps = [];
+        if (id && id.toLowerCase().includes('yoga')) {
+            steps = [
+                { title: "Alignment & Position", duration: 30 },
+                { title: "Gentle Spinal Decompression", duration: 60 },
+                { title: "Hip Mobility Flow", duration: 45 },
+                { title: "Restorative Hamstring Extension", duration: 60 }
+            ];
+        } else if (id && id.toLowerCase().includes('meditation')) {
+            steps = [
+                { title: "Find a Comfortable Position", duration: 30 },
+                { title: "Box Breathing", duration: 120 },
+                { title: "Body Scan", duration: 180 },
+                { title: "Gentle Return", duration: 30 }
+            ];
+        } else {
+            steps = [{ title: "Alignment & Position", duration: 30 }];
+        }
+        
+        let currentStepIndex = 0;
+        let timeLeft = steps[currentStepIndex].duration;
+        
+        function formatTime(secs) {
+            const m = Math.floor(secs / 60);
+            const s = secs % 60;
+            return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+
+        function updateStepUI() {
+            runnerStep.innerText = `Step ${currentStepIndex + 1}: ${steps[currentStepIndex].title}`;
+            runnerTimer.innerText = formatTime(timeLeft);
+        }
+        
+        updateStepUI();
         clearInterval(runnerInterval);
         
         runnerInterval = setInterval(() => {
             timeLeft--;
             if (timeLeft < 0) {
-                clearInterval(runnerInterval);
-                runnerStep.innerText = "Routine Step Complete!";
+                currentStepIndex++;
+                if (currentStepIndex >= steps.length) {
+                    clearInterval(runnerInterval);
+                    runnerStep.innerText = "Routine Complete!";
+                    runnerTimer.innerText = "00:00";
+                } else {
+                    timeLeft = steps[currentStepIndex].duration;
+                    updateStepUI();
+                }
             } else {
-                runnerTimer.innerText = `00:${timeLeft.toString().padStart(2, '0')}`;
+                runnerTimer.innerText = formatTime(timeLeft);
             }
         }, 1000);
     }
