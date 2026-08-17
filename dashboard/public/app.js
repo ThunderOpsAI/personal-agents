@@ -205,9 +205,9 @@ document.addEventListener('DOMContentLoaded', () => {
                                 ${item.choices ? `<small class="form-hint">Choices: ${item.choices.join(' · ')}</small>` : ''}
                             </div>
                             <div class="protocol-actions">
-                                <button class="btn btn-neon-purple btn-show-me" data-id="${item.id}" ${isCompleted ? 'disabled' : ''}>Show Me</button>
-                                <button class="btn btn-neon-green btn-done" data-id="${item.id}" ${isCompleted ? 'disabled' : ''}>${isCompleted ? 'Done' : 'Done'}</button>
-                                <button class="btn btn-outline btn-dismiss" data-id="${item.id}" ${isCompleted ? '' : 'disabled'}>Dismiss</button>
+                                <button class="btn btn-neon-purple btn-show-me" data-id="${item.id}" data-type="${item.item_type || ''}" ${isCompleted ? 'disabled' : ''}>Show Me</button>
+                                <button class="btn btn-neon-green btn-done" data-id="${item.id}" data-type="${item.item_type || ''}" ${isCompleted ? 'disabled' : ''}>${isCompleted ? 'Done' : 'Done'}</button>
+                                <button class="btn btn-outline btn-dismiss" data-id="${item.id}" data-type="${item.item_type || ''}" ${isCompleted ? '' : 'disabled'}>Dismiss</button>
                             </div>
                         `;
                         agendaStream.appendChild(card);
@@ -757,33 +757,66 @@ document.addEventListener('DOMContentLoaded', () => {
     function attachCardEvents(card) {
         const showBtn = card.querySelector('.btn-show-me');
         const doneBtn = card.querySelector('.btn-done');
+        const dismissBtn = card.querySelector('.btn-dismiss');
+        
+        const type = showBtn?.getAttribute('data-type') || doneBtn?.getAttribute('data-type') || '';
+        const id = showBtn?.getAttribute('data-id') || doneBtn?.getAttribute('data-id') || dismissBtn?.getAttribute('data-id') || '';
+        
+        function isExercise() {
+            const t = type.toLowerCase();
+            const i = id.toLowerCase();
+            return t === 'yoga' || t === 'rehab' || t === 'meditation' || t === 'exercise' ||
+                   i.includes('yoga') || i.includes('meditation') || i.includes('hydro') || i.includes('rehab');
+        }
 
         if (showBtn) {
             showBtn.addEventListener('click', () => {
-                const id = showBtn.getAttribute('data-id');
-                if (id && id.toLowerCase().includes('yoga')) {
-                    loadExerciseSuggestions();
+                const title = card.querySelector('.protocol-info p')?.innerText || id;
+                if (isExercise()) {
+                    if (id && id.toLowerCase().includes('yoga')) {
+                        loadExerciseSuggestions();
+                    } else {
+                        startRunnerModal(id);
+                    }
                 } else {
-                    startRunnerModal(id);
+                    rumbleChatModal.classList.remove('hidden');
+                    sendRumbleChatMessage(`Show me details for: ${title}`);
                 }
             });
         }
 
         if (doneBtn) {
             doneBtn.addEventListener('click', async () => {
-                const id = doneBtn.getAttribute('data-id');
+                const title = card.querySelector('.protocol-info p')?.innerText || id;
                 card.classList.add('completed');
                 doneBtn.innerText = "Done";
                 doneBtn.disabled = true;
-                const dismissBtn = card.querySelector('.btn-dismiss');
                 if (dismissBtn) {
                     dismissBtn.disabled = false;
-                    dismissBtn.addEventListener('click', () => card.remove());
                 }
-                pendingProtocol = { id, name: card.querySelector('.protocol-info p')?.innerText || id, beforePain: currentPainLevel || 1, card, doneBtn };
-                reliefExerciseName.innerText = pendingProtocol.name;
-                afterPainScore.value = pendingProtocol.beforePain;
-                reliefModal.classList.remove('hidden');
+                
+                if (isExercise()) {
+                    pendingProtocol = { id, name: title, beforePain: currentPainLevel || 1, card, doneBtn };
+                    reliefExerciseName.innerText = pendingProtocol.name;
+                    afterPainScore.value = pendingProtocol.beforePain;
+                    reliefModal.classList.remove('hidden');
+                } else {
+                    rumbleChatModal.classList.remove('hidden');
+                    sendRumbleChatMessage(`I have completed: ${title}`);
+                }
+            });
+        }
+        
+        if (dismissBtn) {
+            dismissBtn.addEventListener('click', () => {
+                const title = card.querySelector('.protocol-info p')?.innerText || id;
+                if (isExercise()) {
+                    card.remove();
+                } else {
+                    rumbleChatModal.classList.remove('hidden');
+                    sendRumbleChatMessage(`I want to dismiss: ${title}`);
+                    card.remove();
+                }
             });
         }
     }
