@@ -419,7 +419,7 @@ ${weatherText}
         items: {
           type: "OBJECT",
           properties: {
-            type: { type: "STRING", description: "One of: 'task', 'pain_log', 'note', 'calendar_event'" },
+            type: { type: "STRING", description: "One of: 'task', 'pain_log', 'note', 'calendar_event', 'budget_item'" },
             task_title: { type: "STRING" },
             task_scheduled_time: { type: "STRING" },
             calendar_summary: { type: "STRING" },
@@ -428,7 +428,11 @@ ${weatherText}
             pain_score: { type: "INTEGER" },
             pain_locations: { type: "ARRAY", items: { type: "OBJECT", properties: { area: { type: "STRING" }, percentage: { type: "INTEGER" } } } },
             pain_mood: { type: "STRING" },
-            note_content: { type: "STRING" }
+            note_content: { type: "STRING" },
+            budget_description: { type: "STRING" },
+            budget_amount: { type: "NUMBER" },
+            budget_category: { type: "STRING" },
+            budget_type: { type: "STRING", description: "Either 'income' or 'expense'" }
           },
           required: ["type"]
         }
@@ -471,7 +475,8 @@ ${weatherText}
             data = { summary: a.calendar_summary, start: { dateTime: startStr }, end: { dateTime: endStr } };
         }
         if (a.type === "pain_log") data = { score: a.pain_score, locations: a.pain_locations, mood: a.pain_mood };
-        if (a.type === "note") data = { content: a.note_content };
+        if (a.type === "note") data = { content: a.note_content, author: 'rumble' };
+        if (a.type === "budget_item") data = { description: a.budget_description, amount: a.budget_amount, category: a.budget_category, type: a.budget_type };
         return { type: a.type, data };
       });
 
@@ -566,6 +571,17 @@ export async function executeConfirmedAction(action: ActionPreview | { type: str
       success: true,
       message: `Rumble: Confirmed and added agenda task: "${title}".`,
       result: savedTask,
+    };
+  }
+
+  if (action.type === "budget_item") {
+    const { createBudgetItem } = await import('../db');
+    const { description, amount, category, type } = action.data;
+    const savedItem = await createBudgetItem({ description, amount, category, type });
+    return {
+      success: true,
+      message: `Rumble: Confirmed and saved budget item: "${description}" for $${amount}.`,
+      result: savedItem,
     };
   }
 

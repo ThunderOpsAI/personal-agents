@@ -9,6 +9,7 @@ export async function GET() {
     const logs = await getPainLogsFromDb();
     return NextResponse.json({ status: "success", logs });
   } catch (error) {
+    console.error("Error in GET /api/v1/pain/log:", error);
     return NextResponse.json({ status: "error", error: "Failed to retrieve pain logs" }, { status: 500 });
   }
 }

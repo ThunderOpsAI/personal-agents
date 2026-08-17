@@ -109,6 +109,34 @@ CREATE TABLE IF NOT EXISTS pain_logs (
 );
 `;
 
+export interface BudgetItem {
+  id: string;
+  description: string;
+  amount: number;
+  category: string;
+  type: 'income' | 'expense';
+  created_at: string;
+}
+
+export interface CreateBudgetItemInput {
+  id?: string;
+  description: string;
+  amount: number;
+  category: string;
+  type: 'income' | 'expense';
+}
+
+export const CREATE_BUDGET_ITEMS_TABLE_SQL = `
+CREATE TABLE IF NOT EXISTS budget_items (
+    id TEXT PRIMARY KEY,
+    description TEXT NOT NULL,
+    amount REAL NOT NULL,
+    category TEXT NOT NULL,
+    type TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+`;
+
 export interface ExercisePreferenceRecord {
   id: string;
   routine_id: string;

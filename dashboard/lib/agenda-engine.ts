@@ -285,6 +285,12 @@ export function ensureDailyStandingProtocols(
       title: 'Sleep & Relaxation Meditation',
       time: `${datePrefix}T23:59:00+10:00`,
     },
+    ...['06:00:00', '09:00:00', '12:00:00', '15:00:00', '18:00:00', '21:00:00', '23:59:00'].map((timeStr) => ({
+      id: `pain_log_reminder_${timeStr.replace(/:/g, '')}_${datePrefix}`,
+      item_type: 'task' as const,
+      title: 'Log Pain Level',
+      time: `${datePrefix}T${timeStr}+10:00`,
+    })),
   ];
 
   let currentItems = [...existingAgendaItems];

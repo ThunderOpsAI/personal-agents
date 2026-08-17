@@ -527,12 +527,82 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 2. Persistent Notes Modal ---
     btnOpenNotes.addEventListener('click', () => {
         notesModal.classList.remove('hidden');
+        loadNotes();
     });
 
     function closePainLog() { painLogModal.classList.add('hidden'); }
     btnOpenPainLog.addEventListener('click', () => painLogModal.classList.remove('hidden'));
     btnClosePainLog.addEventListener('click', closePainLog);
     btnCancelPainLog.addEventListener('click', closePainLog);
+
+    const painHistoryModal = document.getElementById('painHistoryModal');
+    const btnViewPainHistory = document.getElementById('btnViewPainHistory');
+    const btnClosePainHistory = document.getElementById('btnClosePainHistory');
+    const btnBackToPainLog = document.getElementById('btnBackToPainLog');
+    const painHistoryList = document.getElementById('painHistoryList');
+
+    async function loadPainHistory() {
+        try {
+            painHistoryList.innerHTML = '<p class="form-hint" style="text-align: center;">Loading...</p>';
+            const res = await fetch('/api/v1/pain/log');
+            if (res.ok) {
+                const data = await res.json();
+                if (data.logs && data.logs.length > 0) {
+                    painHistoryList.innerHTML = '';
+                    data.logs.forEach(log => {
+                        const li = document.createElement('li');
+                        li.className = 'glass-panel';
+                        li.style.padding = '10px 15px';
+                        li.style.display = 'flex';
+                        li.style.flexDirection = 'column';
+                        li.style.gap = '5px';
+                        
+                        const dateObj = new Date(log.created_at);
+                        const dateStr = dateObj.toLocaleDateString() + ' ' + dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                        
+                        let locText = "";
+                        try {
+                            const parsedLocs = typeof log.locations === 'string' ? JSON.parse(log.locations) : log.locations;
+                            locText = parsedLocs.map(l => `${l.area} (${l.side}) ${l.percentage}%`).join(', ');
+                        } catch (e) {
+                            locText = log.locations;
+                        }
+                        
+                        li.innerHTML = `
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <strong>Score: ${log.score}/10</strong>
+                                <small style="color: var(--text-dim);">${dateStr}</small>
+                            </div>
+                            <div style="font-size: 0.85rem;">Locations: ${locText}</div>
+                            ${log.mood ? `<div style="font-size: 0.85rem;">Mood: ${log.mood}</div>` : ''}
+                            ${log.notes ? `<div style="font-size: 0.85rem; font-style: italic; color: var(--text-dim);">"${log.notes}"</div>` : ''}
+                        `;
+                        painHistoryList.appendChild(li);
+                    });
+                } else {
+                    painHistoryList.innerHTML = '<p class="form-hint" style="text-align: center;">No pain history found.</p>';
+                }
+            }
+        } catch (e) {
+            painHistoryList.innerHTML = '<p class="form-hint" style="text-align: center; color: var(--neon-red);">Failed to load history</p>';
+            console.error(e);
+        }
+    }
+
+    btnViewPainHistory.addEventListener('click', () => {
+        painLogModal.classList.add('hidden');
+        painHistoryModal.classList.remove('hidden');
+        loadPainHistory();
+    });
+
+    btnClosePainHistory.addEventListener('click', () => {
+        painHistoryModal.classList.add('hidden');
+    });
+
+    btnBackToPainLog.addEventListener('click', () => {
+        painHistoryModal.classList.add('hidden');
+        painLogModal.classList.remove('hidden');
+    });
 
     function updatePainWeightTotal() {
         const total = [...painLocations.querySelectorAll('.pain-percentage')]
@@ -576,11 +646,34 @@ document.addEventListener('DOMContentLoaded', () => {
             const res = await fetch(API_NOTES);
             if (res.ok) {
                 const data = await res.json();
+                const container = document.getElementById('notesContainer');
+                container.innerHTML = '';
                 if (data.notes && data.notes.length > 0) {
-                    const textList = data.notes.map(n => `- ${n.content}`).join('\n');
-                    notesArea.value = textList;
+                    data.notes.forEach(note => {
+                        const card = document.createElement('div');
+                        card.className = 'glass-panel';
+                        card.style.padding = '15px';
+                        card.style.position = 'relative';
+                        card.style.display = 'flex';
+                        card.style.flexDirection = 'column';
+                        card.style.justifyContent = 'space-between';
+                        
+                        const content = document.createElement('p');
+                        content.textContent = note.content;
+                        content.style.marginBottom = '10px';
+                        content.style.fontSize = '0.9rem';
+                        
+                        const author = document.createElement('small');
+                        author.textContent = (note.author === 'rumble' ? '🤖 Rumble' : '👤 You') + ' - ' + new Date(note.created_at).toLocaleDateString();
+                        author.style.color = 'var(--text-dim)';
+                        author.style.fontSize = '0.75rem';
+                        
+                        card.appendChild(content);
+                        card.appendChild(author);
+                        container.appendChild(card);
+                    });
                 } else {
-                    notesArea.value = '';
+                    container.innerHTML = '<p class="form-hint" style="grid-column: 1 / -1; text-align: center;">No notes found.</p>';
                 }
             }
         } catch (e) {
@@ -589,8 +682,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    const newNoteInput = document.getElementById('newNoteInput');
+    
+    
     btnSaveNotes.addEventListener('click', async () => {
-        const content = notesArea.value.trim();
+        const content = newNoteInput.value.trim();
+        if (!content) return;
+        
         notesStatus.innerText = "Saving...";
         try {
             await fetch(API_NOTES, {
@@ -599,6 +697,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({ content: content, author: 'user' })
             });
             notesStatus.innerText = "Saved";
+            newNoteInput.value = '';
+            loadNotes();
             setTimeout(() => { notesStatus.innerText = "Synced with Neon DB"; }, 2000);
         } catch (e) {
             notesStatus.innerText = "Save failed";
@@ -661,7 +761,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (showBtn) {
             showBtn.addEventListener('click', () => {
                 const id = showBtn.getAttribute('data-id');
-                startRunnerModal(id);
+                if (id && id.toLowerCase().includes('yoga')) {
+                    loadExerciseSuggestions();
+                } else {
+                    startRunnerModal(id);
+                }
             });
         }
 

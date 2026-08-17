@@ -15,6 +15,9 @@ import {
   PainLogRecord,
   CreatePainLogInput,
   ExercisePreferenceRecord,
+  BudgetItem,
+  CreateBudgetItemInput,
+  CREATE_BUDGET_ITEMS_TABLE_SQL
 } from './schema';
 
 let pgPool: Pool | null = null;
@@ -92,6 +95,7 @@ export async function ensureTableExists(): Promise<void> {
       await pgPool.query(CREATE_NOTES_TABLE_SQL);
       await pgPool.query(CREATE_PAIN_LOGS_TABLE_SQL);
       await pgPool.query(CREATE_EXERCISE_PREFERENCES_TABLE_SQL);
+      await pgPool.query(CREATE_BUDGET_ITEMS_TABLE_SQL);
     }
   } else {
     if (!sqliteDb) {
@@ -102,11 +106,42 @@ export async function ensureTableExists(): Promise<void> {
       sqliteDb.exec(CREATE_NOTES_TABLE_SQL);
       sqliteDb.exec(CREATE_PAIN_LOGS_TABLE_SQL);
       sqliteDb.exec(CREATE_EXERCISE_PREFERENCES_TABLE_SQL);
+      sqliteDb.exec(CREATE_BUDGET_ITEMS_TABLE_SQL);
     }
   }
 }
 
+export async function createBudgetItem(input: CreateBudgetItemInput): Promise<BudgetItem> {
+  await ensureTableExists();
+  const id = input.id || `budget_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  const created_at = new Date().toISOString();
+  
+  const newItem: BudgetItem = {
+    id,
+    description: input.description,
+    amount: input.amount,
+    category: input.category,
+    type: input.type,
+    created_at,
+  };
 
+  const status = getDbStatus();
+
+  if (status.provider === 'neon' && pgPool) {
+    const text = 'INSERT INTO budget_items(id, description, amount, category, type, created_at) VALUES($1, $2, $3, $4, $5, $6)';
+    const values = [newItem.id, newItem.description, newItem.amount, newItem.category, newItem.type, newItem.created_at];
+    await pgPool.query(text, values);
+  } else if (status.provider === 'sqlite' && sqliteDb) {
+    const stmt = sqliteDb.prepare(
+      'INSERT INTO budget_items (id, description, amount, category, type, created_at) VALUES (?, ?, ?, ?, ?, ?)'
+    );
+    stmt.run(newItem.id, newItem.description, newItem.amount, newItem.category, newItem.type, newItem.created_at);
+  } else {
+    throw new Error('Database not initialized');
+  }
+
+  return newItem;
+}
 
 export async function closeDb(): Promise<void> {
   if (pgPool) {

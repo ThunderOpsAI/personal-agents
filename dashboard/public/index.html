@@ -222,7 +222,7 @@
                     </div>
                     <textarea id="unifiedNotesInput" class="glass-input notes-textarea" placeholder="Notes..."></textarea>
                 </div>
-                <div class="modal-footer"><button class="btn btn-outline" id="btnCancelPainLog">Cancel</button><button class="btn btn-neon-red" id="btnLogPain">Save pain log</button></div>
+                <div class="modal-footer"><button class="btn btn-outline" id="btnViewPainHistory">View History</button><button class="btn btn-outline" id="btnCancelPainLog">Cancel</button><button class="btn btn-neon-red" id="btnLogPain">Save pain log</button></div>
             </div>
         </div>
 
@@ -284,15 +284,38 @@
                     <h2>Notes & Directives</h2>
                     <button class="btn-close" id="btnCloseNotes">&times;</button>
                 </div>
-                <div class="notes-body">
-                    <textarea id="notesArea" placeholder="Type persistent notes, agenda items, or instructions for RUMBLE..."></textarea>
+                <div class="notes-body" style="display: flex; flex-direction: column; gap: 15px;">
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="newNoteInput" class="glass-input" placeholder="Take a note..." style="flex: 1;" />
+                        <button class="btn btn-neon-green btn-sm" id="btnSaveNotes">Add Note</button>
+                    </div>
+                    <div id="notesContainer" class="notes-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; max-height: 400px; overflow-y: auto;">
+                        <!-- Notes will be loaded here -->
+                    </div>
                 </div>
                 <div class="notes-footer">
                     <span class="notes-status" id="notesStatus">Synced with Neon DB</span>
                     <div class="modal-actions">
-                        <button class="btn btn-sm btn-outline" id="btnAskRumbleNote">Rumble Add</button>
-                        <button class="btn btn-neon-green btn-sm" id="btnSaveNotes">Save</button>
+                        <button class="btn btn-sm btn-outline" id="btnAskRumbleNote">Ask Rumble to analyze notes</button>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pain History Modal -->
+        <div class="modal-overlay hidden" id="painHistoryModal">
+            <div class="modal-content glass-panel pain-history-modal-content">
+                <div class="modal-header">
+                    <h2>Pain History</h2>
+                    <button class="btn-close" id="btnClosePainHistory">&times;</button>
+                </div>
+                <div class="pain-history-body" style="max-height: 400px; overflow-y: auto;">
+                    <ul id="painHistoryList" style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 10px;">
+                        <!-- Logs will be loaded here -->
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline btn-sm" id="btnBackToPainLog">Back to Log Pain</button>
                 </div>
             </div>
         </div>
@@ -335,7 +358,6 @@
 
     </div>
 
-    <script src="/app.js?v=2"></script>
+    <script src="app.js?v=3"></script>
 </body>
 </html>
-
