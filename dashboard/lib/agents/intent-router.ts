@@ -66,7 +66,7 @@ export interface ParsedPainLog {
 }
 
 export interface ActionPreview {
-  type: "pain_log" | "note" | "task";
+  type: "pain_log" | "note" | "task" | "multi_action" | "calendar_event";
   data: Record<string, any>;
 }
 
@@ -284,7 +284,7 @@ export function parseTaskDirective(message: string): { title: string; scheduled_
 /**
  * Call Gemini model with live grounding data.
  */
-async function callGemini(systemPrompt: string, userMessage: string): Promise<string> {
+async function callGemini(systemPrompt: string, userMessage: string, responseSchema?: any): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     return `Rumble: I received your message: "${userMessage}". Let me know if you would like to log pain, create a note, or check your agenda.`;
@@ -301,6 +301,7 @@ async function callGemini(systemPrompt: string, userMessage: string): Promise<st
         parts: [{ text: systemPrompt }],
       },
       contents: [{ role: "user", parts: [{ text: userMessage }] }],
+        ...(responseSchema ? { generationConfig: { responseMimeType: "application/json", responseSchema } } : {})
     }),
   });
 
@@ -321,208 +322,6 @@ async function callGemini(systemPrompt: string, userMessage: string): Promise<st
  * Routes and handles incoming chat messages dynamically.
  */
 export async function routeChatMessage(message: string): Promise<IntentRouteResult> {
-  const intent = classifyIntent(message);
-
-  // 1. LOG_PAIN Intent — Confirm-Before-Write Pattern
-  if (intent === "LOG_PAIN") {
-    const parseResult = parsePainLogDirective(message);
-
-    if (parseResult.errors.length > 0 || !parseResult.parsed) {
-      return {
-        reply: `Rumble: I noticed you want to log pain, but need clarification:\n- ${parseResult.errors.join("\n- ")}\n\nPlease provide a 1–10 score and anatomical locations whose percentage weights total exactly 100% (e.g. "Log pain 6/10 in lumbar 80% and neck 20%").`,
-        intent: "LOG_PAIN",
-        requires_confirmation: false,
-        disclaimer: MEDICAL_GUARDRAIL,
-      };
-    }
-
-    const { score, locations, mood, notes } = parseResult.parsed;
-    const locSummary = locations
-      .map(l => `${l.side && l.side !== "unspecified" ? l.side + " " : ""}${l.area} (${l.percentage}%)`)
-      .join(", ");
-
-    const preview: ActionPreview = {
-      type: "pain_log",
-      data: { score, locations, mood, notes },
-    };
-
-    return {
-      reply: `Rumble: [Preview] Pain Log Entry:\n• Score: ${score}/10\n• Locations: ${locSummary}\n• Mood: ${mood || "Not specified"}\n• Notes: ${notes || "None"}\n\n⚠️ Confirmation required: Reply or click Confirm to commit this record to your health log.`,
-      intent: "LOG_PAIN",
-      requires_confirmation: true,
-      preview,
-      disclaimer: MEDICAL_GUARDRAIL,
-      data: preview.data,
-    };
-  }
-
-  // 2. ADD_NOTE Intent — Confirm-Before-Write Pattern
-  if (intent === "ADD_NOTE") {
-    const content = parseNoteDirective(message);
-    if (!content) {
-      return {
-        reply: "Rumble: Please provide the content for the note you would like to save.",
-        intent: "ADD_NOTE",
-        requires_confirmation: false,
-      };
-    }
-
-    const preview: ActionPreview = {
-      type: "note",
-      data: { content },
-    };
-
-    return {
-      reply: `Rumble: [Preview] Note Entry:\n• Content: "${content}"\n\n⚠️ Confirmation required: Reply or click Confirm to save this note to your notebook.`,
-      intent: "ADD_NOTE",
-      requires_confirmation: true,
-      preview,
-      data: preview.data,
-    };
-  }
-
-  // 3. ADD_TASK Intent — Confirm-Before-Write Pattern
-  if (intent === "ADD_TASK") {
-    const parsedTask = parseTaskDirective(message);
-    if (!parsedTask) {
-      return {
-        reply: "Rumble: Please specify the task or reminder you would like to add to your agenda.",
-        intent: "ADD_TASK",
-        requires_confirmation: false,
-      };
-    }
-
-    const preview: ActionPreview = {
-      type: "task",
-      data: parsedTask,
-    };
-
-    return {
-      reply: `Rumble: [Preview] Agenda Task:\n• Title: "${parsedTask.title}"\n• Scheduled: Tomorrow 09:00 AM\n\n⚠️ Confirmation required: Reply or click Confirm to add this task to your live agenda.`,
-      intent: "ADD_TASK",
-      requires_confirmation: true,
-      preview,
-      data: preview.data,
-    };
-  }
-
-  // 4. CHECK_EMAIL Intent — Live Read (No confirmation needed)
-  if (intent === "CHECK_EMAIL") {
-    try {
-      const emailRes = await fetchLiveGmailMessages({ maxResults: 5 });
-
-      if (emailRes.status === "auth_required") {
-        return {
-          reply: "Rumble: Google Gmail authorization is required to read your live emails. Please authenticate via the Settings panel.",
-          intent: "CHECK_EMAIL",
-          requires_confirmation: false,
-        };
-      }
-
-      if (emailRes.status === "error") {
-        return {
-          reply: "Rumble: Unable to retrieve Gmail messages at this time. Please ensure Google OAuth credentials are valid.",
-          intent: "CHECK_EMAIL",
-          requires_confirmation: false,
-        };
-      }
-
-      const messages = emailRes.messages || [];
-      if (messages.length === 0) {
-        return {
-          reply: "Rumble: Checked your Gmail inbox. You have no unread urgent messages requiring follow-up.",
-          intent: "CHECK_EMAIL",
-          requires_confirmation: false,
-        };
-      }
-
-      const emailList = messages
-        .map((m: any) => `• From: ${m.from || m.id}\n  Subject: ${m.subject || "No Subject"}\n  Summary: ${m.snippet || ""}`)
-        .join("\n\n");
-
-      return {
-        reply: `Rumble: Here are your latest messages from Gmail:\n\n${emailList}`,
-        intent: "CHECK_EMAIL",
-        requires_confirmation: false,
-        data: { messages },
-      };
-    } catch {
-      return {
-        reply: "Rumble: Unable to retrieve Gmail messages at this time. Please ensure Google OAuth credentials are valid.",
-        intent: "CHECK_EMAIL",
-        requires_confirmation: false,
-      };
-    }
-  }
-
-
-  // 5. AGENDA_QUERY Intent — Live Read (No confirmation needed)
-  if (intent === "AGENDA_QUERY") {
-    try {
-      const items = await getAgendaItems();
-      const activeItems = items.filter(i => i.status === "pending");
-
-      if (activeItems.length === 0) {
-        return {
-          reply: "Rumble: Your agenda has no pending items scheduled for today.",
-          intent: "AGENDA_QUERY",
-          requires_confirmation: false,
-        };
-      }
-
-      const formatted = activeItems
-        .map(i => `• ${i.title} (${i.item_type}) - Scheduled: ${new Date(i.scheduled_time).toLocaleTimeString("en-AU", { hour: "2-digit", minute: "2-digit", timeZone: "Australia/Melbourne" })}`)
-        .join("\n");
-
-      return {
-        reply: `Rumble: Here are your active agenda items:\n\n${formatted}`,
-        intent: "AGENDA_QUERY",
-        requires_confirmation: false,
-        data: { items: activeItems },
-      };
-    } catch {
-      return {
-        reply: "Rumble: Unable to retrieve agenda items right now.",
-        intent: "AGENDA_QUERY",
-        requires_confirmation: false,
-      };
-    }
-  }
-
-  // 6. WEATHER_QUERY Intent — Live Read (No confirmation needed)
-  if (intent === "WEATHER_QUERY") {
-    try {
-      const washing = await selectWashingDays();
-      if (washing.status === "unavailable") {
-        return {
-          reply: "Rumble: Live weather for Wangaratta, Victoria is currently unavailable from Open-Meteo.",
-          intent: "WEATHER_QUERY",
-          requires_confirmation: false,
-        };
-      }
-
-      const daysSummary = washing.days
-        .map((d: WashingDay) => `• ${d.date}: ${d.precipitationProbability}% precipitation probability (High: ${d.tempMax ?? "N/A"}°C)`)
-        .join("\n");
-
-
-      return {
-        reply: `Rumble: Current 7-day weather forecast for Wangaratta, Victoria:\nRecommended washing days (lowest precipitation risk):\n${daysSummary}`,
-        intent: "WEATHER_QUERY",
-        requires_confirmation: false,
-        data: { washingDays: washing.days },
-      };
-    } catch {
-      return {
-        reply: "Rumble: Weather data service is currently unavailable.",
-        intent: "WEATHER_QUERY",
-        requires_confirmation: false,
-      };
-    }
-  }
-
-  // 7. MEDICAL_TRIAGE & PAIN_DISCUSSION & GREETING & GENERAL & CONVERSATION
-  // Ground with comprehensive real live system context and call Gemini
   const nowMel = new Date().toLocaleString("en-AU", { timeZone: "Australia/Melbourne" });
   
   let liveAgendaText = "No active agenda items.";
@@ -544,13 +343,11 @@ export async function routeChatMessage(message: string): Promise<IntentRouteResu
     }
   } catch {}
 
-
   let livePainText = "No recent pain logs recorded.";
   try {
     const painLogs = await getPainLogsFromDb();
     if (painLogs.length > 0) {
       const pl = painLogs[0];
-
       const locs = pl.locations.map((l: any) => `${l.side && l.side !== "unspecified" ? l.side + " " : ""}${l.area} (${l.percentage}%)`).join(", ");
       livePainText = `Latest score: ${pl.score}/10 in ${locs} (Mood: ${pl.mood || "N/A"}, Notes: ${pl.notes || "None"})`;
     }
@@ -563,7 +360,7 @@ export async function routeChatMessage(message: string): Promise<IntentRouteResu
       calendarText = "Google Calendar is NOT connected (OAuth authorization required at /api/v1/auth/google).";
     } else if (calRes.status === "success" && calRes.events && calRes.events.length > 0) {
       calendarText = calRes.events
-        .map((e: any) => `• ${e.summary || "Event"} (${new Date(e.start).toLocaleString("en-AU", { timeZone: "Australia/Melbourne" })})`)
+        .map((e: any) => `• ${e.summary || "Event"} (${new Date(e.start?.dateTime || e.start?.date || e.start).toLocaleString("en-AU", { timeZone: "Australia/Melbourne" })})`)
         .join("\n");
     }
   } catch {}
@@ -575,7 +372,7 @@ export async function routeChatMessage(message: string): Promise<IntentRouteResu
       emailText = "Gmail is NOT connected (OAuth authorization required at /api/v1/auth/google).";
     } else if (emailRes.status === "success" && emailRes.messages && emailRes.messages.length > 0) {
       emailText = emailRes.messages
-        .map((m: any) => `• From: ${m.from} | Subject: "${m.subject}" | Summary: ${m.snippet}`)
+        .map((m: any) => `• From: ${m.from || "Unknown"} | Subject: "${m.subject || "No Subject"}" | Summary: ${m.snippet || ""}`)
         .join("\n");
     }
   } catch {}
@@ -595,57 +392,119 @@ Location: Wangaratta, Victoria, Australia.
 === LIVE USER DATA (SOURCE OF TRUTH) ===
 [ACTIVE AGENDA ITEMS]
 ${liveAgendaText}
-
 [RECENT USER NOTES]
 ${liveNotesText}
-
 [LATEST HEALTH & PAIN LOG]
 ${livePainText}
-
 [LIVE GOOGLE CALENDAR]
 ${calendarText}
-
 [LIVE GMAIL INBOX]
 ${emailText}
-
 [WANGARATTA WEATHER & WASHING FORECAST]
 ${weatherText}
-
-=== STANDING NON-NEGOTIABLES ===
-1. Daily Adaptive Yoga: Every day at 09:00 AM (adapts to live pain logs and surgeon restrictions).
-2. Nightly Meditation Protocol: Every night at 09:00 PM (21:00) and 12:00 AM (00:00).
-3. Daily Continuous Learning Card: Every morning at 07:30 AM (rotates 3 topics or user choice).
-4. Weekly Hydrotherapy: 3 pool sessions targeted per week (Rumble calculates remaining sessions needed).
-5. Weekly Washing Days: 2 days chosen from live Wangaratta forecast using lowest precipitation probabilities.
 
 === CRITICAL BEHAVIORAL & SAFETY RULES ===
 1. MEDICAL DISCLAIMER: "${MEDICAL_GUARDRAIL}". Always include this on any medical/recovery discussion.
 2. LIVE DATA ONLY: You MUST strictly use the real live events, emails, notes, and agenda items provided above. NEVER invent, hallucinate, mock, or guess doctor names, appointments, clinic locations, or emails.
-3. If Google Calendar or Gmail is not authorized or has no events, explicitly state that to the user without inventing appointments.
-4. If the user asks to add an item to their agenda, notes, or log pain, explain what will be done and confirm the details clearly.
-5. Be concise, direct, supportive, and professional. Free of decorative emojis.`;
+3. Determine if the user's message is a conversational query (requiring only a reply) OR if it requires actions (e.g. adding a calendar event, adding a task, logging pain).
+4. If actions are required, return them in the actions array. Writes MUST require confirmation.`;
+
+  const responseSchema = {
+    type: "OBJECT",
+    properties: {
+      reply: { type: "STRING", description: "The conversational response to the user." },
+      actions: {
+        type: "ARRAY",
+        description: "A list of actions to perform (e.g., writes). Leave empty if just answering a question.",
+        items: {
+          type: "OBJECT",
+          properties: {
+            type: { type: "STRING", description: "One of: 'task', 'pain_log', 'note', 'calendar_event'" },
+            task_title: { type: "STRING" },
+            task_scheduled_time: { type: "STRING" },
+            calendar_summary: { type: "STRING" },
+            calendar_start_datetime: { type: "STRING" },
+            calendar_end_datetime: { type: "STRING" },
+            pain_score: { type: "INTEGER" },
+            pain_locations: { type: "ARRAY", items: { type: "OBJECT", properties: { area: { type: "STRING" }, percentage: { type: "INTEGER" } } } },
+            pain_mood: { type: "STRING" },
+            note_content: { type: "STRING" }
+          },
+          required: ["type"]
+        }
+      }
+    },
+    required: ["reply", "actions"]
+  };
 
   try {
-    let reply = await callGemini(systemPrompt, message);
-    const replyWithGuardrail = reply.includes(MEDICAL_GUARDRAIL) ? reply : `${reply}\n\n${MEDICAL_GUARDRAIL}`;
+    const replyStr = await callGemini(systemPrompt, message, responseSchema);
+    const parsed = JSON.parse(replyStr);
+    
+    let finalReply = parsed.reply;
+    if (finalReply.includes("pain") || finalReply.includes("doctor")) {
+        finalReply = finalReply.includes(MEDICAL_GUARDRAIL) ? finalReply : `${finalReply}\n\n${MEDICAL_GUARDRAIL}`;
+    }
+
+    if (parsed.actions && parsed.actions.length > 0) {
+      const mappedActions = parsed.actions.map((a: any) => {
+        let data: any = {};
+        if (a.type === "task") data = { title: a.task_title, scheduled_time: a.task_scheduled_time };
+        if (a.type === "calendar_event") {
+            let startStr = a.calendar_start_datetime;
+            try {
+                startStr = startStr ? new Date(startStr).toISOString() : new Date().toISOString();
+            } catch (e) {
+                startStr = new Date().toISOString();
+            }
+            let endStr = a.calendar_end_datetime;
+            try {
+                endStr = endStr ? new Date(endStr).toISOString() : "";
+            } catch (e) {
+                endStr = "";
+            }
+            if (!endStr) {
+                const endDt = new Date(startStr);
+                endDt.setHours(endDt.getHours() + 1);
+                endStr = endDt.toISOString();
+            }
+            data = { summary: a.calendar_summary, start: { dateTime: startStr }, end: { dateTime: endStr } };
+        }
+        if (a.type === "pain_log") data = { score: a.pain_score, locations: a.pain_locations, mood: a.pain_mood };
+        if (a.type === "note") data = { content: a.note_content };
+        return { type: a.type, data };
+      });
+
+      // If multiple actions, wrap them in multi_action so frontend can confirm all at once
+      const preview: ActionPreview = {
+        type: "multi_action",
+        data: { actions: mappedActions }
+      };
+      
+      const actionTypes = mappedActions.map((a: any) => a.type).join(", ");
+      
+      return {
+        reply: `${finalReply}\n\n⚠️ Confirmation required: Click Confirm to execute these actions: [${actionTypes}].`,
+        intent: "GENERAL",
+        requires_confirmation: true,
+        preview,
+        disclaimer: MEDICAL_GUARDRAIL,
+      };
+    }
 
     return {
-      reply: replyWithGuardrail,
-      intent: intent === "PAIN_DISCUSSION" || intent === "MEDICAL_TRIAGE" ? intent : "CONVERSATION",
+      reply: finalReply,
+      intent: "GENERAL",
+      requires_confirmation: false,
       disclaimer: MEDICAL_GUARDRAIL,
     };
   } catch (err: any) {
-    const fallbackReply = intent === "GREETING"
-      ? `Rumble: Hello! How can I assist you with your recovery or agenda today?\n\n${MEDICAL_GUARDRAIL}`
-      : `Rumble: I am here to assist with your recovery and daily operations.\n\n${MEDICAL_GUARDRAIL}`;
-
     return {
-      reply: fallbackReply,
+      reply: `Rumble: I am here to assist with your recovery and daily operations.\n\n${MEDICAL_GUARDRAIL}`,
       intent: "CONVERSATION",
       disclaimer: MEDICAL_GUARDRAIL,
     };
   }
-
 }
 
 /**
@@ -707,6 +566,32 @@ export async function executeConfirmedAction(action: ActionPreview | { type: str
       success: true,
       message: `Rumble: Confirmed and added agenda task: "${title}".`,
       result: savedTask,
+    };
+  }
+
+  if (action.type === "multi_action") {
+    const results = [];
+    for (const subAction of action.data.actions) {
+      const res = await executeConfirmedAction(subAction);
+      results.push(res.message);
+    }
+    return {
+      success: true,
+      message: `Rumble: Executed multiple actions:\n${results.map(r => `• ${r.replace('Rumble: ', '')}`).join('\n')}`,
+      result: results,
+    };
+  }
+
+  if (action.type === "calendar_event") {
+    const { addLiveCalendarEvent } = await import('../google-auth-add');
+    const res = await addLiveCalendarEvent(action.data);
+    if (res.status !== "success") {
+      throw new Error(`Failed to add calendar event: ${res.message}`);
+    }
+    return {
+      success: true,
+      message: `Rumble: Confirmed and added calendar event: "${action.data.summary}".`,
+      result: res.event,
     };
   }
 
