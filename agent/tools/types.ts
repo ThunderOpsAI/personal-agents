@@ -54,3 +54,4 @@ export type SendEmailTool = (params: { to: string; subject: string; body: string
 export type GetGmailMessagesTool = (params?: { query?: string; maxResults?: number }) => Promise<{ messages: GmailMessage[]; oauthStatus: OAuthStatus }>;
 export type QueryChromaPreferencesTool = (params: { painScore: number; locations: string[] }) => Promise<unknown>;
 export type RecordChromaFeedbackTool = (params: { exerciseId: string; prePainScore: number; postPainScore: number; feedback?: string }) => Promise<unknown>;
+export type FetchYogaRoutineTool = (params?: { category?: string; targetArea?: string; level?: string; limit?: number; contraindications?: string[] }) => Promise<unknown>;

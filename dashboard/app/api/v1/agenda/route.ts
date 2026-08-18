@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import { createAgendaItem, getAgendaItems, getDbStatus, updateAgendaItemStatus } from "../../../../lib/db";
 import { AgendaItemStatus } from "../../../../lib/schema";
-import { ensureStandingTasks, ensureDailyStandingProtocols } from "../../../../lib/agenda-engine";
+import {
+  ensureStandingTasks,
+  ensureDailyStandingProtocols,
+  calculateHydrotherapySessions,
+  selectWashingDays
+} from "../../../../lib/agenda-engine";
 import { fetchLiveCalendarEvents, getGoogleAuthUrl } from "../../../../lib/google-auth";
 
 export async function GET(request: Request) {
@@ -97,27 +102,131 @@ export async function GET(request: Request) {
       return isNaN(d.getTime()) ? now : d;
     };
 
-    const weekly = calendarEvents.map((e: any) => {
-      const d = parseEventDate(e);
+    // Calculate Hydrotherapy sessions for the week (targets 3 sessions)
+    const hydroSessions = calculateHydrotherapySessions(0, now);
+    const hydroItems = hydroSessions.map((s) => {
+      const d = new Date(s.date);
       const dayStr = d.toLocaleDateString("en-AU", { weekday: "short", day: "numeric", month: "short", timeZone: "Australia/Melbourne" });
       return {
+        id: `hydro_${s.date}`,
+        date: s.date,
+        day: dayStr,
+        title: "Hydrotherapy Pool Rehabilitation (Target: 3/week)",
+        type: "hydrotherapy",
+        time: "10:30 AM",
+        source: "rumble_schedule",
+        location: "Wangaratta Hydro Pool",
+        description: "Target 3 hydrotherapy sessions per week. Rumble-selected optimal recovery session."
+      };
+    });
+
+    // Calculate optimal Washing Days from live Wangaratta weather
+    let washingItems: any[] = [];
+    try {
+      const washingResult = await selectWashingDays();
+      if (washingResult && Array.isArray(washingResult)) {
+        washingItems = washingResult.slice(0, 2).map((w) => {
+          const d = new Date(w.date);
+          const dayStr = d.toLocaleDateString("en-AU", { weekday: "short", day: "numeric", month: "short", timeZone: "Australia/Melbourne" });
+          return {
+            id: `wash_${w.date}`,
+            date: w.date,
+            day: dayStr,
+            title: `Weather-Optimized Washing (${w.precipitationProbability}% precip)`,
+            type: "washing",
+            time: "01:00 PM",
+            source: "open_meteo",
+            description: `Optimal drying window selected from live Wangaratta forecast with ${w.precipitationProbability}% precipitation probability.`
+          };
+        });
+      }
+    } catch {}
+
+    // Map DB calendar events
+    const dbCalEvents = rawItems
+      .filter((i) => i.item_type === "calendar_event" && i.status !== "dismissed")
+      .map((i) => {
+        const d = parseEventDate(i);
+        const dayStr = d.toLocaleDateString("en-AU", { weekday: "short", day: "numeric", month: "short", timeZone: "Australia/Melbourne" });
+        const timeStr = d.toLocaleTimeString("en-AU", { hour: "2-digit", minute: "2-digit", timeZone: "Australia/Melbourne" });
+        return {
+          id: i.id,
+          date: d.toISOString().split("T")[0],
+          day: dayStr,
+          title: i.title,
+          type: "calendar",
+          time: timeStr,
+          source: "local_calendar",
+          description: "Scheduled calendar event."
+        };
+      });
+
+    const googleWeekly = calendarEvents.map((e: any) => {
+      const d = parseEventDate(e);
+      const dayStr = d.toLocaleDateString("en-AU", { weekday: "short", day: "numeric", month: "short", timeZone: "Australia/Melbourne" });
+      const timeStr = d.toLocaleTimeString("en-AU", { hour: "2-digit", minute: "2-digit", timeZone: "Australia/Melbourne" });
+      return {
+        id: e.id,
         date: d.toISOString().split("T")[0],
         day: dayStr,
         title: e.summary || e.title || "Calendar Event",
         type: "calendar",
+        time: timeStr,
+        location: e.location || "",
+        description: e.description || "",
+        source: "google_calendar",
       };
     });
 
-    const monthly = calendarEvents.map((e: any) => {
+    const weekly = [...googleWeekly, ...dbCalEvents, ...hydroItems, ...washingItems];
+    weekly.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    const googleMonthly = calendarEvents.map((e: any) => {
       const d = parseEventDate(e);
       const dateStr = d.toLocaleDateString("en-AU", { day: "numeric", month: "short", timeZone: "Australia/Melbourne" });
       return {
+        id: e.id,
         date: dateStr,
         title: e.summary || e.title || "Event",
         type: "calendar",
+        location: e.location || "",
+        description: e.description || "",
+        source: "google_calendar",
       };
     });
 
+    const monthlyStanding = [
+      {
+        id: "monthly_spec_rev",
+        date: `${now.getDate()} ${now.toLocaleDateString("en-AU", { month: "short" })}`,
+        title: "Physiotherapy & Rehab Milestone Review",
+        type: "medical",
+        source: "rumble_schedule",
+        description: "Monthly review of functional mobility, pain logs, and rehabilitation trajectory."
+      },
+      {
+        id: "monthly_soul_syn",
+        date: `${Math.min(now.getDate() + 7, 28)} ${now.toLocaleDateString("en-AU", { month: "short" })}`,
+        title: "SOUL Synthesis: Monthly Rehabilitation Learnings",
+        type: "learning",
+        source: "rumble_schedule",
+        description: "Synthesized monthly rehabilitation insights and adaptive preference updates."
+      }
+    ];
+
+    const monthly = [...googleMonthly, ...monthlyStanding, ...weekly.map(w => ({
+      id: w.id,
+      date: new Date(w.date).toLocaleDateString("en-AU", { day: "numeric", month: "short" }),
+      title: w.title,
+      type: w.type,
+      location: w.location || "",
+      description: w.description || "",
+      source: w.source
+    }))];
+    // De-duplicate monthly items by id
+    const monthlyMap = new Map();
+    monthly.forEach(m => { if (!monthlyMap.has(m.id)) monthlyMap.set(m.id, m); });
+    const uniqueMonthly = Array.from(monthlyMap.values());
 
     return NextResponse.json({
       status: "success",
@@ -125,7 +234,7 @@ export async function GET(request: Request) {
       items,
       daily,
       weekly,
-      monthly,
+      monthly: uniqueMonthly,
       calendar_status: calendarStatus,
       calendar_events: calendarEvents,
       ...(authUrl ? { authUrl } : {}),

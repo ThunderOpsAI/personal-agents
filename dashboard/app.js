@@ -181,71 +181,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const res = await fetch(API_AGENDA);
             if (res.ok) {
                 const data = await res.json();
-                const dailyItems = data.daily || [];
-                const countBadge = document.getElementById('agendaCount');
-                if (countBadge) countBadge.textContent = `${dailyItems.length} Items`;
+                cachedAgendaData = data;
                 
-                // Clear existing dynamic cards (leave #protocol-learn)
-                document.querySelectorAll('.protocol-card:not(#protocol-learn)').forEach(c => c.remove());
-
-                if (dailyItems.length > 0) {
-                    dailyItems.forEach(item => {
-                        if (item.item_type === 'learning' || item.id === 'protocol-learn') return;
-                        const isCompleted = item.status === 'completed';
-                        const isDismissed = item.status === 'dismissed';
-                        if (isDismissed) return;
-
-                        const card = document.createElement('div');
-                        card.className = `protocol-card glass-panel${isCompleted ? ' completed' : ''}`;
-                        card.id = `protocol-${item.id}`;
-                        card.innerHTML = `
-                            <div class="protocol-info">
-                                <h3>${item.time}</h3>
-                                <p>${item.title}</p>
-                                ${item.choices ? `<small class="form-hint">Choices: ${item.choices.join(' · ')}</small>` : ''}
-                            </div>
-                            <div class="protocol-actions">
-                                <button class="btn btn-neon-purple btn-show-me" data-id="${item.id}" ${isCompleted ? 'disabled' : ''}>Show Me</button>
-                                <button class="btn btn-neon-green btn-done" data-id="${item.id}" ${isCompleted ? 'disabled' : ''}>${isCompleted ? 'Done' : 'Done'}</button>
-                                <button class="btn btn-outline btn-dismiss" data-id="${item.id}" ${isCompleted ? '' : 'disabled'}>Dismiss</button>
-                            </div>
-                        `;
-                        agendaStream.appendChild(card);
-                        attachCardEvents(card);
-                    });
-                }
-                
-                if (weeklyAgendaList) {
-                    weeklyAgendaList.innerHTML = '';
-                    if (data.weekly && data.weekly.length > 0) {
-                        data.weekly.forEach(w => {
-                            const div = document.createElement('div');
-                            div.className = 'agenda-item';
-                            div.innerHTML = `<span class="agenda-date">${w.day || w.date}</span><span class="agenda-text">${w.title}</span>`;
-                            weeklyAgendaList.appendChild(div);
-                        });
-                    } else if (data.calendar_status === 'auth_required') {
-                        weeklyAgendaList.innerHTML = `<div class="agenda-item"><span class="agenda-text" style="color: var(--neon-blue);">Google Calendar authorization required to sync live events.</span></div>`;
-                    } else {
-                        weeklyAgendaList.innerHTML = `<div class="agenda-item"><span class="agenda-text">No calendar events scheduled this week.</span></div>`;
-                    }
+                if (isTomorrowView) {
+                    renderTomorrowAgenda();
+                    return;
                 }
 
-                if (monthlyAgendaList) {
-                    monthlyAgendaList.innerHTML = '';
-                    if (data.monthly && data.monthly.length > 0) {
-                        data.monthly.forEach(m => {
-                            const div = document.createElement('div');
-                            div.className = 'agenda-item';
-                            div.innerHTML = `<span class="agenda-date">${m.date}</span><span class="agenda-text">${m.title}</span>`;
-                            monthlyAgendaList.appendChild(div);
-                        });
-                    } else if (data.calendar_status === 'auth_required') {
-                        monthlyAgendaList.innerHTML = `<div class="agenda-item"><span class="agenda-text" style="color: var(--neon-purple);">Google Calendar authorization required.</span></div>`;
-                    } else {
-                        monthlyAgendaList.innerHTML = `<div class="agenda-item"><span class="agenda-text">No calendar events scheduled this month.</span></div>`;
-                    }
-                }
+                renderTodayAgenda(data);
             }
         } catch (e) {
             showToast('Failed to load agenda');
@@ -253,7 +196,344 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    loadAgenda();
+    function renderTodayAgenda(data) {
+        if (dailyAgendaTitle) dailyAgendaTitle.innerText = "Daily Agenda";
+        if (agendaDateIndicator) agendaDateIndicator.innerText = "Today";
+        if (tomorrowBanner) tomorrowBanner.classList.add('hidden');
+        if (btnTomorrowText) btnTomorrowText.innerText = "Continue to Tomorrow's Agenda";
+        if (btnTomorrowIcon) btnTomorrowIcon.innerHTML = "&rarr;";
+
+        const dailyItems = data.daily || [];
+        const countBadge = document.getElementById('agendaCount');
+        if (countBadge) countBadge.textContent = `${dailyItems.length} Items`;
+        
+        // Clear existing dynamic cards (leave #protocol-learn)
+        document.querySelectorAll('.protocol-card:not(#protocol-learn)').forEach(c => c.remove());
+
+        if (dailyItems.length > 0) {
+            dailyItems.forEach(item => {
+                if (item.item_type === 'learning' || item.id === 'protocol-learn') return;
+                const isCompleted = item.status === 'completed';
+                const isDismissed = item.status === 'dismissed';
+                if (isDismissed) return;
+
+                const card = document.createElement('div');
+                card.className = `protocol-card glass-panel${isCompleted ? ' completed' : ''}`;
+                card.id = `protocol-${item.id}`;
+                card.innerHTML = `
+                    <div class="protocol-info">
+                        <h3>${item.time}</h3>
+                        <p>${item.title}</p>
+                        ${item.choices ? `<small class="form-hint">Choices: ${item.choices.join(' · ')}</small>` : ''}
+                    </div>
+                    <div class="protocol-actions">
+                        <button class="btn btn-neon-purple btn-show-me" data-id="${item.id}" data-type="${item.item_type || ''}" ${isCompleted ? 'disabled' : ''}>Show Me</button>
+                        <button class="btn btn-neon-green btn-done" data-id="${item.id}" data-type="${item.item_type || ''}" ${isCompleted ? 'disabled' : ''}>${isCompleted ? 'Done' : 'Done'}</button>
+                        <button class="btn btn-outline btn-dismiss" data-id="${item.id}" data-type="${item.item_type || ''}" ${isCompleted ? '' : 'disabled'}>Dismiss</button>
+                    </div>
+                `;
+                agendaStream.appendChild(card);
+                attachCardEvents(card);
+            });
+        }
+        
+        const cards = Array.from(agendaStream.querySelectorAll('.protocol-card'));
+        cards.sort((a, b) => {
+            const timeStrA = a.querySelector('h3').innerText.trim();
+            const timeStrB = b.querySelector('h3').innerText.trim();
+            const parseTime = (str) => {
+                const match = str.match(/(\d+):(\d+)\s*(AM|PM)/i);
+                if (!match) return 0;
+                let h = parseInt(match[1]);
+                let m = parseInt(match[2]);
+                let ampm = match[3].toUpperCase();
+                if (ampm === 'PM' && h < 12) h += 12;
+                if (ampm === 'AM' && h === 12) h = 0;
+                return h * 60 + m;
+            };
+            return parseTime(timeStrA) - parseTime(timeStrB);
+        });
+        cards.forEach(c => agendaStream.appendChild(c));
+
+        renderWeeklyCalendarList(data);
+        renderMonthlyCalendarList(data);
+    }
+
+    function renderWeeklyCalendarList(data) {
+        if (!weeklyAgendaList) return;
+        weeklyAgendaList.innerHTML = '';
+        if (data.weekly && data.weekly.length > 0) {
+            data.weekly.forEach(w => {
+                const div = document.createElement('div');
+                div.className = 'agenda-item clickable';
+                div.innerHTML = `
+                    <span class="agenda-date">${w.day || w.date}</span>
+                    <span class="agenda-text" style="flex: 1;">${w.title}</span>
+                    <span class="badge neon-blue" style="font-size: 0.72rem; padding: 2px 6px;">${w.time || 'Google Cal'}</span>
+                `;
+                div.addEventListener('click', () => openCalendarEventView(w));
+                weeklyAgendaList.appendChild(div);
+            });
+        } else if (data.calendar_status === 'auth_required') {
+            weeklyAgendaList.innerHTML = `<div class="agenda-item"><span class="agenda-text" style="color: var(--neon-blue);">Google Calendar authorization required to sync live events.</span></div>`;
+        } else {
+            weeklyAgendaList.innerHTML = `<div class="agenda-item"><span class="agenda-text">No calendar events scheduled this week.</span></div>`;
+        }
+    }
+
+    function renderMonthlyCalendarList(data) {
+        if (!monthlyAgendaList) return;
+        monthlyAgendaList.innerHTML = '';
+        if (data.monthly && data.monthly.length > 0) {
+            data.monthly.forEach(m => {
+                const div = document.createElement('div');
+                div.className = 'agenda-item clickable';
+                div.innerHTML = `
+                    <span class="agenda-date">${m.date}</span>
+                    <span class="agenda-text" style="flex: 1;">${m.title}</span>
+                    <span class="badge neon-purple" style="font-size: 0.72rem; padding: 2px 6px;">${m.time || 'Monthly'}</span>
+                `;
+                div.addEventListener('click', () => openCalendarEventView(m));
+                monthlyAgendaList.appendChild(div);
+            });
+        } else if (data.calendar_status === 'auth_required') {
+            monthlyAgendaList.innerHTML = `<div class="agenda-item"><span class="agenda-text" style="color: var(--neon-purple);">Google Calendar authorization required.</span></div>`;
+        } else {
+            monthlyAgendaList.innerHTML = `<div class="agenda-item"><span class="agenda-text">No calendar events scheduled this month.</span></div>`;
+        }
+    }
+
+    function renderTomorrowAgenda() {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const dayStr = tomorrow.toLocaleDateString('en-AU', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' });
+        
+        if (tomorrowDateSub) tomorrowDateSub.innerText = `${dayStr} • Prepare and review upcoming tasks`;
+        if (dailyAgendaTitle) dailyAgendaTitle.innerText = "Tomorrow's Agenda";
+        if (agendaDateIndicator) agendaDateIndicator.innerText = "Tomorrow (Prep Mode)";
+        if (tomorrowBanner) tomorrowBanner.classList.remove('hidden');
+        if (btnTomorrowText) btnTomorrowText.innerText = "Return to Today's Agenda";
+        if (btnTomorrowIcon) btnTomorrowIcon.innerHTML = "&larr;";
+        
+        // Remove non-learning cards
+        document.querySelectorAll('.protocol-card:not(#protocol-learn)').forEach(c => c.remove());
+        
+        const tomorrowProtocols = [
+            { id: 'tom_retrieval_0600', time: '06:00 AM', title: 'Automated Retrieval: Scrape Gmail & Calendar', item_type: 'retrieval', status: 'pending' },
+            { id: 'tom_yoga_0900', time: '09:00 AM', title: 'Adaptive Morning Yoga Routine (3 Options Dynamic)', item_type: 'yoga', status: 'pending', choices: ['Hip Flow', 'Lumbar Core', 'Shoulder Rehab'] },
+            { id: 'tom_hydro_1030', time: '10:30 AM', title: 'Hydrotherapy Session (Rumble Target: 3/week)', item_type: 'hydrotherapy', status: 'pending' },
+            { id: 'tom_wash_1300', time: '01:00 PM', title: 'Weather-Optimized Washing (Lowest Precip Window)', item_type: 'washing', status: 'pending' },
+            { id: 'tom_email_1400', time: '02:00 PM', title: 'Automated Afternoon Email & Calendar Scrape', item_type: 'retrieval', status: 'pending' },
+            { id: 'tom_med_2100', time: '09:00 PM', title: 'Evening Meditation Protocol & Somatic Unwind', item_type: 'meditation', status: 'pending' },
+            { id: 'tom_rest_0000', time: '12:00 AM', title: 'Midnight Restorative Decompression', item_type: 'meditation', status: 'pending' }
+        ];
+
+        // Also append any tomorrow calendar events
+        if (cachedAgendaData?.weekly) {
+            const tomShort = tomorrow.toLocaleDateString('en-AU', { weekday: 'short' });
+            cachedAgendaData.weekly.forEach(w => {
+                if ((w.day || '').includes(tomShort)) {
+                    tomorrowProtocols.push({
+                        id: w.id || `tom_cal_${Date.now()}`,
+                        time: w.time || '10:00 AM',
+                        title: `Calendar: ${w.title}`,
+                        item_type: 'calendar_event',
+                        status: 'pending'
+                    });
+                }
+            });
+        }
+        
+        const countBadge = document.getElementById('agendaCount');
+        if (countBadge) countBadge.textContent = `${tomorrowProtocols.length + 1} Items (Prep)`;
+        
+        tomorrowProtocols.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'protocol-card glass-panel';
+            card.id = `protocol-${item.id}`;
+            card.innerHTML = `
+                <div class="protocol-info">
+                    <h3>${item.time} <span class="badge neon-blue" style="font-size: 0.72rem;">Tomorrow</span></h3>
+                    <p>${item.title}</p>
+                    ${item.choices ? `<small class="form-hint">Choices: ${item.choices.join(' · ')}</small>` : ''}
+                </div>
+                <div class="protocol-actions">
+                    <button class="btn btn-neon-purple btn-show-me" data-id="${item.id}" data-type="${item.item_type || ''}">Preview</button>
+                    <button class="btn btn-neon-green btn-done" data-id="${item.id}" data-type="${item.item_type || ''}">Pre-Done</button>
+                    <button class="btn btn-outline btn-dismiss" data-id="${item.id}" data-type="${item.item_type || ''}">Dismiss</button>
+                </div>
+            `;
+            agendaStream.appendChild(card);
+            attachCardEvents(card);
+        });
+        
+        showToast('Tomorrow\'s agenda prep loaded', 'info');
+    }
+
+    // Tomorrow Agenda Toggle Listeners
+    if (btnTomorrowAgenda) {
+        btnTomorrowAgenda.addEventListener('click', () => {
+            isTomorrowView = !isTomorrowView;
+            if (isTomorrowView) {
+                renderTomorrowAgenda();
+            } else if (cachedAgendaData) {
+                renderTodayAgenda(cachedAgendaData);
+            } else {
+                loadAgenda();
+            }
+        });
+    }
+
+    if (btnReturnToday) {
+        btnReturnToday.addEventListener('click', () => {
+            isTomorrowView = false;
+            if (cachedAgendaData) {
+                renderTodayAgenda(cachedAgendaData);
+            } else {
+                loadAgenda();
+            }
+        });
+    }
+
+    // --- Google Calendar Interactive View & Edit Engine ---
+    function openCalendarEventView(event) {
+        activeCalendarEvent = event;
+        if (!calendarEventViewModal) return;
+
+        if (viewCalEventTitle) viewCalEventTitle.innerText = event.title || event.summary || 'Calendar Event';
+        if (viewCalEventBadge) viewCalEventBadge.innerText = event.source === 'google_calendar' ? 'Google Calendar' : 'Rumble Schedule';
+        if (viewCalEventStatus) viewCalEventStatus.innerText = 'Confirmed';
+        
+        const whenText = `${event.day || event.date || 'Today'} ${event.time ? '• ' + event.time : ''}`;
+        if (viewCalEventWhen) viewCalEventWhen.innerText = whenText;
+
+        if (event.location) {
+            if (viewCalEventLocationRow) viewCalEventLocationRow.style.display = 'block';
+            if (viewCalEventLocation) viewCalEventLocation.innerText = event.location;
+        } else {
+            if (viewCalEventLocationRow) viewCalEventLocationRow.style.display = 'none';
+        }
+
+        if (viewCalEventDesc) {
+            viewCalEventDesc.innerText = event.description || event.desc || 'No additional notes provided.';
+        }
+
+        calendarEventViewModal.classList.remove('hidden');
+    }
+
+    function openCalendarEventEdit(event) {
+        if (!calendarEventEditModal) return;
+        
+        const todayStr = new Date().toISOString().split('T')[0];
+        if (calEventId) calEventId.value = event?.id || '';
+        if (calInputTitle) calInputTitle.value = event?.title || event?.summary || '';
+        if (calInputDate) calInputDate.value = event?.rawDate || todayStr;
+        if (calInputLocation) calInputLocation.value = event?.location || '';
+        if (calInputStartTime) calInputStartTime.value = event?.startTime || '09:00';
+        if (calInputEndTime) calInputEndTime.value = event?.endTime || '10:00';
+        if (calInputDesc) calInputDesc.value = event?.description || event?.desc || '';
+        
+        if (editCalModalTitle) {
+            editCalModalTitle.innerText = event?.id ? 'Edit Calendar Event' : 'Add Calendar Event';
+        }
+
+        if (calendarEventViewModal) calendarEventViewModal.classList.add('hidden');
+        calendarEventEditModal.classList.remove('hidden');
+    }
+
+    if (btnCloseCalView) btnCloseCalView.addEventListener('click', () => calendarEventViewModal.classList.add('hidden'));
+    if (btnDoneCalView) btnDoneCalView.addEventListener('click', () => calendarEventViewModal.classList.add('hidden'));
+    
+    if (btnEditCalendarEvent) {
+        btnEditCalendarEvent.addEventListener('click', () => {
+            if (activeCalendarEvent) openCalendarEventEdit(activeCalendarEvent);
+        });
+    }
+
+    if (btnDeleteCalendarEvent) {
+        btnDeleteCalendarEvent.addEventListener('click', async () => {
+            if (!activeCalendarEvent) return;
+            const confirmDelete = confirm(`Are you sure you want to delete the event: "${activeCalendarEvent.title || activeCalendarEvent.summary}"?`);
+            if (!confirmDelete) return;
+
+            try {
+                const res = await fetch(`${API_CALENDAR_EVENTS}?eventId=${encodeURIComponent(activeCalendarEvent.id)}`, {
+                    method: 'DELETE',
+                });
+                if (res.ok) {
+                    showToast('Event deleted from Calendar', 'info');
+                    calendarEventViewModal.classList.add('hidden');
+                    loadAgenda();
+                } else {
+                    showToast('Failed to delete event');
+                }
+            } catch (err) {
+                showToast('Error deleting calendar event');
+                console.error(err);
+            }
+        });
+    }
+
+    if (btnAddWeeklyEvent) {
+        btnAddWeeklyEvent.addEventListener('click', () => openCalendarEventEdit(null));
+    }
+
+    if (btnAddMonthlyEvent) {
+        btnAddMonthlyEvent.addEventListener('click', () => openCalendarEventEdit(null));
+    }
+
+    if (btnCloseCalEdit) btnCloseCalEdit.addEventListener('click', () => calendarEventEditModal.classList.add('hidden'));
+    if (btnCancelCalEdit) btnCancelCalEdit.addEventListener('click', () => calendarEventEditModal.classList.add('hidden'));
+
+    if (calEventForm) {
+        calEventForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = calEventId.value.trim();
+            const title = calInputTitle.value.trim();
+            const date = calInputDate.value;
+            const startTime = calInputStartTime.value;
+            const endTime = calInputEndTime.value;
+            const location = calInputLocation.value.trim();
+            const desc = calInputDesc.value.trim();
+
+            if (!title || !date || !startTime || !endTime) {
+                showToast('Please fill in all required fields.');
+                return;
+            }
+
+            const startIso = `${date}T${startTime}:00+10:00`;
+            const endIso = `${date}T${endTime}:00+10:00`;
+
+            const payload = {
+                eventId: id || undefined,
+                summary: title,
+                description: desc,
+                location: location,
+                start: startIso,
+                end: endIso,
+            };
+
+            try {
+                const res = await fetch(API_CALENDAR_EVENTS, {
+                    method: id ? 'PATCH' : 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    showToast(id ? 'Calendar event updated!' : 'Calendar event created!', 'info');
+                    calendarEventEditModal.classList.add('hidden');
+                    loadAgenda();
+                } else {
+                    const errData = await res.json().catch(() => ({}));
+                    showToast(errData.message || 'Failed to save calendar event');
+                }
+            } catch (err) {
+                showToast('Network error saving calendar event');
+                console.error(err);
+            }
+        });
+    }
 
     // --- Continuous Learning Topic Engine ---
     async function loadLearnTopic() {
@@ -658,28 +938,83 @@ document.addEventListener('DOMContentLoaded', () => {
         const showBtn = card.querySelector('.btn-show-me');
         const doneBtn = card.querySelector('.btn-done');
 
+    // --- 4. Daily Agenda Cards ---
+    function attachCardEvents(card) {
+        const showBtn = card.querySelector('.btn-show-me');
+        const doneBtn = card.querySelector('.btn-done');
+        const dismissBtn = card.querySelector('.btn-dismiss');
+        
+        const type = showBtn?.getAttribute('data-type') || doneBtn?.getAttribute('data-type') || '';
+        const id = showBtn?.getAttribute('data-id') || doneBtn?.getAttribute('data-id') || dismissBtn?.getAttribute('data-id') || '';
+        
+        function isExercise() {
+            const t = type.toLowerCase();
+            const i = id.toLowerCase();
+            const title = (card.querySelector('.protocol-info p')?.innerText || '').toLowerCase();
+            return t === 'yoga' || t === 'rehab' || t === 'meditation' || t === 'exercise' ||
+                   i.startsWith('y') || i.includes('yoga') || i.includes('meditation') || i.includes('hydro') || i.includes('rehab') ||
+                   title.includes('yoga') || title.includes('meditation');
+        }
+
         if (showBtn) {
             showBtn.addEventListener('click', () => {
-                const id = showBtn.getAttribute('data-id');
-                startRunnerModal(id);
+                const title = card.querySelector('.protocol-info p')?.innerText || id;
+                if (isExercise()) {
+                    const cleanId = id ? id.toLowerCase().trim() : '';
+                    if (cleanId && (cleanId.startsWith('y') || cleanId.includes('meditation') || cleanId.includes('rehab'))) {
+                        startRunnerModal(cleanId);
+                    } else if (cleanId.includes('yoga')) {
+                        loadExerciseSuggestions();
+                    } else {
+                        startRunnerModal(cleanId || 'y1');
+                    }
+                } else {
+                    rumbleChatModal.classList.remove('hidden');
+                    sendRumbleChatMessage(`Show me details for: ${title}`);
+                }
             });
         }
 
         if (doneBtn) {
             doneBtn.addEventListener('click', async () => {
-                const id = doneBtn.getAttribute('data-id');
+                const title = card.querySelector('.protocol-info p')?.innerText || id;
                 card.classList.add('completed');
                 doneBtn.innerText = "Done";
                 doneBtn.disabled = true;
-                const dismissBtn = card.querySelector('.btn-dismiss');
                 if (dismissBtn) {
                     dismissBtn.disabled = false;
-                    dismissBtn.addEventListener('click', () => card.remove());
                 }
-                pendingProtocol = { id, name: card.querySelector('.protocol-info p')?.innerText || id, beforePain: currentPainLevel || 1, card, doneBtn };
-                reliefExerciseName.innerText = pendingProtocol.name;
-                afterPainScore.value = pendingProtocol.beforePain;
-                reliefModal.classList.remove('hidden');
+                
+                // Move greyed out card to the bottom of the daily agenda stream
+                agendaStream.appendChild(card);
+
+                if (id) {
+                    fetch(API_AGENDA, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id, action: 'update_status', status: 'completed' })
+                    }).catch(() => {});
+                }
+                
+                if (isExercise()) {
+                    pendingProtocol = { id, name: title, beforePain: currentPainLevel || 1, card, doneBtn };
+                    reliefExerciseName.innerText = pendingProtocol.name;
+                    afterPainScore.value = pendingProtocol.beforePain;
+                    reliefModal.classList.remove('hidden');
+                }
+            });
+        }
+        
+        if (dismissBtn) {
+            dismissBtn.addEventListener('click', () => {
+                card.remove();
+                if (id) {
+                    fetch(API_AGENDA, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id, action: 'update_status', status: 'dismissed' })
+                    }).catch(() => {});
+                }
             });
         }
     }
@@ -707,12 +1042,8 @@ document.addEventListener('DOMContentLoaded', () => {
             reliefModal.classList.add('hidden');
             pendingProtocol = null;
             if (card) {
-                setTimeout(() => {
-                    card.style.transition = 'all 0.4s ease';
-                    card.style.opacity = '0';
-                    card.style.transform = 'translateX(100%)';
-                    setTimeout(() => card.remove(), 400);
-                }, 200);
+                card.classList.add('completed');
+                agendaStream.appendChild(card);
             }
         } catch (err) {
             showToast('Failed to complete agenda item');
@@ -724,55 +1055,217 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.protocol-card').forEach(attachCardEvents);
 
     let runnerInterval;
+    let frameInterval;
+    let currentProtocolSteps = [];
+    let currentStepIndex = 0;
+    let timeLeft = 0;
+
+    const YOGA_ROUTINES = {
+        'y1': {
+            title: "Gentle Lumbar Release",
+            steps: [
+                { title: "Cat-Cow Pelvic Tilt", duration: 45, frames: ["/exercises/cat_cow_1.jpg", "/exercises/cat_cow_2.jpg"] },
+                { title: "Child's Pose Decompression", duration: 60, frames: ["/exercises/childs_pose_1.jpg", "/exercises/childs_pose_2.jpg"] },
+                { title: "Gentle Lumbar Extension", duration: 45, frames: ["/lumbar_core_routine.jpg", "/exercises/cat_cow_2.jpg"] },
+                { title: "Restorative Mat Release", duration: 60, frames: ["/exercises/childs_pose_2.jpg", "/exercises/cat_cow_1.jpg"] }
+            ]
+        },
+        'y2': {
+            title: "Cervical Mobility Flow",
+            steps: [
+                { title: "Seated Neck & Shoulder Release", duration: 45, frames: ["/shoulder_rehab_routine.jpg", "/exercises/childs_pose_1.jpg"] },
+                { title: "Thoracic & Cervical Opener", duration: 45, frames: ["/shoulder_rehab_routine.jpg", "/exercises/cat_cow_2.jpg"] },
+                { title: "Restorative Alignment", duration: 60, frames: ["/exercises/childs_pose_2.jpg"] }
+            ]
+        },
+        'y3': {
+            title: "Full Body Restorative",
+            steps: [
+                { title: "Mindful Breath & Centering", duration: 60, frames: ["/exercises/childs_pose_1.jpg"] },
+                { title: "Cat-Cow Spine Wave", duration: 60, frames: ["/exercises/cat_cow_1.jpg", "/exercises/cat_cow_2.jpg"] },
+                { title: "Restorative Mat Decompression", duration: 60, frames: ["/exercises/childs_pose_2.jpg"] },
+                { title: "Gentle Core Stability", duration: 45, frames: ["/lumbar_core_routine.jpg"] }
+            ]
+        },
+        'y4': {
+            title: "Shoulder & Thoracic Opener",
+            steps: [
+                { title: "Thoracic Spine Mobility", duration: 45, frames: ["/shoulder_rehab_routine.jpg"] },
+                { title: "Seated Upper Back Extension", duration: 60, frames: ["/shoulder_rehab_routine.jpg", "/exercises/cat_cow_2.jpg"] },
+                { title: "Restorative Scapular Flow", duration: 45, frames: ["/exercises/childs_pose_2.jpg", "/exercises/cat_cow_1.jpg"] }
+            ]
+        },
+        'y5': {
+            title: "Hip Flexor & Psoas Stretch",
+            steps: [
+                { title: "Hip Flexor Kneeling Lunge", duration: 60, frames: ["/hip_mobility_routine.jpg"] },
+                { title: "Deep Psoas & 90/90 Stretch", duration: 60, frames: ["/hip_mobility_routine.jpg", "/exercises/childs_pose_2.jpg"] },
+                { title: "Restorative Mat Release", duration: 60, frames: ["/exercises/childs_pose_2.jpg"] }
+            ]
+        },
+        'y6': {
+            title: "Morning Activation",
+            steps: [
+                { title: "Cat-Cow Spine Awakening", duration: 45, frames: ["/exercises/cat_cow_1.jpg", "/exercises/cat_cow_2.jpg"] },
+                { title: "Core & Pelvic Activation", duration: 45, frames: ["/lumbar_core_routine.jpg", "/exercises/cat_cow_2.jpg"] },
+                { title: "Gentle Spinal Mobility", duration: 45, frames: ["/exercises/cat_cow_1.jpg", "/exercises/childs_pose_1.jpg"] },
+                { title: "Restorative Child's Pose", duration: 45, frames: ["/exercises/childs_pose_2.jpg"] }
+            ]
+        }
+    };
+
+    // Backlog of alternative exercises for swapping
+    const exerciseBacklog = [
+        { title: "Cat-Cow Flow", duration: 45, frames: ["/exercises/cat_cow_1.jpg", "/exercises/cat_cow_2.jpg"] },
+        { title: "Child's Pose Decompression", duration: 60, frames: ["/exercises/childs_pose_1.jpg", "/exercises/childs_pose_2.jpg"] },
+        { title: "Lumbar & Core Stability", duration: 60, frames: ["/lumbar_core_routine.jpg", "/exercises/cat_cow_1.jpg"] },
+        { title: "Hip & Lower Body Mobility", duration: 60, frames: ["/hip_mobility_routine.jpg", "/exercises/childs_pose_2.jpg"] },
+        { title: "Shoulder & Scapular Rehab", duration: 45, frames: ["/shoulder_rehab_routine.jpg", "/exercises/childs_pose_1.jpg"] }
+    ];
+
     function startRunnerModal(id) {
         runnerModal.classList.remove('hidden');
         
-        let steps = [];
-        if (id && id.toLowerCase().includes('yoga')) {
-            steps = [
-                { title: "Alignment & Position", duration: 30 },
-                { title: "Gentle Spinal Decompression", duration: 60 },
-                { title: "Hip Mobility Flow", duration: 45 },
-                { title: "Restorative Hamstring Extension", duration: 60 }
+        const rawId = (id || '').toLowerCase().trim();
+        const runnerTitleEl = document.getElementById('runnerTitle');
+        
+        if (YOGA_ROUTINES[rawId]) {
+            const routine = YOGA_ROUTINES[rawId];
+            if (runnerTitleEl) runnerTitleEl.innerText = routine.title;
+            currentProtocolSteps = routine.steps.map(s => ({ ...s }));
+        } else if (rawId.startsWith('y') || rawId.includes('yoga') || rawId.includes('rehab') || rawId.includes('stretch') || rawId.includes('exercise')) {
+            if (runnerTitleEl) runnerTitleEl.innerText = "Yoga & Rehab Protocol";
+            currentProtocolSteps = [
+                { title: "Cat-Cow Spine Awakening", duration: 45, frames: ["/exercises/cat_cow_1.jpg", "/exercises/cat_cow_2.jpg"] },
+                { title: "Child's Pose & Restorative Hold", duration: 60, frames: ["/exercises/childs_pose_1.jpg", "/exercises/childs_pose_2.jpg"] },
+                { title: "Lumbar Core Decompression", duration: 45, frames: ["/lumbar_core_routine.jpg", "/exercises/cat_cow_2.jpg"] },
+                { title: "Restorative Release", duration: 60, frames: ["/exercises/childs_pose_2.jpg"] }
             ];
-        } else if (id && id.toLowerCase().includes('meditation')) {
-            steps = [
-                { title: "Find a Comfortable Position", duration: 30 },
-                { title: "Box Breathing", duration: 120 },
-                { title: "Body Scan", duration: 180 },
-                { title: "Gentle Return", duration: 30 }
+        } else if (rawId.includes('meditation')) {
+            if (runnerTitleEl) runnerTitleEl.innerText = "Meditation Protocol";
+            currentProtocolSteps = [
+                { title: "Find a Comfortable Position", duration: 30, frames: ["/exercises/childs_pose_1.jpg"] },
+                { title: "Box Breathing", duration: 120, frames: ["/exercises/childs_pose_1.jpg"] },
+                { title: "Body Scan", duration: 180, frames: ["/exercises/childs_pose_2.jpg"] },
+                { title: "Gentle Return", duration: 30, frames: ["/exercises/childs_pose_1.jpg"] }
             ];
         } else {
-            steps = [{ title: "Alignment & Position", duration: 30 }];
+            if (runnerTitleEl) runnerTitleEl.innerText = "Protocol Runner";
+            currentProtocolSteps = [
+                { title: "Alignment & Position", duration: 30, frames: ["/exercises/cat_cow_1.jpg"] },
+                { title: "Restorative Flow", duration: 60, frames: ["/exercises/childs_pose_2.jpg"] }
+            ];
         }
         
-        let currentStepIndex = 0;
-        let timeLeft = steps[currentStepIndex].duration;
-        
-        function formatTime(secs) {
-            const m = Math.floor(secs / 60);
-            const s = secs % 60;
-            return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-        }
-
-        function updateStepUI() {
-            runnerStep.innerText = `Step ${currentStepIndex + 1}: ${steps[currentStepIndex].title}`;
-            runnerTimer.innerText = formatTime(timeLeft);
-        }
-        
+        currentStepIndex = 0;
+        timeLeft = currentProtocolSteps[currentStepIndex].duration;
         updateStepUI();
-        clearInterval(runnerInterval);
+        startRunnerTimer();
+    }
+
+    function formatTime(secs) {
+        const m = Math.floor(secs / 60);
+        const s = secs % 60;
+        return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }
+
+    function updateStepUI() {
+        if (currentStepIndex >= currentProtocolSteps.length) return;
+        const step = currentProtocolSteps[currentStepIndex];
+        runnerStep.innerText = `Step ${currentStepIndex + 1}: ${step.title}`;
+        runnerTimer.innerText = formatTime(timeLeft);
         
+        const videoEl = document.getElementById('runnerVideo');
+        const imgEl = document.getElementById('runnerImg');
+        const placeholderEl = document.getElementById('runnerPlaceholder');
+        
+        clearInterval(frameInterval);
+        
+        if (step.frames && step.frames.length > 0) {
+            if (placeholderEl) placeholderEl.style.display = 'none';
+            if (videoEl) {
+                videoEl.pause();
+                videoEl.style.display = 'none';
+            }
+            if (imgEl) {
+                imgEl.style.display = 'block';
+                let fIdx = 0;
+                imgEl.src = step.frames[0];
+                if (step.frames.length > 1) {
+                    frameInterval = setInterval(() => {
+                        fIdx = (fIdx + 1) % step.frames.length;
+                        imgEl.style.opacity = '0.7';
+                        setTimeout(() => {
+                            imgEl.src = step.frames[fIdx];
+                            imgEl.style.opacity = '1';
+                        }, 150);
+                    }, 2000);
+                }
+            }
+        } else if (step.video) {
+            if (placeholderEl) placeholderEl.style.display = 'none';
+            if (imgEl) imgEl.style.display = 'none';
+            if (videoEl) {
+                videoEl.style.display = 'block';
+                if (videoEl.getAttribute('data-src') !== step.video) {
+                    videoEl.setAttribute('data-src', step.video);
+                    videoEl.src = step.video;
+                    videoEl.load();
+                }
+                const playPromise = videoEl.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(err => {
+                        console.warn("[Runner Video] Autoplay pending or prevented:", err);
+                    });
+                }
+            }
+        } else {
+            if (imgEl) imgEl.style.display = 'none';
+            if (videoEl) {
+                videoEl.pause();
+                videoEl.removeAttribute('src');
+                videoEl.removeAttribute('data-src');
+                videoEl.style.display = 'none';
+            }
+            if (placeholderEl) {
+                placeholderEl.style.display = 'block';
+                placeholderEl.innerText = step.title.substring(0, 8).toUpperCase();
+            }
+        }
+        
+        const btnPrev = document.getElementById('btnPrevStep');
+        const btnNext = document.getElementById('btnNextStep');
+        if (btnPrev) btnPrev.disabled = currentStepIndex === 0;
+        if (btnNext) btnNext.innerText = currentStepIndex === currentProtocolSteps.length - 1 ? 'Finish' : 'Next Step';
+    }
+    
+    function closeRunnerModal() {
+        runnerModal.classList.add('hidden');
+        clearInterval(runnerInterval);
+        clearInterval(frameInterval);
+        const videoEl = document.getElementById('runnerVideo');
+        if (videoEl) {
+            videoEl.pause();
+            videoEl.removeAttribute('src');
+            videoEl.removeAttribute('data-src');
+        }
+    }
+
+    function startRunnerTimer() {
+        clearInterval(runnerInterval);
         runnerInterval = setInterval(() => {
             timeLeft--;
             if (timeLeft < 0) {
                 currentStepIndex++;
-                if (currentStepIndex >= steps.length) {
+                if (currentStepIndex >= currentProtocolSteps.length) {
                     clearInterval(runnerInterval);
                     runnerStep.innerText = "Routine Complete!";
                     runnerTimer.innerText = "00:00";
+                    setTimeout(() => {
+                        closeRunnerModal();
+                    }, 1500);
                 } else {
-                    timeLeft = steps[currentStepIndex].duration;
+                    timeLeft = currentProtocolSteps[currentStepIndex].duration;
                     updateStepUI();
                 }
             } else {
@@ -781,14 +1274,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1000);
     }
 
-    btnCancelRunner.addEventListener('click', () => {
-        runnerModal.classList.add('hidden');
-        clearInterval(runnerInterval);
-    });
+    btnCancelRunner.addEventListener('click', closeRunnerModal);
 
     btnNextStep.addEventListener('click', () => {
-        runnerModal.classList.add('hidden');
-        clearInterval(runnerInterval);
+        currentStepIndex++;
+        if (currentStepIndex >= currentProtocolSteps.length) {
+            closeRunnerModal();
+        } else {
+            timeLeft = currentProtocolSteps[currentStepIndex].duration;
+            updateStepUI();
+        }
     });
 
     // --- 5. Dual 0-10 Scales (Pain & Mood) ---

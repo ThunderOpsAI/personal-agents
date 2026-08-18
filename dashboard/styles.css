@@ -347,6 +347,15 @@ h3 { font-size: 1.05rem; }
     border-radius: 10px;
     font-size: 0.85rem;
 }
+.agenda-item.clickable {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.agenda-item.clickable:hover {
+    background: rgba(0, 240, 255, 0.08);
+    border-color: var(--neon-blue);
+    transform: translateX(3px);
+}
 .agenda-date {
     font-weight: 700;
     color: var(--neon-blue);
@@ -749,13 +758,36 @@ h3 { font-size: 1.05rem; }
 
 /* Runner Visual */
 .runner-visual {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: radial-gradient(circle at center, rgba(16, 24, 39, 0.95), rgba(5, 7, 15, 1));
+    border-radius: 12px;
+    overflow: hidden;
     margin: 14px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(0, 240, 255, 0.25);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7), inset 0 0 20px rgba(0, 0, 0, 0.9);
+}
+.runner-visual video,
+#runnerVideo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+    transition: opacity 0.3s ease;
 }
 .visual-placeholder {
     font-family: var(--font-heading);
     font-size: 1.3rem;
     font-weight: 700;
     color: var(--neon-blue);
+    letter-spacing: 1.5px;
+    text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
 }
 .timer {
     font-family: var(--font-heading);
