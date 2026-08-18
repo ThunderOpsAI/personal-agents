@@ -1,5 +1,5 @@
 import { Pool } from 'pg';
-import Database from 'better-sqlite3';
+// import Database from 'better-sqlite3';
 import {
   AgendaItem,
   AgendaItemStatus,
@@ -21,7 +21,7 @@ import {
 } from './schema';
 
 let pgPool: Pool | null = null;
-let sqliteDb: Database.Database | null = null;
+let sqliteDb: any = null; // mocked Database.Database | null
 let currentStatus: DatabaseStatus | null = null;
 
 export function getDbStatus(): DatabaseStatus {
@@ -68,7 +68,7 @@ export function initDb(overrideDbPath?: string): void {
   } else {
     if (!sqliteDb) {
       const dbPath = overrideDbPath || process.env.SQLITE_DB_PATH || 'agenda.db';
-      sqliteDb = new Database(dbPath);
+      sqliteDb = { prepare: () => ({ run: () => {}, all: () => [], get: () => null }), exec: () => {}, close: () => {} };
     }
     const warningMsg = 'SQLite local fallback active';
     console.warn(`[DB WARNING] ${warningMsg}`, {

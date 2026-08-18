@@ -272,14 +272,18 @@ h3 { font-size: 1.05rem; }
 }
 .protocol-card {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-start;
     padding: 12px 16px;
+    gap: 12px;
 }
 .protocol-card.completed {
     opacity: 0.5;
     filter: grayscale(1);
     transform: scale(0.98);
+}
+.protocol-info {
+    width: 100%;
 }
 .protocol-info h3 {
     color: var(--neon-blue);
@@ -295,6 +299,8 @@ h3 { font-size: 1.05rem; }
 .protocol-actions {
     display: flex;
     gap: 8px;
+    flex-wrap: wrap;
+    width: 100%;
 }
 
 /* Continuous Learning Card Styling */

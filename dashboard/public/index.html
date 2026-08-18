@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Rumble OS - Command Center</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/styles.css?v=2">
+    <link rel="stylesheet" href="/styles.css?v=11">
 </head>
 
 <body>
@@ -28,6 +28,7 @@
                 </div>
                 
                 <div class="header-actions">
+                    <button class="btn btn-sm btn-outline" id="btnSettings" title="Settings" style="font-size: 1.1em; padding: 4px 8px;">⚙️</button>
                     <button class="btn btn-sm btn-neon-blue" id="btnOpenRumbleChat">Rumble</button>
                     <button class="btn btn-sm btn-outline" id="btnOpenNotes">Notes</button>
                     <button class="btn btn-sm btn-outline btn-sync" id="btnSyncOps">Sync</button>
@@ -147,6 +148,43 @@
 
         <!-- Modals -->
 
+        <!-- Settings Modal Window -->
+        <div class="modal-overlay hidden" id="settingsModal">
+            <div class="modal-content glass-panel settings-modal-content" style="max-width: 600px; width: 90%;">
+                <div class="modal-header">
+                    <h2>Settings</h2>
+                    <button class="btn-close" id="btnCloseSettings">&times;</button>
+                </div>
+                <div class="settings-tabs" style="display: flex; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; margin-bottom: 15px;">
+                    <button class="btn btn-sm btn-neon-blue active" id="tabProfile">Profile</button>
+                    <button class="btn btn-sm btn-outline" id="tabPreferences">Preferences</button>
+                    <button class="btn btn-sm btn-outline" id="tabIntegrations">Integrations</button>
+                </div>
+                <div class="settings-body" id="settingsBody">
+                    <!-- Profile Tab -->
+                    <div id="settingsProfile">
+                        <div class="form-group"><label>Name</label><input type="text" class="glass-input" value="James"></div>
+                        <div class="form-group"><label>Email</label><input type="email" class="glass-input" value="james@example.com"></div>
+                    </div>
+                    <!-- Preferences Tab (hidden by default) -->
+                    <div id="settingsPreferences" class="hidden">
+                        <div class="form-group"><label>Theme</label><select class="glass-select"><option>Dark</option><option>Light</option></select></div>
+                        <div class="form-group"><label>Notifications</label><select class="glass-select"><option>Enabled</option><option>Disabled</option></select></div>
+                    </div>
+                    <!-- Integrations Tab (hidden by default) -->
+                    <div id="settingsIntegrations" class="hidden">
+                        <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;"><label style="margin:0;">Google Calendar</label><button class="btn btn-sm btn-neon-green">Connected</button></div>
+                        <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;"><label style="margin:0;">Emails</label><button class="btn btn-sm btn-neon-green">Connected</button></div>
+                        <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;"><label style="margin:0;">Google Keep</label><button class="btn btn-sm btn-outline" disabled title="API Not Available">Not Available</button></div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="margin-top: 20px;">
+                    <button class="btn btn-outline" id="btnCancelSettings">Cancel</button>
+                    <button class="btn btn-neon-blue" id="btnSaveSettings">Save Changes</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Deep-Dive Continuous Learning Modal Window -->
         <div class="modal-overlay hidden" id="learnModal">
             <div class="modal-content glass-panel learn-modal-content">
@@ -222,7 +260,7 @@
                     </div>
                     <textarea id="unifiedNotesInput" class="glass-input notes-textarea" placeholder="Notes..."></textarea>
                 </div>
-                <div class="modal-footer"><button class="btn btn-outline" id="btnViewPainHistory">View History</button><button class="btn btn-outline" id="btnCancelPainLog">Cancel</button><button class="btn btn-neon-red" id="btnLogPain">Save pain log</button></div>
+                <div class="modal-footer"><button class="btn btn-outline" id="btnCancelPainLog">Cancel</button><button class="btn btn-neon-red" id="btnLogPain">Save pain log</button></div>
             </div>
         </div>
 
@@ -232,30 +270,6 @@
                 <div class="modal-header"><h2>Explore Exercises</h2><button class="btn-close" id="btnCloseExercises">&times;</button></div>
                 <p class="form-hint">Suggestions are based on your latest live pain log and learned feedback.</p>
                 <div id="exerciseSuggestions" class="exercise-list"><p class="form-hint">Loading recommendations...</p></div>
-            </div>
-        </div>
-
-        <!-- Exercise Demo Modal -->
-        <div class="modal-overlay hidden" id="exerciseDemoModal">
-            <div class="modal-content glass-panel" style="max-width: 600px;">
-                <div class="modal-header">
-                    <h2 id="demoTitle">Exercise Demo</h2>
-                    <button class="btn-close" id="btnCloseDemo">&times;</button>
-                </div>
-                <div class="demo-body" style="padding: 20px 0;">
-                    <div id="demoVisual" style="width: 100%; height: 200px; background: rgba(255,255,255,0.05); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; font-size: 64px;">
-                        🧘
-                    </div>
-                    <h3 id="demoInstructionTitle" style="margin-bottom: 10px; color: var(--neon-green);">Step 1</h3>
-                    <p id="demoInstructionText" style="line-height: 1.6; color: #a1a1aa;"></p>
-                </div>
-                <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
-                    <span id="demoProgress" style="font-size: 0.9em; color: #555;">Step 1 of 4</span>
-                    <div style="display: flex; gap: 10px;">
-                        <button class="btn btn-outline" id="btnDemoPrev" disabled>Previous</button>
-                        <button class="btn btn-neon-green" id="btnDemoNext">Next</button>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -301,46 +315,58 @@
             </div>
         </div>
 
-        <!-- Persistent Notes Modal -->
+        <!-- Persistent Notes Modal (Keep Style) -->
         <div class="modal-overlay hidden" id="notesModal">
-            <div class="modal-content glass-panel notes-modal-content">
-                <div class="modal-header">
-                    <h2>Notes & Directives</h2>
-                    <button class="btn-close" id="btnCloseNotes">&times;</button>
-                </div>
-                <div class="notes-body" style="display: flex; flex-direction: column; gap: 15px;">
-                    <div style="display: flex; gap: 10px;">
-                        <input type="text" id="newNoteInput" class="glass-input" placeholder="Take a note..." style="flex: 1;" />
-                        <button class="btn btn-neon-green btn-sm" id="btnSaveNotes">Add Note</button>
-                    </div>
-                    <div id="notesContainer" class="notes-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; max-height: 400px; overflow-y: auto;">
-                        <!-- Notes will be loaded here -->
+            <div class="modal-content glass-panel notes-modal-content" style="max-width: 900px; width: 95%; height: 85vh; display: flex; flex-direction: column;">
+                <div class="modal-header" style="flex-shrink: 0;">
+                    <h2>Notes</h2>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-sm btn-neon-green" id="btnNewNote">+ New Note</button>
+                        <button class="btn-close" id="btnCloseNotes">&times;</button>
                     </div>
                 </div>
-                <div class="notes-footer">
-                    <span class="notes-status" id="notesStatus">Synced with Neon DB</span>
-                    <div class="modal-actions">
-                        <button class="btn btn-sm btn-outline" id="btnAskRumbleNote">Ask Rumble to analyze notes</button>
+                
+                <div class="notes-workspace" style="flex: 1; overflow-y: auto; padding: 10px; display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px;" id="notesGrid">
+                    <!-- Pinned Note Example -->
+                    <div class="keep-note glass-panel" style="background: rgba(255, 235, 59, 0.1); border-left: 4px solid #ffeb3b; padding: 15px; border-radius: 8px; position: relative; cursor: pointer;">
+                        <div style="position: absolute; top: 10px; right: 10px; cursor: pointer;" title="Pinned">📌</div>
+                        <h4 style="margin: 0 0 8px 0; font-size: 1.1em;">Ideas for App</h4>
+                        <p style="margin: 0; font-size: 0.9em; opacity: 0.9;">- Timer app<br>- Keep clone<br>- Settings page</p>
+                        <div style="margin-top: 15px; display: flex; gap: 5px;">
+                            <div class="color-dot" style="width: 15px; height: 15px; border-radius: 50%; background: #ffeb3b; cursor: pointer;"></div>
+                            <div class="color-dot" style="width: 15px; height: 15px; border-radius: 50%; background: #f44336; cursor: pointer;"></div>
+                            <div class="color-dot" style="width: 15px; height: 15px; border-radius: 50%; background: #2196f3; cursor: pointer;"></div>
+                            <div class="color-dot" style="width: 15px; height: 15px; border-radius: 50%; background: #4caf50; cursor: pointer;"></div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- Pain History Modal -->
-        <div class="modal-overlay hidden" id="painHistoryModal">
-            <div class="modal-content glass-panel pain-history-modal-content">
-                <div class="modal-header">
-                    <h2>Pain History</h2>
-                    <button class="btn-close" id="btnClosePainHistory">&times;</button>
+                <!-- Note Editor Overlay (Inner Modal) -->
+                <div class="hidden" id="noteEditorContainer" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 100; display: flex; align-items: center; justify-content: center; border-radius: inherit;">
+                    <div class="glass-panel" style="width: 80%; max-width: 500px; padding: 20px; background: rgba(30,30,40,0.95);">
+                        <input type="text" id="editNoteTitle" class="glass-input" placeholder="Title" style="font-size: 1.2em; font-weight: bold; margin-bottom: 10px; border: none; border-bottom: 1px solid rgba(255,255,255,0.2);">
+                        <textarea id="editNoteBody" class="glass-input" placeholder="Take a note..." style="min-height: 150px; border: none; resize: none; margin-bottom: 15px;"></textarea>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div style="display: flex; gap: 8px;">
+                                <select id="editNoteColor" class="glass-select" style="padding: 4px; font-size: 0.9em;">
+                                    <option value="default">Default</option>
+                                    <option value="#ffeb3b">Yellow</option>
+                                    <option value="#f44336">Red</option>
+                                    <option value="#2196f3">Blue</option>
+                                    <option value="#4caf50">Green</option>
+                                    <option value="#9c27b0">Purple</option>
+                                </select>
+                                <button class="btn btn-sm btn-outline" id="btnPinNote" title="Pin Note">📌 Pin</button>
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <button class="btn btn-sm btn-neon-green" id="btnSaveNoteEdit">Save Note</button>
+                                <button class="btn btn-sm btn-outline" id="btnCancelNoteEdit">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="pain-history-body" style="max-height: 400px; overflow-y: auto;">
-                    <ul id="painHistoryList" style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 10px;">
-                        <!-- Logs will be loaded here -->
-                    </ul>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-outline btn-sm" id="btnBackToPainLog">Back to Log Pain</button>
-                </div>
+
             </div>
         </div>
 
@@ -366,22 +392,46 @@
 
         <!-- Protocol Step Runner Modal -->
         <div class="modal-overlay hidden" id="runnerModal">
-            <div class="modal-content glass-panel">
-                <h2 id="runnerTitle">Protocol Runner</h2>
-                <div class="runner-visual">
-                    <div class="visual-placeholder">START</div>
+            <div class="modal-content glass-panel" style="max-width: 500px;">
+                <div class="modal-header">
+                    <h2 id="runnerTitle">Protocol Runner</h2>
+                    <button class="btn-close" id="btnCancelRunner">&times;</button>
                 </div>
-                <h3 id="runnerStep">Step 1: Alignment & Position</h3>
-                <div class="timer" id="runnerTimer">00:30</div>
-                <div class="runner-actions">
-                    <button class="btn btn-outline" id="btnCancelRunner">Cancel</button>
+                <div class="runner-visual" style="position: relative; width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px; overflow: hidden; margin: 15px 0; display: flex; align-items: center; justify-content: center;">
+                    <img id="runnerVideo" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; display: none;">
+                    <div class="visual-placeholder" id="runnerPlaceholder" style="z-index: 1;">START</div>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                    <div>
+                        <h3 id="runnerStep">Step 1: Alignment & Position</h3>
+                        <div class="timer" id="runnerTimer">00:30</div>
+                    </div>
+                    <button class="btn btn-outline btn-sm" id="btnSwapExercise">Swap Exercise</button>
+                </div>
+                <div class="runner-actions" style="display: flex; justify-content: space-between;">
+                    <button class="btn btn-outline" id="btnPrevStep">Prev</button>
                     <button class="btn btn-neon-purple" id="btnNextStep">Next Step</button>
                 </div>
             </div>
         </div>
 
+        <!-- Swap Exercise Modal -->
+        <div class="modal-overlay hidden" id="swapModal">
+            <div class="modal-content glass-panel">
+                <div class="modal-header">
+                    <h2>Swap Exercise</h2>
+                    <button class="btn-close" id="btnCloseSwap">&times;</button>
+                </div>
+                <p class="form-hint" style="margin-bottom: 10px;">Select an alternative exercise from your backlog.</p>
+                <div class="swap-list" id="swapList" style="display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto;">
+                    <!-- Backlog items go here -->
+                </div>
+            </div>
+        </div>
+
+
     </div>
 
-    <script src="app.js?v=6"></script>
+    <script src="app.js?v=13"></script>
 </body>
 </html>

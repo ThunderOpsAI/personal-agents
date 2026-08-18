@@ -111,37 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const exerciseSuggestions = document.getElementById('exerciseSuggestions');
     const btnCloseExercises = document.getElementById('btnCloseExercises');
 
-    // Exercise Demo UI
-    const exerciseDemoModal = document.getElementById('exerciseDemoModal');
-    const btnCloseDemo = document.getElementById('btnCloseDemo');
-    const demoTitle = document.getElementById('demoTitle');
-    const demoInstructionTitle = document.getElementById('demoInstructionTitle');
-    const demoInstructionText = document.getElementById('demoInstructionText');
-    const demoProgress = document.getElementById('demoProgress');
-    const btnDemoPrev = document.getElementById('btnDemoPrev');
-    const btnDemoNext = document.getElementById('btnDemoNext');
-    let currentDemoSteps = [];
-    let currentDemoIndex = 0;
-
-    function updateDemoView() {
-        demoProgress.innerText = `Step ${currentDemoIndex + 1} of ${currentDemoSteps.length}`;
-        demoInstructionTitle.innerText = currentDemoSteps[currentDemoIndex].title;
-        demoInstructionText.innerText = currentDemoSteps[currentDemoIndex].text;
-        btnDemoPrev.disabled = currentDemoIndex === 0;
-        btnDemoNext.innerText = currentDemoIndex === currentDemoSteps.length - 1 ? "Finish" : "Next Step";
-    }
-
-    btnCloseDemo.addEventListener('click', () => exerciseDemoModal.classList.add('hidden'));
-    btnDemoPrev.addEventListener('click', () => {
-        if (currentDemoIndex > 0) { currentDemoIndex--; updateDemoView(); }
-    });
-    btnDemoNext.addEventListener('click', () => {
-        if (currentDemoIndex < currentDemoSteps.length - 1) {
-            currentDemoIndex++; updateDemoView();
-        } else {
-            exerciseDemoModal.classList.add('hidden');
-        }
-    });
+    // Exercise Demo UI removed in favor of runnerModal
 
     const reliefModal = document.getElementById('reliefModal');
     const btnCloseRelief = document.getElementById('btnCloseRelief');
@@ -248,6 +218,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 }
                 
+                const cards = Array.from(agendaStream.querySelectorAll('.protocol-card'));
+                cards.sort((a, b) => {
+                    const timeStrA = a.querySelector('h3').innerText.trim();
+                    const timeStrB = b.querySelector('h3').innerText.trim();
+                    const parseTime = (str) => {
+                        const match = str.match(/(\d+):(\d+)\s*(AM|PM)/i);
+                        if (!match) return 0;
+                        let h = parseInt(match[1]);
+                        let m = parseInt(match[2]);
+                        let ampm = match[3].toUpperCase();
+                        if (ampm === 'PM' && h < 12) h += 12;
+                        if (ampm === 'AM' && h === 12) h = 0;
+                        return h * 60 + m;
+                    };
+                    return parseTime(timeStrA) - parseTime(timeStrB);
+                });
+                cards.forEach(c => agendaStream.appendChild(c));
                 if (weeklyAgendaList) {
                     weeklyAgendaList.innerHTML = '';
                     if (data.weekly && data.weekly.length > 0) {
@@ -575,74 +562,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btnClosePainLog.addEventListener('click', closePainLog);
     btnCancelPainLog.addEventListener('click', closePainLog);
 
-    const painHistoryModal = document.getElementById('painHistoryModal');
-    const btnViewPainHistory = document.getElementById('btnViewPainHistory');
-    const btnClosePainHistory = document.getElementById('btnClosePainHistory');
-    const btnBackToPainLog = document.getElementById('btnBackToPainLog');
-    const painHistoryList = document.getElementById('painHistoryList');
-
-    async function loadPainHistory() {
-        try {
-            painHistoryList.innerHTML = '<p class="form-hint" style="text-align: center;">Loading...</p>';
-            const res = await fetch('/api/v1/pain/log');
-            if (res.ok) {
-                const data = await res.json();
-                if (data.logs && data.logs.length > 0) {
-                    painHistoryList.innerHTML = '';
-                    data.logs.forEach(log => {
-                        const li = document.createElement('li');
-                        li.className = 'glass-panel';
-                        li.style.padding = '10px 15px';
-                        li.style.display = 'flex';
-                        li.style.flexDirection = 'column';
-                        li.style.gap = '5px';
-                        
-                        const dateObj = new Date(log.created_at);
-                        const dateStr = dateObj.toLocaleDateString() + ' ' + dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                        
-                        let locText = "";
-                        try {
-                            const parsedLocs = typeof log.locations === 'string' ? JSON.parse(log.locations) : log.locations;
-                            locText = parsedLocs.map(l => `${l.area} (${l.side}) ${l.percentage}%`).join(', ');
-                        } catch (e) {
-                            locText = log.locations;
-                        }
-                        
-                        li.innerHTML = `
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <strong>Score: ${log.score}/10</strong>
-                                <small style="color: var(--text-dim);">${dateStr}</small>
-                            </div>
-                            <div style="font-size: 0.85rem;">Locations: ${locText}</div>
-                            ${log.mood ? `<div style="font-size: 0.85rem;">Mood: ${log.mood}</div>` : ''}
-                            ${log.notes ? `<div style="font-size: 0.85rem; font-style: italic; color: var(--text-dim);">"${log.notes}"</div>` : ''}
-                        `;
-                        painHistoryList.appendChild(li);
-                    });
-                } else {
-                    painHistoryList.innerHTML = '<p class="form-hint" style="text-align: center;">No pain history found.</p>';
-                }
-            }
-        } catch (e) {
-            painHistoryList.innerHTML = '<p class="form-hint" style="text-align: center; color: var(--neon-red);">Failed to load history</p>';
-            console.error(e);
-        }
-    }
-
-    btnViewPainHistory.addEventListener('click', () => {
-        painLogModal.classList.add('hidden');
-        painHistoryModal.classList.remove('hidden');
-        loadPainHistory();
-    });
-
-    btnClosePainHistory.addEventListener('click', () => {
-        painHistoryModal.classList.add('hidden');
-    });
-
-    btnBackToPainLog.addEventListener('click', () => {
-        painHistoryModal.classList.add('hidden');
-        painLogModal.classList.remove('hidden');
-    });
+    // painHistoryModal UI removed in favor of direct insights
 
     function updatePainWeightTotal() {
         const total = [...painLocations.querySelectorAll('.pain-percentage')]
@@ -686,71 +606,49 @@ document.addEventListener('DOMContentLoaded', () => {
             const res = await fetch(API_NOTES);
             if (res.ok) {
                 const data = await res.json();
-                const container = document.getElementById('notesContainer');
+                const container = document.getElementById('notesGrid');
+                if (!container) return;
+                
                 container.innerHTML = '';
+                
                 if (data.notes && data.notes.length > 0) {
                     data.notes.forEach(note => {
-                        const card = document.createElement('div');
-                        card.className = 'glass-panel';
-                        card.style.padding = '15px';
-                        card.style.position = 'relative';
-                        card.style.display = 'flex';
-                        card.style.flexDirection = 'column';
-                        card.style.justifyContent = 'space-between';
+                        let isPinned = false;
+                        let color = 'rgba(255,255,255,0.05)';
                         
-                        const content = document.createElement('p');
-                        content.textContent = note.content;
-                        content.style.marginBottom = '10px';
-                        content.style.fontSize = '0.9rem';
+                        let noteHtml = `
+                            ${isPinned ? '<div style="position: absolute; top: 10px; right: 10px; cursor: pointer;" title="Pinned">📌</div>' : ''}
+                            <h4 style="margin: 0 0 8px 0; font-size: 1.1em;">${note.author === 'rumble' ? '🤖 Rumble Note' : 'Note'}</h4>
+                            <p style="margin: 0; font-size: 0.9em; opacity: 0.9; white-space: pre-wrap;">${note.content}</p>
+                            <small style="display:block; margin-top:10px; color:var(--text-dim); font-size:0.75rem;">${new Date(note.created_at).toLocaleDateString()}</small>
+                        `;
                         
-                        const author = document.createElement('small');
-                        author.textContent = (note.author === 'rumble' ? '🤖 Rumble' : '👤 You') + ' - ' + new Date(note.created_at).toLocaleDateString();
-                        author.style.color = 'var(--text-dim)';
-                        author.style.fontSize = '0.75rem';
+                        const noteEl = document.createElement('div');
+                        noteEl.className = 'keep-note glass-panel';
+                        noteEl.style.cssText = `background: ${color}; border-left: 4px solid #fff; padding: 15px; border-radius: 8px; position: relative; cursor: pointer;`;
+                        noteEl.innerHTML = noteHtml;
                         
-                        card.appendChild(content);
-                        card.appendChild(author);
-                        container.appendChild(card);
+                        noteEl.addEventListener('click', () => {
+                            if (window.currentEditingNote !== undefined) {
+                                window.currentEditingNote = noteEl;
+                                document.getElementById('editNoteTitle').value = note.author === 'rumble' ? 'Rumble Note' : 'Note';
+                                document.getElementById('editNoteBody').value = note.content;
+                                document.getElementById('noteEditorContainer').classList.remove('hidden');
+                            }
+                        });
+                        
+                        container.appendChild(noteEl);
                     });
                 } else {
-                    container.innerHTML = '<p class="form-hint" style="grid-column: 1 / -1; text-align: center;">No notes found.</p>';
+                    container.innerHTML = '<p class="form-hint" style="grid-column: 1/-1;">No notes yet.</p>';
                 }
             }
         } catch (e) {
-            showToast('Failed to load notes');
             console.error(e);
         }
     }
 
-    const newNoteInput = document.getElementById('newNoteInput');
-    
-    
-    btnSaveNotes.addEventListener('click', async () => {
-        const content = newNoteInput.value.trim();
-        if (!content) return;
-        
-        notesStatus.innerText = "Saving...";
-        try {
-            await fetch(API_NOTES, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content: content, author: 'user' })
-            });
-            notesStatus.innerText = "Saved";
-            newNoteInput.value = '';
-            loadNotes();
-            setTimeout(() => { notesStatus.innerText = "Synced with Neon DB"; }, 2000);
-        } catch (e) {
-            notesStatus.innerText = "Save failed";
-            setTimeout(() => { notesStatus.innerText = "Synced with Neon DB"; }, 2000);
-        }
-    });
-
-    btnAskRumbleNote.addEventListener('click', () => {
-        notesModal.classList.add('hidden');
-        rumbleChatModal.classList.remove('hidden');
-        rumbleChatInput.value = "Rumble, please record a directive note regarding my recovery agenda.";
-    });
+    // Notes modal event listeners removed; Keep Notes logic is at the end of the file
 
     loadNotes();
 
@@ -901,55 +799,103 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.protocol-card').forEach(attachCardEvents);
 
     let runnerInterval;
+    let frameInterval;
+    let currentProtocolSteps = [];
+    let currentStepIndex = 0;
+    let timeLeft = 0;
+
+    // Backlog of alternative exercises for swapping
+    const exerciseBacklog = [
+        { title: "Child's Pose", duration: 60, frames: ["exercises/childs_pose_1.jpg", "exercises/childs_pose_2.jpg"] },
+        { title: "Cat-Cow Stretch", duration: 45, frames: ["exercises/cat_cow_1.jpg", "exercises/cat_cow_2.jpg"] },
+        { title: "Downward Dog", duration: 60, frames: ["exercises/childs_pose_2.jpg", "exercises/cat_cow_1.jpg"] },
+        { title: "Thread the Needle", duration: 45, frames: ["exercises/cat_cow_2.jpg", "exercises/cat_cow_1.jpg"] },
+        { title: "Pigeon Pose", duration: 60, frames: ["exercises/childs_pose_1.jpg", "exercises/cat_cow_2.jpg"] }
+    ];
+
     function startRunnerModal(id) {
         runnerModal.classList.remove('hidden');
         
-        let steps = [];
         if (id && id.toLowerCase().includes('yoga')) {
-            steps = [
-                { title: "Alignment & Position", duration: 30 },
-                { title: "Gentle Spinal Decompression", duration: 60 },
-                { title: "Hip Mobility Flow", duration: 45 },
-                { title: "Restorative Hamstring Extension", duration: 60 }
+            currentProtocolSteps = [
+                { title: "Alignment & Position", duration: 30, frames: ["exercises/childs_pose_1.jpg"] },
+                { title: "Child's Pose", duration: 60, frames: ["exercises/childs_pose_1.jpg", "exercises/childs_pose_2.jpg"] },
+                { title: "Cat-Cow Flow", duration: 45, frames: ["exercises/cat_cow_1.jpg", "exercises/cat_cow_2.jpg"] },
+                { title: "Restorative Hold", duration: 60, frames: ["exercises/childs_pose_2.jpg"] }
             ];
         } else if (id && id.toLowerCase().includes('meditation')) {
-            steps = [
-                { title: "Find a Comfortable Position", duration: 30 },
-                { title: "Box Breathing", duration: 120 },
-                { title: "Body Scan", duration: 180 },
-                { title: "Gentle Return", duration: 30 }
+            currentProtocolSteps = [
+                { title: "Find a Comfortable Position", duration: 30, frames: [] },
+                { title: "Box Breathing", duration: 120, frames: [] },
+                { title: "Body Scan", duration: 180, frames: [] },
+                { title: "Gentle Return", duration: 30, frames: [] }
             ];
         } else {
-            steps = [{ title: "Alignment & Position", duration: 30 }];
+            currentProtocolSteps = [{ title: "Alignment & Position", duration: 30, frames: [] }];
         }
         
-        let currentStepIndex = 0;
-        let timeLeft = steps[currentStepIndex].duration;
-        
-        function formatTime(secs) {
-            const m = Math.floor(secs / 60);
-            const s = secs % 60;
-            return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-        }
-
-        function updateStepUI() {
-            runnerStep.innerText = `Step ${currentStepIndex + 1}: ${steps[currentStepIndex].title}`;
-            runnerTimer.innerText = formatTime(timeLeft);
-        }
-        
+        currentStepIndex = 0;
+        timeLeft = currentProtocolSteps[currentStepIndex].duration;
         updateStepUI();
-        clearInterval(runnerInterval);
+        startRunnerTimer();
+    }
+
+    function formatTime(secs) {
+        const m = Math.floor(secs / 60);
+        const s = secs % 60;
+        return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }
+
+    function updateStepUI() {
+        if (currentStepIndex >= currentProtocolSteps.length) return;
+        const step = currentProtocolSteps[currentStepIndex];
+        runnerStep.innerText = `Step ${currentStepIndex + 1}: ${step.title}`;
+        runnerTimer.innerText = formatTime(timeLeft);
         
+        const videoEl = document.getElementById('runnerVideo');
+        const placeholderEl = document.getElementById('runnerPlaceholder');
+        
+        clearInterval(frameInterval);
+        
+        if (step.frames && step.frames.length > 0) {
+            videoEl.style.display = 'block';
+            placeholderEl.style.display = 'none';
+            if (step.frames.length === 1) {
+                videoEl.src = step.frames[0];
+            } else {
+                let fIdx = 0;
+                videoEl.src = step.frames[fIdx];
+                frameInterval = setInterval(() => {
+                    fIdx = (fIdx + 1) % step.frames.length;
+                    videoEl.src = step.frames[fIdx];
+                }, 1500);
+            }
+        } else {
+            videoEl.style.display = 'none';
+            placeholderEl.style.display = 'block';
+            placeholderEl.innerText = step.title.substring(0, 5).toUpperCase();
+        }
+        
+        document.getElementById('btnPrevStep').disabled = currentStepIndex === 0;
+        document.getElementById('btnNextStep').innerText = currentStepIndex === currentProtocolSteps.length - 1 ? 'Finish' : 'Next Step';
+    }
+    
+    function startRunnerTimer() {
+        clearInterval(runnerInterval);
         runnerInterval = setInterval(() => {
             timeLeft--;
             if (timeLeft < 0) {
                 currentStepIndex++;
-                if (currentStepIndex >= steps.length) {
+                if (currentStepIndex >= currentProtocolSteps.length) {
                     clearInterval(runnerInterval);
+                    clearInterval(frameInterval);
                     runnerStep.innerText = "Routine Complete!";
                     runnerTimer.innerText = "00:00";
+                    setTimeout(() => {
+                        runnerModal.classList.add('hidden');
+                    }, 1500);
                 } else {
-                    timeLeft = steps[currentStepIndex].duration;
+                    timeLeft = currentProtocolSteps[currentStepIndex].duration;
                     updateStepUI();
                 }
             } else {
@@ -960,12 +906,70 @@ document.addEventListener('DOMContentLoaded', () => {
 
     btnCancelRunner.addEventListener('click', () => {
         runnerModal.classList.add('hidden');
+        clearInterval(frameInterval);
         clearInterval(runnerInterval);
     });
 
+    document.getElementById('btnPrevStep').addEventListener('click', () => {
+        if (currentStepIndex > 0) {
+            currentStepIndex--;
+            timeLeft = currentProtocolSteps[currentStepIndex].duration;
+            updateStepUI();
+        }
+    });
+
     btnNextStep.addEventListener('click', () => {
-        runnerModal.classList.add('hidden');
-        clearInterval(runnerInterval);
+        currentStepIndex++;
+        if (currentStepIndex >= currentProtocolSteps.length) {
+            runnerModal.classList.add('hidden');
+            clearInterval(frameInterval);
+            clearInterval(runnerInterval);
+        } else {
+            timeLeft = currentProtocolSteps[currentStepIndex].duration;
+            updateStepUI();
+        }
+    });
+
+    // --- Swap Logic ---
+    const swapModal = document.getElementById('swapModal');
+    const btnSwapExercise = document.getElementById('btnSwapExercise');
+    const swapList = document.getElementById('swapList');
+
+    btnSwapExercise.addEventListener('click', () => {
+        clearInterval(runnerInterval); // Pause timer while swapping
+        document.getElementById('runnerVideo').pause();
+        
+        swapList.innerHTML = '';
+        exerciseBacklog.forEach((ex, index) => {
+            const item = document.createElement('div');
+            item.className = 'agenda-item';
+            item.style.cursor = 'pointer';
+            item.style.justifyContent = 'space-between';
+            item.innerHTML = `
+                <div>
+                    <span class="agenda-text" style="font-weight: 600;">${ex.title}</span>
+                    <br><small style="color: var(--text-dim);">${formatTime(ex.duration)}</small>
+                </div>
+                <button class="btn btn-outline btn-sm">Select</button>
+            `;
+            item.addEventListener('click', () => {
+                currentProtocolSteps[currentStepIndex] = { ...ex };
+                timeLeft = ex.duration;
+                swapModal.classList.add('hidden');
+                updateStepUI();
+                startRunnerTimer(); // Resume timer
+                document.getElementById('runnerVideo').play();
+            });
+            swapList.appendChild(item);
+        });
+        
+        swapModal.classList.remove('hidden');
+    });
+
+    document.getElementById('btnCloseSwap').addEventListener('click', () => {
+        swapModal.classList.add('hidden');
+        startRunnerTimer();
+        document.getElementById('runnerVideo').play();
     });
 
     // --- 5. Dual 0-10 Scales (Pain & Mood) ---
@@ -993,7 +997,7 @@ document.addEventListener('DOMContentLoaded', () => {
             moodNumButtons.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             currentMoodLevel = parseInt(btn.getAttribute('data-val'), 10);
-            moodValDisplay.innerText = currentMoodLevel;
+            if (moodValDisplay) moodValDisplay.innerText = currentMoodLevel;
         });
     });
 
@@ -1094,8 +1098,13 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             let latest = null;
             try {
-                const latestRes = await fetch(API_LATEST_SYMPTOMS);
-                if (latestRes.ok) latest = (await latestRes.json()).log;
+                const latestRes = await fetch(API_PAIN_LOG);
+                if (latestRes.ok) {
+                    const data = await latestRes.json();
+                    if (data.logs && data.logs.length > 0) {
+                        latest = data.logs[0];
+                    }
+                }
             } catch (error) {
                 console.warn('Latest pain log unavailable', error);
             }
@@ -1130,17 +1139,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     reliefModal.classList.remove('hidden');
                 });
                 card.querySelector('.exercise-show').addEventListener('click', () => {
-                    demoTitle.innerText = exercise.name;
-                    currentDemoSteps = [
-                        { title: "Setup", text: `Find a comfortable space. Prepare for ${exercise.duration_minutes} minutes of ${exercise.intensity.toLowerCase()} movement.` },
-                        { title: "Form & Technique", text: exercise.instruction },
-                        { title: "Breathing", text: "Inhale deeply as you prepare, exhale slowly as you move into the stretch. Maintain a steady rhythm." },
-                        { title: "Completion", text: "Slowly release the position. Rest for a moment before continuing your day." }
-                    ];
-                    currentDemoIndex = 0;
-                    updateDemoView();
                     exerciseModal.classList.add('hidden');
-                    exerciseDemoModal.classList.remove('hidden');
+                    startRunnerModal(exercise.id);
                 });
                 const reasons = card.querySelector('.reject-reasons');
                 card.querySelector('.exercise-reject').addEventListener('click', () => reasons.classList.toggle('hidden'));
@@ -1241,3 +1241,127 @@ document.addEventListener('DOMContentLoaded', () => {
     loadBudget();
 
 });
+// Settings Modal Logic
+const btnSettings = document.getElementById('btnSettings');
+const settingsModal = document.getElementById('settingsModal');
+const btnCloseSettings = document.getElementById('btnCloseSettings');
+const btnCancelSettings = document.getElementById('btnCancelSettings');
+const btnSaveSettings = document.getElementById('btnSaveSettings');
+
+const tabProfile = document.getElementById('tabProfile');
+const tabPreferences = document.getElementById('tabPreferences');
+const tabIntegrations = document.getElementById('tabIntegrations');
+
+const settingsProfile = document.getElementById('settingsProfile');
+const settingsPreferences = document.getElementById('settingsPreferences');
+const settingsIntegrations = document.getElementById('settingsIntegrations');
+
+if (btnSettings) {
+    btnSettings.addEventListener('click', () => {
+        settingsModal.classList.remove('hidden');
+    });
+}
+[btnCloseSettings, btnCancelSettings].forEach(btn => {
+    if (btn) btn.addEventListener('click', () => settingsModal.classList.add('hidden'));
+});
+if (btnSaveSettings) {
+    btnSaveSettings.addEventListener('click', () => {
+        settingsModal.classList.add('hidden');
+        // Save logic would go here
+    });
+}
+
+function switchTab(activeTab, activeContent) {
+    [tabProfile, tabPreferences, tabIntegrations].forEach(t => t && t.classList.replace('btn-neon-blue', 'btn-outline'));
+    [settingsProfile, settingsPreferences, settingsIntegrations].forEach(c => c && c.classList.add('hidden'));
+    
+    if (activeTab) activeTab.classList.replace('btn-outline', 'btn-neon-blue');
+    if (activeContent) activeContent.classList.remove('hidden');
+}
+
+if (tabProfile) tabProfile.addEventListener('click', () => switchTab(tabProfile, settingsProfile));
+if (tabPreferences) tabPreferences.addEventListener('click', () => switchTab(tabPreferences, settingsPreferences));
+if (tabIntegrations) tabIntegrations.addEventListener('click', () => switchTab(tabIntegrations, settingsIntegrations));
+
+// Keep-Style Notes Logic
+const btnNewNote = document.getElementById('btnNewNote');
+const noteEditorContainer = document.getElementById('noteEditorContainer');
+const btnCancelNoteEdit = document.getElementById('btnCancelNoteEdit');
+const btnSaveNoteEdit = document.getElementById('btnSaveNoteEdit');
+const notesGrid = document.getElementById('notesGrid');
+const editNoteTitle = document.getElementById('editNoteTitle');
+const editNoteBody = document.getElementById('editNoteBody');
+const editNoteColor = document.getElementById('editNoteColor');
+const btnPinNote = document.getElementById('btnPinNote');
+
+let currentEditingNote = null;
+let isPinned = false;
+
+if (btnNewNote) {
+    btnNewNote.addEventListener('click', () => {
+        currentEditingNote = null;
+        editNoteTitle.value = '';
+        editNoteBody.value = '';
+        editNoteColor.value = 'default';
+        isPinned = false;
+        btnPinNote.classList.replace('btn-neon-green', 'btn-outline');
+        noteEditorContainer.classList.remove('hidden');
+    });
+}
+
+if (btnCancelNoteEdit) {
+    btnCancelNoteEdit.addEventListener('click', () => {
+        noteEditorContainer.classList.add('hidden');
+    });
+}
+
+if (btnPinNote) {
+    btnPinNote.addEventListener('click', () => {
+        isPinned = !isPinned;
+        if (isPinned) {
+            btnPinNote.classList.replace('btn-outline', 'btn-neon-green');
+        } else {
+            btnPinNote.classList.replace('btn-neon-green', 'btn-outline');
+        }
+    });
+}
+
+if (btnSaveNoteEdit) {
+    btnSaveNoteEdit.addEventListener('click', () => {
+        const title = editNoteTitle.value.trim() || 'Untitled';
+        const body = editNoteBody.value.trim();
+        const color = editNoteColor.value === 'default' ? 'rgba(255,255,255,0.05)' : editNoteColor.value;
+        
+        let noteHtml = `
+            ${isPinned ? '<div style="position: absolute; top: 10px; right: 10px; cursor: pointer;" title="Pinned">📌</div>' : ''}
+            <h4 style="margin: 0 0 8px 0; font-size: 1.1em;">${title}</h4>
+            <p style="margin: 0; font-size: 0.9em; opacity: 0.9; white-space: pre-wrap;">${body}</p>
+        `;
+        
+        if (currentEditingNote) {
+            currentEditingNote.innerHTML = noteHtml;
+            currentEditingNote.style.borderLeft = `4px solid ${color}`;
+        } else {
+            const noteEl = document.createElement('div');
+            noteEl.className = 'keep-note glass-panel';
+            noteEl.style.cssText = `background: rgba(255,255,255,0.05); border-left: 4px solid ${color}; padding: 15px; border-radius: 8px; position: relative; cursor: pointer;`;
+            noteEl.innerHTML = noteHtml;
+            
+            noteEl.addEventListener('click', () => {
+                currentEditingNote = noteEl;
+                editNoteTitle.value = title;
+                editNoteBody.value = body;
+                noteEditorContainer.classList.remove('hidden');
+            });
+            
+            if (isPinned) {
+                notesGrid.prepend(noteEl);
+            } else {
+                notesGrid.appendChild(noteEl);
+            }
+        }
+        
+        noteEditorContainer.classList.add('hidden');
+    });
+}
+
