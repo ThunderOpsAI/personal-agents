@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { TOPICS } from "../topic/route";
+import { TOPICS } from "../../../../../lib/topics";
 
 const globalForTopics = global as unknown as { currentTopicIndex: number; lastUpdateDay: number };
 
