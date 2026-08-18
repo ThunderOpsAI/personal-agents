@@ -109,7 +109,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const exerciseModal = document.getElementById('exerciseModal');
     const exerciseSuggestions = document.getElementById('exerciseSuggestions');
-    const btnOpenExercises = document.getElementById('btnOpenExercises');
     const btnCloseExercises = document.getElementById('btnCloseExercises');
 
     // Exercise Demo UI
