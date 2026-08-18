@@ -1,14 +1,15 @@
 import { NextResponse } from "next/server";
+import { TOPICS } from "../topic/route";
 
-const TOPICS = [
-  { category: "ARTIFICIAL INTELLIGENCE", title: "Large Language Models", summary: "LLMs are advanced neural networks trained on vast amounts of text data to understand and generate human-like language." },
-  { category: "SYSTEMS", title: "Distributed Consensus", summary: "Algorithms like Paxos and Raft allow a cluster of machines to agree on a state even if some nodes fail." },
-  { category: "MEDICINE", title: "Neuroplasticity", summary: "The brain's ability to reorganize itself by forming new neural connections throughout life, crucial for rehabilitation." }
-];
-
-let currentIndex = 0;
+const globalForTopics = global as unknown as { currentTopicIndex: number; lastUpdateDay: number };
 
 export async function POST() {
-  currentIndex = (currentIndex + 1) % TOPICS.length;
-  return NextResponse.json({ topic: TOPICS[currentIndex] });
+  if (globalForTopics.currentTopicIndex === undefined) {
+    globalForTopics.currentTopicIndex = 0;
+  }
+  
+  globalForTopics.currentTopicIndex = (globalForTopics.currentTopicIndex + 1) % TOPICS.length;
+  globalForTopics.lastUpdateDay = Math.floor(Date.now() / 86400000);
+  
+  return NextResponse.json({ status: "success", topic: TOPICS[globalForTopics.currentTopicIndex] });
 }

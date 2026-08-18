@@ -28,7 +28,7 @@
                 </div>
                 
                 <div class="header-actions">
-                    <button class="btn btn-sm btn-outline" id="btnSettings" title="Settings" style="font-size: 1.1em; padding: 4px 8px;">⚙️</button>
+                    <button class="btn btn-sm btn-outline" id="btnSettings" title="Settings" style="font-size: 1.1em; padding: 4px 8px;">Settings</button>
                     <button class="btn btn-sm btn-neon-blue" id="btnOpenRumbleChat">Rumble</button>
                     <button class="btn btn-sm btn-outline" id="btnOpenNotes">Notes</button>
                     <button class="btn btn-sm btn-outline btn-sync" id="btnSyncOps">Sync</button>
@@ -44,19 +44,33 @@
         <!-- Main Content Grid -->
         <main class="main-content">
             
-            <!-- Rumble Insight Widget -->
-            <section class="widget glass-panel" id="croWidget">
+            <!-- Standout Date and Time -->
+            <div id="topDateTimeDisplay" style="text-align: center; margin-bottom: 20px;">
+                <h2 id="topTime" style="font-size: 2.5rem; margin: 0; color: var(--text-primary); text-shadow: 0 0 10px rgba(0, 240, 255, 0.3);">--:--</h2>
+                <p id="topDate" style="font-size: 1.2rem; margin: 5px 0 0 0; color: var(--neon-blue);">--</p>
+            </div>
+
+            <!-- Budget Widget -->
+            <section class="widget glass-panel" id="budgetWidget">
                 <div class="widget-header">
-                    <h2>Rumble Insight</h2>
-                    <span class="badge neon-blue">New Proposal</span>
+                    <h2>Budget Overview</h2>
+                    <span class="badge neon-green" id="budgetTotalSpent">Spent: $0</span>
                 </div>
-                <div class="widget-body">
-                    <p id="croMessage">Loading insights from Chief Rumble Officer engine...</p>
+                <div class="budget-body" id="budgetSummary" style="margin-bottom: 14px; display: flex; flex-wrap: wrap; gap: 8px;">
+                    <!-- Dynamic Summary -->
                 </div>
-                <div class="widget-actions hidden" id="croActions">
-                    <button class="btn btn-outline" id="btnDismissCro">Dismiss</button>
-                    <button class="btn btn-neon-blue" id="btnAcceptCro">Accept Proposal</button>
-                    <button class="btn btn-neon-purple" id="btnDiscussCro">Discuss</button>
+                <div class="budget-form" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <input type="text" id="budgetDesc" class="glass-input" placeholder="Description" style="flex: 1; min-width: 150px; padding: 8px;">
+                    <input type="number" id="budgetAmount" class="glass-input" placeholder="Amount" style="width: 100px; padding: 8px;">
+                    <select id="budgetCategory" class="glass-select" style="padding: 8px;">
+                        <option value="Groceries">Groceries</option>
+                        <option value="Medical">Medical</option>
+                        <option value="Transport">Transport</option>
+                        <option value="Entertainment">Entertainment</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <input type="text" id="budgetNotes" class="glass-input" placeholder="Notes" style="flex: 1; min-width: 150px; padding: 8px;">
+                    <button class="btn btn-neon-green" id="btnLogBudget">Add Expense</button>
                 </div>
             </section>
 
@@ -80,19 +94,7 @@
                 </div>
                 
                 <div class="agenda-stream" id="agendaStream">
-                    <!-- Daily Learning Card -->
-                    <div class="protocol-card glass-panel learn-card" id="protocol-learn">
-                        <div class="protocol-info">
-                            <h3>07:30 AM <span class="badge neon-blue" id="learnCategoryTag">Artificial Intelligence</span></h3>
-                            <p id="learnTitleText">Loading continuous learning topic...</p>
-                            <span class="learn-summary-sub" id="learnSummaryText">Fetching topic details...</span>
-                        </div>
-                    <div class="protocol-actions learn-actions-grid">
-                        <button class="btn btn-neon-blue btn-sm" id="btnLearnMore">Learn More</button>
-                        <button class="btn btn-outline btn-sm" id="btnLearnDifferent">Rotate Suggestion</button>
-                        <button class="btn btn-outline btn-sm" id="btnChooseLearnTopic">Choose Topic</button>
-                    </div>
-                    </div>
+
                 </div>
 
                 <!-- Continue to Tomorrow's Agenda Button -->
@@ -133,27 +135,57 @@
                 </section>
             </div>
 
-            <!-- Budget Widget -->
-            <section class="widget glass-panel" id="budgetWidget">
+            <!-- Daily Intelligence Section -->
+            <section class="widget glass-panel" id="dailyIntelligenceWidget" style="padding: 0; background: none; border: none; box-shadow: none;">
+                <div class="widget-header" style="margin-bottom: 16px; padding: 0;">
+                    <div>
+                        <h2>Daily Intelligence</h2>
+                        <span class="badge neon-blue">Live Feed</span>
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <!-- Daily Learning Card -->
+                    <div class="protocol-card glass-panel learn-card" id="protocol-learn" style="margin: 0; height: 100%; display: flex; flex-direction: column; justify-content: space-between;">
+                        <div class="protocol-info">
+                            <h3>07:30 AM <span class="badge neon-blue" id="learnCategoryTag">Artificial Intelligence</span></h3>
+                            <p id="learnTitleText">Loading continuous learning topic...</p>
+                            <span class="learn-summary-sub" id="learnSummaryText">Fetching topic details...</span>
+                        </div>
+                        <div class="protocol-actions learn-actions-grid">
+                            <button class="btn btn-neon-blue btn-sm" id="btnLearnMore">Learn More</button>
+                            <button class="btn btn-outline btn-sm" id="btnLearnDifferent">Rotate Suggestion</button>
+                            <button class="btn btn-outline btn-sm" id="btnChooseLearnTopic">Choose Topic</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Daily News Content -->
+                    <div class="glass-panel" id="newsWidget" style="padding: 20px; border-radius: 12px; height: 100%; display: flex; flex-direction: column;">
+                        <div class="widget-header" style="flex-wrap: wrap; gap: 10px; margin-bottom: 12px; padding: 0;">
+                            <div class="news-tabs" style="display: flex; gap: 8px;" id="newsTabs">
+                                <button class="btn btn-sm btn-neon-blue active" data-tab="aus">Aus Headlines</button>
+                                <button class="btn btn-sm btn-outline" data-tab="world">World</button>
+                                <button class="btn btn-sm btn-outline" data-tab="tech">AI/Tech</button>
+                            </div>
+                        </div>
+                        <div class="widget-body" id="newsContent" style="max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; flex: 1;">
+                            <p style="color: var(--text-secondary);">Connecting to intelligence feeds...</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section class="widget glass-panel" id="croWidget">
                 <div class="widget-header">
-                    <h2>Budget Overview</h2>
-                    <span class="badge neon-green" id="budgetTotalSpent">Spent: $0</span>
+                    <h2>Rumble Insight</h2>
+                    <span class="badge neon-blue">New Proposal</span>
                 </div>
-                <div class="budget-body" id="budgetSummary" style="margin-bottom: 14px; display: flex; flex-wrap: wrap; gap: 8px;">
-                    <!-- Dynamic Summary -->
+                <div class="widget-body">
+                    <p id="croMessage">Loading insights from Chief Rumble Officer engine...</p>
                 </div>
-                <div class="budget-form" style="display: flex; gap: 8px; flex-wrap: wrap;">
-                    <input type="text" id="budgetDesc" class="glass-input" placeholder="Description" style="flex: 1; min-width: 150px; padding: 8px;">
-                    <input type="number" id="budgetAmount" class="glass-input" placeholder="Amount" style="width: 100px; padding: 8px;">
-                    <select id="budgetCategory" class="glass-select" style="padding: 8px;">
-                        <option value="Groceries">Groceries</option>
-                        <option value="Medical">Medical</option>
-                        <option value="Transport">Transport</option>
-                        <option value="Entertainment">Entertainment</option>
-                        <option value="Other">Other</option>
-                    </select>
-                    <input type="text" id="budgetNotes" class="glass-input" placeholder="Notes" style="flex: 1; min-width: 150px; padding: 8px;">
-                    <button class="btn btn-neon-green" id="btnLogBudget">Add Expense</button>
+                <div class="widget-actions hidden" id="croActions">
+                    <button class="btn btn-outline" id="btnDismissCro">Dismiss</button>
+                    <button class="btn btn-neon-blue" id="btnAcceptCro">Accept Proposal</button>
+                    <button class="btn btn-neon-purple" id="btnDiscussCro">Discuss</button>
                 </div>
             </section>
 
@@ -237,7 +269,10 @@
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-outline btn-sm" id="btnRotateTopicInsideModal">Rotate New Topic</button>
-                    <button class="btn btn-neon-blue btn-sm" id="btnCloseLearnDone">Got It</button>
+                    <div style="display: flex; gap: 8px;">
+                        <a href="#" target="_blank" class="btn btn-outline btn-sm hidden" id="btnDeepDiveLearn" style="text-decoration: none;">Deep Dive ↗</a>
+                        <button class="btn btn-neon-blue btn-sm" id="btnCloseLearnDone">Got It</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -284,7 +319,13 @@
                     </div>
                     <textarea id="unifiedNotesInput" class="glass-input notes-textarea" placeholder="Notes..."></textarea>
                 </div>
-                <div class="modal-footer"><button class="btn btn-outline" id="btnCancelPainLog">Cancel</button><button class="btn btn-neon-red" id="btnLogPain">Save pain log</button></div>
+                <div class="modal-footer" style="justify-content: space-between;">
+                    <button class="btn btn-neon-blue btn-sm" id="btnViewPainHistory">View History</button>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-outline" id="btnCancelPainLog">Cancel</button>
+                        <button class="btn btn-neon-red" id="btnLogPain">Save pain log</button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -353,7 +394,7 @@
                 <div class="notes-workspace" style="flex: 1; overflow-y: auto; padding: 10px; display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px;" id="notesGrid">
                     <!-- Pinned Note Example -->
                     <div class="keep-note glass-panel" style="background: rgba(255, 235, 59, 0.1); border-left: 4px solid #ffeb3b; padding: 15px; border-radius: 8px; position: relative; cursor: pointer;">
-                        <div style="position: absolute; top: 10px; right: 10px; cursor: pointer;" title="Pinned">📌</div>
+                        <div style="position: absolute; top: 10px; right: 10px; cursor: pointer; font-size: 0.8em; opacity: 0.8;" title="Pinned">[Pinned]</div>
                         <h4 style="margin: 0 0 8px 0; font-size: 1.1em;">Ideas for App</h4>
                         <p style="margin: 0; font-size: 0.9em; opacity: 0.9;">- Timer app<br>- Keep clone<br>- Settings page</p>
                         <div style="margin-top: 15px; display: flex; gap: 5px;">
@@ -381,7 +422,7 @@
                                     <option value="#4caf50">Green</option>
                                     <option value="#9c27b0">Purple</option>
                                 </select>
-                                <button class="btn btn-sm btn-outline" id="btnPinNote" title="Pin Note">📌 Pin</button>
+                                <button class="btn btn-sm btn-outline" id="btnPinNote" title="Pin Note">Pin</button>
                             </div>
                             <div style="display: flex; gap: 10px;">
                                 <button class="btn btn-sm btn-neon-red hidden" id="btnDeleteNoteEdit">Delete</button>
@@ -532,6 +573,41 @@
                         <button type="submit" class="btn btn-neon-blue" id="btnSaveCalEvent">Save Event</button>
                     </div>
                 </form>
+            </div>
+        </div>
+
+        <!-- Pain History Analytics Modal -->
+        <div class="modal-overlay hidden" id="painHistoryModal">
+            <div class="modal-content glass-panel pain-history-content" style="max-width: 900px; width: 95%; height: 85vh; display: flex; flex-direction: column;">
+                <div class="modal-header" style="flex-shrink: 0;">
+                    <h2>Pain History Analytics</h2>
+                    <div style="display: flex; gap: 8px;" class="no-print">
+                        <button class="btn btn-sm btn-neon-green" id="btnPrintPainHistory">Print / Export Report</button>
+                        <button class="btn-close" id="btnClosePainHistory">&times;</button>
+                    </div>
+                </div>
+                <div class="history-controls no-print" style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <button class="btn btn-sm btn-outline active filter-btn" data-filter="all">All</button>
+                    <button class="btn btn-sm btn-outline filter-btn" data-filter="day">Day</button>
+                    <button class="btn btn-sm btn-outline filter-btn" data-filter="week">Week</button>
+                    <button class="btn btn-sm btn-outline filter-btn" data-filter="month">Month</button>
+                </div>
+                <div class="history-table-container printable-area" style="flex: 1; overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 10px;">
+                    <table class="history-table" id="painHistoryTable" style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                        <thead>
+                            <tr style="text-align: left; border-bottom: 1px solid var(--glass-border);">
+                                <th style="padding: 8px; color: var(--neon-blue);">Date</th>
+                                <th style="padding: 8px; color: var(--neon-blue);">Level</th>
+                                <th style="padding: 8px; color: var(--neon-blue);">Locations</th>
+                                <th style="padding: 8px; color: var(--neon-blue);">Mood</th>
+                                <th style="padding: 8px; color: var(--neon-blue);">Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody id="painHistoryTbody">
+                            <!-- Dynamic rows -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 

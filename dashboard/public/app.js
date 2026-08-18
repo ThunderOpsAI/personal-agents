@@ -89,6 +89,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const unifiedNotesInput = document.getElementById('unifiedNotesInput');
     const btnLogPain = document.getElementById('btnLogPain');
     const painLogModal = document.getElementById('painLogModal');
+    
+    // Pain History Elements
+    const btnViewPainHistory = document.getElementById('btnViewPainHistory');
+    const painHistoryModal = document.getElementById('painHistoryModal');
+    const btnClosePainHistory = document.getElementById('btnClosePainHistory');
+    const btnPrintPainHistory = document.getElementById('btnPrintPainHistory');
+    const painHistoryTbody = document.getElementById('painHistoryTbody');
+    const filterBtns = document.querySelectorAll('.filter-btn');
     const btnClosePainLog = document.getElementById('btnClosePainLog');
     const btnCancelPainLog = document.getElementById('btnCancelPainLog');
     const btnAddPainLocation = document.getElementById('btnAddPainLocation');
@@ -144,6 +152,18 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const customAreaContextMap = {};
 
+    // --- Date and Time Updater ---
+    const topTime = document.getElementById('topTime');
+    const topDate = document.getElementById('topDate');
+    function updateTopDateTime() {
+        if (!topTime || !topDate) return;
+        const now = new Date();
+        topTime.innerText = now.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit', hour12: true });
+        topDate.innerText = now.toLocaleDateString('en-AU', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    }
+    setInterval(updateTopDateTime, 1000);
+    updateTopDateTime();
+
     // --- Server Status Checker ---
     async function checkServerHealth() {
         try {
@@ -168,8 +188,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (res.ok) {
                 const data = await res.json();
                 if (data.temp_c !== null && data.temp_c !== undefined) {
-                    const washDays = (data.forecast || []).slice().sort((a, b) => a.precipitation_probability_pct - b.precipitation_probability_pct).slice(0, 2).map(day => day.date).join(' and ');
-                    weatherWidget.innerHTML = `<span class="weather-text">Wangaratta: ${data.temp_c}°C • Rain now ${data.rain_probability_pct}% • Wash: ${washDays || 'forecast unavailable'}</span>`;
+                    const now = new Date();
+                    const dateString = now.toLocaleDateString('en-AU', { weekday: 'long', month: 'short', day: 'numeric' });
+                    const dailyRainAvg = data.forecast && data.forecast.length > 0 ? 
+                        Math.round(data.forecast.reduce((acc, curr) => acc + curr.precipitation_probability_pct, 0) / data.forecast.length) : 
+                        (data.rain_probability_pct || 0);
+                    weatherWidget.innerHTML = `<span class="weather-text">${dateString} • Wangaratta: ${data.temp_c}°C • Daily Rain: ${dailyRainAvg}%</span>`;
                 } else {
                     weatherWidget.innerHTML = `<span class="weather-text">Weather: Offline</span>`;
                 }
@@ -594,20 +618,41 @@ document.addEventListener('DOMContentLoaded', () => {
         learnTopicInput.value = '';
     });
 
+    const btnDeepDiveLearn = document.getElementById('btnDeepDiveLearn');
+
     function openLearnModal() {
         if (!currentLearnTopic) return;
-        modalLearnCategory.innerText = currentLearnTopic.category;
-        modalLearnTitle.innerText = currentLearnTopic.title;
-        modalLearnDetails.innerText = currentLearnTopic.details;
+        modalLearnCategory.innerText = currentLearnTopic.category || 'Learning';
+        modalLearnTitle.innerText = currentLearnTopic.title || 'Topic';
+        
+        // Fix for undefined details
+        modalLearnDetails.innerHTML = currentLearnTopic.details || currentLearnTopic.summary || currentLearnTopic.description || 'Details unavailable.';
+
+        if (btnDeepDiveLearn) {
+            if (currentLearnTopic.external_link) {
+                btnDeepDiveLearn.href = currentLearnTopic.external_link;
+                btnDeepDiveLearn.classList.remove('hidden');
+            } else {
+                btnDeepDiveLearn.classList.add('hidden');
+                btnDeepDiveLearn.removeAttribute('href');
+            }
+        }
 
         modalLearnTable.innerHTML = '';
-        if (currentLearnTopic.table) {
-            currentLearnTopic.table.forEach(row => {
+        const dataPoints = currentLearnTopic.data_points || currentLearnTopic.table || [];
+        if (dataPoints.length > 0) {
+            dataPoints.forEach(row => {
                 const tr = document.createElement('tr');
                 const keys = Object.keys(row);
-                tr.innerHTML = `<td><strong>${row[keys[0]]}</strong></td><td>${row[keys[1]] || row[keys[2]] || 'N/A'}</td>`;
+                const param = row[keys[0]] || '';
+                const val = row[keys[1]] || row[keys[2]] || '';
+                tr.innerHTML = `<td><strong>${param}</strong></td><td>${val}</td>`;
                 modalLearnTable.appendChild(tr);
             });
+        } else {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td colspan="2" style="text-align: center; color: var(--text-secondary);">No data breakdown available.</td>`;
+            modalLearnTable.appendChild(tr);
         }
         learnModal.classList.remove('hidden');
     }
@@ -616,9 +661,86 @@ document.addEventListener('DOMContentLoaded', () => {
     btnCloseLearnModal.addEventListener('click', () => learnModal.classList.add('hidden'));
     btnCloseLearnDone.addEventListener('click', () => learnModal.classList.add('hidden'));
     btnRotateTopicInsideModal.addEventListener('click', async () => {
+        const originalText = btnRotateTopicInsideModal.innerText;
+        btnRotateTopicInsideModal.innerText = "Rotating...";
         await rotateLearnTopic();
         openLearnModal();
+        btnRotateTopicInsideModal.innerText = originalText;
     });
+
+    // --- Daily News Engine ---
+    const API_NEWS = `${API_BASE}/api/v1/news`;
+    const newsContent = document.getElementById('newsContent');
+    const newsTabs = document.getElementById('newsTabs');
+    let newsDataCache = { aus: [], world: [], tech: [] };
+
+    async function loadNews() {
+        try {
+            const res = await fetch(API_NEWS);
+            if (res.ok) {
+                const data = await res.json();
+                newsDataCache = {
+                    aus: data.aus_headlines || [],
+                    world: data.world_headlines || [],
+                    tech: data.tech_ai_headlines || []
+                };
+                renderNewsTab('aus'); // Default tab
+            } else {
+                if (newsContent) newsContent.innerHTML = `<p style="color: var(--neon-red);">Failed to decrypt intel feeds.</p>`;
+            }
+        } catch (e) {
+            console.error('Error fetching news:', e);
+            if (newsContent) newsContent.innerHTML = `<p style="color: var(--neon-red);">Feed offline. Retrying connection...</p>`;
+        }
+    }
+
+    function renderNewsTab(category) {
+        if (!newsContent) return;
+        
+        if (newsTabs) {
+            const buttons = newsTabs.querySelectorAll('button');
+            buttons.forEach(btn => {
+                if (btn.dataset.tab === category) {
+                    btn.classList.add('btn-neon-blue');
+                    btn.classList.remove('btn-outline');
+                } else {
+                    btn.classList.remove('btn-neon-blue');
+                    btn.classList.add('btn-outline');
+                }
+            });
+        }
+
+        const articles = newsDataCache[category] || [];
+        newsContent.innerHTML = '';
+
+        if (articles.length === 0) {
+            newsContent.innerHTML = `<p style="color: var(--text-secondary);">No signals found for this sector.</p>`;
+            return;
+        }
+
+        articles.forEach(article => {
+            const item = document.createElement('div');
+            item.style.cssText = 'padding: 10px; background: rgba(0,0,0,0.2); border-left: 2px solid var(--neon-blue); border-radius: 4px;';
+            item.innerHTML = `
+                <a href="${article.url || '#'}" target="_blank" style="color: var(--text-primary); text-decoration: none; font-weight: 600; display: block; margin-bottom: 4px; font-size: 0.95rem;">
+                    ${article.title || 'Encrypted transmission...'}
+                </a>
+                ${article.source ? `<span style="font-size: 0.75rem; color: var(--neon-purple); text-transform: uppercase;">SRC: ${article.source}</span>` : ''}
+            `;
+            newsContent.appendChild(item);
+        });
+    }
+
+    if (newsTabs) {
+        newsTabs.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') {
+                const tab = e.target.dataset.tab;
+                if (tab) renderNewsTab(tab);
+            }
+        });
+    }
+
+    loadNews();
 
     loadLearnTopic();
 
@@ -885,10 +1007,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         let isPinned = note.pinned || false;
                         let color = note.color || 'rgba(255,255,255,0.05)';
                         if (color === 'default') color = 'rgba(255,255,255,0.05)';
-                        let title = note.title || (note.author === 'rumble' ? '🤖 Rumble Note' : 'Note');
+                        let title = note.title || (note.author === 'rumble' ? 'Rumble Note' : 'Note');
                         
                         let noteHtml = `
-                            ${isPinned ? '<div style="position: absolute; top: 10px; right: 10px; cursor: pointer;" title="Pinned">📌</div>' : ''}
+                            ${isPinned ? '<div style="position: absolute; top: 10px; right: 10px; cursor: pointer; font-size: 0.8em; opacity: 0.8;" title="Pinned">[Pinned]</div>' : ''}
                             <h4 style="margin: 0 0 8px 0; font-size: 1.1em;">${title}</h4>
                             <p style="margin: 0; font-size: 0.9em; opacity: 0.9; white-space: pre-wrap;">${note.content}</p>
                             <small style="display:block; margin-top:10px; color:var(--text-dim); font-size:0.75rem;">${new Date(note.created_at || Date.now()).toLocaleDateString()}</small>
@@ -996,7 +1118,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (showBtn) {
             showBtn.addEventListener('click', () => {
                 const title = card.querySelector('.protocol-info p')?.innerText || id;
-                if (isExercise()) {
+                if (title.toLowerCase().includes('pain')) {
+                    painLogModal.classList.remove('hidden');
+                } else if (isExercise()) {
                     const cleanId = id ? id.toLowerCase().trim() : '';
                     if (cleanId && (cleanId.startsWith('y') || cleanId.includes('meditation') || cleanId.includes('rehab'))) {
                         startRunnerModal(cleanId);
@@ -1724,7 +1848,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     loadBudget();
 
-});
 // Settings Modal Logic
 const btnSettings = document.getElementById('btnSettings');
 const settingsModal = document.getElementById('settingsModal');
@@ -1860,4 +1983,109 @@ if (btnSaveNoteEdit) {
         noteEditorContainer.classList.add('hidden');
     });
 }
+
+    // --- Pain History Analytics Logic ---
+    let allPainLogs = [];
+    
+    function closePainHistory() {
+        if (painHistoryModal) painHistoryModal.classList.add('hidden');
+    }
+    
+    async function openPainHistory() {
+        if (typeof closePainLog === 'function') closePainLog();
+        else if (painLogModal) painLogModal.classList.add('hidden');
+        
+        if (painHistoryModal) painHistoryModal.classList.remove('hidden');
+        if (painHistoryTbody) painHistoryTbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px;">Loading history...</td></tr>';
+        
+        try {
+            const res = await fetch(API_PAIN_LOG);
+            if (res.ok) {
+                const data = await res.json();
+                allPainLogs = data.logs || [];
+                renderPainHistory('all');
+            } else {
+                if (painHistoryTbody) painHistoryTbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:var(--neon-red);">Failed to load history.</td></tr>';
+            }
+        } catch (error) {
+            if (painHistoryTbody) painHistoryTbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:var(--neon-red);">Failed to load history.</td></tr>';
+            console.error('Error fetching pain history:', error);
+        }
+    }
+    
+    function renderPainHistory(filter) {
+        if (!painHistoryTbody) return;
+        painHistoryTbody.innerHTML = '';
+        
+        if (!allPainLogs || allPainLogs.length === 0) {
+            painHistoryTbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px;">No pain logs found.</td></tr>';
+            return;
+        }
+        
+        const now = new Date();
+        let filteredLogs = allPainLogs.filter(log => {
+            if (filter === 'all') return true;
+            
+            const logDate = new Date(log.created_at || log.timestamp);
+            if (isNaN(logDate)) return true;
+            
+            const diffTime = Math.abs(now - logDate);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (filter === 'day') return diffDays <= 1;
+            if (filter === 'week') return diffDays <= 7;
+            if (filter === 'month') return diffDays <= 30;
+            return true;
+        });
+        
+        if (filteredLogs.length === 0) {
+            painHistoryTbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px;">No pain logs for this timeframe.</td></tr>';
+            return;
+        }
+        
+        filteredLogs.forEach(log => {
+            const dateStr = log.created_at || log.timestamp;
+            const displayDate = new Date(dateStr).toLocaleString('en-AU', {
+                month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+            
+            let locationsStr = 'N/A';
+            if (log.active_symptoms && log.active_symptoms.length > 0) {
+                locationsStr = log.active_symptoms.join(', ');
+            } else if (log.generators && log.generators.length > 0) {
+                locationsStr = log.generators.map(g => `${g.side} ${g.area} (${g.percentage}%)`).join(', ');
+            }
+            
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="padding: 10px 8px; border-bottom: 1px solid var(--glass-border);">${displayDate}</td>
+                <td style="padding: 10px 8px; border-bottom: 1px solid var(--glass-border);"><strong>${log.total_pain_level ?? log.pain_level ?? '-'}</strong>/10</td>
+                <td style="padding: 10px 8px; border-bottom: 1px solid var(--glass-border); font-size: 0.85em;">${locationsStr}</td>
+                <td style="padding: 10px 8px; border-bottom: 1px solid var(--glass-border);">${log.mood_level ?? '-'}/10</td>
+                <td style="padding: 10px 8px; border-bottom: 1px solid var(--glass-border); font-size: 0.85em; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${log.pain_notes || ''}">${log.pain_notes || ''}</td>
+            `;
+            painHistoryTbody.appendChild(tr);
+        });
+    }
+    
+    if (btnViewPainHistory) btnViewPainHistory.addEventListener('click', openPainHistory);
+    if (btnClosePainHistory) btnClosePainHistory.addEventListener('click', closePainHistory);
+    
+    if (btnPrintPainHistory) {
+        btnPrintPainHistory.addEventListener('click', () => {
+            window.print();
+        });
+    }
+    
+    if (filterBtns) {
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                filterBtns.forEach(b => b.classList.remove('active'));
+                const targetBtn = e.currentTarget;
+                targetBtn.classList.add('active');
+                renderPainHistory(targetBtn.getAttribute('data-filter'));
+            });
+        });
+    }
+});
 

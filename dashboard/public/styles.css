@@ -873,3 +873,61 @@ h3 { font-size: 1.05rem; }
     from { opacity: 1; }
     to { opacity: 0; }
 }
+
+/* Print Styles */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    
+    .bg-orb {
+        display: none !important;
+    }
+
+    #painHistoryModal, 
+    #painHistoryModal * {
+        visibility: visible;
+    }
+
+    #painHistoryModal {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        background: transparent;
+        box-shadow: none;
+        backdrop-filter: none;
+        border: none;
+    }
+    
+    .modal-content.pain-history-content {
+        max-width: 100%;
+        width: 100%;
+        height: auto;
+        border: none;
+        box-shadow: none;
+        background: white !important;
+        color: black !important;
+    }
+    
+    .history-table th {
+        color: black !important;
+        border-bottom: 2px solid black !important;
+    }
+    
+    .history-table td {
+        color: black !important;
+        border-bottom: 1px solid #ccc !important;
+    }
+    
+    .no-print {
+        display: none !important;
+    }
+    
+    /* Ensure modal overlays don't grey out the printed page */
+    .modal-overlay {
+        background: transparent !important;
+    }
+}
