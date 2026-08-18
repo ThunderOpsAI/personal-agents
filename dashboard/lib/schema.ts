@@ -50,23 +50,42 @@ CREATE TABLE IF NOT EXISTS agenda_items (
 
 export interface Note {
   id: string;
+  title: string;
   content: string;
+  color: string;
+  pinned: boolean;
   author: string;
+  deleted_at: string | null;
   created_at: string;
   updated_at: string;
 }
 
 export interface CreateNoteInput {
   id?: string;
+  title?: string;
   content: string;
+  color?: string;
+  pinned?: boolean;
   author?: string;
+}
+
+export interface UpdateNoteInput {
+  id: string;
+  title?: string;
+  content?: string;
+  color?: string;
+  pinned?: boolean;
 }
 
 export const CREATE_NOTES_TABLE_SQL = `
 CREATE TABLE IF NOT EXISTS notes (
     id TEXT PRIMARY KEY,
+    title TEXT DEFAULT '',
     content TEXT NOT NULL,
+    color TEXT DEFAULT '',
+    pinned BOOLEAN DEFAULT FALSE,
     author TEXT NOT NULL DEFAULT 'user',
+    deleted_at TEXT,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
 );

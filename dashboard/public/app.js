@@ -139,6 +139,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentMoodLevel = 5;
     let currentProposalText = "";
     let currentLearnTopic = null;
+    let cachedAgendaData = null;
+    let isTomorrowView = false;
     
     const customAreaContextMap = {};
 
@@ -198,6 +200,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error(e);
         }
     }
+    loadAgenda();
 
     function renderTodayAgenda(data) {
         if (dailyAgendaTitle) dailyAgendaTitle.innerText = "Daily Agenda";
@@ -232,6 +235,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="protocol-actions">
                         <button class="btn btn-neon-purple btn-show-me" data-id="${item.id}" data-type="${item.item_type || ''}" ${isCompleted ? 'disabled' : ''}>Show Me</button>
                         <button class="btn btn-neon-green btn-done" data-id="${item.id}" data-type="${item.item_type || ''}" ${isCompleted ? 'disabled' : ''}>${isCompleted ? 'Done' : 'Done'}</button>
+                        <button class="btn btn-outline btn-tomorrow" data-id="${item.id}" data-type="${item.item_type || ''}" ${isCompleted ? 'disabled' : ''}>Tomorrow</button>
                         <button class="btn btn-outline btn-dismiss" data-id="${item.id}" data-type="${item.item_type || ''}" ${isCompleted ? '' : 'disabled'}>Dismiss</button>
                     </div>
                 `;
@@ -363,6 +367,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="protocol-actions">
                     <button class="btn btn-neon-purple btn-show-me" data-id="${item.id}" data-type="${item.item_type || ''}">Preview</button>
                     <button class="btn btn-neon-green btn-done" data-id="${item.id}" data-type="${item.item_type || ''}">Pre-Done</button>
+                    <button class="btn btn-outline btn-tomorrow" data-id="${item.id}" data-type="${item.item_type || ''}">Tomorrow</button>
                     <button class="btn btn-outline btn-dismiss" data-id="${item.id}" data-type="${item.item_type || ''}">Dismiss</button>
                 </div>
             `;
@@ -875,29 +880,44 @@ document.addEventListener('DOMContentLoaded', () => {
                 container.innerHTML = '';
                 
                 if (data.notes && data.notes.length > 0) {
-                    data.notes.forEach(note => {
-                        let isPinned = false;
-                        let color = 'rgba(255,255,255,0.05)';
+                    const sortedNotes = data.notes.sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
+                    sortedNotes.forEach(note => {
+                        let isPinned = note.pinned || false;
+                        let color = note.color || 'rgba(255,255,255,0.05)';
+                        if (color === 'default') color = 'rgba(255,255,255,0.05)';
+                        let title = note.title || (note.author === 'rumble' ? '🤖 Rumble Note' : 'Note');
                         
                         let noteHtml = `
                             ${isPinned ? '<div style="position: absolute; top: 10px; right: 10px; cursor: pointer;" title="Pinned">📌</div>' : ''}
-                            <h4 style="margin: 0 0 8px 0; font-size: 1.1em;">${note.author === 'rumble' ? '🤖 Rumble Note' : 'Note'}</h4>
+                            <h4 style="margin: 0 0 8px 0; font-size: 1.1em;">${title}</h4>
                             <p style="margin: 0; font-size: 0.9em; opacity: 0.9; white-space: pre-wrap;">${note.content}</p>
-                            <small style="display:block; margin-top:10px; color:var(--text-dim); font-size:0.75rem;">${new Date(note.created_at).toLocaleDateString()}</small>
+                            <small style="display:block; margin-top:10px; color:var(--text-dim); font-size:0.75rem;">${new Date(note.created_at || Date.now()).toLocaleDateString()}</small>
                         `;
                         
                         const noteEl = document.createElement('div');
                         noteEl.className = 'keep-note glass-panel';
                         noteEl.style.cssText = `background: ${color}; border-left: 4px solid #fff; padding: 15px; border-radius: 8px; position: relative; cursor: pointer;`;
                         noteEl.innerHTML = noteHtml;
+                        noteEl.dataset.id = note.id || '';
                         
                         noteEl.addEventListener('click', () => {
-                            if (window.currentEditingNote !== undefined) {
-                                window.currentEditingNote = noteEl;
-                                document.getElementById('editNoteTitle').value = note.author === 'rumble' ? 'Rumble Note' : 'Note';
-                                document.getElementById('editNoteBody').value = note.content;
-                                document.getElementById('noteEditorContainer').classList.remove('hidden');
+                            currentEditingNote = noteEl;
+                            document.getElementById('editNoteTitle').value = title;
+                            document.getElementById('editNoteBody').value = note.content;
+                            document.getElementById('editNoteColor').value = note.color || 'default';
+                            isPinned = note.pinned || false;
+                            
+                            const btnPin = document.getElementById('btnPinNote');
+                            if (isPinned) {
+                                btnPin.classList.replace('btn-outline', 'btn-neon-green');
+                            } else {
+                                btnPin.classList.replace('btn-neon-green', 'btn-outline');
                             }
+                            
+                            const btnDelete = document.getElementById('btnDeleteNoteEdit');
+                            if (btnDelete) btnDelete.classList.remove('hidden');
+                            
+                            document.getElementById('noteEditorContainer').classList.remove('hidden');
                         });
                         
                         container.appendChild(noteEl);
@@ -959,6 +979,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const showBtn = card.querySelector('.btn-show-me');
         const doneBtn = card.querySelector('.btn-done');
         const dismissBtn = card.querySelector('.btn-dismiss');
+        const tomorrowBtn = card.querySelector('.btn-tomorrow');
         
         const type = showBtn?.getAttribute('data-type') || doneBtn?.getAttribute('data-type') || '';
         const id = showBtn?.getAttribute('data-id') || doneBtn?.getAttribute('data-id') || dismissBtn?.getAttribute('data-id') || '';
@@ -1021,6 +1042,20 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
         
+        if (tomorrowBtn) {
+            tomorrowBtn.addEventListener('click', () => {
+                card.remove();
+                if (id) {
+                    fetch(API_AGENDA, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id, action: 'reschedule_tomorrow' })
+                    }).catch(() => {});
+                }
+                showToast("Moved to Tomorrow", "info");
+            });
+        }
+
         if (dismissBtn) {
             dismissBtn.addEventListener('click', () => {
                 card.remove();
@@ -1075,6 +1110,19 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentProtocolSteps = [];
     let currentStepIndex = 0;
     let timeLeft = 0;
+
+    let fetchedYogaPoses = [];
+    async function loadYogaPoses() {
+        try {
+            const res = await fetch(`${API_BASE}/api/v1/yoga/poses`);
+            if (res.ok) {
+                const d = await res.json();
+                fetchedYogaPoses = d.poses || d;
+                if (!Array.isArray(fetchedYogaPoses)) fetchedYogaPoses = [];
+            }
+        } catch (e) {}
+    }
+    loadYogaPoses();
 
     const YOGA_ROUTINES = {
         'y1': {
@@ -1150,13 +1198,25 @@ document.addEventListener('DOMContentLoaded', () => {
             if (runnerTitleEl) runnerTitleEl.innerText = routine.title;
             currentProtocolSteps = routine.steps.map(s => ({ ...s }));
         } else if (rawId.startsWith('y') || rawId.includes('yoga') || rawId.includes('rehab') || rawId.includes('stretch') || rawId.includes('exercise')) {
-            if (runnerTitleEl) runnerTitleEl.innerText = "Yoga & Rehab Protocol";
-            currentProtocolSteps = [
-                { title: "Cat-Cow Spine Awakening", duration: 45, frames: ["/exercises/cat_cow_1.jpg", "/exercises/cat_cow_2.jpg"] },
-                { title: "Child's Pose & Restorative Hold", duration: 60, frames: ["/exercises/childs_pose_1.jpg", "/exercises/childs_pose_2.jpg"] },
-                { title: "Lumbar Core Decompression", duration: 45, frames: ["/lumbar_core_routine.jpg", "/exercises/cat_cow_2.jpg"] },
-                { title: "Restorative Release", duration: 60, frames: ["/exercises/childs_pose_2.jpg"] }
-            ];
+            if (runnerTitleEl) runnerTitleEl.innerText = "Adaptive Yoga Protocol";
+            if (fetchedYogaPoses && fetchedYogaPoses.length >= 4) {
+                const shuffled = [...fetchedYogaPoses].sort(() => 0.5 - Math.random());
+                currentProtocolSteps = shuffled.slice(0, 5).map(p => ({
+                    title: p.name || p.title || 'Yoga Pose',
+                    duration: p.duration_seconds || 45,
+                    procedure: p.procedure,
+                    image_url: p.image_url,
+                    video_url: p.video_url,
+                    frames: p.image_url ? [p.image_url] : []
+                }));
+            } else {
+                currentProtocolSteps = [
+                    { title: "Cat-Cow Spine Awakening", duration: 45, frames: ["/exercises/cat_cow_1.jpg", "/exercises/cat_cow_2.jpg"] },
+                    { title: "Child's Pose & Restorative Hold", duration: 60, frames: ["/exercises/childs_pose_1.jpg", "/exercises/childs_pose_2.jpg"] },
+                    { title: "Lumbar Core Decompression", duration: 45, frames: ["/lumbar_core_routine.jpg", "/exercises/cat_cow_2.jpg"] },
+                    { title: "Restorative Release", duration: 60, frames: ["/exercises/childs_pose_2.jpg"] }
+                ];
+            }
         } else if (rawId.includes('meditation')) {
             if (runnerTitleEl) runnerTitleEl.innerText = "Meditation Protocol";
             currentProtocolSteps = [
@@ -1197,7 +1257,32 @@ document.addEventListener('DOMContentLoaded', () => {
         
         clearInterval(frameInterval);
         
-        if (step.frames && step.frames.length > 0) {
+        if (step.video_url) {
+            if (placeholderEl) placeholderEl.style.display = 'none';
+            if (imgEl) imgEl.style.display = 'none';
+            if (videoEl) {
+                videoEl.style.display = 'block';
+                if (videoEl.getAttribute('data-src') !== step.video_url) {
+                    videoEl.setAttribute('data-src', step.video_url);
+                    videoEl.src = step.video_url;
+                    videoEl.load();
+                }
+                const playPromise = videoEl.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(err => console.warn(err));
+                }
+            }
+        } else if (step.image_url) {
+            if (placeholderEl) placeholderEl.style.display = 'none';
+            if (videoEl) {
+                videoEl.pause();
+                videoEl.style.display = 'none';
+            }
+            if (imgEl) {
+                imgEl.style.display = 'block';
+                imgEl.src = step.image_url;
+            }
+        } else if (step.frames && step.frames.length > 0) {
             if (placeholderEl) placeholderEl.style.display = 'none';
             if (videoEl) {
                 videoEl.pause();
@@ -1322,7 +1407,18 @@ document.addEventListener('DOMContentLoaded', () => {
             if (videoEl) videoEl.pause();
             
             swapList.innerHTML = '';
-            exerciseBacklog.forEach((ex) => {
+            const backlogToUse = (fetchedYogaPoses && fetchedYogaPoses.length > 0) 
+                ? fetchedYogaPoses.map(p => ({
+                    title: p.name || p.title || 'Pose',
+                    duration: p.duration_seconds || 45,
+                    procedure: p.procedure,
+                    image_url: p.image_url,
+                    video_url: p.video_url,
+                    frames: p.image_url ? [p.image_url] : []
+                }))
+                : exerciseBacklog;
+
+            backlogToUse.forEach((ex) => {
                 const item = document.createElement('div');
                 item.className = 'agenda-item';
                 item.style.cursor = 'pointer';
@@ -1693,7 +1789,22 @@ if (btnNewNote) {
         editNoteColor.value = 'default';
         isPinned = false;
         btnPinNote.classList.replace('btn-neon-green', 'btn-outline');
+        const btnDelete = document.getElementById('btnDeleteNoteEdit');
+        if (btnDelete) btnDelete.classList.add('hidden');
         noteEditorContainer.classList.remove('hidden');
+    });
+}
+
+const btnDeleteNoteEdit = document.getElementById('btnDeleteNoteEdit');
+if (btnDeleteNoteEdit) {
+    btnDeleteNoteEdit.addEventListener('click', async () => {
+        if (currentEditingNote && currentEditingNote.dataset.id) {
+            try {
+                await fetch(`${API_NOTES}?id=${currentEditingNote.dataset.id}`, { method: 'DELETE' });
+                currentEditingNote.remove();
+            } catch(e) {}
+        }
+        noteEditorContainer.classList.add('hidden');
     });
 }
 
@@ -1715,39 +1826,36 @@ if (btnPinNote) {
 }
 
 if (btnSaveNoteEdit) {
-    btnSaveNoteEdit.addEventListener('click', () => {
+    btnSaveNoteEdit.addEventListener('click', async () => {
         const title = editNoteTitle.value.trim() || 'Untitled';
         const body = editNoteBody.value.trim();
-        const color = editNoteColor.value === 'default' ? 'rgba(255,255,255,0.05)' : editNoteColor.value;
+        const colorVal = editNoteColor.value;
+        const color = colorVal === 'default' ? 'rgba(255,255,255,0.05)' : colorVal;
         
-        let noteHtml = `
-            ${isPinned ? '<div style="position: absolute; top: 10px; right: 10px; cursor: pointer;" title="Pinned">📌</div>' : ''}
-            <h4 style="margin: 0 0 8px 0; font-size: 1.1em;">${title}</h4>
-            <p style="margin: 0; font-size: 0.9em; opacity: 0.9; white-space: pre-wrap;">${body}</p>
-        `;
+        const payload = {
+            title: title,
+            content: body,
+            color: colorVal,
+            pinned: isPinned,
+            author: 'user'
+        };
         
-        if (currentEditingNote) {
-            currentEditingNote.innerHTML = noteHtml;
-            currentEditingNote.style.borderLeft = `4px solid ${color}`;
-        } else {
-            const noteEl = document.createElement('div');
-            noteEl.className = 'keep-note glass-panel';
-            noteEl.style.cssText = `background: rgba(255,255,255,0.05); border-left: 4px solid ${color}; padding: 15px; border-radius: 8px; position: relative; cursor: pointer;`;
-            noteEl.innerHTML = noteHtml;
-            
-            noteEl.addEventListener('click', () => {
-                currentEditingNote = noteEl;
-                editNoteTitle.value = title;
-                editNoteBody.value = body;
-                noteEditorContainer.classList.remove('hidden');
-            });
-            
-            if (isPinned) {
-                notesGrid.prepend(noteEl);
+        try {
+            if (currentEditingNote && currentEditingNote.dataset.id) {
+                await fetch(`${API_NOTES}?id=${currentEditingNote.dataset.id}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: currentEditingNote.dataset.id, ...payload })
+                });
             } else {
-                notesGrid.appendChild(noteEl);
+                await fetch(API_NOTES, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
             }
-        }
+            if (typeof loadNotes === 'function') loadNotes();
+        } catch(e) {}
         
         noteEditorContainer.classList.add('hidden');
     });

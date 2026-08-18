@@ -12,6 +12,7 @@ import {
   AuditTrailEntry,
   Note,
   CreateNoteInput,
+  UpdateNoteInput,
   PainLogRecord,
   CreatePainLogInput,
   ExercisePreferenceRecord,
@@ -377,24 +378,32 @@ export async function getNotes(): Promise<Note[]> {
 
   if (status.provider === 'neon' && pgPool) {
     const res = await pgPool.query(
-      'SELECT id, content, author, created_at, updated_at FROM notes ORDER BY created_at DESC'
+      'SELECT id, title, content, color, pinned, author, deleted_at, created_at, updated_at FROM notes WHERE deleted_at IS NULL ORDER BY pinned DESC, created_at DESC'
     );
     return res.rows.map((row) => ({
       id: row.id,
+      title: row.title,
       content: row.content,
+      color: row.color,
+      pinned: row.pinned,
       author: row.author,
+      deleted_at: row.deleted_at || null,
       created_at: row.created_at,
       updated_at: row.updated_at,
     }));
   } else if (sqliteDb) {
     const stmt = sqliteDb.prepare(
-      'SELECT id, content, author, created_at, updated_at FROM notes ORDER BY created_at DESC'
+      'SELECT id, title, content, color, pinned, author, deleted_at, created_at, updated_at FROM notes WHERE deleted_at IS NULL ORDER BY pinned DESC, created_at DESC'
     );
     const rows = stmt.all() as any[];
     return rows.map((row) => ({
       id: row.id,
+      title: row.title,
       content: row.content,
+      color: row.color,
+      pinned: Boolean(row.pinned),
       author: row.author,
+      deleted_at: row.deleted_at || null,
       created_at: row.created_at,
       updated_at: row.updated_at,
     }));
@@ -408,29 +417,106 @@ export async function createNote(input: CreateNoteInput): Promise<Note> {
   const status = getDbStatus();
 
   const id = input.id || crypto.randomUUID();
+  const title = input.title || '';
   const content = input.content;
+  const color = input.color || '';
+  const pinned = input.pinned || false;
   const author = input.author || 'user';
   const now = new Date().toISOString();
 
   if (status.provider === 'neon' && pgPool) {
     await pgPool.query(
-      `INSERT INTO notes (id, content, author, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, $5)`,
-      [id, content, author, now, now]
+      `INSERT INTO notes (id, title, content, color, pinned, author, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      [id, title, content, color, pinned, author, now, now]
     );
   } else if (sqliteDb) {
     const stmt = sqliteDb.prepare(
-      `INSERT INTO notes (id, content, author, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?)`
+      `INSERT INTO notes (id, title, content, color, pinned, author, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
     );
-    stmt.run(id, content, author, now, now);
+    stmt.run(id, title, content, color, pinned, author, now, now);
   }
 
   return {
     id,
+    title,
     content,
+    color,
+    pinned,
     author,
+    deleted_at: null,
     created_at: now,
+    updated_at: now,
+  };
+}
+
+export async function updateNote(input: UpdateNoteInput): Promise<Note | null> {
+  await ensureTableExists();
+  const status = getDbStatus();
+  const now = new Date().toISOString();
+
+  let existing: Note | null = null;
+
+  if (status.provider === 'neon' && pgPool) {
+    const res = await pgPool.query('SELECT * FROM notes WHERE id = $1 AND deleted_at IS NULL', [input.id]);
+    if (res.rows.length > 0) {
+      const row = res.rows[0];
+      existing = {
+        id: row.id,
+        title: row.title,
+        content: row.content,
+        color: row.color,
+        pinned: row.pinned,
+        author: row.author,
+        deleted_at: row.deleted_at || null,
+        created_at: row.created_at,
+        updated_at: row.updated_at,
+      };
+    }
+  } else if (sqliteDb) {
+    const stmt = sqliteDb.prepare('SELECT * FROM notes WHERE id = ? AND deleted_at IS NULL');
+    const row = stmt.get(input.id) as any;
+    if (row) {
+      existing = {
+        id: row.id,
+        title: row.title,
+        content: row.content,
+        color: row.color,
+        pinned: Boolean(row.pinned),
+        author: row.author,
+        deleted_at: row.deleted_at || null,
+        created_at: row.created_at,
+        updated_at: row.updated_at,
+      };
+    }
+  }
+
+  if (!existing) return null;
+
+  const title = input.title !== undefined ? input.title : existing.title;
+  const content = input.content !== undefined ? input.content : existing.content;
+  const color = input.color !== undefined ? input.color : existing.color;
+  const pinned = input.pinned !== undefined ? input.pinned : existing.pinned;
+
+  if (status.provider === 'neon' && pgPool) {
+    await pgPool.query(
+      `UPDATE notes SET title = $1, content = $2, color = $3, pinned = $4, updated_at = $5 WHERE id = $6`,
+      [title, content, color, pinned, now, input.id]
+    );
+  } else if (sqliteDb) {
+    const stmt = sqliteDb.prepare(
+      `UPDATE notes SET title = ?, content = ?, color = ?, pinned = ?, updated_at = ? WHERE id = ?`
+    );
+    stmt.run(title, content, color, pinned, now, input.id);
+  }
+
+  return {
+    ...existing,
+    title,
+    content,
+    color,
+    pinned,
     updated_at: now,
   };
 }
@@ -438,13 +524,14 @@ export async function createNote(input: CreateNoteInput): Promise<Note> {
 export async function deleteNote(id: string): Promise<boolean> {
   await ensureTableExists();
   const status = getDbStatus();
+  const now = new Date().toISOString();
 
   if (status.provider === 'neon' && pgPool) {
-    const res = await pgPool.query('DELETE FROM notes WHERE id = $1', [id]);
+    const res = await pgPool.query('UPDATE notes SET deleted_at = $1 WHERE id = $2', [now, id]);
     return (res.rowCount ?? 0) > 0;
   } else if (sqliteDb) {
-    const stmt = sqliteDb.prepare('DELETE FROM notes WHERE id = ?');
-    const info = stmt.run(id);
+    const stmt = sqliteDb.prepare('UPDATE notes SET deleted_at = ? WHERE id = ?');
+    const info = stmt.run(now, id);
     return info.changes > 0;
   }
 
