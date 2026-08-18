@@ -1,6 +1,15 @@
 # Personal Agents
 
-> Multi-agent medical advisory system powered by [Agno](https://github.com/agno-agi/agno).
+> Rumble OS is a proactive, self-learning personal life manager, evolved from a medical advisory system and powered by [Agno](https://github.com/agno-agi/agno).
+
+## Key Features
+
+- **Automated Scraping**: Automated 6am/2pm email and calendar scraping.
+- **Universal Intent Capture UI**: Every button delegates to Rumble Chat.
+- **Adaptive Yoga Routines**: Daily 9am Yoga routines adapted to your active pain logs.
+- **Weather-optimized Washing Schedules**: Smart scheduling using an options model.
+- **Daily Learning Modules**: Curated daily learning content.
+- **`SOUL.md` Architecture**: Persistent agent memory and persona management.
 
 ## Architecture
 

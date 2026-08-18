@@ -108,8 +108,42 @@ document.addEventListener('DOMContentLoaded', () => {
     const customAreaNotes = document.getElementById('customAreaNotes');
 
     const exerciseModal = document.getElementById('exerciseModal');
-    const btnCloseExercises = document.getElementById('btnCloseExercises');
     const exerciseSuggestions = document.getElementById('exerciseSuggestions');
+    const btnOpenExercises = document.getElementById('btnOpenExercises');
+    const btnCloseExercises = document.getElementById('btnCloseExercises');
+
+    // Exercise Demo UI
+    const exerciseDemoModal = document.getElementById('exerciseDemoModal');
+    const btnCloseDemo = document.getElementById('btnCloseDemo');
+    const demoTitle = document.getElementById('demoTitle');
+    const demoInstructionTitle = document.getElementById('demoInstructionTitle');
+    const demoInstructionText = document.getElementById('demoInstructionText');
+    const demoProgress = document.getElementById('demoProgress');
+    const btnDemoPrev = document.getElementById('btnDemoPrev');
+    const btnDemoNext = document.getElementById('btnDemoNext');
+    let currentDemoSteps = [];
+    let currentDemoIndex = 0;
+
+    function updateDemoView() {
+        demoProgress.innerText = `Step ${currentDemoIndex + 1} of ${currentDemoSteps.length}`;
+        demoInstructionTitle.innerText = currentDemoSteps[currentDemoIndex].title;
+        demoInstructionText.innerText = currentDemoSteps[currentDemoIndex].text;
+        btnDemoPrev.disabled = currentDemoIndex === 0;
+        btnDemoNext.innerText = currentDemoIndex === currentDemoSteps.length - 1 ? "Finish" : "Next Step";
+    }
+
+    btnCloseDemo.addEventListener('click', () => exerciseDemoModal.classList.add('hidden'));
+    btnDemoPrev.addEventListener('click', () => {
+        if (currentDemoIndex > 0) { currentDemoIndex--; updateDemoView(); }
+    });
+    btnDemoNext.addEventListener('click', () => {
+        if (currentDemoIndex < currentDemoSteps.length - 1) {
+            currentDemoIndex++; updateDemoView();
+        } else {
+            exerciseDemoModal.classList.add('hidden');
+        }
+    });
+
     const reliefModal = document.getElementById('reliefModal');
     const btnCloseRelief = document.getElementById('btnCloseRelief');
     const btnSkipRelief = document.getElementById('btnSkipRelief');
@@ -375,6 +409,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     let pendingChatAction = null;
+    let chatHistory = [];
 
 
     async function sendRumbleChatMessage(textToSend, explicitAction) {
@@ -393,9 +428,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const payload = {
             message: msg,
+            history: chatHistory,
             proposal_context: currentProposalText,
             ...(actionToCommit ? { confirm_action: actionToCommit } : {})
         };
+        
+        chatHistory.push({ role: 'user', content: msg });
+        if (chatHistory.length > 20) chatHistory = chatHistory.slice(-20);
 
         try {
             const response = await fetch(API_RUMBLE_CHAT, {
@@ -404,6 +443,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify(payload)
             });
             const data = await response.json();
+            
+            chatHistory.push({ role: 'model', content: data.reply || "Understood." });
             
             const rumbleDiv = document.createElement('div');
             rumbleDiv.className = 'message rumble-message';
@@ -1081,13 +1122,26 @@ document.addEventListener('DOMContentLoaded', () => {
             data.suggestions.forEach(exercise => {
                 const card = document.createElement('article');
                 card.className = 'exercise-card';
-                card.innerHTML = `<div><h3>${exercise.name}</h3><p>${exercise.instruction}</p><small>${exercise.duration_minutes} min · ${exercise.intensity}</small></div><div class="exercise-actions"><button class="btn btn-neon-green btn-sm exercise-done">Done</button><button class="btn btn-outline btn-sm exercise-reject">Dismiss</button><div class="reject-reasons hidden"><button class="btn btn-sm btn-outline reject-reason" data-reason="Too tired">Too tired</button><button class="btn btn-sm btn-outline reject-reason" data-reason="Hurts">Hurts</button></div></div>`;
+                card.innerHTML = `<div><h3>${exercise.name}</h3><p>${exercise.instruction}</p><small>${exercise.duration_minutes} min · ${exercise.intensity}</small></div><div class="exercise-actions"><button class="btn btn-neon-green btn-sm exercise-done">Done</button><button class="btn btn-outline btn-sm exercise-show">Show Me</button><button class="btn btn-outline btn-sm exercise-reject">Dismiss</button><div class="reject-reasons hidden"><button class="btn btn-sm btn-outline reject-reason" data-reason="Too tired">Too tired</button><button class="btn btn-sm btn-outline reject-reason" data-reason="Hurts">Hurts</button></div></div>`;
                 card.querySelector('.exercise-done').addEventListener('click', () => {
                     pendingProtocol = { id: exercise.id, name: exercise.name, beforePain: painLevel };
                     reliefExerciseName.innerText = exercise.name;
                     afterPainScore.value = currentPainLevel;
                     exerciseModal.classList.add('hidden');
                     reliefModal.classList.remove('hidden');
+                });
+                card.querySelector('.exercise-show').addEventListener('click', () => {
+                    demoTitle.innerText = exercise.name;
+                    currentDemoSteps = [
+                        { title: "Setup", text: `Find a comfortable space. Prepare for ${exercise.duration_minutes} minutes of ${exercise.intensity.toLowerCase()} movement.` },
+                        { title: "Form & Technique", text: exercise.instruction },
+                        { title: "Breathing", text: "Inhale deeply as you prepare, exhale slowly as you move into the stretch. Maintain a steady rhythm." },
+                        { title: "Completion", text: "Slowly release the position. Rest for a moment before continuing your day." }
+                    ];
+                    currentDemoIndex = 0;
+                    updateDemoView();
+                    exerciseModal.classList.add('hidden');
+                    exerciseDemoModal.classList.remove('hidden');
                 });
                 const reasons = card.querySelector('.reject-reasons');
                 card.querySelector('.exercise-reject').addEventListener('click', () => reasons.classList.toggle('hidden'));

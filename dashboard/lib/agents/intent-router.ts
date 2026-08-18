@@ -284,7 +284,7 @@ export function parseTaskDirective(message: string): { title: string; scheduled_
 /**
  * Call Gemini model with live grounding data.
  */
-async function callGemini(systemPrompt: string, userMessage: string, responseSchema?: any): Promise<string> {
+async function callGemini(systemPrompt: string, userMessage: string, responseSchema?: any, history: any[] = []): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     return `Rumble: I received your message: "${userMessage}". Let me know if you would like to log pain, create a note, or check your agenda.`;
@@ -300,7 +300,10 @@ async function callGemini(systemPrompt: string, userMessage: string, responseSch
       systemInstruction: {
         parts: [{ text: systemPrompt }],
       },
-      contents: [{ role: "user", parts: [{ text: userMessage }] }],
+      contents: [
+        ...history.map((h: any) => ({ role: h.role === "user" ? "user" : "model", parts: [{ text: h.content }] })),
+        { role: "user", parts: [{ text: userMessage }] }
+      ],
         ...(responseSchema ? { generationConfig: { responseMimeType: "application/json", responseSchema } } : {})
     }),
   });
@@ -321,7 +324,7 @@ async function callGemini(systemPrompt: string, userMessage: string, responseSch
 /**
  * Routes and handles incoming chat messages dynamically.
  */
-export async function routeChatMessage(message: string): Promise<IntentRouteResult> {
+export async function routeChatMessage(message: string, history: any[] = []): Promise<IntentRouteResult> {
   const nowMel = new Date().toLocaleString("en-AU", { timeZone: "Australia/Melbourne" });
   
   let liveAgendaText = "No active agenda items.";
@@ -442,7 +445,7 @@ ${weatherText}
   };
 
   try {
-    const replyStr = await callGemini(systemPrompt, message, responseSchema);
+    const replyStr = await callGemini(systemPrompt, message, responseSchema, history);
     const parsed = JSON.parse(replyStr);
     
     let finalReply = parsed.reply;

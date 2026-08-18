@@ -17,32 +17,33 @@ Read `CONTEXT.md` before changing terminology, agenda behavior, persistence, int
 
 * Rumble OS is live-data-only in production. Never add mock, dummy, seeded, guessed, or hard-coded user data to production paths.
 * The general Learning card rotates through three suggestions and lets the user choose a topic.
-* A separate adaptive Yoga routine appears every day at 09:00 AM. Suggestions must account for live pain logs, surgeries, clinician restrictions, and learned rehabilitation feedback (Implemented via Subagent).
+* The agent will maintain a database of 25-30 yoga routines, dynamically presenting 3 options every 09:00 AM based on the previous night's and 06:00 AM's pain logs. Suggestions must account for surgeries, clinician restrictions, and learned rehabilitation feedback (Implemented via Subagent).
 * A Meditation Protocol appears every night at 09:00 PM and 12:00 AM (Implemented via Subagent).
 * Weekly agenda targets three hydrotherapy sessions. Rumble selects only the sessions still needed to reach three for the current week — e.g. if today's session is already completed, Rumble selects the remaining two; a week with none completed yet gets three Rumble-selected days. The user may adjust any Rumble-selected day before it is written to the calendar.
-* Weekly agenda includes exactly two washing days selected from the live Wangaratta forecast using the lowest precipitation probabilities.
+* Weather-based washing scheduling: propose 3 optimal days selected from the live Wangaratta forecast using the lowest precipitation probabilities. The user only needs to complete 2 (using Dismiss/Done on the agenda).
 * Current weather and forecast must come directly from Open-Meteo for Wangaratta, Victoria, Australia: latitude `-36.3536`, longitude `146.3225`.
 * Weekly and monthly agenda panels must pull live Google Calendar events. If OAuth is unavailable, show an explicit authorization state; never silently invent events.
 * Pain logging supports multiple anatomical locations, relative percentage weights totalling 100%, pain score, mood selector, and notes.
 * Completed daily items expose Dismiss. Dismiss removes the item from the active stream while preserving auditability.
+* The agent uses a `SOUL.md` file for synthesized weekly learning.
 
 ## Safety, Human-in-the-Loop, and external actions
 
-* `needsApproval` is required only for tools that create, modify, or send: Google Calendar event creation/modification/deletion, and email sends. It durably pauses execution until explicit user authorization.
+* `needsApproval` is required only for tools that modify or send: Google Calendar event modification/deletion, and email sends. Emails can be drafted but NEVER sent without explicit user permission. Calendar events can be added autonomously, but edits/deletes require confirmation. It durably pauses execution until explicit user authorization.
 * Gmail and Google Calendar **reads** are not side-effecting and do not require `needsApproval`. They run on the automated retrieval schedule below without pausing for approval.
 * Medical output is decision support, not diagnosis. Preserve the medical disclaimer and recommend clinician review when appropriate.
 * Never recommend pushing through worsening pain or ignoring surgery/clinician restrictions.
 * Save every medical synthesis or rehabilitation protocol to `agent_reports/` with versioned, clean Markdown.
-* Confirm Google Calendar writes and email sends before execution; return the resulting Event ID or Message ID.
+* Confirm Google Calendar edits/deletes and email sends before execution; return the resulting Event ID or Message ID.
 * Never expose secrets from `.env`, OAuth files, database URLs, logs, commits, or reports.
 * For email or ticket summaries, always include sender/domain, subject/ticket number, read/actioned status, exact body summary, and clear action required.
 
 ## Automated retrieval and agenda alerts
 
-* Gmail and Google Calendar are read automatically twice daily, at 06:00 and 14:00 Australia/Melbourne time.
+* Email and calendar scraping happens automatically twice daily, at 06:00 and 14:00 Australia/Melbourne time.
 * Each retrieval evaluates new items for required action and, where action is required, injects an alert into the daily agenda at the relevant time slot rather than waiting for the user to check inbox or calendar manually.
-* Example: an email arriving that requires follow-up by 1:30 PM must surface as a visible agenda alert tied to that time, not just sit unread in Gmail.
-* Alert injection is a read-derived UI/agenda update, not a send or a calendar write, so it does not require `needsApproval`. Any resulting action the user takes (replying, creating a calendar event) does.
+* The daily agenda will surface actionable email alerts. Clicking 'Show Me' on an alert opens Rumble Chat for intent capture.
+* Alert injection is a read-derived UI/agenda update, not a send or a calendar write, so it does not require `needsApproval`. Any resulting action the user takes (replying, modifying a calendar event) does.
 
 ## Orchestration and concurrency
 
@@ -62,3 +63,4 @@ Read `CONTEXT.md` before changing terminology, agenda behavior, persistence, int
 * The agent runs on Vercel's global edge network with automatic serverless scaling.
 * Keep product UI, logs, responses, code, and documentation free of decorative emoji; mood selection is the intentional exception.
 * Before claiming deployment health, verify frontend, `/healthz`, and at least one read-only API endpoint.
+* Every unassigned UI button falls back to opening Rumble Chat with context (Universal Intent Capture).

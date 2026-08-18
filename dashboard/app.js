@@ -944,13 +944,19 @@ document.addEventListener('DOMContentLoaded', () => {
             data.suggestions.forEach(exercise => {
                 const card = document.createElement('article');
                 card.className = 'exercise-card';
-                card.innerHTML = `<div><h3>${exercise.name}</h3><p>${exercise.instruction}</p><small>${exercise.duration_minutes} min · ${exercise.intensity}</small></div><div class="exercise-actions"><button class="btn btn-neon-green btn-sm exercise-done">Done</button><button class="btn btn-outline btn-sm exercise-reject">Dismiss</button><div class="reject-reasons hidden"><button class="btn btn-sm btn-outline reject-reason" data-reason="Too tired">Too tired</button><button class="btn btn-sm btn-outline reject-reason" data-reason="Hurts">Hurts</button></div></div>`;
+                card.innerHTML = `<div><h3>${exercise.name}</h3><p>${exercise.instruction}</p><small>${exercise.duration_minutes} min · ${exercise.intensity}</small></div><div class="exercise-actions"><button class="btn btn-neon-green btn-sm exercise-done">Done</button><button class="btn btn-outline btn-sm exercise-show">Show Me</button><button class="btn btn-outline btn-sm exercise-reject">Dismiss</button><div class="reject-reasons hidden"><button class="btn btn-sm btn-outline reject-reason" data-reason="Too tired">Too tired</button><button class="btn btn-sm btn-outline reject-reason" data-reason="Hurts">Hurts</button></div></div>`;
                 card.querySelector('.exercise-done').addEventListener('click', () => {
                     pendingProtocol = { id: exercise.id, name: exercise.name, beforePain: painLevel };
                     reliefExerciseName.innerText = exercise.name;
                     afterPainScore.value = currentPainLevel;
                     exerciseModal.classList.add('hidden');
                     reliefModal.classList.remove('hidden');
+                });
+                card.querySelector('.exercise-show').addEventListener('click', () => {
+                    exerciseModal.classList.add('hidden');
+                    rumbleChatModal.classList.remove('hidden');
+                    // We don't have currentProposalText in scope properly, so we just send the chat directly
+                    sendRumbleChatMessage(`Show me how to do the ${exercise.name} routine step-by-step. It is a ${exercise.duration_minutes} minute routine focusing on ${exercise.instruction}.`);
                 });
                 const reasons = card.querySelector('.reject-reasons');
                 card.querySelector('.exercise-reject').addEventListener('click', () => reasons.classList.toggle('hidden'));

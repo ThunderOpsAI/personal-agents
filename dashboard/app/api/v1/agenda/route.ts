@@ -66,6 +66,11 @@ export async function GET(request: Request) {
     }
 
     const standingProcessed = ensureStandingTasks(ensureDailyStandingProtocols(rawItems, now), now);
+    standingProcessed.sort((a, b) => {
+      const timeA = new Date(a.scheduled_time).getTime();
+      const timeB = new Date(b.scheduled_time).getTime();
+      return (isNaN(timeA) ? 0 : timeA) - (isNaN(timeB) ? 0 : timeB);
+    });
 
     const daily = standingProcessed.map((item) => {
       const d = new Date(item.scheduled_time);

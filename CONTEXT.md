@@ -8,7 +8,7 @@ Rumble OS is a personal operations and recovery dashboard. The production source
 
 ## Architecture and deployment
 
-* Frontend: `dashboard/`, deployed to Vercel.
+* Frontend: `dashboard/`, deployed to Vercel. The UI implements 'Universal Intent Capture' where unassigned buttons default to opening Rumble Chat.
 * Agent Framework: Vercel Eve, running on Vercel's Edge Network for automatic serverless scaling. The legacy FastAPI backend and `uvicorn` entrypoints have been removed.
 * Local development: use the Eve CLI via the `eve dev` command.
 * Health endpoint: `/healthz`.
@@ -22,10 +22,11 @@ Rumble OS is a personal operations and recovery dashboard. The production source
 
 ### Daily learning and recovery
 
-1. The general Learning card presents three rotating suggestions. The user can rotate them or enter a topic of their own choice.
-2. A separate Yoga routine is scheduled every day at 09:00 AM. It offers three choices and adapts to current pain, surgery history, clinician restrictions, and learned feedback. (Delegated to Eve Subagent).
-3. A Meditation Protocol is injected into the chronological agenda at 09:00 PM and 12:00 AM every night. (Delegated to Eve Subagent).
-4. Every week targets three hydrotherapy pool sessions. Rumble selects only the sessions still needed to reach three for the current week: if one or more sessions have already occurred earlier in the week (e.g. today's session), Rumble selects the remaining count; a week with zero completed sessions so far gets three Rumble-selected days. The user can adjust any Rumble-selected day before it is written to the calendar.
+1. The system features a dynamic Learning capability that stores memories in the database and summarizes them weekly into a `SOUL.md` file.
+2. The general Learning card presents three rotating suggestions. The user can rotate them or enter a topic of their own choice.
+3. A dynamic Yoga Engine presents 3 adaptive routines daily at 09:00 AM based on pain logs, adapting to surgery history, clinician restrictions, and learned feedback. (Delegated to Eve Subagent).
+4. A Meditation Protocol is injected into the chronological agenda at 09:00 PM and 12:00 AM every night. (Delegated to Eve Subagent).
+5. Every week targets three hydrotherapy pool sessions. Rumble selects only the sessions still needed to reach three for the current week: if one or more sessions have already occurred earlier in the week (e.g. today's session), Rumble selects the remaining count; a week with zero completed sessions so far gets three Rumble-selected days. The user can adjust any Rumble-selected day before it is written to the calendar.
 
 ### Pain logging and learning loop
 
@@ -47,6 +48,7 @@ Rumble OS is a personal operations and recovery dashboard. The production source
 
 ### Agenda and calendar
 
+* The agenda data model supports 'Options' (like 3 suggested washing days, only 2 required) alongside fixed events.
 * Daily agenda includes live pending action items, daily yoga, nightly meditation, hydrotherapy, and relevant user tasks such as "Call Deakin to unlock MFA."
 * Weekly and monthly panels pull live Google Calendar events.
 * Calendar reads may occur with available OAuth credentials. Calendar creation, modification, or deletion requires the `needsApproval` helper to durably pause execution for explicit user confirmation and must return the provider Event ID.
@@ -54,8 +56,8 @@ Rumble OS is a personal operations and recovery dashboard. The production source
 
 ### Live retrieval cadence and agenda alerts
 
-* Gmail and Google Calendar are retrieved automatically at 06:00 and 14:00 Australia/Melbourne daily. This is a read-only operation and does not require `needsApproval`.
-* Each retrieval scans new emails and calendar changes for items requiring user action and, where found, injects an alert into the daily agenda at the appropriate time slot.
+* Automated workflows scrape Gmail and Google Calendar at 06:00 and 14:00 Australia/Melbourne daily. This is a read-only operation and does not require `needsApproval`.
+* Each retrieval scans new emails and calendar changes for items requiring user action and, where found, injects an alert into the active daily agenda at the appropriate time slot.
 * Example: an email received that requires action by 1:30 PM (e.g. a Hostplus notice) must produce a visible agenda alert placed at that time, not merely appear as an unread email.
 * Alerts are read-derived and informational; any resulting reply or calendar write still requires `needsApproval` before execution.
 
