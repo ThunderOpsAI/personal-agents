@@ -52,6 +52,8 @@ export interface Note {
   id: string;
   content: string;
   author: string;
+  pinned: boolean;
+  isArchived: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -60,6 +62,8 @@ export interface CreateNoteInput {
   id?: string;
   content: string;
   author?: string;
+  pinned?: boolean;
+  isArchived?: boolean;
 }
 
 export const CREATE_NOTES_TABLE_SQL = `
@@ -67,6 +71,8 @@ CREATE TABLE IF NOT EXISTS notes (
     id TEXT PRIMARY KEY,
     content TEXT NOT NULL,
     author TEXT NOT NULL DEFAULT 'user',
+    pinned BOOLEAN NOT NULL DEFAULT FALSE,
+    isArchived BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
 );

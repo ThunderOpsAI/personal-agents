@@ -21,17 +21,17 @@
             <div class="header-content">
                 <div class="brand">
                     <h1>Rumble OS</h1>
-                    <!-- Weather & Rain Widget -->
-                    <div class="weather-widget" id="weatherWidget">
-                        <span class="weather-text">Weather: Loading live Wangaratta data...</span>
-                    </div>
                 </div>
                 
                 <div class="header-actions">
-                    <button class="btn btn-sm btn-outline" id="btnSettings" title="Settings" style="font-size: 1.1em; padding: 4px 8px;">⚙️</button>
-                    <button class="btn btn-sm btn-neon-blue" id="btnOpenRumbleChat">Rumble</button>
                     <button class="btn btn-sm btn-outline" id="btnOpenNotes">Notes</button>
-                    <button class="btn btn-sm btn-outline btn-sync" id="btnSyncOps">Sync</button>
+                    <button class="btn btn-sm btn-outline btn-icon btn-rumble" id="btnOpenRumbleChat" title="Rumble Chat" aria-label="Rumble Chat">
+                        <img src="Rumble_Icon.png" alt="Rumble" class="rumble-header-icon">
+                    </button>
+                    <button class="btn btn-sm btn-outline btn-icon btn-sync" id="btnSyncOps" title="Sync Live Data" aria-label="Sync Live Data">
+                        <span class="sync-icon">🔄</span>
+                    </button>
+                    <button class="btn btn-sm btn-outline btn-icon" id="btnSettings" title="Settings" aria-label="Settings">⚙️</button>
                 </div>
             </div>
             
@@ -44,21 +44,6 @@
         <!-- Main Content Grid -->
         <main class="main-content">
             
-            <!-- Rumble Insight Widget -->
-            <section class="widget glass-panel" id="croWidget">
-                <div class="widget-header">
-                    <h2>Rumble Insight</h2>
-                    <span class="badge neon-blue">New Proposal</span>
-                </div>
-                <div class="widget-body">
-                    <p id="croMessage">Loading insights from Chief Rumble Officer engine...</p>
-                </div>
-                <div class="widget-actions hidden" id="croActions">
-                    <button class="btn btn-outline" id="btnDismissCro">Dismiss</button>
-                    <button class="btn btn-neon-blue" id="btnAcceptCro">Accept Proposal</button>
-                    <button class="btn btn-neon-purple" id="btnDiscussCro">Discuss</button>
-                </div>
-            </section>
 
             <!-- Daily Agenda Stream -->
             <section class="agenda-section">
@@ -78,6 +63,15 @@
                     </div>
                     <button class="btn btn-outline btn-sm" id="btnReturnToday">Return to Today</button>
                 </div>
+
+                <!-- Google Calendar Auth Recovery Banner -->
+                <div id="authRecoveryBanner" class="hidden" style="margin-bottom: 12px; padding: 12px 16px; background: rgba(255, 60, 60, 0.08); border: 1px solid var(--neon-red); border-radius: 10px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong style="color: var(--neon-red);">Calendar Sync Paused</strong>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">Google Calendar OAuth token expired or revoked. Please re-authorize to sync live events.</div>
+                    </div>
+                    <a href="/api/v1/auth/google" class="btn btn-neon-red btn-sm" id="btnReauthCalendar" style="text-decoration: none;">Re-Authorize</a>
+                </div>
                 
                 <div class="agenda-stream" id="agendaStream">
                     <!-- Daily Learning Card -->
@@ -95,11 +89,17 @@
                     </div>
                 </div>
 
-                <!-- Continue to Tomorrow's Agenda Button -->
-                <button class="btn btn-neon-blue" id="btnTomorrowAgenda" style="width: 100%; margin-top: 14px; padding: 12px; font-weight: 600; justify-content: center; display: flex; align-items: center; gap: 8px;">
-                    <span id="btnTomorrowText">Continue to Tomorrow's Agenda</span>
-                    <span id="btnTomorrowIcon" style="font-size: 1.1rem;">&rarr;</span>
-                </button>
+                <!-- Navigation Buttons -->
+                <div style="display: flex; gap: 10px; margin-top: 14px;">
+                    <button class="btn btn-outline" id="btnYesterdayAgenda" style="flex: 1; padding: 12px; font-weight: 600; justify-content: center; display: flex; align-items: center; gap: 8px;">
+                        <span id="btnYesterdayIcon" style="font-size: 1.1rem;">&larr;</span>
+                        <span id="btnYesterdayText">Return to Yesterday</span>
+                    </button>
+                    <button class="btn btn-neon-blue" id="btnTomorrowAgenda" style="flex: 1; padding: 12px; font-weight: 600; justify-content: center; display: flex; align-items: center; gap: 8px;">
+                        <span id="btnTomorrowText">Continue to Tomorrow's Agenda</span>
+                        <span id="btnTomorrowIcon" style="font-size: 1.1rem;">&rarr;</span>
+                    </button>
+                </div>
             </section>
 
             <!-- Side-by-Side Weekly & Monthly Agenda -->
@@ -192,7 +192,15 @@
                     </div>
                     <!-- Preferences Tab (hidden by default) -->
                     <div id="settingsPreferences" class="hidden">
-                        <div class="form-group"><label>Theme</label><select class="glass-select"><option>Dark</option><option>Light</option></select></div>
+                        <div class="form-group">
+                            <label>Theme</label>
+                            <select id="themeSelector" class="glass-select">
+                                <option value="theme-default">Default Dark</option>
+                                <option value="theme-midnight">Midnight Blue</option>
+                                <option value="theme-cyberpunk">Cyberpunk Neon</option>
+                                <option value="theme-forest">Deep Forest</option>
+                            </select>
+                        </div>
                         <div class="form-group"><label>Notifications</label><select class="glass-select"><option>Enabled</option><option>Disabled</option></select></div>
                     </div>
                     <!-- Integrations Tab (hidden by default) -->
@@ -342,27 +350,23 @@
         <!-- Persistent Notes Modal (Keep Style) -->
         <div class="modal-overlay hidden" id="notesModal">
             <div class="modal-content glass-panel notes-modal-content" style="max-width: 900px; width: 95%; height: 85vh; display: flex; flex-direction: column;">
-                <div class="modal-header" style="flex-shrink: 0;">
-                    <h2>Notes</h2>
-                    <div style="display: flex; gap: 8px;">
-                        <button class="btn btn-sm btn-neon-green" id="btnNewNote">+ New Note</button>
-                        <button class="btn-close" id="btnCloseNotes">&times;</button>
+                <div class="modal-header" style="flex-shrink: 0; flex-direction: column; align-items: stretch; gap: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h2>Notes</h2>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn btn-sm btn-neon-green" id="btnNewNote">+ New Note</button>
+                            <button class="btn-close" id="btnCloseNotes">&times;</button>
+                        </div>
+                    </div>
+                    <div class="notes-tabs" style="display: flex; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+                        <button class="btn btn-sm btn-neon-blue active" id="tabNotesActive">Active</button>
+                        <button class="btn btn-sm btn-outline" id="tabNotesPinned">Pinned</button>
+                        <button class="btn btn-sm btn-outline" id="tabNotesArchive">Archive</button>
                     </div>
                 </div>
                 
-                <div class="notes-workspace" style="flex: 1; overflow-y: auto; padding: 10px; display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px;" id="notesGrid">
-                    <!-- Pinned Note Example -->
-                    <div class="keep-note glass-panel" style="background: rgba(255, 235, 59, 0.1); border-left: 4px solid #ffeb3b; padding: 15px; border-radius: 8px; position: relative; cursor: pointer;">
-                        <div style="position: absolute; top: 10px; right: 10px; cursor: pointer;" title="Pinned">📌</div>
-                        <h4 style="margin: 0 0 8px 0; font-size: 1.1em;">Ideas for App</h4>
-                        <p style="margin: 0; font-size: 0.9em; opacity: 0.9;">- Timer app<br>- Keep clone<br>- Settings page</p>
-                        <div style="margin-top: 15px; display: flex; gap: 5px;">
-                            <div class="color-dot" style="width: 15px; height: 15px; border-radius: 50%; background: #ffeb3b; cursor: pointer;"></div>
-                            <div class="color-dot" style="width: 15px; height: 15px; border-radius: 50%; background: #f44336; cursor: pointer;"></div>
-                            <div class="color-dot" style="width: 15px; height: 15px; border-radius: 50%; background: #2196f3; cursor: pointer;"></div>
-                            <div class="color-dot" style="width: 15px; height: 15px; border-radius: 50%; background: #4caf50; cursor: pointer;"></div>
-                        </div>
-                    </div>
+                <div class="notes-workspace" style="flex: 1; overflow-y: auto; padding: 10px; display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; align-content: start;" id="notesGrid">
+                    <!-- Dynamic Notes will go here -->
                 </div>
 
                 <!-- Note Editor Overlay (Inner Modal) -->
@@ -534,8 +538,41 @@
             </div>
         </div>
 
+        <!-- Budget Overview Modal -->
+        <div class="modal-overlay hidden" id="budgetOverviewModal">
+            <div class="modal-content glass-panel" style="max-width: 800px; width: 95%;">
+                <div class="modal-header">
+                    <h2>Budget Analytics & Overviews</h2>
+                    <button class="btn-close" id="btnCloseBudgetOverview">&times;</button>
+                </div>
+                <div class="modal-body" style="display: flex; flex-direction: column; gap: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                        <h3 style="margin: 0; font-size: 1.1rem; color: var(--text-primary);">Weekly Overviews</h3>
+                        <select id="budgetMonthSelect" class="glass-select" style="padding: 8px;">
+                            <option value="2026-08">August 2026</option>
+                            <option value="2026-07">July 2026</option>
+                            <option value="2026-06">June 2026</option>
+                        </select>
+                    </div>
+                    
+                    <div class="glass-panel" style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px;">
+                        <canvas id="budgetChart" width="400" height="200"></canvas>
+                    </div>
+
+                    <div id="budgetDetailedStats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px;">
+                        <!-- dynamic stats -->
+                    </div>
+                    
+                    <div style="text-align: right; margin-top: 8px;">
+                        <button class="btn btn-outline" id="btnPrintBudgetReport">🖨 Print Report</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
-    <script src="app.js?v=17"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="app.js?v=18"></script>
 </body>
 </html>

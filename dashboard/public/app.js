@@ -1,4 +1,54 @@
 document.addEventListener('DOMContentLoaded', () => {
+
+    // --- Notification Scheduler ---
+    function schedulePainLogNotifications() {
+        if ('Notification' in window && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+            Notification.requestPermission();
+        }
+        
+        function checkNotification() {
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            const seconds = now.getSeconds();
+            
+            // 6am, 9am, 12pm, 3pm, 6pm, 9pm, 12am (0)
+            const validHours = [0, 6, 9, 12, 15, 18, 21];
+            if (validHours.includes(hours) && minutes === 0 && seconds === 0) {
+                triggerPainLogPrompt();
+            }
+        }
+        
+        setInterval(checkNotification, 1000);
+    }
+
+    function triggerPainLogPrompt() {
+        const title = 'Time to Log Your Pain';
+        const options = {
+            body: 'Please take a moment to record your current pain levels and mood.',
+            icon: '/Rumble_Icon.png'
+        };
+
+        if ('Notification' in window && Notification.permission === 'granted') {
+            const notif = new Notification(title, options);
+            notif.onclick = () => {
+                window.focus();
+                const painLogModal = document.getElementById('painLogModal');
+                if (painLogModal) painLogModal.classList.remove('hidden');
+            };
+        } else {
+            const alertBanner = document.getElementById('alertBanner');
+            const alertBannerText = document.getElementById('alertBannerText');
+            if (alertBanner && alertBannerText) {
+                alertBannerText.innerText = title + ' - ' + options.body;
+                alertBanner.classList.remove('hidden');
+                setTimeout(() => alertBanner.classList.add('hidden'), 10000);
+            }
+        }
+    }
+    
+    schedulePainLogNotifications();
+
     
     function showToast(message, type = 'error') {
         const toast = document.createElement('div');
@@ -73,10 +123,17 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const notesModal = document.getElementById('notesModal');
     const btnCloseNotes = document.getElementById('btnCloseNotes');
-    const notesArea = document.getElementById('notesArea');
-    const btnSaveNotes = document.getElementById('btnSaveNotes');
-    const btnAskRumbleNote = document.getElementById('btnAskRumbleNote');
-    const notesStatus = document.getElementById('notesStatus');
+    const notesGrid = document.getElementById('notesGrid');
+    const tabNotesActive = document.getElementById('tabNotesActive');
+    const tabNotesPinned = document.getElementById('tabNotesPinned');
+    const tabNotesArchive = document.getElementById('tabNotesArchive');
+    const btnNewNote = document.getElementById('btnNewNote');
+    const noteEditorContainer = document.getElementById('noteEditorContainer');
+    const editNoteTitle = document.getElementById('editNoteTitle');
+    const editNoteBody = document.getElementById('editNoteBody');
+    const btnPinNote = document.getElementById('btnPinNote');
+    const btnSaveNoteEdit = document.getElementById('btnSaveNoteEdit');
+    const btnCancelNoteEdit = document.getElementById('btnCancelNoteEdit');
     
     // Logger Elements
     const painValDisplay = document.getElementById('painValDisplay');
@@ -108,11 +165,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const customAreaNotes = document.getElementById('customAreaNotes');
 
     const exerciseModal = document.getElementById('exerciseModal');
-    const exerciseSuggestions = document.getElementById('exerciseSuggestions');
     const btnCloseExercises = document.getElementById('btnCloseExercises');
-
-    // Exercise Demo UI removed in favor of runnerModal
-
+    const exerciseSuggestions = document.getElementById('exerciseSuggestions');
     const reliefModal = document.getElementById('reliefModal');
     const btnCloseRelief = document.getElementById('btnCloseRelief');
     const btnSkipRelief = document.getElementById('btnSkipRelief');
@@ -139,6 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentMoodLevel = 5;
     let currentProposalText = "";
     let currentLearnTopic = null;
+    let currentAgendaView = 'today';
     
     const customAreaContextMap = {};
 
@@ -148,12 +203,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const res = await fetch(API_HEALTHZ, { method: 'GET' });
             if (!res.ok) throw new Error("Offline");
             btnSyncOps.classList.remove('btn-offline');
-            if (btnSyncOps.innerText === 'Offline') {
-                btnSyncOps.innerText = 'Sync';
+            const syncIcon = btnSyncOps.querySelector('.sync-icon');
+            if (syncIcon && syncIcon.textContent !== '🔄' && syncIcon.textContent !== '✅') {
+                syncIcon.textContent = '🔄';
             }
+            btnSyncOps.title = "Sync Live Data";
         } catch (e) {
             btnSyncOps.classList.add('btn-offline');
-            btnSyncOps.innerText = 'Offline';
+            const syncIcon = btnSyncOps.querySelector('.sync-icon');
+            if (syncIcon) syncIcon.textContent = '⚠️';
+            btnSyncOps.title = "Offline";
         }
     }
     setInterval(checkServerHealth, 10000);
@@ -161,6 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Weather Loader ---
     async function loadWeather() {
+        if (!weatherWidget) return;
         try {
             const res = await fetch(API_WEATHER);
             if (res.ok) {
@@ -173,7 +233,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         } catch (e) {
-            weatherWidget.innerHTML = `<span class="weather-text">Weather: Offline</span>`;
+            if (weatherWidget) weatherWidget.innerHTML = `<span class="weather-text">Weather: Offline</span>`;
         }
     }
     loadWeather();
@@ -186,12 +246,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await res.json();
                 cachedAgendaData = data;
                 
-                if (isTomorrowView) {
+                if (data.calendar_status === 'auth_required' && window.authRecoveryBanner) {
+                    window.authRecoveryBanner.classList.remove('hidden');
+                } else if (window.authRecoveryBanner) {
+                    window.authRecoveryBanner.classList.add('hidden');
+                }
+
+                if (currentAgendaView === 'tomorrow') {
                     renderTomorrowAgenda();
+                    return;
+                } else if (currentAgendaView === 'yesterday') {
+                    renderYesterdayAgenda();
                     return;
                 }
 
                 renderTodayAgenda(data);
+            } else if (res.status === 401) {
+                if (window.authRecoveryBanner) window.authRecoveryBanner.classList.remove('hidden');
+                console.error("Calendar OAuth token expired (401)");
+            } else {
+                console.error("Failed to load agenda with status:", res.status);
             }
         } catch (e) {
             showToast('Failed to load agenda');
@@ -200,17 +274,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderTodayAgenda(data) {
-        if (dailyAgendaTitle) dailyAgendaTitle.innerText = "Daily Agenda";
-        if (agendaDateIndicator) agendaDateIndicator.innerText = "Today";
-        if (tomorrowBanner) tomorrowBanner.classList.add('hidden');
-        if (btnTomorrowText) btnTomorrowText.innerText = "Continue to Tomorrow's Agenda";
-        if (btnTomorrowIcon) btnTomorrowIcon.innerHTML = "&rarr;";
+        const today = new Date();
+        const dayStr = today.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' });
+
+        if (window.dailyAgendaTitle) window.dailyAgendaTitle.innerText = "Daily Agenda";
+        if (window.agendaDateIndicator) window.agendaDateIndicator.innerHTML = `<span class="badge neon-blue" style="margin-right: 6px;">Today</span> <span style="color: var(--text-primary); font-weight: 500;">${dayStr}</span>`;
+        if (window.tomorrowBanner) window.tomorrowBanner.classList.add('hidden');
+        
+        if (window.btnTomorrowText) {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const tomShort = tomorrow.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' });
+            window.btnTomorrowText.innerText = `Continue to Tomorrow's Agenda (${tomShort})`;
+        }
+        if (window.btnTomorrowIcon) window.btnTomorrowIcon.innerHTML = "&rarr;";
+        if (window.btnYesterdayText) {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yestShort = yesterday.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' });
+            window.btnYesterdayText.innerText = `Return to Yesterday (${yestShort})`;
+        }
+        if (window.btnYesterdayAgenda) window.btnYesterdayAgenda.style.display = 'flex';
+        if (window.btnTomorrowAgenda) window.btnTomorrowAgenda.style.display = 'flex';
 
         const dailyItems = data.daily || [];
         const countBadge = document.getElementById('agendaCount');
         if (countBadge) countBadge.textContent = `${dailyItems.length} Items`;
         
-        // Clear existing dynamic cards (leave #protocol-learn)
         document.querySelectorAll('.protocol-card:not(#protocol-learn)').forEach(c => c.remove());
 
         if (dailyItems.length > 0) {
@@ -218,29 +308,43 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (item.item_type === 'learning' || item.id === 'protocol-learn') return;
                 const isCompleted = item.status === 'completed';
                 const isDismissed = item.status === 'dismissed';
-                if (isDismissed) return;
 
                 const card = document.createElement('div');
-                card.className = `protocol-card glass-panel${isCompleted ? ' completed' : ''}`;
+                card.className = `protocol-card glass-panel${isCompleted ? ' completed' : ''}${isDismissed ? ' dismissed' : ''}`;
                 card.id = `protocol-${item.id}`;
-                card.innerHTML = `
-                    <div class="protocol-info">
-                        <h3>${item.time}</h3>
-                        <p>${item.title}</p>
-                        ${item.choices ? `<small class="form-hint">Choices: ${item.choices.join(' · ')}</small>` : ''}
-                    </div>
-                    <div class="protocol-actions">
-                        <button class="btn btn-neon-purple btn-show-me" data-id="${item.id}" data-type="${item.item_type || ''}" ${isCompleted ? 'disabled' : ''}>Show Me</button>
-                        <button class="btn btn-neon-green btn-done" data-id="${item.id}" data-type="${item.item_type || ''}" ${isCompleted ? 'disabled' : ''}>${isCompleted ? 'Done' : 'Done'}</button>
-                        <button class="btn btn-outline btn-dismiss" data-id="${item.id}" data-type="${item.item_type || ''}" ${isCompleted ? '' : 'disabled'}>Dismiss</button>
-                    </div>
-                `;
-                agendaStream.appendChild(card);
+                
+                if (isDismissed) {
+                    card.style.opacity = '0.5';
+                    card.innerHTML = `
+                        <div class="protocol-info">
+                            <h3>${item.time}</h3>
+                            <p style="text-decoration: line-through;">${item.title}</p>
+                            <small class="form-hint">Dismissed</small>
+                        </div>
+                        <div class="protocol-actions">
+                            <button class="btn btn-outline btn-reinstate" data-id="${item.id}" data-type="${item.item_type || ''}">Reinstate</button>
+                        </div>
+                    `;
+                } else {
+                    card.innerHTML = `
+                        <div class="protocol-info">
+                            <h3>${item.time}</h3>
+                            <p>${item.title}</p>
+                            ${item.choices ? `<small class="form-hint">Choices: ${item.choices.join(' · ')}</small>` : ''}
+                        </div>
+                        <div class="protocol-actions">
+                            <button class="btn btn-neon-purple btn-show-me" data-id="${item.id}" data-type="${item.item_type || ''}" ${isCompleted ? 'disabled' : ''}>Show Me</button>
+                            <button class="btn btn-neon-green btn-done" data-id="${item.id}" data-type="${item.item_type || ''}" ${isCompleted ? 'disabled' : ''}>${isCompleted ? 'Done' : 'Done'}</button>
+                            <button class="btn btn-outline btn-dismiss" data-id="${item.id}" data-type="${item.item_type || ''}" ${isCompleted ? '' : 'disabled'}>Dismiss</button>
+                        </div>
+                    `;
+                }
+                document.getElementById("agendaStream").appendChild(card);
                 attachCardEvents(card);
             });
         }
         
-        const cards = Array.from(agendaStream.querySelectorAll('.protocol-card'));
+        const cards = Array.from(document.getElementById("agendaStream").querySelectorAll('.protocol-card'));
         cards.sort((a, b) => {
             const timeStrA = a.querySelector('h3').innerText.trim();
             const timeStrB = b.querySelector('h3').innerText.trim();
@@ -306,16 +410,69 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    
+    function renderYesterdayAgenda() {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const dayStr = yesterday.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' });
+        
+        const today = new Date();
+        const todayShort = today.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' });
+
+        if (window.dailyAgendaTitle) window.dailyAgendaTitle.innerText = "Yesterday's Agenda";
+        if (window.agendaDateIndicator) window.agendaDateIndicator.innerHTML = `<span class="badge neon-purple" style="margin-right: 6px;">Yesterday</span> <span style="color: var(--neon-blue); font-weight: 500;">${dayStr}</span>`;
+        if (window.tomorrowBanner) window.tomorrowBanner.classList.add('hidden');
+        
+        if (window.btnYesterdayText) window.btnYesterdayText.innerText = `Return to Today's Agenda (${todayShort})`;
+        if (window.btnYesterdayIcon) window.btnYesterdayIcon.innerHTML = "&rarr;";
+        if (window.btnTomorrowAgenda) window.btnTomorrowAgenda.style.display = 'none';
+        if (window.btnYesterdayAgenda) window.btnYesterdayAgenda.style.display = 'flex';
+
+        // Remove non-learning cards
+        document.querySelectorAll('.protocol-card:not(#protocol-learn)').forEach(c => c.remove());
+        
+        const yesterdayProtocols = [
+            { id: 'yest_retrieval_0600', time: '06:00 AM', title: 'Automated Retrieval: Scrape Gmail & Calendar', item_type: 'retrieval', status: 'completed' },
+            { id: 'yest_yoga_0900', time: '09:00 AM', title: 'Adaptive Morning Yoga Routine', item_type: 'yoga', status: 'completed' },
+            { id: 'yest_med_2100', time: '09:00 PM', title: 'Evening Meditation Protocol', item_type: 'meditation', status: 'completed' }
+        ];
+
+        const countBadge = document.getElementById('agendaCount');
+        if (countBadge) countBadge.textContent = `${yesterdayProtocols.length} Items (Past)`;
+        
+        yesterdayProtocols.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'protocol-card glass-panel completed';
+            card.id = `protocol-${item.id}`;
+            card.innerHTML = `
+                <div class="protocol-info">
+                    <h3>${item.time} <span class="badge neon-purple" style="font-size: 0.72rem;">Yesterday</span></h3>
+                    <p>${item.title}</p>
+                </div>
+                <div class="protocol-actions">
+                    <button class="btn btn-neon-green btn-done" disabled>Done</button>
+                </div>
+            `;
+            document.getElementById("agendaStream").appendChild(card);
+        });
+        
+        showToast('Yesterday\'s agenda loaded', 'info');
+    }
+
     function renderTomorrowAgenda() {
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
-        const dayStr = tomorrow.toLocaleDateString('en-AU', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' });
+        const dayStr = tomorrow.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' });
         
+        const today = new Date();
+        const todayShort = today.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' });
+
         if (tomorrowDateSub) tomorrowDateSub.innerText = `${dayStr} • Prepare and review upcoming tasks`;
         if (dailyAgendaTitle) dailyAgendaTitle.innerText = "Tomorrow's Agenda";
-        if (agendaDateIndicator) agendaDateIndicator.innerText = "Tomorrow (Prep Mode)";
+        if (agendaDateIndicator) agendaDateIndicator.innerHTML = `<span class="badge neon-purple" style="margin-right: 6px;">Tomorrow</span> <span style="color: var(--neon-blue); font-weight: 500;">${dayStr}</span>`;
         if (tomorrowBanner) tomorrowBanner.classList.remove('hidden');
-        if (btnTomorrowText) btnTomorrowText.innerText = "Return to Today's Agenda";
+        if (window.btnTomorrowText) window.btnTomorrowText.innerText = `Return to Today's Agenda (${todayShort})`;
+        if (window.btnYesterdayAgenda) window.btnYesterdayAgenda.style.display = 'none';
         if (btnTomorrowIcon) btnTomorrowIcon.innerHTML = "&larr;";
         
         // Remove non-learning cards
@@ -366,7 +523,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <button class="btn btn-outline btn-dismiss" data-id="${item.id}" data-type="${item.item_type || ''}">Dismiss</button>
                 </div>
             `;
-            agendaStream.appendChild(card);
+            document.getElementById("agendaStream").appendChild(card);
             attachCardEvents(card);
         });
         
@@ -374,15 +531,46 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Tomorrow Agenda Toggle Listeners
-    if (btnTomorrowAgenda) {
-        btnTomorrowAgenda.addEventListener('click', () => {
-            isTomorrowView = !isTomorrowView;
-            if (isTomorrowView) {
+    if (window.btnTomorrowAgenda) {
+        window.btnTomorrowAgenda.addEventListener('click', () => {
+            if (currentAgendaView === 'today') {
+                currentAgendaView = 'tomorrow';
+            } else if (currentAgendaView === 'tomorrow') {
+                currentAgendaView = 'today';
+            } else if (currentAgendaView === 'yesterday') {
+                currentAgendaView = 'today';
+            }
+            if (currentAgendaView === 'tomorrow') {
                 renderTomorrowAgenda();
-            } else if (cachedAgendaData) {
-                renderTodayAgenda(cachedAgendaData);
-            } else {
-                loadAgenda();
+            } else if (currentAgendaView === 'today') {
+                if (cachedAgendaData) {
+                    renderTodayAgenda(cachedAgendaData);
+                } else {
+                    loadAgenda();
+                }
+            }
+        });
+    }
+
+    if (window.btnYesterdayAgenda) {
+        window.btnYesterdayAgenda.addEventListener('click', () => {
+            if (currentAgendaView === 'today') {
+                currentAgendaView = 'yesterday';
+                renderYesterdayAgenda();
+            } else if (currentAgendaView === 'yesterday') {
+                currentAgendaView = 'today';
+                if (cachedAgendaData) {
+                    renderTodayAgenda(cachedAgendaData);
+                } else {
+                    loadAgenda();
+                }
+            } else if (currentAgendaView === 'tomorrow') {
+                currentAgendaView = 'today';
+                if (cachedAgendaData) {
+                    renderTodayAgenda(cachedAgendaData);
+                } else {
+                    loadAgenda();
+                }
             }
         });
     }
@@ -467,6 +655,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     showToast('Event deleted from Calendar', 'info');
                     calendarEventViewModal.classList.add('hidden');
                     loadAgenda();
+                } else if (res.status === 401) {
+                    if (window.authRecoveryBanner) window.authRecoveryBanner.classList.remove('hidden');
+                    showToast('Google Calendar re-authorization required', 'error');
                 } else {
                     showToast('Failed to delete event');
                 }
@@ -527,6 +718,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     showToast(id ? 'Calendar event updated!' : 'Calendar event created!', 'info');
                     calendarEventEditModal.classList.add('hidden');
                     loadAgenda();
+                } else if (res.status === 401) {
+                    if (window.authRecoveryBanner) window.authRecoveryBanner.classList.remove('hidden');
+                    showToast('Google Calendar re-authorization required', 'error');
                 } else {
                     const errData = await res.json().catch(() => ({}));
                     showToast(errData.message || 'Failed to save calendar event');
@@ -658,7 +852,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     let pendingChatAction = null;
-    let chatHistory = [];
 
 
     async function sendRumbleChatMessage(textToSend, explicitAction) {
@@ -677,13 +870,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const payload = {
             message: msg,
-            history: chatHistory,
             proposal_context: currentProposalText,
             ...(actionToCommit ? { confirm_action: actionToCommit } : {})
         };
-        
-        chatHistory.push({ role: 'user', content: msg });
-        if (chatHistory.length > 20) chatHistory = chatHistory.slice(-20);
 
         try {
             const response = await fetch(API_RUMBLE_CHAT, {
@@ -692,8 +881,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify(payload)
             });
             const data = await response.json();
-            
-            chatHistory.push({ role: 'model', content: data.reply || "Understood." });
             
             const rumbleDiv = document.createElement('div');
             rumbleDiv.className = 'message rumble-message';
@@ -745,6 +932,77 @@ document.addEventListener('DOMContentLoaded', () => {
                     showToast('Task added to agenda', 'success');
                 } else if (data.intent === 'ADD_EXPENSE') {
                     if (typeof loadBudget === 'function') loadBudget();
+    // --- 11. Settings Logic ---
+    const btnSettings = document.getElementById('btnSettings');
+
+    const tabProfile = document.getElementById('tabProfile');
+    const tabPreferences = document.getElementById('tabPreferences');
+    const tabIntegrations = document.getElementById('tabIntegrations');
+    
+    const settingsProfile = document.getElementById('settingsProfile');
+    const settingsPreferences = document.getElementById('settingsPreferences');
+    const settingsIntegrations = document.getElementById('settingsIntegrations');
+
+    function switchSettingsTab(activeTab, activeContent) {
+        [tabProfile, tabPreferences, tabIntegrations].forEach(t => {
+            if(t) {
+                t.classList.remove('active', 'btn-neon-blue');
+                t.classList.add('btn-outline');
+            }
+        });
+        [settingsProfile, settingsPreferences, settingsIntegrations].forEach(c => {
+            if(c) c.classList.add('hidden');
+        });
+
+        if(activeTab) {
+            activeTab.classList.remove('btn-outline');
+            activeTab.classList.add('active', 'btn-neon-blue');
+        }
+        if(activeContent) {
+            activeContent.classList.remove('hidden');
+        }
+    }
+
+    if (tabProfile) tabProfile.addEventListener('click', () => switchSettingsTab(tabProfile, settingsProfile));
+    if (tabPreferences) tabPreferences.addEventListener('click', () => switchSettingsTab(tabPreferences, settingsPreferences));
+    if (tabIntegrations) tabIntegrations.addEventListener('click', () => switchSettingsTab(tabIntegrations, settingsIntegrations));
+
+    const settingsModal = document.getElementById('settingsModal');
+    const btnCloseSettings = document.getElementById('btnCloseSettings');
+    const themeSelector = document.getElementById('themeSelector');
+
+    if (btnSettings && settingsModal) {
+        btnSettings.addEventListener('click', () => {
+            settingsModal.classList.remove('hidden');
+        });
+    }
+
+    if (btnCloseSettings && settingsModal) {
+        btnCloseSettings.addEventListener('click', () => {
+            settingsModal.classList.add('hidden');
+        });
+    }
+
+    if (themeSelector) {
+        // Load saved theme
+        const savedTheme = localStorage.getItem('rumble_theme') || 'theme-default';
+        themeSelector.value = savedTheme;
+        applyTheme(savedTheme);
+
+        themeSelector.addEventListener('change', (e) => {
+            const newTheme = e.target.value;
+            applyTheme(newTheme);
+            localStorage.setItem('rumble_theme', newTheme);
+        });
+    }
+
+    function applyTheme(themeName) {
+        // Remove existing theme classes
+        document.body.classList.remove('theme-default', 'theme-midnight', 'theme-cyberpunk', 'theme-forest');
+        if (themeName !== 'theme-default') {
+            document.body.classList.add(themeName);
+        }
+    }
                 }
             }
         } catch (err) {
@@ -817,15 +1075,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 2. Persistent Notes Modal ---
     btnOpenNotes.addEventListener('click', () => {
         notesModal.classList.remove('hidden');
-        loadNotes();
     });
 
     function closePainLog() { painLogModal.classList.add('hidden'); }
     btnOpenPainLog.addEventListener('click', () => painLogModal.classList.remove('hidden'));
     btnClosePainLog.addEventListener('click', closePainLog);
     btnCancelPainLog.addEventListener('click', closePainLog);
-
-    // painHistoryModal UI removed in favor of direct insights
 
     function updatePainWeightTotal() {
         const total = [...painLocations.querySelectorAll('.pain-percentage')]
@@ -864,54 +1119,192 @@ document.addEventListener('DOMContentLoaded', () => {
         notesModal.classList.add('hidden');
     });
 
+    let currentNotes = [];
+    let currentNotesTab = 'active'; // 'active', 'pinned', 'archive'
+    let editingNoteId = null;
+
+    function renderNotesGrid() {
+        if (!notesGrid) return;
+        notesGrid.innerHTML = '';
+        
+        const filteredNotes = currentNotes.filter(note => {
+            if (currentNotesTab === 'pinned') return note.pinned && !note.isArchived;
+            if (currentNotesTab === 'archive') return note.isArchived;
+            return !note.isArchived; // 'active'
+        });
+
+        if (filteredNotes.length === 0) {
+            notesGrid.innerHTML = `<p style="color: var(--text-secondary); width: 100%; grid-column: 1 / -1; text-align: center; margin-top: 20px;">No notes found in ${currentNotesTab}.</p>`;
+            return;
+        }
+
+        filteredNotes.forEach(note => {
+            const lines = note.content.split('\n');
+            const title = lines.length > 0 && lines[0].trim().startsWith('# ') ? lines[0].replace('# ', '') : (lines[0].length > 30 ? lines[0].substring(0, 30) + '...' : lines[0]);
+            const body = lines.slice(1).join('<br>').substring(0, 150) || lines.join('<br>').substring(0, 150);
+
+            const card = document.createElement('div');
+            card.className = 'keep-note glass-panel';
+            card.style.cssText = 'background: rgba(255, 235, 59, 0.05); border-left: 4px solid #ffeb3b; padding: 15px; border-radius: 8px; position: relative; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; min-height: 120px;';
+            card.innerHTML = `
+                <div>
+                    ${note.pinned ? '<div style="position: absolute; top: 10px; right: 10px; font-size: 1.2em;" title="Pinned">📌</div>' : ''}
+                    <h4 style="margin: 0 0 8px 0; font-size: 1.1em; color: var(--text-primary); padding-right: 20px;">${title}</h4>
+                    <p style="margin: 0; font-size: 0.85em; color: var(--text-secondary); overflow-wrap: anywhere;">${body}</p>
+                </div>
+                <div style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
+                    <div style="font-size: 0.7em; color: var(--text-secondary);">${new Date(note.created_at).toLocaleDateString()}</div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-sm btn-outline btn-pin-toggle" data-id="${note.id}" style="padding: 2px 6px; min-height: 24px;">${note.pinned ? 'Unpin' : 'Pin'}</button>
+                        <button class="btn btn-sm btn-outline btn-archive-toggle" data-id="${note.id}" style="padding: 2px 6px; min-height: 24px;">${note.isArchived ? 'Restore' : 'Archive'}</button>
+                    </div>
+                </div>
+            `;
+            
+            card.addEventListener('click', (e) => {
+                if (e.target.closest('button')) return;
+                openNoteEditor(note);
+            });
+
+            card.querySelector('.btn-pin-toggle').addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleNotePin(note);
+            });
+
+            card.querySelector('.btn-archive-toggle').addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleNoteArchive(note);
+            });
+
+            notesGrid.appendChild(card);
+        });
+    }
+
     async function loadNotes() {
         try {
             const res = await fetch(API_NOTES);
             if (res.ok) {
                 const data = await res.json();
-                const container = document.getElementById('notesGrid');
-                if (!container) return;
-                
-                container.innerHTML = '';
-                
-                if (data.notes && data.notes.length > 0) {
-                    data.notes.forEach(note => {
-                        let isPinned = false;
-                        let color = 'rgba(255,255,255,0.05)';
-                        
-                        let noteHtml = `
-                            ${isPinned ? '<div style="position: absolute; top: 10px; right: 10px; cursor: pointer;" title="Pinned">📌</div>' : ''}
-                            <h4 style="margin: 0 0 8px 0; font-size: 1.1em;">${note.author === 'rumble' ? '🤖 Rumble Note' : 'Note'}</h4>
-                            <p style="margin: 0; font-size: 0.9em; opacity: 0.9; white-space: pre-wrap;">${note.content}</p>
-                            <small style="display:block; margin-top:10px; color:var(--text-dim); font-size:0.75rem;">${new Date(note.created_at).toLocaleDateString()}</small>
-                        `;
-                        
-                        const noteEl = document.createElement('div');
-                        noteEl.className = 'keep-note glass-panel';
-                        noteEl.style.cssText = `background: ${color}; border-left: 4px solid #fff; padding: 15px; border-radius: 8px; position: relative; cursor: pointer;`;
-                        noteEl.innerHTML = noteHtml;
-                        
-                        noteEl.addEventListener('click', () => {
-                            if (window.currentEditingNote !== undefined) {
-                                window.currentEditingNote = noteEl;
-                                document.getElementById('editNoteTitle').value = note.author === 'rumble' ? 'Rumble Note' : 'Note';
-                                document.getElementById('editNoteBody').value = note.content;
-                                document.getElementById('noteEditorContainer').classList.remove('hidden');
-                            }
-                        });
-                        
-                        container.appendChild(noteEl);
-                    });
-                } else {
-                    container.innerHTML = '<p class="form-hint" style="grid-column: 1/-1;">No notes yet.</p>';
-                }
+                currentNotes = data.notes || [];
+                renderNotesGrid();
             }
         } catch (e) {
+            showToast('Failed to load notes');
             console.error(e);
         }
     }
 
-    // Notes modal event listeners removed; Keep Notes logic is at the end of the file
+    async function saveNote(noteData) {
+        try {
+            if (editingNoteId) {
+                const res = await fetch(`\${API_NOTES}/\${editingNoteId}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(noteData)
+                });
+                if (res.ok) showToast('Note updated', 'success');
+            } else {
+                const res = await fetch(API_NOTES, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ...noteData, author: 'user' })
+                });
+                if (res.ok) showToast('Note created', 'success');
+            }
+            noteEditorContainer.classList.add('hidden');
+            loadNotes();
+        } catch (e) {
+            showToast('Failed to save note');
+            console.error(e);
+        }
+    }
+
+    async function toggleNotePin(note) {
+        try {
+            await fetch(`\${API_NOTES}/\${note.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pinned: !note.pinned })
+            });
+            loadNotes();
+        } catch (e) {
+            showToast('Failed to update note status');
+        }
+    }
+
+    async function toggleNoteArchive(note) {
+        try {
+            await fetch(`\${API_NOTES}/\${note.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isArchived: !note.isArchived })
+            });
+            loadNotes();
+        } catch (e) {
+            showToast('Failed to archive note');
+        }
+    }
+
+    function openNoteEditor(note = null) {
+        if (note) {
+            editingNoteId = note.id;
+            const lines = note.content.split('\\n');
+            if (lines.length > 0 && lines[0].startsWith('# ')) {
+                editNoteTitle.value = lines[0].replace('# ', '');
+                editNoteBody.value = lines.slice(1).join('\\n');
+            } else {
+                editNoteTitle.value = '';
+                editNoteBody.value = note.content;
+            }
+            btnPinNote.classList.toggle('btn-neon-blue', note.pinned);
+            btnPinNote.dataset.pinned = note.pinned ? "true" : "false";
+        } else {
+            editingNoteId = null;
+            editNoteTitle.value = '';
+            editNoteBody.value = '';
+            btnPinNote.classList.remove('btn-neon-blue');
+            btnPinNote.dataset.pinned = "false";
+        }
+        noteEditorContainer.classList.remove('hidden');
+    }
+
+    btnNewNote.addEventListener('click', () => openNoteEditor());
+    btnCancelNoteEdit.addEventListener('click', () => noteEditorContainer.classList.add('hidden'));
+    
+    btnPinNote.addEventListener('click', () => {
+        const isPinned = btnPinNote.dataset.pinned === "true";
+        btnPinNote.dataset.pinned = !isPinned ? "true" : "false";
+        btnPinNote.classList.toggle('btn-neon-blue', !isPinned);
+    });
+
+    btnSaveNoteEdit.addEventListener('click', () => {
+        const title = editNoteTitle.value.trim();
+        const body = editNoteBody.value.trim();
+        if (!title && !body) return showToast("Note cannot be empty");
+        
+        const content = title ? `# \${title}\\n\${body}` : body;
+        const pinned = btnPinNote.dataset.pinned === "true";
+        saveNote({ content, pinned });
+    });
+
+    const tabs = [
+        { btn: tabNotesActive, name: 'active' },
+        { btn: tabNotesPinned, name: 'pinned' },
+        { btn: tabNotesArchive, name: 'archive' }
+    ];
+
+    tabs.forEach(tab => {
+        if (tab.btn) {
+            tab.btn.addEventListener('click', () => {
+                tabs.forEach(t => t.btn.classList.remove('btn-neon-blue', 'active'));
+                tabs.forEach(t => t.btn.classList.add('btn-outline'));
+                tab.btn.classList.remove('btn-outline');
+                tab.btn.classList.add('btn-neon-blue', 'active');
+                currentNotesTab = tab.name;
+                renderNotesGrid();
+            });
+        }
+    });
 
     loadNotes();
 
@@ -919,13 +1312,25 @@ document.addEventListener('DOMContentLoaded', () => {
     btnSyncOps.addEventListener('click', async () => {
         if (btnSyncOps.classList.contains('btn-offline')) return;
 
-        btnSyncOps.innerText = "Syncing...";
+        const syncIcon = btnSyncOps.querySelector('.sync-icon');
+        if (syncIcon) syncIcon.classList.add('spinning');
+        btnSyncOps.title = "Syncing...";
         btnSyncOps.disabled = true;
 
         try {
             const res = await fetch(API_OPS_SYNC, { method: 'POST' });
+            if (res.status === 401) {
+                if (window.authRecoveryBanner) window.authRecoveryBanner.classList.remove('hidden');
+                throw new Error("Calendar OAuth token expired (401)");
+            }
             const data = await res.json();
             
+            if (data.calendar_status === 'auth_required' || data.error === 'auth_required') {
+                if (window.authRecoveryBanner) window.authRecoveryBanner.classList.remove('hidden');
+            } else if (window.authRecoveryBanner) {
+                window.authRecoveryBanner.classList.add('hidden');
+            }
+
             if (data.added_event) {
                 const card = document.createElement('div');
                 card.className = 'protocol-card glass-panel';
@@ -943,14 +1348,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 agendaStream.prepend(card);
                 attachCardEvents(card);
             }
-            btnSyncOps.innerText = "Synced";
+            if (syncIcon) {
+                syncIcon.classList.remove('spinning');
+                syncIcon.textContent = '✅';
+            }
+            btnSyncOps.title = "Synced";
+            showToast("Operations synchronized", "success");
             setTimeout(() => {
-                btnSyncOps.innerText = "Sync";
+                if (syncIcon) syncIcon.textContent = '🔄';
+                btnSyncOps.title = "Sync Live Data";
                 btnSyncOps.disabled = false;
             }, 2000);
         } catch (e) {
-            btnSyncOps.innerText = "Offline";
+            if (syncIcon) {
+                syncIcon.classList.remove('spinning');
+                syncIcon.textContent = '⚠️';
+            }
+            btnSyncOps.title = "Offline";
             btnSyncOps.classList.add('btn-offline');
+            btnSyncOps.disabled = false;
         }
     });
 
@@ -959,6 +1375,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const showBtn = card.querySelector('.btn-show-me');
         const doneBtn = card.querySelector('.btn-done');
         const dismissBtn = card.querySelector('.btn-dismiss');
+        const reinstateBtn = card.querySelector('.btn-reinstate');
         
         const type = showBtn?.getAttribute('data-type') || doneBtn?.getAttribute('data-type') || '';
         const id = showBtn?.getAttribute('data-id') || doneBtn?.getAttribute('data-id') || dismissBtn?.getAttribute('data-id') || '';
@@ -993,77 +1410,50 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (doneBtn) {
             doneBtn.addEventListener('click', async () => {
-                const title = card.querySelector('.protocol-info p')?.innerText || id;
-                card.classList.add('completed');
-                doneBtn.innerText = "Done";
-                doneBtn.disabled = true;
-                if (dismissBtn) {
-                    dismissBtn.disabled = false;
-                }
-                
-                // Move greyed out card to the bottom of the daily agenda stream
-                agendaStream.appendChild(card);
-
-                if (id) {
-                    fetch(API_AGENDA, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ id, action: 'update_status', status: 'completed' })
-                    }).catch(() => {});
-                }
-                
-                if (isExercise()) {
-                    pendingProtocol = { id, name: title, beforePain: currentPainLevel || 1, card, doneBtn };
-                    reliefExerciseName.innerText = pendingProtocol.name;
-                    afterPainScore.value = pendingProtocol.beforePain;
-                    reliefModal.classList.remove('hidden');
+                try {
+                    const title = card.querySelector('.protocol-info p')?.innerText || id;
+                    card.classList.add('completed');
+                    doneBtn.innerText = "Done";
+                    doneBtn.disabled = true;
+                    if (id) {
+                        await fetch(API_AGENDA, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ id, action: 'update_status', status: 'completed' })
+                        });
+                        loadAgenda();
+                    }
+                } catch (err) {
+                    showToast('Failed to complete agenda item');
+                    console.error(err);
                 }
             });
         }
-        
+
         if (dismissBtn) {
             dismissBtn.addEventListener('click', () => {
-                card.remove();
                 if (id) {
                     fetch(API_AGENDA, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ id, action: 'update_status', status: 'dismissed' })
-                    }).catch(() => {});
+                    }).then(() => { loadAgenda(); }).catch(() => {});
+                } else {
+                    card.remove();
                 }
             });
         }
-    }
-
-    async function finishPendingProtocol(withRelief) {
-        if (!pendingProtocol) return;
-        const payload = { id: pendingProtocol.id, action: 'update_status', status: 'completed' };
-        try {
-            const res = await fetch(API_AGENDA, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+        
+        if (reinstateBtn) {
+            reinstateBtn.addEventListener('click', () => {
+                if (id) {
+                    fetch(API_AGENDA, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id, action: 'update_status', status: 'pending' })
+                    }).then(() => { loadAgenda(); }).catch(() => {});
+                }
             });
-            if (withRelief) {
-                await fetch(API_EXERCISE_RELIEF, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        routineId: pendingProtocol.id,
-                        routineTitle: pendingProtocol.name,
-                        prePainScore: pendingProtocol.beforePain,
-                        postPainScore: parseInt(afterPainScore.value, 10),
-                    })
-                }).catch(() => {});
-            }
-            const card = pendingProtocol.card;
-            reliefModal.classList.add('hidden');
-            pendingProtocol = null;
-            if (card) {
-                card.classList.add('completed');
-                agendaStream.appendChild(card);
-            }
-        } catch (err) {
-            showToast('Failed to complete agenda item');
-            console.error(err);
         }
     }
 
@@ -1292,14 +1682,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     btnCancelRunner.addEventListener('click', closeRunnerModal);
 
-    document.getElementById('btnPrevStep').addEventListener('click', () => {
-        if (currentStepIndex > 0) {
-            currentStepIndex--;
-            timeLeft = currentProtocolSteps[currentStepIndex].duration;
-            updateStepUI();
-        }
-    });
-
     btnNextStep.addEventListener('click', () => {
         currentStepIndex++;
         if (currentStepIndex >= currentProtocolSteps.length) {
@@ -1309,56 +1691,6 @@ document.addEventListener('DOMContentLoaded', () => {
             updateStepUI();
         }
     });
-
-    // --- Swap Logic ---
-    const swapModal = document.getElementById('swapModal');
-    const btnSwapExercise = document.getElementById('btnSwapExercise');
-    const swapList = document.getElementById('swapList');
-
-    if (btnSwapExercise) {
-        btnSwapExercise.addEventListener('click', () => {
-            clearInterval(runnerInterval); // Pause timer while swapping
-            const videoEl = document.getElementById('runnerVideo');
-            if (videoEl) videoEl.pause();
-            
-            swapList.innerHTML = '';
-            exerciseBacklog.forEach((ex) => {
-                const item = document.createElement('div');
-                item.className = 'agenda-item';
-                item.style.cursor = 'pointer';
-                item.style.justifyContent = 'space-between';
-                item.innerHTML = `
-                    <div>
-                        <span class="agenda-text" style="font-weight: 600;">${ex.title}</span>
-                        <br><small style="color: var(--text-dim);">${formatTime(ex.duration)}</small>
-                    </div>
-                    <button class="btn btn-outline btn-sm">Select</button>
-                `;
-                item.addEventListener('click', () => {
-                    currentProtocolSteps[currentStepIndex] = { ...ex };
-                    timeLeft = ex.duration;
-                    swapModal.classList.add('hidden');
-                    updateStepUI();
-                    startRunnerTimer(); // Resume timer
-                });
-                swapList.appendChild(item);
-            });
-            
-            swapModal.classList.remove('hidden');
-        });
-    }
-
-    const btnCloseSwap = document.getElementById('btnCloseSwap');
-    if (btnCloseSwap) {
-        btnCloseSwap.addEventListener('click', () => {
-            swapModal.classList.add('hidden');
-            startRunnerTimer();
-            const videoEl = document.getElementById('runnerVideo');
-            if (videoEl && videoEl.src) {
-                videoEl.play().catch(() => {});
-            }
-        });
-    }
 
     // --- 5. Dual 0-10 Scales (Pain & Mood) ---
     painNumButtons.forEach(btn => {
@@ -1385,7 +1717,7 @@ document.addEventListener('DOMContentLoaded', () => {
             moodNumButtons.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             currentMoodLevel = parseInt(btn.getAttribute('data-val'), 10);
-            if (moodValDisplay) moodValDisplay.innerText = currentMoodLevel;
+            moodValDisplay.innerText = currentMoodLevel;
         });
     });
 
@@ -1486,13 +1818,8 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             let latest = null;
             try {
-                const latestRes = await fetch(API_PAIN_LOG);
-                if (latestRes.ok) {
-                    const data = await latestRes.json();
-                    if (data.logs && data.logs.length > 0) {
-                        latest = data.logs[0];
-                    }
-                }
+                const latestRes = await fetch(API_LATEST_SYMPTOMS);
+                if (latestRes.ok) latest = (await latestRes.json()).log;
             } catch (error) {
                 console.warn('Latest pain log unavailable', error);
             }
@@ -1528,7 +1855,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 card.querySelector('.exercise-show').addEventListener('click', () => {
                     exerciseModal.classList.add('hidden');
-                    startRunnerModal(exercise.id);
+                    rumbleChatModal.classList.remove('hidden');
+                    // We don't have currentProposalText in scope properly, so we just send the chat directly
+                    sendRumbleChatMessage(`Show me how to do the ${exercise.name} routine step-by-step. It is a ${exercise.duration_minutes} minute routine focusing on ${exercise.instruction}.`);
                 });
                 const reasons = card.querySelector('.reject-reasons');
                 card.querySelector('.exercise-reject').addEventListener('click', () => reasons.classList.toggle('hidden'));
@@ -1616,6 +1945,77 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.getElementById('budgetAmount').value = '';
                     document.getElementById('budgetNotes').value = '';
                     loadBudget();
+    // --- 11. Settings Logic ---
+    const btnSettings = document.getElementById('btnSettings');
+
+    const tabProfile = document.getElementById('tabProfile');
+    const tabPreferences = document.getElementById('tabPreferences');
+    const tabIntegrations = document.getElementById('tabIntegrations');
+    
+    const settingsProfile = document.getElementById('settingsProfile');
+    const settingsPreferences = document.getElementById('settingsPreferences');
+    const settingsIntegrations = document.getElementById('settingsIntegrations');
+
+    function switchSettingsTab(activeTab, activeContent) {
+        [tabProfile, tabPreferences, tabIntegrations].forEach(t => {
+            if(t) {
+                t.classList.remove('active', 'btn-neon-blue');
+                t.classList.add('btn-outline');
+            }
+        });
+        [settingsProfile, settingsPreferences, settingsIntegrations].forEach(c => {
+            if(c) c.classList.add('hidden');
+        });
+
+        if(activeTab) {
+            activeTab.classList.remove('btn-outline');
+            activeTab.classList.add('active', 'btn-neon-blue');
+        }
+        if(activeContent) {
+            activeContent.classList.remove('hidden');
+        }
+    }
+
+    if (tabProfile) tabProfile.addEventListener('click', () => switchSettingsTab(tabProfile, settingsProfile));
+    if (tabPreferences) tabPreferences.addEventListener('click', () => switchSettingsTab(tabPreferences, settingsPreferences));
+    if (tabIntegrations) tabIntegrations.addEventListener('click', () => switchSettingsTab(tabIntegrations, settingsIntegrations));
+
+    const settingsModal = document.getElementById('settingsModal');
+    const btnCloseSettings = document.getElementById('btnCloseSettings');
+    const themeSelector = document.getElementById('themeSelector');
+
+    if (btnSettings && settingsModal) {
+        btnSettings.addEventListener('click', () => {
+            settingsModal.classList.remove('hidden');
+        });
+    }
+
+    if (btnCloseSettings && settingsModal) {
+        btnCloseSettings.addEventListener('click', () => {
+            settingsModal.classList.add('hidden');
+        });
+    }
+
+    if (themeSelector) {
+        // Load saved theme
+        const savedTheme = localStorage.getItem('rumble_theme') || 'theme-default';
+        themeSelector.value = savedTheme;
+        applyTheme(savedTheme);
+
+        themeSelector.addEventListener('change', (e) => {
+            const newTheme = e.target.value;
+            applyTheme(newTheme);
+            localStorage.setItem('rumble_theme', newTheme);
+        });
+    }
+
+    function applyTheme(themeName) {
+        // Remove existing theme classes
+        document.body.classList.remove('theme-default', 'theme-midnight', 'theme-cyberpunk', 'theme-forest');
+        if (themeName !== 'theme-default') {
+            document.body.classList.add(themeName);
+        }
+    }
                 } else {
                     showToast('Failed to add expense');
                 }
@@ -1626,130 +2026,229 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    loadBudget();
+    // --- 10. Budget Overview Modal & Chart ---
+    const budgetOverviewModal = document.getElementById('budgetOverviewModal');
+    const btnCloseBudgetOverview = document.getElementById('btnCloseBudgetOverview');
+    const budgetMonthSelect = document.getElementById('budgetMonthSelect');
+    let budgetChartInstance = null;
 
-});
-// Settings Modal Logic
-const btnSettings = document.getElementById('btnSettings');
-const settingsModal = document.getElementById('settingsModal');
-const btnCloseSettings = document.getElementById('btnCloseSettings');
-const btnCancelSettings = document.getElementById('btnCancelSettings');
-const btnSaveSettings = document.getElementById('btnSaveSettings');
-
-const tabProfile = document.getElementById('tabProfile');
-const tabPreferences = document.getElementById('tabPreferences');
-const tabIntegrations = document.getElementById('tabIntegrations');
-
-const settingsProfile = document.getElementById('settingsProfile');
-const settingsPreferences = document.getElementById('settingsPreferences');
-const settingsIntegrations = document.getElementById('settingsIntegrations');
-
-if (btnSettings) {
-    btnSettings.addEventListener('click', () => {
-        settingsModal.classList.remove('hidden');
-    });
-}
-[btnCloseSettings, btnCancelSettings].forEach(btn => {
-    if (btn) btn.addEventListener('click', () => settingsModal.classList.add('hidden'));
-});
-if (btnSaveSettings) {
-    btnSaveSettings.addEventListener('click', () => {
-        settingsModal.classList.add('hidden');
-        // Save logic would go here
-    });
-}
-
-function switchTab(activeTab, activeContent) {
-    [tabProfile, tabPreferences, tabIntegrations].forEach(t => t && t.classList.replace('btn-neon-blue', 'btn-outline'));
-    [settingsProfile, settingsPreferences, settingsIntegrations].forEach(c => c && c.classList.add('hidden'));
-    
-    if (activeTab) activeTab.classList.replace('btn-outline', 'btn-neon-blue');
-    if (activeContent) activeContent.classList.remove('hidden');
-}
-
-if (tabProfile) tabProfile.addEventListener('click', () => switchTab(tabProfile, settingsProfile));
-if (tabPreferences) tabPreferences.addEventListener('click', () => switchTab(tabPreferences, settingsPreferences));
-if (tabIntegrations) tabIntegrations.addEventListener('click', () => switchTab(tabIntegrations, settingsIntegrations));
-
-// Keep-Style Notes Logic
-const btnNewNote = document.getElementById('btnNewNote');
-const noteEditorContainer = document.getElementById('noteEditorContainer');
-const btnCancelNoteEdit = document.getElementById('btnCancelNoteEdit');
-const btnSaveNoteEdit = document.getElementById('btnSaveNoteEdit');
-const notesGrid = document.getElementById('notesGrid');
-const editNoteTitle = document.getElementById('editNoteTitle');
-const editNoteBody = document.getElementById('editNoteBody');
-const editNoteColor = document.getElementById('editNoteColor');
-const btnPinNote = document.getElementById('btnPinNote');
-
-let currentEditingNote = null;
-let isPinned = false;
-
-if (btnNewNote) {
-    btnNewNote.addEventListener('click', () => {
-        currentEditingNote = null;
-        editNoteTitle.value = '';
-        editNoteBody.value = '';
-        editNoteColor.value = 'default';
-        isPinned = false;
-        btnPinNote.classList.replace('btn-neon-green', 'btn-outline');
-        noteEditorContainer.classList.remove('hidden');
-    });
-}
-
-if (btnCancelNoteEdit) {
-    btnCancelNoteEdit.addEventListener('click', () => {
-        noteEditorContainer.classList.add('hidden');
-    });
-}
-
-if (btnPinNote) {
-    btnPinNote.addEventListener('click', () => {
-        isPinned = !isPinned;
-        if (isPinned) {
-            btnPinNote.classList.replace('btn-outline', 'btn-neon-green');
-        } else {
-            btnPinNote.classList.replace('btn-neon-green', 'btn-outline');
-        }
-    });
-}
-
-if (btnSaveNoteEdit) {
-    btnSaveNoteEdit.addEventListener('click', () => {
-        const title = editNoteTitle.value.trim() || 'Untitled';
-        const body = editNoteBody.value.trim();
-        const color = editNoteColor.value === 'default' ? 'rgba(255,255,255,0.05)' : editNoteColor.value;
-        
-        let noteHtml = `
-            ${isPinned ? '<div style="position: absolute; top: 10px; right: 10px; cursor: pointer;" title="Pinned">📌</div>' : ''}
-            <h4 style="margin: 0 0 8px 0; font-size: 1.1em;">${title}</h4>
-            <p style="margin: 0; font-size: 0.9em; opacity: 0.9; white-space: pre-wrap;">${body}</p>
-        `;
-        
-        if (currentEditingNote) {
-            currentEditingNote.innerHTML = noteHtml;
-            currentEditingNote.style.borderLeft = `4px solid ${color}`;
-        } else {
-            const noteEl = document.createElement('div');
-            noteEl.className = 'keep-note glass-panel';
-            noteEl.style.cssText = `background: rgba(255,255,255,0.05); border-left: 4px solid ${color}; padding: 15px; border-radius: 8px; position: relative; cursor: pointer;`;
-            noteEl.innerHTML = noteHtml;
-            
-            noteEl.addEventListener('click', () => {
-                currentEditingNote = noteEl;
-                editNoteTitle.value = title;
-                editNoteBody.value = body;
-                noteEditorContainer.classList.remove('hidden');
-            });
-            
-            if (isPinned) {
-                notesGrid.prepend(noteEl);
-            } else {
-                notesGrid.appendChild(noteEl);
+    if (budgetTotalSpent) {
+        budgetTotalSpent.style.cursor = 'pointer';
+        budgetTotalSpent.addEventListener('click', () => {
+            if (budgetOverviewModal) {
+                budgetOverviewModal.classList.remove('hidden');
+                renderBudgetChart();
             }
-        }
-        
-        noteEditorContainer.classList.add('hidden');
-    });
-}
+        });
+    }
 
+    if (btnCloseBudgetOverview) {
+        btnCloseBudgetOverview.addEventListener('click', () => {
+            budgetOverviewModal.classList.add('hidden');
+        });
+    }
+
+    if (budgetMonthSelect) {
+        budgetMonthSelect.addEventListener('change', () => {
+            renderBudgetChart();
+        });
+    }
+
+    function renderBudgetChart() {
+        const ctx = document.getElementById('budgetChart');
+        if (!ctx) return;
+        
+        // Mock data for weekly overviews grouped by month
+        const month = budgetMonthSelect ? budgetMonthSelect.value : '2026-08';
+        
+        // In a real scenario, this data would come from the API grouped by week.
+        const mockData = {
+            '2026-08': {
+                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                groceries: [120, 150, 110, 180],
+                medical: [50, 0, 200, 0],
+                entertainment: [30, 40, 20, 50],
+                other: [10, 15, 5, 20]
+            },
+            '2026-07': {
+                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                groceries: [110, 140, 120, 130],
+                medical: [0, 0, 50, 0],
+                entertainment: [40, 30, 40, 30],
+                other: [20, 10, 15, 10]
+            },
+            '2026-06': {
+                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                groceries: [130, 160, 140, 120],
+                medical: [100, 50, 0, 0],
+                entertainment: [20, 50, 30, 40],
+                other: [5, 5, 10, 15]
+            }
+        };
+
+        const data = mockData[month] || mockData['2026-08'];
+
+        if (budgetChartInstance) {
+            budgetChartInstance.destroy();
+        }
+
+        budgetChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.labels,
+                datasets: [
+                    {
+                        label: 'Groceries',
+                        data: data.groceries,
+                        backgroundColor: 'rgba(0, 230, 118, 0.7)',
+                        borderColor: 'rgba(0, 230, 118, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Medical',
+                        data: data.medical,
+                        backgroundColor: 'rgba(255, 61, 0, 0.7)',
+                        borderColor: 'rgba(255, 61, 0, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Entertainment',
+                        data: data.entertainment,
+                        backgroundColor: 'rgba(0, 176, 255, 0.7)',
+                        borderColor: 'rgba(0, 176, 255, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Other',
+                        data: data.other,
+                        backgroundColor: 'rgba(158, 158, 158, 0.7)',
+                        borderColor: 'rgba(158, 158, 158, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: { stacked: true },
+                    y: { stacked: true, beginAtZero: true }
+                },
+                plugins: {
+                    legend: {
+                        labels: { color: '#fff' }
+                    }
+                }
+            }
+        });
+
+        // Update detailed stats
+        const statsContainer = document.getElementById('budgetDetailedStats');
+        if (statsContainer) {
+            const totalGroceries = data.groceries.reduce((a, b) => a + b, 0);
+            const totalMedical = data.medical.reduce((a, b) => a + b, 0);
+            const totalEntertainment = data.entertainment.reduce((a, b) => a + b, 0);
+            const totalOther = data.other.reduce((a, b) => a + b, 0);
+            const grandTotal = totalGroceries + totalMedical + totalEntertainment + totalOther;
+
+            statsContainer.innerHTML = `
+                <div class="glass-panel" style="padding: 10px; text-align: center;">
+                    <div style="font-size: 0.8rem; color: var(--text-secondary);">Total Spent</div>
+                    <div style="font-size: 1.2rem; font-weight: bold; color: #fff;">$${grandTotal}</div>
+                </div>
+                <div class="glass-panel" style="padding: 10px; text-align: center;">
+                    <div style="font-size: 0.8rem; color: var(--text-secondary);">Groceries</div>
+                    <div style="font-size: 1.2rem; font-weight: bold; color: rgba(0, 230, 118, 1);">$${totalGroceries}</div>
+                </div>
+                <div class="glass-panel" style="padding: 10px; text-align: center;">
+                    <div style="font-size: 0.8rem; color: var(--text-secondary);">Medical</div>
+                    <div style="font-size: 1.2rem; font-weight: bold; color: rgba(255, 61, 0, 1);">$${totalMedical}</div>
+                </div>
+                <div class="glass-panel" style="padding: 10px; text-align: center;">
+                    <div style="font-size: 0.8rem; color: var(--text-secondary);">Entertainment</div>
+                    <div style="font-size: 1.2rem; font-weight: bold; color: rgba(0, 176, 255, 1);">$${totalEntertainment}</div>
+                </div>
+            `;
+        }
+    }
+
+    const btnPrintBudgetReport = document.getElementById('btnPrintBudgetReport');
+    if (btnPrintBudgetReport) {
+        btnPrintBudgetReport.addEventListener('click', () => {
+            window.print();
+        });
+    }
+
+    loadBudget();
+    // --- 11. Settings Logic ---
+    const btnSettings = document.getElementById('btnSettings');
+
+    const tabProfile = document.getElementById('tabProfile');
+    const tabPreferences = document.getElementById('tabPreferences');
+    const tabIntegrations = document.getElementById('tabIntegrations');
+    
+    const settingsProfile = document.getElementById('settingsProfile');
+    const settingsPreferences = document.getElementById('settingsPreferences');
+    const settingsIntegrations = document.getElementById('settingsIntegrations');
+
+    function switchSettingsTab(activeTab, activeContent) {
+        [tabProfile, tabPreferences, tabIntegrations].forEach(t => {
+            if(t) {
+                t.classList.remove('active', 'btn-neon-blue');
+                t.classList.add('btn-outline');
+            }
+        });
+        [settingsProfile, settingsPreferences, settingsIntegrations].forEach(c => {
+            if(c) c.classList.add('hidden');
+        });
+
+        if(activeTab) {
+            activeTab.classList.remove('btn-outline');
+            activeTab.classList.add('active', 'btn-neon-blue');
+        }
+        if(activeContent) {
+            activeContent.classList.remove('hidden');
+        }
+    }
+
+    if (tabProfile) tabProfile.addEventListener('click', () => switchSettingsTab(tabProfile, settingsProfile));
+    if (tabPreferences) tabPreferences.addEventListener('click', () => switchSettingsTab(tabPreferences, settingsPreferences));
+    if (tabIntegrations) tabIntegrations.addEventListener('click', () => switchSettingsTab(tabIntegrations, settingsIntegrations));
+
+    const settingsModal = document.getElementById('settingsModal');
+    const btnCloseSettings = document.getElementById('btnCloseSettings');
+    const themeSelector = document.getElementById('themeSelector');
+
+    if (btnSettings && settingsModal) {
+        btnSettings.addEventListener('click', () => {
+            settingsModal.classList.remove('hidden');
+        });
+    }
+
+    if (btnCloseSettings && settingsModal) {
+        btnCloseSettings.addEventListener('click', () => {
+            settingsModal.classList.add('hidden');
+        });
+    }
+
+    if (themeSelector) {
+        // Load saved theme
+        const savedTheme = localStorage.getItem('rumble_theme') || 'theme-default';
+        themeSelector.value = savedTheme;
+        applyTheme(savedTheme);
+
+        themeSelector.addEventListener('change', (e) => {
+            const newTheme = e.target.value;
+            applyTheme(newTheme);
+            localStorage.setItem('rumble_theme', newTheme);
+        });
+    }
+
+    function applyTheme(themeName) {
+        // Remove existing theme classes
+        document.body.classList.remove('theme-default', 'theme-midnight', 'theme-cyberpunk', 'theme-forest');
+        if (themeName !== 'theme-default') {
+            document.body.classList.add(themeName);
+        }
+    }
+
+});

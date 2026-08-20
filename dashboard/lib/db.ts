@@ -377,24 +377,28 @@ export async function getNotes(): Promise<Note[]> {
 
   if (status.provider === 'neon' && pgPool) {
     const res = await pgPool.query(
-      'SELECT id, content, author, created_at, updated_at FROM notes ORDER BY created_at DESC'
+      'SELECT id, content, author, pinned, "isArchived", created_at, updated_at FROM notes ORDER BY created_at DESC'
     );
     return res.rows.map((row) => ({
       id: row.id,
       content: row.content,
       author: row.author,
+      pinned: row.pinned,
+      isArchived: row.isArchived,
       created_at: row.created_at,
       updated_at: row.updated_at,
     }));
   } else if (sqliteDb) {
     const stmt = sqliteDb.prepare(
-      'SELECT id, content, author, created_at, updated_at FROM notes ORDER BY created_at DESC'
+      'SELECT id, content, author, pinned, isArchived, created_at, updated_at FROM notes ORDER BY created_at DESC'
     );
     const rows = stmt.all() as any[];
     return rows.map((row) => ({
       id: row.id,
       content: row.content,
       author: row.author,
+      pinned: Boolean(row.pinned),
+      isArchived: Boolean(row.isArchived),
       created_at: row.created_at,
       updated_at: row.updated_at,
     }));
@@ -410,28 +414,86 @@ export async function createNote(input: CreateNoteInput): Promise<Note> {
   const id = input.id || crypto.randomUUID();
   const content = input.content;
   const author = input.author || 'user';
+  const pinned = input.pinned || false;
+  const isArchived = input.isArchived || false;
   const now = new Date().toISOString();
 
   if (status.provider === 'neon' && pgPool) {
     await pgPool.query(
-      `INSERT INTO notes (id, content, author, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, $5)`,
-      [id, content, author, now, now]
+      `INSERT INTO notes (id, content, author, pinned, "isArchived", created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [id, content, author, pinned, isArchived, now, now]
     );
   } else if (sqliteDb) {
     const stmt = sqliteDb.prepare(
-      `INSERT INTO notes (id, content, author, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?)`
+      `INSERT INTO notes (id, content, author, pinned, isArchived, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`
     );
-    stmt.run(id, content, author, now, now);
+    // SQLite stores booleans as 0 or 1 usually, but let's just pass boolean/number
+    stmt.run(id, content, author, pinned ? 1 : 0, isArchived ? 1 : 0, now, now);
   }
 
   return {
     id,
     content,
     author,
+    pinned,
+    isArchived,
     created_at: now,
     updated_at: now,
+  };
+}
+
+export async function updateNote(
+  id: string,
+  updates: Partial<{ content: string; pinned: boolean; isArchived: boolean }>
+): Promise<Note | null> {
+  await ensureTableExists();
+  const status = getDbStatus();
+  const now = new Date().toISOString();
+
+  let existing: Note | null = null;
+  if (status.provider === 'neon' && pgPool) {
+    const res = await pgPool.query('SELECT * FROM notes WHERE id = $1', [id]);
+    if (res.rows.length > 0) existing = {
+      id: res.rows[0].id, content: res.rows[0].content, author: res.rows[0].author, 
+      pinned: res.rows[0].pinned, isArchived: res.rows[0].isArchived, 
+      created_at: res.rows[0].created_at, updated_at: res.rows[0].updated_at
+    };
+  } else if (sqliteDb) {
+    const stmt = sqliteDb.prepare('SELECT * FROM notes WHERE id = ?');
+    const row = stmt.get(id) as any;
+    if (row) existing = {
+      id: row.id, content: row.content, author: row.author,
+      pinned: Boolean(row.pinned), isArchived: Boolean(row.isArchived),
+      created_at: row.created_at, updated_at: row.updated_at
+    };
+  }
+
+  if (!existing) return null;
+
+  const newContent = updates.content !== undefined ? updates.content : existing.content;
+  const newPinned = updates.pinned !== undefined ? updates.pinned : existing.pinned;
+  const newIsArchived = updates.isArchived !== undefined ? updates.isArchived : existing.isArchived;
+
+  if (status.provider === 'neon' && pgPool) {
+    await pgPool.query(
+      `UPDATE notes SET content = $1, pinned = $2, "isArchived" = $3, updated_at = $4 WHERE id = $5`,
+      [newContent, newPinned, newIsArchived, now, id]
+    );
+  } else if (sqliteDb) {
+    const stmt = sqliteDb.prepare(
+      `UPDATE notes SET content = ?, pinned = ?, isArchived = ?, updated_at = ? WHERE id = ?`
+    );
+    stmt.run(newContent, newPinned ? 1 : 0, newIsArchived ? 1 : 0, now, id);
+  }
+
+  return {
+    ...existing,
+    content: newContent,
+    pinned: newPinned,
+    isArchived: newIsArchived,
+    updated_at: now
   };
 }
 
