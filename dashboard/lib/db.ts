@@ -172,7 +172,7 @@ export async function getAgendaItems(): Promise<AgendaItem[]> {
 
   if (status.provider === 'neon' && pgPool) {
     const res = await pgPool.query(
-      'SELECT id, item_type, title, scheduled_time, status, completed_at, dismissed_at, audit_trail, created_at FROM agenda_items ORDER BY scheduled_time ASC'
+      'SELECT id, item_type, title, scheduled_time, status, completed_at, dismissed_at, audit_trail, created_at, updated_at FROM agenda_items ORDER BY scheduled_time ASC'
     );
     return res.rows.map((row) => ({
       id: row.id,
@@ -184,10 +184,11 @@ export async function getAgendaItems(): Promise<AgendaItem[]> {
       dismissed_at: row.dismissed_at || null,
       audit_trail: parseAuditTrail(row.audit_trail),
       created_at: row.created_at,
+      updated_at: row.updated_at,
     }));
   } else if (sqliteDb) {
     const stmt = sqliteDb.prepare(
-      'SELECT id, item_type, title, scheduled_time, status, completed_at, dismissed_at, audit_trail, created_at FROM agenda_items ORDER BY scheduled_time ASC'
+      'SELECT id, item_type, title, scheduled_time, status, completed_at, dismissed_at, audit_trail, created_at, updated_at FROM agenda_items ORDER BY scheduled_time ASC'
     );
     const rows = stmt.all() as any[];
     return rows.map((row) => ({
@@ -200,6 +201,7 @@ export async function getAgendaItems(): Promise<AgendaItem[]> {
       dismissed_at: row.dismissed_at || null,
       audit_trail: parseAuditTrail(row.audit_trail),
       created_at: row.created_at,
+      updated_at: row.updated_at,
     }));
   }
 
@@ -219,6 +221,7 @@ export async function createAgendaItem(
   const itemStatus: AgendaItemStatus = input.status || 'pending';
   const created_at = new Date().toISOString();
   const completed_at = itemStatus === 'completed' ? created_at : null;
+  const updated_at = input.updated_at || created_at;
   const dismissed_at = itemStatus === 'dismissed' ? created_at : null;
 
   const initialAudit: AuditTrailEntry[] = input.audit_trail || [
@@ -234,8 +237,8 @@ export async function createAgendaItem(
 
   if (status.provider === 'neon' && pgPool) {
     await pgPool.query(
-      `INSERT INTO agenda_items (id, item_type, title, scheduled_time, status, completed_at, dismissed_at, audit_trail, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+      `INSERT INTO agenda_items (id, item_type, title, scheduled_time, status, completed_at, dismissed_at, audit_trail, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
       [
         id,
         item_type,
@@ -246,12 +249,13 @@ export async function createAgendaItem(
         dismissed_at,
         audit_trail_json,
         created_at,
+        updated_at,
       ]
     );
   } else if (sqliteDb) {
     const stmt = sqliteDb.prepare(
-      `INSERT INTO agenda_items (id, item_type, title, scheduled_time, status, completed_at, dismissed_at, audit_trail, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO agenda_items (id, item_type, title, scheduled_time, status, completed_at, dismissed_at, audit_trail, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     );
     stmt.run(
       id,
@@ -262,7 +266,8 @@ export async function createAgendaItem(
       completed_at,
       dismissed_at,
       audit_trail_json,
-      created_at
+      created_at,
+      updated_at
     );
   }
 
@@ -276,6 +281,7 @@ export async function createAgendaItem(
     dismissed_at,
     audit_trail: initialAudit,
     created_at,
+    updated_at,
   };
 }
 
@@ -304,6 +310,7 @@ export async function updateAgendaItemStatus(
         dismissed_at: row.dismissed_at || null,
         audit_trail: parseAuditTrail(row.audit_trail),
         created_at: row.created_at,
+        updated_at: row.updated_at,
       };
     }
   } else if (sqliteDb) {
@@ -320,6 +327,7 @@ export async function updateAgendaItemStatus(
         dismissed_at: row.dismissed_at || null,
         audit_trail: parseAuditTrail(row.audit_trail),
         created_at: row.created_at,
+        updated_at: row.updated_at,
       };
     }
   }
@@ -347,17 +355,17 @@ export async function updateAgendaItemStatus(
   if (dbStatus.provider === 'neon' && pgPool) {
     await pgPool.query(
       `UPDATE agenda_items
-       SET status = $1, completed_at = $2, dismissed_at = $3, audit_trail = $4
-       WHERE id = $5`,
-      [newStatus, completed_at, dismissed_at, audit_trail_json, id]
+       SET status = $1, completed_at = $2, dismissed_at = $3, audit_trail = $4, updated_at = $5
+       WHERE id = $6`,
+      [newStatus, completed_at, dismissed_at, audit_trail_json, now, id]
     );
   } else if (sqliteDb) {
     const stmt = sqliteDb.prepare(
       `UPDATE agenda_items
-       SET status = ?, completed_at = ?, dismissed_at = ?, audit_trail = ?
+       SET status = ?, completed_at = ?, dismissed_at = ?, audit_trail = ?, updated_at = ?
        WHERE id = ?`
     );
-    stmt.run(newStatus, completed_at, dismissed_at, audit_trail_json, id);
+    stmt.run(newStatus, completed_at, dismissed_at, audit_trail_json, now, id);
   }
 
   return {
@@ -366,6 +374,7 @@ export async function updateAgendaItemStatus(
     completed_at,
     dismissed_at,
     audit_trail: updatedAuditTrail,
+    updated_at: now,
   };
 }
 
@@ -683,3 +692,51 @@ export async function getExercisePreferences(): Promise<ExercisePreferenceRecord
 }
 
 
+
+
+export async function rescheduleAgendaItem(id: string, newDate: string): Promise<AgendaItem | null> {
+  await ensureTableExists();
+  const dbStatus = getDbStatus();
+  const now = new Date().toISOString();
+
+  let existing: AgendaItem | null = null;
+  if (dbStatus.provider === 'neon' && pgPool) {
+    const res = await pgPool.query('SELECT * FROM agenda_items WHERE id = $1', [id]);
+    if (res.rows.length > 0) {
+      const row = res.rows[0];
+      existing = { ...row, audit_trail: parseAuditTrail(row.audit_trail) };
+    }
+  } else if (sqliteDb) {
+    const stmt = sqliteDb.prepare('SELECT * FROM agenda_items WHERE id = ?');
+    const row = stmt.get(id) as any;
+    if (row) {
+      existing = { ...row, audit_trail: parseAuditTrail(row.audit_trail) };
+    }
+  }
+
+  if (!existing) return null;
+
+  const newAuditEntry: AuditTrailEntry = {
+    timestamp: now,
+    previous_status: existing.status,
+    new_status: existing.status,
+    note: `Rescheduled to ${newDate}`,
+  };
+
+  const updatedAuditTrail = [...existing.audit_trail, newAuditEntry];
+  const audit_trail_json = JSON.stringify(updatedAuditTrail);
+
+  if (dbStatus.provider === 'neon' && pgPool) {
+    await pgPool.query(
+      `UPDATE agenda_items SET scheduled_time = $1, updated_at = $2, audit_trail = $3 WHERE id = $4`,
+      [newDate, now, audit_trail_json, id]
+    );
+  } else if (sqliteDb) {
+    const stmt = sqliteDb.prepare(
+      `UPDATE agenda_items SET scheduled_time = ?, updated_at = ?, audit_trail = ? WHERE id = ?`
+    );
+    stmt.run(newDate, now, audit_trail_json, id);
+  }
+
+  return { ...existing, scheduled_time: newDate, updated_at: now, audit_trail: updatedAuditTrail };
+}

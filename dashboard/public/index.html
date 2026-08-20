@@ -102,34 +102,17 @@
                 </div>
             </section>
 
-            <!-- Side-by-Side Weekly & Monthly Agenda -->
-            <div class="agenda-grid-row">
-                <!-- This Week Panel -->
-                <section class="widget glass-panel agenda-panel">
+            <!-- Interactive Calendar -->
+            <div class="agenda-grid-row" style="display: block;">
+                <section class="widget glass-panel agenda-panel" style="width: 100%;">
                     <div class="widget-header">
                         <div>
-                            <h2>This Week</h2>
-                            <span class="badge neon-blue">Weekly Agenda</span>
+                            <h2>Calendar</h2>
+                            <span class="badge neon-purple">Interactive Agenda</span>
                         </div>
-                        <button class="btn btn-outline btn-sm" id="btnAddWeeklyEvent">+ Add Event</button>
+                        <button class="btn btn-outline btn-sm" id="btnAddCalendarEvent">+ Add Event</button>
                     </div>
-                    <div class="agenda-list" id="weeklyAgendaList">
-                        <!-- Dynamic Agenda Items -->
-                    </div>
-                </section>
-
-                <!-- This Month Panel -->
-                <section class="widget glass-panel agenda-panel">
-                    <div class="widget-header">
-                        <div>
-                            <h2>This Month</h2>
-                            <span class="badge neon-purple">Monthly Agenda</span>
-                        </div>
-                        <button class="btn btn-outline btn-sm" id="btnAddMonthlyEvent">+ Add Event</button>
-                    </div>
-                    <div class="agenda-list" id="monthlyAgendaList">
-                        <!-- Dynamic Agenda Items -->
-                    </div>
+                    <div id="fullCalendar" style="min-height: 500px; margin-top: 15px;"></div>
                 </section>
             </div>
 
@@ -171,6 +154,27 @@
         </nav>
 
         <!-- Modals -->
+
+        <!-- Postpone Modal Window -->
+        <div class="modal-overlay hidden" id="postponeModal">
+            <div class="modal-content glass-panel" style="max-width: 400px;">
+                <div class="modal-header">
+                    <h2>Postpone Agenda Item</h2>
+                    <button class="btn-close" id="btnClosePostpone">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Select New Date</label>
+                        <input type="date" id="postponeDate" class="glass-input" style="width: 100%; padding: 8px;" />
+                    </div>
+                </div>
+                <div class="modal-footer" style="margin-top: 15px;">
+                    <button class="btn btn-outline" id="btnCancelPostpone">Cancel</button>
+                    <button class="btn btn-neon-blue" id="btnConfirmPostpone">Confirm Postpone</button>
+                </div>
+            </div>
+        </div>
+
 
         <!-- Settings Modal Window -->
         <div class="modal-overlay hidden" id="settingsModal">
@@ -573,6 +577,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
     <script src="app.js?v=18"></script>
 </body>
 </html>

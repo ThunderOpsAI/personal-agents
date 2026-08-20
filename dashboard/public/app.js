@@ -88,6 +88,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const croMessage = document.getElementById('croMessage');
     const croActions = document.getElementById('croActions');
     const btnDismissCro = document.getElementById('btnDismissCro');
+    const postponeModal = document.getElementById('postponeModal');
+    const btnClosePostpone = document.getElementById('btnClosePostpone');
+    const btnCancelPostpone = document.getElementById('btnCancelPostpone');
+    const btnConfirmPostpone = document.getElementById('btnConfirmPostpone');
+    const postponeDateInput = document.getElementById('postponeDate');
+    let itemToPostpone = null;
     const btnAcceptCro = document.getElementById('btnAcceptCro');
     const btnDiscussCro = document.getElementById('btnDiscussCro');
     
@@ -336,6 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="protocol-actions">
                             <button class="btn btn-neon-purple btn-show-me" data-id="${item.id}" data-type="${item.item_type || ''}" ${isCompleted ? 'disabled' : ''}>Show Me</button>
                             <button class="btn btn-neon-green btn-done" data-id="${item.id}" data-type="${item.item_type || ''}" ${isCompleted ? 'disabled' : ''}>${isCompleted ? 'Done' : 'Done'}</button>
+                            <button class="btn btn-outline btn-postpone" data-id="${item.id}" data-type="${item.item_type || ''}" ${isCompleted ? 'disabled' : ''}>Postpone</button>
                             <button class="btn btn-outline btn-dismiss" data-id="${item.id}" data-type="${item.item_type || ''}" ${isCompleted ? '' : 'disabled'}>Dismiss</button>
                         </div>
                     `;
@@ -363,52 +370,80 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         cards.forEach(c => document.getElementById("agendaStream").appendChild(c));
 
-        renderWeeklyCalendarList(data);
-        renderMonthlyCalendarList(data);
+        renderInteractiveCalendar(data);
     }
 
-    function renderWeeklyCalendarList(data) {
-        if (!weeklyAgendaList) return;
-        weeklyAgendaList.innerHTML = '';
-        if (data.weekly && data.weekly.length > 0) {
+    let interactiveCalendar = null;
+    function renderInteractiveCalendar(data) {
+        const calendarEl = document.getElementById('fullCalendar');
+        if (!calendarEl || typeof FullCalendar === 'undefined') return;
+
+        if (!interactiveCalendar) {
+            interactiveCalendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                height: 'auto',
+                eventClick: function(info) {
+                    if (info.event.extendedProps.originalEvent) {
+                        openCalendarEventView(info.event.extendedProps.originalEvent);
+                    }
+                }
+            });
+            interactiveCalendar.render();
+        }
+
+        const events = [];
+        
+        const parseEventDate = (item) => {
+            // item.date is likely "YYYY-MM-DD" or similar, or item.rawDate.
+            let dateStr = item.rawDate || item.date;
+            if (!dateStr) return null;
+            if (item.time) {
+                // simple parser for AM/PM to 24h
+                const match = item.time.match(/(\d+):(\d+)\s*(AM|PM)/i);
+                if (match) {
+                    let h = parseInt(match[1]);
+                    let m = parseInt(match[2]);
+                    let ampm = match[3].toUpperCase();
+                    if (ampm === 'PM' && h < 12) h += 12;
+                    if (ampm === 'AM' && h === 12) h = 0;
+                    const hStr = h.toString().padStart(2, '0');
+                    const mStr = m.toString().padStart(2, '0');
+                    return `${dateStr}T${hStr}:${mStr}:00`;
+                }
+            }
+            return dateStr;
+        };
+
+        if (data.weekly) {
             data.weekly.forEach(w => {
-                const div = document.createElement('div');
-                div.className = 'agenda-item clickable';
-                div.innerHTML = `
-                    <span class="agenda-date">${w.day || w.date}</span>
-                    <span class="agenda-text" style="flex: 1;">${w.title}</span>
-                    <span class="badge neon-blue" style="font-size: 0.72rem; padding: 2px 6px;">${w.time || 'Google Cal'}</span>
-                `;
-                div.addEventListener('click', () => openCalendarEventView(w));
-                weeklyAgendaList.appendChild(div);
+                events.push({
+                    title: w.title,
+                    start: w.rawDate || w.date || w.day,
+                    extendedProps: { originalEvent: w }
+                });
             });
-        } else if (data.calendar_status === 'auth_required') {
-            weeklyAgendaList.innerHTML = `<div class="agenda-item"><span class="agenda-text" style="color: var(--neon-blue);">Google Calendar authorization required to sync live events.</span></div>`;
-        } else {
-            weeklyAgendaList.innerHTML = `<div class="agenda-item"><span class="agenda-text">No calendar events scheduled this week.</span></div>`;
         }
-    }
-
-    function renderMonthlyCalendarList(data) {
-        if (!monthlyAgendaList) return;
-        monthlyAgendaList.innerHTML = '';
-        if (data.monthly && data.monthly.length > 0) {
+        
+        if (data.monthly) {
             data.monthly.forEach(m => {
-                const div = document.createElement('div');
-                div.className = 'agenda-item clickable';
-                div.innerHTML = `
-                    <span class="agenda-date">${m.date}</span>
-                    <span class="agenda-text" style="flex: 1;">${m.title}</span>
-                    <span class="badge neon-purple" style="font-size: 0.72rem; padding: 2px 6px;">${m.time || 'Monthly'}</span>
-                `;
-                div.addEventListener('click', () => openCalendarEventView(m));
-                monthlyAgendaList.appendChild(div);
+                // Avoid duplicates if weekly covers the same events
+                if (!events.find(e => e.extendedProps.originalEvent.id === m.id)) {
+                    events.push({
+                        title: m.title,
+                        start: parseEventDate(m) || m.rawDate || m.date,
+                        extendedProps: { originalEvent: m }
+                    });
+                }
             });
-        } else if (data.calendar_status === 'auth_required') {
-            monthlyAgendaList.innerHTML = `<div class="agenda-item"><span class="agenda-text" style="color: var(--neon-purple);">Google Calendar authorization required.</span></div>`;
-        } else {
-            monthlyAgendaList.innerHTML = `<div class="agenda-item"><span class="agenda-text">No calendar events scheduled this month.</span></div>`;
         }
+
+        interactiveCalendar.removeAllEvents();
+        interactiveCalendar.addEventSource(events);
     }
 
     
@@ -1376,6 +1411,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const showBtn = card.querySelector('.btn-show-me');
         const doneBtn = card.querySelector('.btn-done');
         const dismissBtn = card.querySelector('.btn-dismiss');
+        const postponeBtn = card.querySelector('.btn-postpone');
         const reinstateBtn = card.querySelector('.btn-reinstate');
         
         const type = showBtn?.getAttribute('data-type') || doneBtn?.getAttribute('data-type') || '';
@@ -1427,6 +1463,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 } catch (err) {
                     showToast('Failed to complete agenda item');
                     console.error(err);
+                }
+            });
+        }
+
+        
+        if (postponeBtn) {
+            postponeBtn.addEventListener('click', () => {
+                if (id) {
+                    itemToPostpone = id;
+                    postponeModal.classList.remove('hidden');
                 }
             });
         }

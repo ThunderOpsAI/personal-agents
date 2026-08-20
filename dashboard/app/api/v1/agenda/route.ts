@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createAgendaItem, getAgendaItems, getDbStatus, updateAgendaItemStatus } from "../../../../lib/db";
+import { createAgendaItem, getAgendaItems, getDbStatus, updateAgendaItemStatus, rescheduleAgendaItem } from "../../../../lib/db";
 import { AgendaItemStatus } from "../../../../lib/schema";
 import {
   ensureStandingTasks,
@@ -262,6 +262,19 @@ export async function POST(request: Request) {
 
   if (!body || typeof body !== "object") {
     return NextResponse.json({ status: "error", error: "Payload must be an object" }, { status: 400 });
+  }
+
+
+  if (body.action === "reschedule" && body.id && body.new_date) {
+    try {
+      const updated = await rescheduleAgendaItem(body.id, body.new_date);
+      if (!updated) {
+        return NextResponse.json({ status: "error", error: "Agenda item not found" }, { status: 404 });
+      }
+      return NextResponse.json({ status: "success", item: updated });
+    } catch (error) {
+      return NextResponse.json({ status: "error", error: "Failed to reschedule item" }, { status: 500 });
+    }
   }
 
   if (body.action === "update_status" || (body.id && body.status && !body.title)) {
