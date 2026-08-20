@@ -84,18 +84,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const alertBannerText = document.getElementById('alertBannerText');
     const weatherWidget = document.getElementById('weatherWidget');
     
-    const croWidget = document.getElementById('croWidget');
-    const croMessage = document.getElementById('croMessage');
-    const croActions = document.getElementById('croActions');
-    const btnDismissCro = document.getElementById('btnDismissCro');
+    // const croWidget = null;
+    // const croMessage = null;
+    // const croActions = null;
+    // const btnDismissCro = null;
     const postponeModal = document.getElementById('postponeModal');
     const btnClosePostpone = document.getElementById('btnClosePostpone');
     const btnCancelPostpone = document.getElementById('btnCancelPostpone');
     const btnConfirmPostpone = document.getElementById('btnConfirmPostpone');
     const postponeDateInput = document.getElementById('postponeDate');
     let itemToPostpone = null;
-    const btnAcceptCro = document.getElementById('btnAcceptCro');
-    const btnDiscussCro = document.getElementById('btnDiscussCro');
+    // const btnAcceptCro = null;
+    // const btnDiscussCro = null;
     
     const btnOpenRumbleChat = document.getElementById('btnOpenRumbleChat');
     const btnSyncOps = document.getElementById('btnSyncOps');
@@ -865,19 +865,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    btnDismissCro.addEventListener('click', () => {
-        croWidget.style.display = 'none';
-    });
-    
-    btnAcceptCro.addEventListener('click', () => {
-        croMessage.innerText = "Proposal accepted and integrated into Daily Agenda.";
-        croActions.classList.add('hidden');
-        setTimeout(() => { croWidget.style.display = 'none'; }, 2000);
-    });
-
-    btnDiscussCro.addEventListener('click', () => {
-        rumbleChatModal.classList.remove('hidden');
-    });
+    /* CRO EVENTS REMOVED */
 
     btnOpenRumbleChat.addEventListener('click', () => {
         rumbleChatModal.classList.remove('hidden');
@@ -1425,11 +1413,20 @@ document.addEventListener('DOMContentLoaded', () => {
                    i.startsWith('y') || i.includes('yoga') || i.includes('meditation') || i.includes('hydro') || i.includes('rehab') ||
                    title.includes('yoga') || title.includes('meditation');
         }
+        
+        function isPainLog() {
+            const t = type.toLowerCase();
+            const i = id.toLowerCase();
+            const title = (card.querySelector('.protocol-info p')?.innerText || '').toLowerCase();
+            return title.includes('log pain') || title.includes('pain log') || i.includes('pain_log') || t.includes('pain');
+        }
 
         if (showBtn) {
             showBtn.addEventListener('click', () => {
                 const title = card.querySelector('.protocol-info p')?.innerText || id;
-                if (isExercise()) {
+                if (isPainLog()) {
+                    document.getElementById('painLogModal').classList.remove('hidden');
+                } else if (isExercise()) {
                     const cleanId = id ? id.toLowerCase().trim() : '';
                     if (cleanId && (cleanId.startsWith('y') || cleanId.includes('meditation') || cleanId.includes('rehab'))) {
                         startRunnerModal(cleanId);
