@@ -237,6 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     loadWeather();
+    loadAgenda();
 
     // --- Agenda Loader ---
     async function loadAgenda() {
@@ -360,7 +361,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
             return parseTime(timeStrA) - parseTime(timeStrB);
         });
-        cards.forEach(c => agendaStream.appendChild(c));
+        cards.forEach(c => document.getElementById("agendaStream").appendChild(c));
 
         renderWeeklyCalendarList(data);
         renderMonthlyCalendarList(data);
