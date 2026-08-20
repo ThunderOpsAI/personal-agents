@@ -442,7 +442,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        interactiveCalendar.removeAllEvents();
+        interactiveCalendar.getEvents().forEach(e => e.remove());
         interactiveCalendar.addEventSource(events);
     }
 
@@ -704,11 +704,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    if (btnAddWeeklyEvent) {
+    if (typeof btnAddWeeklyEvent !== "undefined" && btnAddWeeklyEvent) {
         btnAddWeeklyEvent.addEventListener('click', () => openCalendarEventEdit(null));
     }
 
-    if (btnAddMonthlyEvent) {
+    if (typeof btnAddMonthlyEvent !== "undefined" && btnAddMonthlyEvent) {
         btnAddMonthlyEvent.addEventListener('click', () => openCalendarEventEdit(null));
     }
 
@@ -1899,9 +1899,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 card.querySelector('.exercise-show').addEventListener('click', () => {
                     exerciseModal.classList.add('hidden');
-                    rumbleChatModal.classList.remove('hidden');
-                    // We don't have currentProposalText in scope properly, so we just send the chat directly
-                    sendRumbleChatMessage(`Show me how to do the ${exercise.name} routine step-by-step. It is a ${exercise.duration_minutes} minute routine focusing on ${exercise.instruction}.`);
+                    startRunnerModal(exercise.id);
                 });
                 const reasons = card.querySelector('.reject-reasons');
                 card.querySelector('.exercise-reject').addEventListener('click', () => reasons.classList.toggle('hidden'));
