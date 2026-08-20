@@ -24,7 +24,7 @@ Read `CONTEXT.md` before changing terminology, agenda behavior, persistence, int
 * Current weather and forecast must come directly from Open-Meteo for Wangaratta, Victoria, Australia: latitude `-36.3536`, longitude `146.3225`.
 * Weekly and monthly agenda panels must pull live Google Calendar events. If OAuth is unavailable, show an explicit authorization state; never silently invent events.
 * Pain logging supports multiple anatomical locations, relative percentage weights totalling 100%, pain score, mood selector, and notes.
-* Completed daily items expose Dismiss. Dismiss removes the item from the active stream while preserving auditability.
+* Daily agenda items support three actions: Done (marks completed, greys out the card, moves to bottom of day's agenda), Dismiss (permanently deletes with confirmation), and Move to Tomorrow (reschedules remaining pending items to next day).
 * The agent uses a `SOUL.md` file for synthesized weekly learning.
 
 ## Safety, Human-in-the-Loop, and external actions
