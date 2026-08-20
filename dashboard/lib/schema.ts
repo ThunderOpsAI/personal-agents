@@ -17,6 +17,7 @@ export interface AgendaItem {
   dismissed_at: string | null;
   audit_trail: AuditTrailEntry[];
   created_at: string;
+  updated_at?: string;
 }
 
 export interface CreateAgendaItemInput {
@@ -26,6 +27,7 @@ export interface CreateAgendaItemInput {
   scheduled_time: string;
   status?: AgendaItemStatus;
   audit_trail?: AuditTrailEntry[];
+  updated_at?: string;
 }
 
 export interface DatabaseStatus {
@@ -44,7 +46,8 @@ CREATE TABLE IF NOT EXISTS agenda_items (
     completed_at TEXT,
     dismissed_at TEXT,
     audit_trail TEXT NOT NULL DEFAULT '[]',
-    created_at TEXT NOT NULL
+    created_at TEXT NOT NULL,
+    updated_at TEXT
 );
 `;
 
@@ -107,7 +110,7 @@ export interface CreatePainLogInput {
 export const CREATE_PAIN_LOGS_TABLE_SQL = `
 CREATE TABLE IF NOT EXISTS pain_logs (
     id TEXT PRIMARY KEY,
-    score INTEGER NOT NULL,
+    score REAL NOT NULL,
     locations TEXT NOT NULL,
     mood TEXT,
     notes TEXT,
@@ -159,8 +162,8 @@ CREATE TABLE IF NOT EXISTS exercise_preferences (
     id TEXT PRIMARY KEY,
     routine_id TEXT NOT NULL,
     routine_title TEXT NOT NULL,
-    pre_pain_score INTEGER NOT NULL,
-    post_pain_score INTEGER NOT NULL,
+    pre_pain_score REAL NOT NULL,
+    post_pain_score REAL NOT NULL,
     relief_delta INTEGER NOT NULL,
     notes TEXT,
     created_at TEXT NOT NULL
