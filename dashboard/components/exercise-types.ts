@@ -7,6 +7,13 @@ export type ExerciseRecommendation = {
   media_url?: string;
   image_url?: string;
   video_url?: string;
+  target_muscles?: string[];
+  contraindications?: string[];
+  procedure?: string[];
+  source_tier?: string;
+  sanskrit_name?: string;
+  benefits?: string;
+  category?: string;
 };
 
 export type ExerciseSuggestionsResponse = {

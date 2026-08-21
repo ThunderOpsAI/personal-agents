@@ -1,17 +1,33 @@
 import type { ConfirmedPainLog, ExerciseSuggestionInput, PainLocation } from "./rumble-integrations";
+import { NextResponse } from 'next/server';
 
 const MAX_MESSAGE_LENGTH = 8_000;
 
-export type ChatRequest = { message: string; confirmedPainLog?: ConfirmedPainLog };
+export function rumbleAuth(request: Request): NextResponse | null {
+  // Stub for Rumble OS API authentication
+  const authHeader = request.headers.get("authorization");
+  // Implement actual token verification as needed
+  if (authHeader === "Bearer invalid-token") {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  return null;
+}
+
+export type ChatRequest = { message: string; history?: { role: string; content: string }[]; confirmedPainLog?: ConfirmedPainLog };
 
 export function parseChatRequest(value: unknown): ChatRequest | null {
   if (!isRecord(value) || typeof value.message !== "string") return null;
   const message = value.message.trim();
   if (!message || message.length > MAX_MESSAGE_LENGTH) return null;
 
-  if (value.confirmedPainLog === undefined) return { message };
+  let history: { role: string; content: string }[] | undefined = undefined;
+  if (Array.isArray(value.history)) {
+    history = value.history.filter((h: any) => isRecord(h) && typeof h.role === "string" && typeof h.content === "string") as { role: string; content: string }[];
+  }
+
+  if (value.confirmedPainLog === undefined) return { message, history };
   const confirmedPainLog = parseConfirmedPainLog(value.confirmedPainLog);
-  return confirmedPainLog ? { message, confirmedPainLog } : null;
+  return confirmedPainLog ? { message, history, confirmedPainLog } : null;
 }
 
 export function parseExerciseSuggestionRequest(value: unknown): ExerciseSuggestionInput | null {

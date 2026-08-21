@@ -23,7 +23,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ status: "error", error: "Payload must be an object" }, { status: 400 });
   }
 
-  const { content, author } = body;
+  const { content, author, pinned, isArchived } = body;
   if (!content || typeof content !== "string" || !content.trim()) {
     return NextResponse.json({ status: "error", error: "content is required and must be non-empty" }, { status: 400 });
   }
@@ -32,6 +32,8 @@ export async function POST(request: Request) {
     const note = await createNote({
       content: content.trim(),
       author: typeof author === "string" && author.trim() ? author.trim() : "user",
+      pinned: typeof pinned === "boolean" ? pinned : false,
+      isArchived: typeof isArchived === "boolean" ? isArchived : false,
     });
     return NextResponse.json({ status: "success", note }, { status: 201 });
   } catch (error) {

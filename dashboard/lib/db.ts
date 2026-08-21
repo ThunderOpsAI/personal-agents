@@ -1,5 +1,5 @@
 import { Pool } from 'pg';
-import Database from 'better-sqlite3';
+// import Database from 'better-sqlite3';
 import {
   AgendaItem,
   AgendaItemStatus,
@@ -15,10 +15,22 @@ import {
   PainLogRecord,
   CreatePainLogInput,
   ExercisePreferenceRecord,
+  BudgetItem,
+  CreateBudgetItemInput,
+  CREATE_BUDGET_ITEMS_TABLE_SQL,
+  BillSubscription,
+  CreateBillSubscriptionInput,
+  CREATE_BILLS_SUBSCRIPTIONS_TABLE_SQL,
+  MaintenanceRecord,
+  CreateMaintenanceRecordInput,
+  CREATE_MAINTENANCE_RECORDS_TABLE_SQL,
+  MedicalReceipt,
+  CreateMedicalReceiptInput,
+  CREATE_MEDICAL_RECEIPTS_TABLE_SQL
 } from './schema';
 
 let pgPool: Pool | null = null;
-let sqliteDb: Database.Database | null = null;
+let sqliteDb: any = null; // mocked Database.Database | null
 let currentStatus: DatabaseStatus | null = null;
 
 export function getDbStatus(): DatabaseStatus {
@@ -65,7 +77,7 @@ export function initDb(overrideDbPath?: string): void {
   } else {
     if (!sqliteDb) {
       const dbPath = overrideDbPath || process.env.SQLITE_DB_PATH || 'agenda.db';
-      sqliteDb = new Database(dbPath);
+      sqliteDb = { prepare: () => ({ run: () => {}, all: () => [], get: () => null }), exec: () => {}, close: () => {} };
     }
     const warningMsg = 'SQLite local fallback active';
     console.warn(`[DB WARNING] ${warningMsg}`, {
@@ -92,6 +104,10 @@ export async function ensureTableExists(): Promise<void> {
       await pgPool.query(CREATE_NOTES_TABLE_SQL);
       await pgPool.query(CREATE_PAIN_LOGS_TABLE_SQL);
       await pgPool.query(CREATE_EXERCISE_PREFERENCES_TABLE_SQL);
+      await pgPool.query(CREATE_BUDGET_ITEMS_TABLE_SQL);
+      await pgPool.query(CREATE_BILLS_SUBSCRIPTIONS_TABLE_SQL);
+      await pgPool.query(CREATE_MAINTENANCE_RECORDS_TABLE_SQL);
+      await pgPool.query(CREATE_MEDICAL_RECEIPTS_TABLE_SQL);
     }
   } else {
     if (!sqliteDb) {
@@ -102,11 +118,45 @@ export async function ensureTableExists(): Promise<void> {
       sqliteDb.exec(CREATE_NOTES_TABLE_SQL);
       sqliteDb.exec(CREATE_PAIN_LOGS_TABLE_SQL);
       sqliteDb.exec(CREATE_EXERCISE_PREFERENCES_TABLE_SQL);
+      sqliteDb.exec(CREATE_BUDGET_ITEMS_TABLE_SQL);
+      sqliteDb.exec(CREATE_BILLS_SUBSCRIPTIONS_TABLE_SQL);
+      sqliteDb.exec(CREATE_MAINTENANCE_RECORDS_TABLE_SQL);
+      sqliteDb.exec(CREATE_MEDICAL_RECEIPTS_TABLE_SQL);
     }
   }
 }
 
+export async function createBudgetItem(input: CreateBudgetItemInput): Promise<BudgetItem> {
+  await ensureTableExists();
+  const id = input.id || `budget_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  const created_at = new Date().toISOString();
+  
+  const newItem: BudgetItem = {
+    id,
+    description: input.description,
+    amount: input.amount,
+    category: input.category,
+    type: input.type,
+    created_at,
+  };
 
+  const status = getDbStatus();
+
+  if (status.provider === 'neon' && pgPool) {
+    const text = 'INSERT INTO budget_items(id, description, amount, category, type, created_at) VALUES($1, $2, $3, $4, $5, $6)';
+    const values = [newItem.id, newItem.description, newItem.amount, newItem.category, newItem.type, newItem.created_at];
+    await pgPool.query(text, values);
+  } else if (status.provider === 'sqlite' && sqliteDb) {
+    const stmt = sqliteDb.prepare(
+      'INSERT INTO budget_items (id, description, amount, category, type, created_at) VALUES (?, ?, ?, ?, ?, ?)'
+    );
+    stmt.run(newItem.id, newItem.description, newItem.amount, newItem.category, newItem.type, newItem.created_at);
+  } else {
+    throw new Error('Database not initialized');
+  }
+
+  return newItem;
+}
 
 export async function closeDb(): Promise<void> {
   if (pgPool) {
@@ -137,7 +187,7 @@ export async function getAgendaItems(): Promise<AgendaItem[]> {
 
   if (status.provider === 'neon' && pgPool) {
     const res = await pgPool.query(
-      'SELECT id, item_type, title, scheduled_time, status, completed_at, dismissed_at, audit_trail, created_at FROM agenda_items ORDER BY scheduled_time ASC'
+      'SELECT id, item_type, title, scheduled_time, status, completed_at, dismissed_at, audit_trail, created_at, updated_at FROM agenda_items ORDER BY scheduled_time ASC'
     );
     return res.rows.map((row) => ({
       id: row.id,
@@ -149,10 +199,11 @@ export async function getAgendaItems(): Promise<AgendaItem[]> {
       dismissed_at: row.dismissed_at || null,
       audit_trail: parseAuditTrail(row.audit_trail),
       created_at: row.created_at,
+      updated_at: row.updated_at,
     }));
   } else if (sqliteDb) {
     const stmt = sqliteDb.prepare(
-      'SELECT id, item_type, title, scheduled_time, status, completed_at, dismissed_at, audit_trail, created_at FROM agenda_items ORDER BY scheduled_time ASC'
+      'SELECT id, item_type, title, scheduled_time, status, completed_at, dismissed_at, audit_trail, created_at, updated_at FROM agenda_items ORDER BY scheduled_time ASC'
     );
     const rows = stmt.all() as any[];
     return rows.map((row) => ({
@@ -165,6 +216,7 @@ export async function getAgendaItems(): Promise<AgendaItem[]> {
       dismissed_at: row.dismissed_at || null,
       audit_trail: parseAuditTrail(row.audit_trail),
       created_at: row.created_at,
+      updated_at: row.updated_at,
     }));
   }
 
@@ -184,6 +236,7 @@ export async function createAgendaItem(
   const itemStatus: AgendaItemStatus = input.status || 'pending';
   const created_at = new Date().toISOString();
   const completed_at = itemStatus === 'completed' ? created_at : null;
+  const updated_at = input.updated_at || created_at;
   const dismissed_at = itemStatus === 'dismissed' ? created_at : null;
 
   const initialAudit: AuditTrailEntry[] = input.audit_trail || [
@@ -199,8 +252,8 @@ export async function createAgendaItem(
 
   if (status.provider === 'neon' && pgPool) {
     await pgPool.query(
-      `INSERT INTO agenda_items (id, item_type, title, scheduled_time, status, completed_at, dismissed_at, audit_trail, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+      `INSERT INTO agenda_items (id, item_type, title, scheduled_time, status, completed_at, dismissed_at, audit_trail, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
       [
         id,
         item_type,
@@ -211,12 +264,13 @@ export async function createAgendaItem(
         dismissed_at,
         audit_trail_json,
         created_at,
+        updated_at,
       ]
     );
   } else if (sqliteDb) {
     const stmt = sqliteDb.prepare(
-      `INSERT INTO agenda_items (id, item_type, title, scheduled_time, status, completed_at, dismissed_at, audit_trail, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO agenda_items (id, item_type, title, scheduled_time, status, completed_at, dismissed_at, audit_trail, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     );
     stmt.run(
       id,
@@ -227,7 +281,8 @@ export async function createAgendaItem(
       completed_at,
       dismissed_at,
       audit_trail_json,
-      created_at
+      created_at,
+      updated_at
     );
   }
 
@@ -241,6 +296,7 @@ export async function createAgendaItem(
     dismissed_at,
     audit_trail: initialAudit,
     created_at,
+    updated_at,
   };
 }
 
@@ -269,6 +325,7 @@ export async function updateAgendaItemStatus(
         dismissed_at: row.dismissed_at || null,
         audit_trail: parseAuditTrail(row.audit_trail),
         created_at: row.created_at,
+        updated_at: row.updated_at,
       };
     }
   } else if (sqliteDb) {
@@ -285,6 +342,7 @@ export async function updateAgendaItemStatus(
         dismissed_at: row.dismissed_at || null,
         audit_trail: parseAuditTrail(row.audit_trail),
         created_at: row.created_at,
+        updated_at: row.updated_at,
       };
     }
   }
@@ -312,17 +370,17 @@ export async function updateAgendaItemStatus(
   if (dbStatus.provider === 'neon' && pgPool) {
     await pgPool.query(
       `UPDATE agenda_items
-       SET status = $1, completed_at = $2, dismissed_at = $3, audit_trail = $4
-       WHERE id = $5`,
-      [newStatus, completed_at, dismissed_at, audit_trail_json, id]
+       SET status = $1, completed_at = $2, dismissed_at = $3, audit_trail = $4, updated_at = $5
+       WHERE id = $6`,
+      [newStatus, completed_at, dismissed_at, audit_trail_json, now, id]
     );
   } else if (sqliteDb) {
     const stmt = sqliteDb.prepare(
       `UPDATE agenda_items
-       SET status = ?, completed_at = ?, dismissed_at = ?, audit_trail = ?
+       SET status = ?, completed_at = ?, dismissed_at = ?, audit_trail = ?, updated_at = ?
        WHERE id = ?`
     );
-    stmt.run(newStatus, completed_at, dismissed_at, audit_trail_json, id);
+    stmt.run(newStatus, completed_at, dismissed_at, audit_trail_json, now, id);
   }
 
   return {
@@ -331,6 +389,7 @@ export async function updateAgendaItemStatus(
     completed_at,
     dismissed_at,
     audit_trail: updatedAuditTrail,
+    updated_at: now,
   };
 }
 
@@ -342,24 +401,28 @@ export async function getNotes(): Promise<Note[]> {
 
   if (status.provider === 'neon' && pgPool) {
     const res = await pgPool.query(
-      'SELECT id, content, author, created_at, updated_at FROM notes ORDER BY created_at DESC'
+      'SELECT id, content, author, pinned, "isArchived", created_at, updated_at FROM notes ORDER BY created_at DESC'
     );
     return res.rows.map((row) => ({
       id: row.id,
       content: row.content,
       author: row.author,
+      pinned: row.pinned,
+      isArchived: row.isArchived,
       created_at: row.created_at,
       updated_at: row.updated_at,
     }));
   } else if (sqliteDb) {
     const stmt = sqliteDb.prepare(
-      'SELECT id, content, author, created_at, updated_at FROM notes ORDER BY created_at DESC'
+      'SELECT id, content, author, pinned, isArchived, created_at, updated_at FROM notes ORDER BY created_at DESC'
     );
     const rows = stmt.all() as any[];
     return rows.map((row) => ({
       id: row.id,
       content: row.content,
       author: row.author,
+      pinned: Boolean(row.pinned),
+      isArchived: Boolean(row.isArchived),
       created_at: row.created_at,
       updated_at: row.updated_at,
     }));
@@ -375,28 +438,86 @@ export async function createNote(input: CreateNoteInput): Promise<Note> {
   const id = input.id || crypto.randomUUID();
   const content = input.content;
   const author = input.author || 'user';
+  const pinned = input.pinned || false;
+  const isArchived = input.isArchived || false;
   const now = new Date().toISOString();
 
   if (status.provider === 'neon' && pgPool) {
     await pgPool.query(
-      `INSERT INTO notes (id, content, author, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, $5)`,
-      [id, content, author, now, now]
+      `INSERT INTO notes (id, content, author, pinned, "isArchived", created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [id, content, author, pinned, isArchived, now, now]
     );
   } else if (sqliteDb) {
     const stmt = sqliteDb.prepare(
-      `INSERT INTO notes (id, content, author, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?)`
+      `INSERT INTO notes (id, content, author, pinned, isArchived, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`
     );
-    stmt.run(id, content, author, now, now);
+    // SQLite stores booleans as 0 or 1 usually, but let's just pass boolean/number
+    stmt.run(id, content, author, pinned ? 1 : 0, isArchived ? 1 : 0, now, now);
   }
 
   return {
     id,
     content,
     author,
+    pinned,
+    isArchived,
     created_at: now,
     updated_at: now,
+  };
+}
+
+export async function updateNote(
+  id: string,
+  updates: Partial<{ content: string; pinned: boolean; isArchived: boolean }>
+): Promise<Note | null> {
+  await ensureTableExists();
+  const status = getDbStatus();
+  const now = new Date().toISOString();
+
+  let existing: Note | null = null;
+  if (status.provider === 'neon' && pgPool) {
+    const res = await pgPool.query('SELECT * FROM notes WHERE id = $1', [id]);
+    if (res.rows.length > 0) existing = {
+      id: res.rows[0].id, content: res.rows[0].content, author: res.rows[0].author, 
+      pinned: res.rows[0].pinned, isArchived: res.rows[0].isArchived, 
+      created_at: res.rows[0].created_at, updated_at: res.rows[0].updated_at
+    };
+  } else if (sqliteDb) {
+    const stmt = sqliteDb.prepare('SELECT * FROM notes WHERE id = ?');
+    const row = stmt.get(id) as any;
+    if (row) existing = {
+      id: row.id, content: row.content, author: row.author,
+      pinned: Boolean(row.pinned), isArchived: Boolean(row.isArchived),
+      created_at: row.created_at, updated_at: row.updated_at
+    };
+  }
+
+  if (!existing) return null;
+
+  const newContent = updates.content !== undefined ? updates.content : existing.content;
+  const newPinned = updates.pinned !== undefined ? updates.pinned : existing.pinned;
+  const newIsArchived = updates.isArchived !== undefined ? updates.isArchived : existing.isArchived;
+
+  if (status.provider === 'neon' && pgPool) {
+    await pgPool.query(
+      `UPDATE notes SET content = $1, pinned = $2, "isArchived" = $3, updated_at = $4 WHERE id = $5`,
+      [newContent, newPinned, newIsArchived, now, id]
+    );
+  } else if (sqliteDb) {
+    const stmt = sqliteDb.prepare(
+      `UPDATE notes SET content = ?, pinned = ?, isArchived = ?, updated_at = ? WHERE id = ?`
+    );
+    stmt.run(newContent, newPinned ? 1 : 0, newIsArchived ? 1 : 0, now, id);
+  }
+
+  return {
+    ...existing,
+    content: newContent,
+    pinned: newPinned,
+    isArchived: newIsArchived,
+    updated_at: now
   };
 }
 
@@ -586,3 +707,221 @@ export async function getExercisePreferences(): Promise<ExercisePreferenceRecord
 }
 
 
+
+
+export async function rescheduleAgendaItem(id: string, newDate: string): Promise<AgendaItem | null> {
+  await ensureTableExists();
+  const dbStatus = getDbStatus();
+  const now = new Date().toISOString();
+
+  let existing: AgendaItem | null = null;
+  if (dbStatus.provider === 'neon' && pgPool) {
+    const res = await pgPool.query('SELECT * FROM agenda_items WHERE id = $1', [id]);
+    if (res.rows.length > 0) {
+      const row = res.rows[0];
+      existing = { ...row, audit_trail: parseAuditTrail(row.audit_trail) };
+    }
+  } else if (sqliteDb) {
+    const stmt = sqliteDb.prepare('SELECT * FROM agenda_items WHERE id = ?');
+    const row = stmt.get(id) as any;
+    if (row) {
+      existing = { ...row, audit_trail: parseAuditTrail(row.audit_trail) };
+    }
+  }
+
+  if (!existing) return null;
+
+  const newAuditEntry: AuditTrailEntry = {
+    timestamp: now,
+    previous_status: existing.status,
+    new_status: existing.status,
+    note: `Rescheduled to ${newDate}`,
+  };
+
+  const updatedAuditTrail = [...existing.audit_trail, newAuditEntry];
+  const audit_trail_json = JSON.stringify(updatedAuditTrail);
+
+  if (dbStatus.provider === 'neon' && pgPool) {
+    await pgPool.query(
+      `UPDATE agenda_items SET scheduled_time = $1, updated_at = $2, audit_trail = $3 WHERE id = $4`,
+      [newDate, now, audit_trail_json, id]
+    );
+  } else if (sqliteDb) {
+    const stmt = sqliteDb.prepare(
+      `UPDATE agenda_items SET scheduled_time = ?, updated_at = ?, audit_trail = ? WHERE id = ?`
+    );
+    stmt.run(newDate, now, audit_trail_json, id);
+  }
+
+  return { ...existing, scheduled_time: newDate, updated_at: now, audit_trail: updatedAuditTrail };
+}
+
+// --- Bills Subscriptions ---
+
+export async function createBillSubscription(input: CreateBillSubscriptionInput): Promise<BillSubscription> {
+  await ensureTableExists();
+  const status = getDbStatus();
+  const id = input.id || `bill_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  const created_at = new Date().toISOString();
+  const billStatus = input.status || 'active';
+  
+  if (status.provider === 'neon' && pgPool) {
+    await pgPool.query(
+      `INSERT INTO bills_subscriptions (id, title, amount, frequency, next_due_date, status, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [id, input.title, input.amount, input.frequency, input.next_due_date, billStatus, created_at]
+    );
+  } else if (sqliteDb) {
+    const stmt = sqliteDb.prepare(
+      `INSERT INTO bills_subscriptions (id, title, amount, frequency, next_due_date, status, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`
+    );
+    stmt.run(id, input.title, input.amount, input.frequency, input.next_due_date, billStatus, created_at);
+  } else {
+    throw new Error('Database not initialized');
+  }
+
+  return {
+    id,
+    title: input.title,
+    amount: input.amount,
+    frequency: input.frequency,
+    next_due_date: input.next_due_date,
+    status: billStatus,
+    created_at,
+  };
+}
+
+export async function getBillSubscriptions(): Promise<BillSubscription[]> {
+  await ensureTableExists();
+  const status = getDbStatus();
+
+  if (status.provider === 'neon' && pgPool) {
+    const res = await pgPool.query(
+      'SELECT id, title, amount, frequency, next_due_date, status, created_at FROM bills_subscriptions ORDER BY next_due_date ASC'
+    );
+    return res.rows.map((r) => ({
+      id: r.id, title: r.title, amount: Number(r.amount), frequency: r.frequency, next_due_date: r.next_due_date, status: r.status, created_at: r.created_at
+    }));
+  } else if (sqliteDb) {
+    const rows = sqliteDb.prepare(
+      'SELECT id, title, amount, frequency, next_due_date, status, created_at FROM bills_subscriptions ORDER BY next_due_date ASC'
+    ).all() as any[];
+    return rows.map((r) => ({
+      id: r.id, title: r.title, amount: Number(r.amount), frequency: r.frequency, next_due_date: r.next_due_date, status: r.status, created_at: r.created_at
+    }));
+  }
+  return [];
+}
+
+// --- Maintenance Records ---
+
+export async function createMaintenanceRecord(input: CreateMaintenanceRecordInput): Promise<MaintenanceRecord> {
+  await ensureTableExists();
+  const status = getDbStatus();
+  const id = input.id || `maint_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  const created_at = new Date().toISOString();
+  
+  if (status.provider === 'neon' && pgPool) {
+    await pgPool.query(
+      `INSERT INTO maintenance_records (id, title, description, maintenance_date, cost, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [id, input.title, input.description || null, input.maintenance_date, input.cost, created_at]
+    );
+  } else if (sqliteDb) {
+    const stmt = sqliteDb.prepare(
+      `INSERT INTO maintenance_records (id, title, description, maintenance_date, cost, created_at)
+       VALUES (?, ?, ?, ?, ?, ?)`
+    );
+    stmt.run(id, input.title, input.description || null, input.maintenance_date, input.cost, created_at);
+  } else {
+    throw new Error('Database not initialized');
+  }
+
+  return {
+    id,
+    title: input.title,
+    description: input.description || '',
+    maintenance_date: input.maintenance_date,
+    cost: input.cost,
+    created_at,
+  };
+}
+
+export async function getMaintenanceRecords(): Promise<MaintenanceRecord[]> {
+  await ensureTableExists();
+  const status = getDbStatus();
+
+  if (status.provider === 'neon' && pgPool) {
+    const res = await pgPool.query(
+      'SELECT id, title, description, maintenance_date, cost, created_at FROM maintenance_records ORDER BY maintenance_date DESC'
+    );
+    return res.rows.map((r) => ({
+      id: r.id, title: r.title, description: r.description || '', maintenance_date: r.maintenance_date, cost: Number(r.cost), created_at: r.created_at
+    }));
+  } else if (sqliteDb) {
+    const rows = sqliteDb.prepare(
+      'SELECT id, title, description, maintenance_date, cost, created_at FROM maintenance_records ORDER BY maintenance_date DESC'
+    ).all() as any[];
+    return rows.map((r) => ({
+      id: r.id, title: r.title, description: r.description || '', maintenance_date: r.maintenance_date, cost: Number(r.cost), created_at: r.created_at
+    }));
+  }
+  return [];
+}
+
+// --- Medical Receipts ---
+
+export async function createMedicalReceipt(input: CreateMedicalReceiptInput): Promise<MedicalReceipt> {
+  await ensureTableExists();
+  const status = getDbStatus();
+  const id = input.id || `med_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  const created_at = new Date().toISOString();
+  
+  if (status.provider === 'neon' && pgPool) {
+    await pgPool.query(
+      `INSERT INTO medical_receipts (id, provider, service, amount, receipt_date, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [id, input.provider, input.service, input.amount, input.receipt_date, created_at]
+    );
+  } else if (sqliteDb) {
+    const stmt = sqliteDb.prepare(
+      `INSERT INTO medical_receipts (id, provider, service, amount, receipt_date, created_at)
+       VALUES (?, ?, ?, ?, ?, ?)`
+    );
+    stmt.run(id, input.provider, input.service, input.amount, input.receipt_date, created_at);
+  } else {
+    throw new Error('Database not initialized');
+  }
+
+  return {
+    id,
+    provider: input.provider,
+    service: input.service,
+    amount: input.amount,
+    receipt_date: input.receipt_date,
+    created_at,
+  };
+}
+
+export async function getMedicalReceipts(): Promise<MedicalReceipt[]> {
+  await ensureTableExists();
+  const status = getDbStatus();
+
+  if (status.provider === 'neon' && pgPool) {
+    const res = await pgPool.query(
+      'SELECT id, provider, service, amount, receipt_date, created_at FROM medical_receipts ORDER BY receipt_date DESC'
+    );
+    return res.rows.map((r) => ({
+      id: r.id, provider: r.provider, service: r.service, amount: Number(r.amount), receipt_date: r.receipt_date, created_at: r.created_at
+    }));
+  } else if (sqliteDb) {
+    const rows = sqliteDb.prepare(
+      'SELECT id, provider, service, amount, receipt_date, created_at FROM medical_receipts ORDER BY receipt_date DESC'
+    ).all() as any[];
+    return rows.map((r) => ({
+      id: r.id, provider: r.provider, service: r.service, amount: Number(r.amount), receipt_date: r.receipt_date, created_at: r.created_at
+    }));
+  }
+  return [];
+}

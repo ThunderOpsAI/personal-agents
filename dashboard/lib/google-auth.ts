@@ -174,6 +174,169 @@ export async function fetchLiveCalendarEvents(options?: {
 }
 
 /**
+ * Create a live Google Calendar event.
+ */
+export async function createLiveCalendarEvent(eventData: {
+  summary: string;
+  description?: string;
+  start: string;
+  end: string;
+  location?: string;
+  calendarId?: string;
+}): Promise<{
+  status: "success" | "auth_required" | "error";
+  event?: any;
+  message?: string;
+}> {
+  const auth = await getGoogleAccessToken();
+  if (!auth.authenticated || !auth.accessToken) {
+    return {
+      status: "auth_required",
+      message: auth.error || "Google Calendar authorization required",
+    };
+  }
+
+  const calendarId = eventData.calendarId || process.env.GOOGLE_CALENDAR_ID || "primary";
+  const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events`;
+
+  const body = {
+    summary: eventData.summary,
+    description: eventData.description || "",
+    location: eventData.location || "",
+    start: {
+      dateTime: eventData.start.includes("T") ? eventData.start : `${eventData.start}T09:00:00+10:00`,
+      timeZone: "Australia/Melbourne",
+    },
+    end: {
+      dateTime: eventData.end.includes("T") ? eventData.end : `${eventData.end}T10:00:00+10:00`,
+      timeZone: "Australia/Melbourne",
+    },
+  };
+
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${auth.accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!res.ok) {
+      return { status: "error", message: `Google Calendar API error: ${res.statusText}` };
+    }
+
+    const created = await res.json();
+    return { status: "success", event: created };
+  } catch (err: any) {
+    return { status: "error", message: err.message || "Failed to create Google Calendar event" };
+  }
+}
+
+/**
+ * Update an existing live Google Calendar event.
+ */
+export async function updateLiveCalendarEvent(eventData: {
+  eventId: string;
+  summary?: string;
+  description?: string;
+  start?: string;
+  end?: string;
+  location?: string;
+  calendarId?: string;
+}): Promise<{
+  status: "success" | "auth_required" | "error";
+  event?: any;
+  message?: string;
+}> {
+  const auth = await getGoogleAccessToken();
+  if (!auth.authenticated || !auth.accessToken) {
+    return {
+      status: "auth_required",
+      message: auth.error || "Google Calendar authorization required",
+    };
+  }
+
+  const calendarId = eventData.calendarId || process.env.GOOGLE_CALENDAR_ID || "primary";
+  const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventData.eventId)}`;
+
+  const body: any = {};
+  if (eventData.summary !== undefined) body.summary = eventData.summary;
+  if (eventData.description !== undefined) body.description = eventData.description;
+  if (eventData.location !== undefined) body.location = eventData.location;
+  if (eventData.start) {
+    body.start = {
+      dateTime: eventData.start.includes("T") ? eventData.start : `${eventData.start}T09:00:00+10:00`,
+      timeZone: "Australia/Melbourne",
+    };
+  }
+  if (eventData.end) {
+    body.end = {
+      dateTime: eventData.end.includes("T") ? eventData.end : `${eventData.end}T10:00:00+10:00`,
+      timeZone: "Australia/Melbourne",
+    };
+  }
+
+  try {
+    const res = await fetch(url, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${auth.accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!res.ok) {
+      return { status: "error", message: `Google Calendar API error: ${res.statusText}` };
+    }
+
+    const updated = await res.json();
+    return { status: "success", event: updated };
+  } catch (err: any) {
+    return { status: "error", message: err.message || "Failed to update Google Calendar event" };
+  }
+}
+
+/**
+ * Delete a live Google Calendar event.
+ */
+export async function deleteLiveCalendarEvent(eventId: string, calendarId?: string): Promise<{
+  status: "success" | "auth_required" | "error";
+  message?: string;
+}> {
+  const auth = await getGoogleAccessToken();
+  if (!auth.authenticated || !auth.accessToken) {
+    return {
+      status: "auth_required",
+      message: auth.error || "Google Calendar authorization required",
+    };
+  }
+
+  const calId = calendarId || process.env.GOOGLE_CALENDAR_ID || "primary";
+  const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calId)}/events/${encodeURIComponent(eventId)}`;
+
+  try {
+    const res = await fetch(url, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${auth.accessToken}`,
+      },
+    });
+
+    if (!res.ok && res.status !== 204) {
+      return { status: "error", message: `Google Calendar API error: ${res.statusText}` };
+    }
+
+    return { status: "success" };
+  } catch (err: any) {
+    return { status: "error", message: err.message || "Failed to delete Google Calendar event" };
+  }
+}
+
+
+/**
  * Fetch Gmail messages using fresh serverless OAuth token.
  */
 export async function fetchLiveGmailMessages(options?: {
