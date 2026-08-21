@@ -4,10 +4,11 @@ import { getLearningProgress } from "../../../../../../lib/db";
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const encId = params.id.toLowerCase();
+    const { id } = await params;
+    const encId = id.toLowerCase();
     const encyclopedia = ENCYCLOPEDIAS[encId];
 
     if (!encyclopedia) {
