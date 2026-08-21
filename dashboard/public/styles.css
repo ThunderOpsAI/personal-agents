@@ -366,7 +366,7 @@ h3 { font-size: 1.05rem; }
 }
 .protocol-actions {
     display: flex;
-    gap: 8px;
+    gap: 4px; flex-wrap: wrap;
 }
 
 /* Continuous Learning Card Styling */

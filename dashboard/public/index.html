@@ -103,8 +103,10 @@
                             <h3>06:00 AM <span class="badge neon-purple">Executive Briefing</span></h3>
                             <p>Morning Summary & Key Objectives</p>
                         </div>
-                        <div class="protocol-actions">
-                            <button class="btn btn-neon-purple btn-sm" id="btnViewBriefing">View Briefing</button>
+                        <div class="protocol-actions" style="gap: 4px;">
+                            <button class="btn btn-neon-purple btn-sm" id="btnViewBriefing">Show Me</button>
+                            <button class="btn btn-neon-green btn-sm" id="btnDoneBriefing">Done</button>
+                            <button class="btn btn-outline btn-sm" id="btnDismissBriefingCard">Dismiss</button>
                         </div>
                     </div>
 
@@ -115,10 +117,10 @@
                             <p id="learnTitleText">Loading continuous learning topic...</p>
                             <span class="learn-summary-sub" id="learnSummaryText">Fetching topic details...</span>
                         </div>
-                    <div class="protocol-actions learn-actions-grid">
-                        <button class="btn btn-neon-blue btn-sm" id="btnLearnMore">Learn More</button>
-                        <button class="btn btn-outline btn-sm" id="btnLearnDifferent">Rotate Suggestion</button>
-                        <button class="btn btn-outline btn-sm" id="btnChooseLearnTopic">Choose Topic</button>
+                    <div class="protocol-actions learn-actions-grid" style="gap: 4px;">
+                        <button class="btn btn-neon-blue btn-sm" id="btnLearnMore">Learn</button>
+                        <button class="btn btn-outline btn-sm" id="btnLearnDifferent">Rotate</button>
+                        <button class="btn btn-outline btn-sm" id="btnChooseLearnTopic">Choose</button>
                     </div>
                     </div>
                 </div>
@@ -433,6 +435,27 @@
         </div>
 
         <!-- Upload Media Modal -->
+        <!-- Briefing Modal -->
+        <div class="modal-overlay hidden" id="briefingModal">
+            <div class="modal-content glass-panel" style="max-width: 600px;">
+                <div class="modal-header">
+                    <h2>Morning Executive Briefing</h2>
+                    <button class="btn-close" id="btnCloseBriefing">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div id="briefingLoading" class="typing-indicator" style="margin: 20px auto;">
+                        <span></span><span></span><span></span>
+                    </div>
+                    <div id="briefingContent" class="briefing-content hidden">
+                        <!-- Briefing markdown injected here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline btn-sm" id="btnDismissBriefing">Close</button>
+                </div>
+            </div>
+        </div>
+
         <div class="modal-overlay hidden" id="uploadModal">
             <div class="modal-content glass-panel" style="max-width: 500px;">
                 <div class="modal-header">
@@ -621,6 +644,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
-    <script src="app.js?v=19"></script>
+    <script src="app.js?v=22"></script>
 </body>
 </html>

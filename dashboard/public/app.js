@@ -325,7 +325,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const countBadge = document.getElementById('agendaCount');
         if (countBadge) countBadge.textContent = `${dailyItems.length} Items`;
         
-        document.querySelectorAll('.protocol-card:not(#protocol-learn)').forEach(c => c.remove());
+        document.querySelectorAll('.protocol-card:not(#protocol-learn):not(#executive-briefing)').forEach(c => c.remove());
 
         if (dailyItems.length > 0) {
             dailyItems.forEach(item => {
@@ -346,7 +346,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <small class="form-hint">Dismissed</small>
                         </div>
                         <div class="protocol-actions">
-                            <button class="btn btn-outline btn-reinstate" data-id="${item.id}" data-type="${item.item_type || ''}">Reinstate</button>
+                            <button class="btn btn-outline btn-sm btn-reinstate" data-id="${item.id}" data-type="${item.item_type || ''}">Reinstate</button>
                         </div>
                     `;
                 } else {
@@ -357,10 +357,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             ${item.choices ? `<small class="form-hint">Choices: ${item.choices.join(' · ')}</small>` : ''}
                         </div>
                         <div class="protocol-actions">
-                            <button class="btn btn-neon-purple btn-show-me" data-id="${item.id}" data-type="${item.item_type || ''}" ${isCompleted ? 'disabled' : ''}>Show Me</button>
-                            <button class="btn btn-neon-green btn-done" data-id="${item.id}" data-type="${item.item_type || ''}" ${isCompleted ? 'disabled' : ''}>${isCompleted ? 'Done' : 'Done'}</button>
-                            <button class="btn btn-outline btn-postpone" data-id="${item.id}" data-type="${item.item_type || ''}" ${isCompleted ? 'disabled' : ''}>Postpone</button>
-                            <button class="btn btn-outline btn-dismiss" data-id="${item.id}" data-type="${item.item_type || ''}" ${isCompleted ? '' : 'disabled'}>Dismiss</button>
+                            <button class="btn btn-neon-purple btn-sm btn-show-me" data-id="${item.id}" data-type="${item.item_type || ''}" ${isCompleted ? 'disabled' : ''}>View</button>
+                            <button class="btn btn-neon-green btn-sm btn-done" data-id="${item.id}" data-type="${item.item_type || ''}" ${isCompleted ? 'disabled' : ''}>${isCompleted ? 'Done' : 'Done'}</button>
+                            <button class="btn btn-outline btn-sm btn-postpone" data-id="${item.id}" data-type="${item.item_type || ''}" ${isCompleted ? 'disabled' : ''}>Delay</button>
+                            <button class="btn btn-outline btn-sm btn-dismiss" data-id="${item.id}" data-type="${item.item_type || ''}" ${isCompleted ? '' : 'disabled'}>Skip</button>
                         </div>
                     `;
                 }
@@ -482,7 +482,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (window.btnYesterdayAgenda) window.btnYesterdayAgenda.style.display = 'flex';
 
         // Remove non-learning cards
-        document.querySelectorAll('.protocol-card:not(#protocol-learn)').forEach(c => c.remove());
+        document.querySelectorAll('.protocol-card:not(#protocol-learn):not(#executive-briefing)').forEach(c => c.remove());
         
         const yesterdayProtocols = [
             { id: 'yest_retrieval_0600', time: '06:00 AM', title: 'Automated Retrieval: Scrape Gmail & Calendar', item_type: 'retrieval', status: 'completed' },
@@ -503,7 +503,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <p>${item.title}</p>
                 </div>
                 <div class="protocol-actions">
-                    <button class="btn btn-neon-green btn-done" disabled>Done</button>
+                    <button class="btn btn-neon-green btn-sm btn-done" disabled>Done</button>
                 </div>
             `;
             document.getElementById("agendaStream").appendChild(card);
@@ -529,7 +529,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (btnTomorrowIcon) btnTomorrowIcon.innerHTML = "&larr;";
         
         // Remove non-learning cards
-        document.querySelectorAll('.protocol-card:not(#protocol-learn)').forEach(c => c.remove());
+        document.querySelectorAll('.protocol-card:not(#protocol-learn):not(#executive-briefing)').forEach(c => c.remove());
         
         const tomorrowProtocols = [
             { id: 'tom_retrieval_0600', time: '06:00 AM', title: 'Automated Retrieval: Scrape Gmail & Calendar', item_type: 'retrieval', status: 'pending' },
@@ -571,9 +571,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${item.choices ? `<small class="form-hint">Choices: ${item.choices.join(' · ')}</small>` : ''}
                 </div>
                 <div class="protocol-actions">
-                    <button class="btn btn-neon-purple btn-show-me" data-id="${item.id}" data-type="${item.item_type || ''}">Preview</button>
-                    <button class="btn btn-neon-green btn-done" data-id="${item.id}" data-type="${item.item_type || ''}">Pre-Done</button>
-                    <button class="btn btn-outline btn-dismiss" data-id="${item.id}" data-type="${item.item_type || ''}">Dismiss</button>
+                    <button class="btn btn-neon-purple btn-sm btn-show-me" data-id="${item.id}" data-type="${item.item_type || ''}">Preview</button>
+                    <button class="btn btn-neon-green btn-sm btn-done" data-id="${item.id}" data-type="${item.item_type || ''}">Pre-Done</button>
+                    <button class="btn btn-outline btn-sm btn-dismiss" data-id="${item.id}" data-type="${item.item_type || ''}">Skip</button>
                 </div>
             `;
             document.getElementById("agendaStream").appendChild(card);
@@ -1220,14 +1220,61 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Briefing Modal Triggers ---
     const btnViewBriefing = document.getElementById('btnViewBriefing');
-    if (btnViewBriefing) {
-        btnViewBriefing.addEventListener('click', () => {
-            if (rumbleChatModal) rumbleChatModal.classList.remove('hidden');
-            sendRumbleChatMessage('Show me my morning executive briefing');
+    const briefingModal = document.getElementById('briefingModal');
+    const btnCloseBriefing = document.getElementById('btnCloseBriefing');
+    const btnDismissBriefing = document.getElementById('btnDismissBriefing');
+    const briefingLoading = document.getElementById('briefingLoading');
+    const briefingContent = document.getElementById('briefingContent');
+    const btnDoneBriefing = document.getElementById('btnDoneBriefing');
+    const btnDismissBriefingCard = document.getElementById('btnDismissBriefingCard');
+    const executiveBriefingCard = document.getElementById('executive-briefing');
+
+    if (btnViewBriefing && briefingModal) {
+        btnViewBriefing.addEventListener('click', async () => {
+            briefingModal.classList.remove('hidden');
+            briefingLoading.classList.remove('hidden');
+            briefingContent.classList.add('hidden');
+            briefingContent.innerHTML = '';
+            
+            try {
+                const res = await fetch('/api/v1/briefing/executive', { method: 'POST' });
+                const data = await res.json();
+                
+                if (data.html || data.markdown) {
+                    // Very simple markdown formatting just for display if needed
+                    briefingContent.innerHTML = data.html || data.markdown.replace(/\n/g, '<br>');
+                } else {
+                    briefingContent.innerHTML = 'Error loading briefing.';
+                }
+            } catch (err) {
+                console.error(err);
+                briefingContent.innerHTML = 'Failed to load briefing.';
+            } finally {
+                briefingLoading.classList.add('hidden');
+                briefingContent.classList.remove('hidden');
+            }
+        });
+        
+        const closeBriefingModal = () => briefingModal.classList.add('hidden');
+        if (btnCloseBriefing) btnCloseBriefing.addEventListener('click', closeBriefingModal);
+        if (btnDismissBriefing) btnDismissBriefing.addEventListener('click', closeBriefingModal);
+    }
+    
+    if (btnDoneBriefing && executiveBriefingCard) {
+        btnDoneBriefing.addEventListener('click', () => {
+            executiveBriefingCard.classList.add('completed');
+            showToast('Executive Briefing marked as done', 'success');
+        });
+    }
+    
+    if (btnDismissBriefingCard && executiveBriefingCard) {
+        btnDismissBriefingCard.addEventListener('click', () => {
+            executiveBriefingCard.style.display = 'none';
+            showToast('Executive Briefing dismissed', 'info');
         });
     }
 
-    loadRumbleInsights();
+    // loadRumbleInsights();
 
     // --- 2. Persistent Notes Modal ---
     btnOpenNotes.addEventListener('click', () => {
@@ -1498,8 +1545,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         <p>${data.added_event.title}</p>
                     </div>
                     <div class="protocol-actions">
-                        <button class="btn btn-neon-purple btn-show-me" data-id="${data.added_event.id}">Show Me</button>
-                        <button class="btn btn-neon-green btn-done" data-id="${data.added_event.id}">Done</button>
+                        <button class="btn btn-neon-purple btn-sm btn-show-me" data-id="${data.added_event.id}">View</button>
+                        <button class="btn btn-neon-green btn-sm btn-done" data-id="${data.added_event.id}">Done</button>
                     </div>
                 `;
                 agendaStream.prepend(card);
@@ -2022,7 +2069,7 @@ document.addEventListener('DOMContentLoaded', () => {
             data.suggestions.forEach(exercise => {
                 const card = document.createElement('article');
                 card.className = 'exercise-card';
-                card.innerHTML = `<div><h3>${exercise.name}</h3><p>${exercise.instruction}</p><small>${exercise.duration_minutes} min · ${exercise.intensity}</small></div><div class="exercise-actions"><button class="btn btn-neon-green btn-sm exercise-done">Done</button><button class="btn btn-outline btn-sm exercise-show">Show Me</button><button class="btn btn-outline btn-sm exercise-reject">Dismiss</button><div class="reject-reasons hidden"><button class="btn btn-sm btn-outline reject-reason" data-reason="Too tired">Too tired</button><button class="btn btn-sm btn-outline reject-reason" data-reason="Hurts">Hurts</button></div></div>`;
+                card.innerHTML = `<div><h3>${exercise.name}</h3><p>${exercise.instruction}</p><small>${exercise.duration_minutes} min · ${exercise.intensity}</small></div><div class="exercise-actions"><button class="btn btn-neon-green btn-sm exercise-done">Done</button><button class="btn btn-outline btn-sm exercise-show">View</button><button class="btn btn-outline btn-sm exercise-reject">Skip</button><div class="reject-reasons hidden"><button class="btn btn-sm btn-outline reject-reason" data-reason="Too tired">Too tired</button><button class="btn btn-sm btn-outline reject-reason" data-reason="Hurts">Hurts</button></div></div>`;
                 card.querySelector('.exercise-done').addEventListener('click', () => {
                     pendingProtocol = { id: exercise.id, name: exercise.name, beforePain: painLevel };
                     reliefExerciseName.innerText = exercise.name;
