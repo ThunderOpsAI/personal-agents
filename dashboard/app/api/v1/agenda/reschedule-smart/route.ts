@@ -1,6 +1,6 @@
 import { rumbleAuth } from "../../../../../lib/rumble-request-validation";
 import { NextResponse } from "next/server";
-import { rescheduleTasks } from "@/lib/agents/smart-rescheduler";
+import { proposeReschedule } from "@/lib/agents/smart-rescheduler";
 
 export async function POST(req: Request) {
   try {
@@ -13,8 +13,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    const rescheduledTasks = await rescheduleTasks(tasks, schedule);
-    return NextResponse.json({ rescheduledTasks }, { status: 200 });
+    const proposals = await proposeReschedule(tasks, schedule);
+    return NextResponse.json({
+      proposals,
+      requires_confirmation: true,
+      message: "Review the proposed schedule changes and confirm to apply."
+    }, { status: 200 });
   } catch (error) {
     console.error("Error rescheduling tasks:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
