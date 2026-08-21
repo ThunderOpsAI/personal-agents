@@ -409,6 +409,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     right: 'dayGridMonth,timeGridWeek,timeGridDay'
                 },
                 height: 'auto',
+                selectable: true,
+                dateClick: function(info) {
+                    let datePart = info.dateStr;
+                    let timePart = '09:00';
+                    if (info.dateStr.includes('T')) {
+                        const parts = info.dateStr.split('T');
+                        datePart = parts[0];
+                        timePart = parts[1].substring(0, 5); // get HH:MM
+                    }
+                    openCalendarEventEdit({ rawDate: datePart, startTime: timePart });
+                },
                 eventClick: function(info) {
                     if (info.event.extendedProps.originalEvent) {
                         openCalendarEventView(info.event.extendedProps.originalEvent);
@@ -692,6 +703,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (btnCloseCalView) btnCloseCalView.addEventListener('click', () => calendarEventViewModal.classList.add('hidden'));
     if (btnDoneCalView) btnDoneCalView.addEventListener('click', () => calendarEventViewModal.classList.add('hidden'));
+
+    // Postpone Modal Logic
+    if (postponeDateInput) {
+        flatpickr(postponeDateInput, {
+            dateFormat: "Y-m-d",
+            defaultDate: new Date().fp_incr(1)
+        });
+    }
+    
+    if (btnClosePostpone) btnClosePostpone.addEventListener('click', () => postponeModal.classList.add('hidden'));
+    if (btnCancelPostpone) btnCancelPostpone.addEventListener('click', () => postponeModal.classList.add('hidden'));
+    
+    if (btnConfirmPostpone) {
+        btnConfirmPostpone.addEventListener('click', () => {
+            if (itemToPostpone && postponeDateInput.value) {
+                fetch(API_AGENDA, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        id: itemToPostpone,
+                        action: 'reschedule',
+                        new_date: postponeDateInput.value
+                    })
+                }).then(() => {
+                    postponeModal.classList.add('hidden');
+                    loadAgenda();
+                }).catch(err => {
+                    console.error('Failed to reschedule:', err);
+                    showToast('Failed to postpone item');
+                });
+            }
+        });
+    }
     
     if (btnEditCalendarEvent) {
         btnEditCalendarEvent.addEventListener('click', () => {
@@ -724,6 +768,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error(err);
             }
         });
+    }
+
+    const btnAddCalendarEvent = document.getElementById('btnAddCalendarEvent');
+    if (btnAddCalendarEvent) {
+        btnAddCalendarEvent.addEventListener('click', () => openCalendarEventEdit(null));
     }
 
     if (typeof btnAddWeeklyEvent !== "undefined" && btnAddWeeklyEvent) {
@@ -2276,12 +2325,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (data.summary) {
                         for (const [cat, val] of Object.entries(data.summary)) {
                             if (cat !== 'Total') {
-                                summaryHtml += `<span class="badge neon-blue">${cat}: $${val}</span>`;
+                                summaryHtml += `<span class="badge neon-blue">${cat}: $${Number(val).toFixed(2)}</span>`;
                             }
                         }
                     }
                     if (budgetSummaryContainer) budgetSummaryContainer.innerHTML = summaryHtml;
-                    if (budgetTotalSpent && data.summary) budgetTotalSpent.innerText = `Spent: $${data.summary.Total || 0}`;
+                    if (budgetTotalSpent && data.summary) budgetTotalSpent.innerText = `Spent: $${Number(data.summary.Total || 0).toFixed(2)}`;
                 }
             }
         } catch (e) {

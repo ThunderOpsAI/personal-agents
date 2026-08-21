@@ -933,15 +933,16 @@ h3 { font-size: 1.05rem; }
 
     .protocol-actions,
     .learn-actions-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        display: flex;
+        flex-wrap: nowrap;
         gap: 6px;
         width: 100%;
     }
 
     .protocol-actions .btn,
     .learn-actions-grid .btn {
-        width: 100%;
+        flex: 1;
+        min-width: 0;
         min-height: 34px;
         padding: 6px 2px;
         font-size: 0.76rem;
