@@ -1061,55 +1061,169 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
 
-    // Voice Input inside Rumble Chat Modal
-    let chatRecognition = null;
+    // Voice Input inside Rumble Chat Modal (Audio Capture)
+    let mediaRecorder = null;
+    let audioChunks = [];
     let isChatRecording = false;
 
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        chatRecognition = new SpeechRecognition();
-        chatRecognition.continuous = false;
-        chatRecognition.interimResults = true;
-
-        chatRecognition.onresult = (event) => {
-            let transcriptStr = '';
-            for (let i = event.resultIndex; i < event.results.length; ++i) {
-                transcriptStr += event.results[i][0].transcript;
-            }
-            rumbleChatInput.value = transcriptStr;
-        };
-
-        chatRecognition.onend = () => {
-            isChatRecording = false;
-            btnRumbleVoice.innerText = 'Voice';
-            if (rumbleChatInput.value.trim()) {
-                sendRumbleChatMessage();
-            }
-        };
-
-        chatRecognition.onerror = () => {
-            isChatRecording = false;
-            btnRumbleVoice.innerText = 'Voice';
-        };
-    }
-
-    btnRumbleVoice.addEventListener('click', () => {
-        if (!chatRecognition) {
-            alert("Speech recognition is not supported in this browser.");
-            return;
-        }
-
+    btnRumbleVoice.addEventListener('click', async () => {
         if (isChatRecording) {
-            chatRecognition.stop();
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+            }
             isChatRecording = false;
             btnRumbleVoice.innerText = 'Voice';
         } else {
-            rumbleChatInput.value = '';
-            chatRecognition.start();
-            isChatRecording = true;
-            btnRumbleVoice.innerText = 'Listening...';
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = (e) => {
+                    if (e.data.size > 0) {
+                        audioChunks.push(e.data);
+                    }
+                };
+
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    showToast('Audio captured, processing...', 'info');
+                    
+                    const formData = new FormData();
+                    formData.append("audio", audioBlob, "recording.webm");
+                    try {
+                      const res = await fetch("/api/v1/capture/voice", { method: "POST", body: formData });
+                      const data = await res.json();
+                      if (data.success && data.text) {
+                        rumbleChatInput.value = data.text;
+                        sendRumbleChatMessage();
+                      } else {
+                        showToast(data.error || "Voice transcription unavailable", "error");
+                      }
+                    } catch (err) {
+                      showToast("Voice processing failed", "error");
+                    }
+                    
+                    stream.getTracks().forEach(track => track.stop());
+                };
+
+                rumbleChatInput.value = '';
+                mediaRecorder.start();
+                isChatRecording = true;
+                btnRumbleVoice.innerText = 'Recording...';
+            } catch (err) {
+                console.error("Error accessing microphone:", err);
+                showToast("Could not access microphone for recording");
+            }
         }
     });
+
+    // --- Media Upload & OCR Dropzone ---
+    const uploadModal = document.getElementById('uploadModal');
+    const btnCloseUpload = document.getElementById('btnCloseUpload');
+    const btnCancelUpload = document.getElementById('btnCancelUpload');
+    const btnConfirmUpload = document.getElementById('btnConfirmUpload');
+    const mediaDropzone = document.getElementById('mediaDropzone');
+    const mediaFileInput = document.getElementById('mediaFileInput');
+    const uploadPreview = document.getElementById('uploadPreview');
+    const previewImg = document.getElementById('previewImg');
+    const btnRemoveMedia = document.getElementById('btnRemoveMedia');
+    let currentUploadFile = null;
+
+    if (uploadModal) {
+        function resetUpload() {
+            currentUploadFile = null;
+            if (mediaFileInput) mediaFileInput.value = '';
+            if (uploadPreview) uploadPreview.classList.add('hidden');
+            if (mediaDropzone) mediaDropzone.style.display = 'block';
+            if (previewImg) previewImg.src = '';
+        }
+
+        if (btnCloseUpload) btnCloseUpload.addEventListener('click', () => { uploadModal.classList.add('hidden'); resetUpload(); });
+        if (btnCancelUpload) btnCancelUpload.addEventListener('click', () => { uploadModal.classList.add('hidden'); resetUpload(); });
+
+        if (mediaDropzone) {
+            mediaDropzone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                mediaDropzone.classList.add('drag-over');
+            });
+            mediaDropzone.addEventListener('dragleave', () => {
+                mediaDropzone.classList.remove('drag-over');
+            });
+            mediaDropzone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                mediaDropzone.classList.remove('drag-over');
+                if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                    handleFileSelect(e.dataTransfer.files[0]);
+                }
+            });
+            mediaDropzone.addEventListener('click', () => {
+                if (mediaFileInput) mediaFileInput.click();
+            });
+        }
+
+        if (mediaFileInput) {
+            mediaFileInput.addEventListener('change', (e) => {
+                if (e.target.files && e.target.files.length > 0) {
+                    handleFileSelect(e.target.files[0]);
+                }
+            });
+        }
+
+        function handleFileSelect(file) {
+            if (!file.type.startsWith('image/')) {
+                showToast('Please select an image file');
+                return;
+            }
+            currentUploadFile = file;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                if (previewImg) previewImg.src = e.target.result;
+                if (mediaDropzone) mediaDropzone.style.display = 'none';
+                if (uploadPreview) uploadPreview.classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        if (btnRemoveMedia) {
+            btnRemoveMedia.addEventListener('click', resetUpload);
+        }
+
+        if (btnConfirmUpload) {
+            btnConfirmUpload.addEventListener('click', async () => {
+                if (!currentUploadFile) {
+                    showToast('No file selected');
+                    return;
+                }
+                
+                showToast('Processing OCR upload...', 'info');
+                const formData = new FormData();
+                formData.append("image", currentUploadFile);
+                try {
+                  const res = await fetch("/api/v1/capture/ocr", { method: "POST", body: formData });
+                  const data = await res.json();
+                  if (data.success) {
+                    showToast('Document processed', 'success');
+                  } else {
+                    showToast(data.error || "OCR processing unavailable");
+                  }
+                } catch (err) {
+                  showToast("Upload failed");
+                }
+                uploadModal.classList.add('hidden');
+                resetUpload();
+            });
+        }
+    }
+
+    // --- Briefing Modal Triggers ---
+    const btnViewBriefing = document.getElementById('btnViewBriefing');
+    if (btnViewBriefing) {
+        btnViewBriefing.addEventListener('click', () => {
+            if (rumbleChatModal) rumbleChatModal.classList.remove('hidden');
+            sendRumbleChatMessage('Show me my morning executive briefing');
+        });
+    }
 
     loadRumbleInsights();
 
