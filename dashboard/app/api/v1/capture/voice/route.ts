@@ -6,9 +6,20 @@ export async function POST(request: Request) {
     const authError = rumbleAuth(request);
     if (authError) return authError;
     const data = await request.formData();
-    const audioFile = data.get('audio');
+    const file = data.get('audio') as File;
+    const audioFile = file;
 
-    if (!audioFile) {
+    if (!file) {
+      return NextResponse.json({ success: false, error: 'Missing file' }, { status: 400 });
+    }
+    const MAX_FILE_SIZE = 25 * 1024 * 1024;
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json({ error: "File too large. Maximum 25MB." }, { status: 413 });
+    }
+    const ALLOWED_AUDIO_TYPES = ["audio/webm", "audio/ogg", "audio/wav", "audio/mp4"];
+    if (!ALLOWED_AUDIO_TYPES.includes(file.type)) {
+      return NextResponse.json({ error: "Invalid file type" }, { status: 415 });
+    }
       return NextResponse.json({ success: false, error: 'Missing audio file' }, { status: 400 });
     }
 
