@@ -1,6 +1,6 @@
 import { rumbleAuth } from "../../../../../lib/rumble-request-validation";
 import { NextResponse } from "next/server";
-import { proposeReschedule } from "@/lib/agents/smart-rescheduler";
+import { proposeReschedule } from "../../../../../lib/agents/smart-rescheduler";
 
 export async function POST(req: Request) {
   try {

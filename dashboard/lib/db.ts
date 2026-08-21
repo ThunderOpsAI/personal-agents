@@ -17,7 +17,16 @@ import {
   ExercisePreferenceRecord,
   BudgetItem,
   CreateBudgetItemInput,
-  CREATE_BUDGET_ITEMS_TABLE_SQL
+  CREATE_BUDGET_ITEMS_TABLE_SQL,
+  BillSubscription,
+  CreateBillSubscriptionInput,
+  CREATE_BILLS_SUBSCRIPTIONS_TABLE_SQL,
+  MaintenanceRecord,
+  CreateMaintenanceRecordInput,
+  CREATE_MAINTENANCE_RECORDS_TABLE_SQL,
+  MedicalReceipt,
+  CreateMedicalReceiptInput,
+  CREATE_MEDICAL_RECEIPTS_TABLE_SQL
 } from './schema';
 
 let pgPool: Pool | null = null;
@@ -96,6 +105,9 @@ export async function ensureTableExists(): Promise<void> {
       await pgPool.query(CREATE_PAIN_LOGS_TABLE_SQL);
       await pgPool.query(CREATE_EXERCISE_PREFERENCES_TABLE_SQL);
       await pgPool.query(CREATE_BUDGET_ITEMS_TABLE_SQL);
+      await pgPool.query(CREATE_BILLS_SUBSCRIPTIONS_TABLE_SQL);
+      await pgPool.query(CREATE_MAINTENANCE_RECORDS_TABLE_SQL);
+      await pgPool.query(CREATE_MEDICAL_RECEIPTS_TABLE_SQL);
     }
   } else {
     if (!sqliteDb) {
@@ -107,6 +119,9 @@ export async function ensureTableExists(): Promise<void> {
       sqliteDb.exec(CREATE_PAIN_LOGS_TABLE_SQL);
       sqliteDb.exec(CREATE_EXERCISE_PREFERENCES_TABLE_SQL);
       sqliteDb.exec(CREATE_BUDGET_ITEMS_TABLE_SQL);
+      sqliteDb.exec(CREATE_BILLS_SUBSCRIPTIONS_TABLE_SQL);
+      sqliteDb.exec(CREATE_MAINTENANCE_RECORDS_TABLE_SQL);
+      sqliteDb.exec(CREATE_MEDICAL_RECEIPTS_TABLE_SQL);
     }
   }
 }
@@ -739,4 +754,174 @@ export async function rescheduleAgendaItem(id: string, newDate: string): Promise
   }
 
   return { ...existing, scheduled_time: newDate, updated_at: now, audit_trail: updatedAuditTrail };
+}
+
+// --- Bills Subscriptions ---
+
+export async function createBillSubscription(input: CreateBillSubscriptionInput): Promise<BillSubscription> {
+  await ensureTableExists();
+  const status = getDbStatus();
+  const id = input.id || `bill_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  const created_at = new Date().toISOString();
+  const billStatus = input.status || 'active';
+  
+  if (status.provider === 'neon' && pgPool) {
+    await pgPool.query(
+      `INSERT INTO bills_subscriptions (id, title, amount, frequency, next_due_date, status, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [id, input.title, input.amount, input.frequency, input.next_due_date, billStatus, created_at]
+    );
+  } else if (sqliteDb) {
+    const stmt = sqliteDb.prepare(
+      `INSERT INTO bills_subscriptions (id, title, amount, frequency, next_due_date, status, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`
+    );
+    stmt.run(id, input.title, input.amount, input.frequency, input.next_due_date, billStatus, created_at);
+  } else {
+    throw new Error('Database not initialized');
+  }
+
+  return {
+    id,
+    title: input.title,
+    amount: input.amount,
+    frequency: input.frequency,
+    next_due_date: input.next_due_date,
+    status: billStatus,
+    created_at,
+  };
+}
+
+export async function getBillSubscriptions(): Promise<BillSubscription[]> {
+  await ensureTableExists();
+  const status = getDbStatus();
+
+  if (status.provider === 'neon' && pgPool) {
+    const res = await pgPool.query(
+      'SELECT id, title, amount, frequency, next_due_date, status, created_at FROM bills_subscriptions ORDER BY next_due_date ASC'
+    );
+    return res.rows.map((r) => ({
+      id: r.id, title: r.title, amount: Number(r.amount), frequency: r.frequency, next_due_date: r.next_due_date, status: r.status, created_at: r.created_at
+    }));
+  } else if (sqliteDb) {
+    const rows = sqliteDb.prepare(
+      'SELECT id, title, amount, frequency, next_due_date, status, created_at FROM bills_subscriptions ORDER BY next_due_date ASC'
+    ).all() as any[];
+    return rows.map((r) => ({
+      id: r.id, title: r.title, amount: Number(r.amount), frequency: r.frequency, next_due_date: r.next_due_date, status: r.status, created_at: r.created_at
+    }));
+  }
+  return [];
+}
+
+// --- Maintenance Records ---
+
+export async function createMaintenanceRecord(input: CreateMaintenanceRecordInput): Promise<MaintenanceRecord> {
+  await ensureTableExists();
+  const status = getDbStatus();
+  const id = input.id || `maint_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  const created_at = new Date().toISOString();
+  
+  if (status.provider === 'neon' && pgPool) {
+    await pgPool.query(
+      `INSERT INTO maintenance_records (id, title, description, maintenance_date, cost, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [id, input.title, input.description || null, input.maintenance_date, input.cost, created_at]
+    );
+  } else if (sqliteDb) {
+    const stmt = sqliteDb.prepare(
+      `INSERT INTO maintenance_records (id, title, description, maintenance_date, cost, created_at)
+       VALUES (?, ?, ?, ?, ?, ?)`
+    );
+    stmt.run(id, input.title, input.description || null, input.maintenance_date, input.cost, created_at);
+  } else {
+    throw new Error('Database not initialized');
+  }
+
+  return {
+    id,
+    title: input.title,
+    description: input.description || '',
+    maintenance_date: input.maintenance_date,
+    cost: input.cost,
+    created_at,
+  };
+}
+
+export async function getMaintenanceRecords(): Promise<MaintenanceRecord[]> {
+  await ensureTableExists();
+  const status = getDbStatus();
+
+  if (status.provider === 'neon' && pgPool) {
+    const res = await pgPool.query(
+      'SELECT id, title, description, maintenance_date, cost, created_at FROM maintenance_records ORDER BY maintenance_date DESC'
+    );
+    return res.rows.map((r) => ({
+      id: r.id, title: r.title, description: r.description || '', maintenance_date: r.maintenance_date, cost: Number(r.cost), created_at: r.created_at
+    }));
+  } else if (sqliteDb) {
+    const rows = sqliteDb.prepare(
+      'SELECT id, title, description, maintenance_date, cost, created_at FROM maintenance_records ORDER BY maintenance_date DESC'
+    ).all() as any[];
+    return rows.map((r) => ({
+      id: r.id, title: r.title, description: r.description || '', maintenance_date: r.maintenance_date, cost: Number(r.cost), created_at: r.created_at
+    }));
+  }
+  return [];
+}
+
+// --- Medical Receipts ---
+
+export async function createMedicalReceipt(input: CreateMedicalReceiptInput): Promise<MedicalReceipt> {
+  await ensureTableExists();
+  const status = getDbStatus();
+  const id = input.id || `med_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  const created_at = new Date().toISOString();
+  
+  if (status.provider === 'neon' && pgPool) {
+    await pgPool.query(
+      `INSERT INTO medical_receipts (id, provider, service, amount, receipt_date, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [id, input.provider, input.service, input.amount, input.receipt_date, created_at]
+    );
+  } else if (sqliteDb) {
+    const stmt = sqliteDb.prepare(
+      `INSERT INTO medical_receipts (id, provider, service, amount, receipt_date, created_at)
+       VALUES (?, ?, ?, ?, ?, ?)`
+    );
+    stmt.run(id, input.provider, input.service, input.amount, input.receipt_date, created_at);
+  } else {
+    throw new Error('Database not initialized');
+  }
+
+  return {
+    id,
+    provider: input.provider,
+    service: input.service,
+    amount: input.amount,
+    receipt_date: input.receipt_date,
+    created_at,
+  };
+}
+
+export async function getMedicalReceipts(): Promise<MedicalReceipt[]> {
+  await ensureTableExists();
+  const status = getDbStatus();
+
+  if (status.provider === 'neon' && pgPool) {
+    const res = await pgPool.query(
+      'SELECT id, provider, service, amount, receipt_date, created_at FROM medical_receipts ORDER BY receipt_date DESC'
+    );
+    return res.rows.map((r) => ({
+      id: r.id, provider: r.provider, service: r.service, amount: Number(r.amount), receipt_date: r.receipt_date, created_at: r.created_at
+    }));
+  } else if (sqliteDb) {
+    const rows = sqliteDb.prepare(
+      'SELECT id, provider, service, amount, receipt_date, created_at FROM medical_receipts ORDER BY receipt_date DESC'
+    ).all() as any[];
+    return rows.map((r) => ({
+      id: r.id, provider: r.provider, service: r.service, amount: Number(r.amount), receipt_date: r.receipt_date, created_at: r.created_at
+    }));
+  }
+  return [];
 }

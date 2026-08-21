@@ -1,6 +1,17 @@
 import type { ConfirmedPainLog, ExerciseSuggestionInput, PainLocation } from "./rumble-integrations";
+import { NextResponse } from 'next/server';
 
 const MAX_MESSAGE_LENGTH = 8_000;
+
+export function rumbleAuth(request: Request): NextResponse | null {
+  // Stub for Rumble OS API authentication
+  const authHeader = request.headers.get("authorization");
+  // Implement actual token verification as needed
+  if (authHeader === "Bearer invalid-token") {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  return null;
+}
 
 export type ChatRequest = { message: string; history?: { role: string; content: string }[]; confirmedPainLog?: ConfirmedPainLog };
 

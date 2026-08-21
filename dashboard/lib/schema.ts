@@ -170,4 +170,89 @@ CREATE TABLE IF NOT EXISTS exercise_preferences (
 );
 `;
 
+export interface BillSubscription {
+  id: string;
+  title: string;
+  amount: number;
+  frequency: string;
+  next_due_date: string;
+  status: string;
+  created_at: string;
+}
 
+export interface CreateBillSubscriptionInput {
+  id?: string;
+  title: string;
+  amount: number;
+  frequency: string;
+  next_due_date: string;
+  status?: string;
+}
+
+export const CREATE_BILLS_SUBSCRIPTIONS_TABLE_SQL = `
+CREATE TABLE IF NOT EXISTS bills_subscriptions (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    amount REAL NOT NULL,
+    frequency TEXT NOT NULL,
+    next_due_date TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'active',
+    created_at TEXT NOT NULL
+);
+`;
+
+export interface MaintenanceRecord {
+  id: string;
+  title: string;
+  description: string;
+  maintenance_date: string;
+  cost: number;
+  created_at: string;
+}
+
+export interface CreateMaintenanceRecordInput {
+  id?: string;
+  title: string;
+  description?: string;
+  maintenance_date: string;
+  cost: number;
+}
+
+export const CREATE_MAINTENANCE_RECORDS_TABLE_SQL = `
+CREATE TABLE IF NOT EXISTS maintenance_records (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    description TEXT,
+    maintenance_date TEXT NOT NULL,
+    cost REAL NOT NULL,
+    created_at TEXT NOT NULL
+);
+`;
+
+export interface MedicalReceipt {
+  id: string;
+  provider: string;
+  service: string;
+  amount: number;
+  receipt_date: string;
+  created_at: string;
+}
+
+export interface CreateMedicalReceiptInput {
+  id?: string;
+  provider: string;
+  service: string;
+  amount: number;
+  receipt_date: string;
+}
+
+export const CREATE_MEDICAL_RECEIPTS_TABLE_SQL = `
+CREATE TABLE IF NOT EXISTS medical_receipts (
+    id TEXT PRIMARY KEY,
+    provider TEXT NOT NULL,
+    service TEXT NOT NULL,
+    amount REAL NOT NULL,
+    receipt_date TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+`;

@@ -20,8 +20,6 @@ export async function POST(request: Request) {
     if (!ALLOWED_AUDIO_TYPES.includes(file.type)) {
       return NextResponse.json({ error: "Invalid file type" }, { status: 415 });
     }
-      return NextResponse.json({ success: false, error: 'Missing audio file' }, { status: 400 });
-    }
 
     // In a real implementation, this would send the audio to a Speech-to-Text API.
     console.log(`[Voice Route] Received audio file:`, audioFile);
