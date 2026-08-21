@@ -97,6 +97,17 @@
                 </div>
                 
                 <div class="agenda-stream" id="agendaStream">
+                    <!-- Executive Briefing Card -->
+                    <div class="protocol-card glass-panel briefing-card" id="executive-briefing">
+                        <div class="protocol-info">
+                            <h3>06:00 AM <span class="badge neon-purple">Executive Briefing</span></h3>
+                            <p>Morning Summary & Key Objectives</p>
+                        </div>
+                        <div class="protocol-actions">
+                            <button class="btn btn-neon-purple btn-sm" id="btnViewBriefing">View Briefing</button>
+                        </div>
+                    </div>
+
                     <!-- Daily Learning Card -->
                     <div class="protocol-card glass-panel learn-card" id="protocol-learn">
                         <div class="protocol-info">
@@ -417,6 +428,39 @@
                     <input type="text" id="rumbleChatInput" class="glass-input" placeholder="Type to Rumble or use voice...">
                     <button class="btn btn-voice btn-sm" id="btnRumbleVoice" title="Voice Input">Voice</button>
                     <button class="btn btn-neon-blue btn-sm" id="btnSendRumbleChat">Send</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upload Media Modal -->
+        <div class="modal-overlay hidden" id="uploadModal">
+            <div class="modal-content glass-panel" style="max-width: 500px;">
+                <div class="modal-header">
+                    <h2>Upload Media</h2>
+                    <button class="btn-close" id="btnCloseUpload">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="dropzone" id="mediaDropzone">
+                        <div class="dropzone-content">
+                            <span class="dropzone-icon">
+                              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                                <circle cx="12" cy="13" r="4"/>
+                              </svg>
+                            </span>
+                            <p>Drag & drop screenshot or photo here</p>
+                            <span class="dropzone-sub">or click to browse</span>
+                        </div>
+                        <input type="file" id="mediaFileInput" class="hidden-file-input" accept="image/*" style="display: none;">
+                    </div>
+                    <div class="upload-preview hidden" id="uploadPreview">
+                        <img src="" id="previewImg" alt="Preview">
+                        <button class="btn-remove-media" id="btnRemoveMedia">&times;</button>
+                    </div>
+                </div>
+                <div class="modal-footer" style="margin-top: 15px;">
+                    <button class="btn btn-outline" id="btnCancelUpload">Cancel</button>
+                    <button class="btn btn-neon-blue" id="btnConfirmUpload">Upload</button>
                 </div>
             </div>
         </div>
