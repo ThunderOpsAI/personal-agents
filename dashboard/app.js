@@ -1935,9 +1935,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- 9. Budget Loader ---
+    const budgetWidget = document.getElementById('budgetWidget');
     const budgetSummaryContainer = document.getElementById('budgetSummary');
     const budgetTotalSpent = document.getElementById('budgetTotalSpent');
     const btnLogBudget = document.getElementById('btnLogBudget');
+    const budgetForm = document.getElementById('budgetForm');
+
+    if (budgetWidget && budgetForm) {
+        budgetWidget.style.cursor = 'pointer';
+        budgetWidget.addEventListener('click', (e) => {
+            // Do not toggle if clicking inside the form or on the total spent badge (which opens modal)
+            if (e.target.closest('.budget-form') || e.target.id === 'budgetTotalSpent') return;
+            budgetForm.classList.toggle('hidden');
+        });
+    }
 
     async function loadBudget() {
         try {
@@ -1987,77 +1998,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.getElementById('budgetAmount').value = '';
                     document.getElementById('budgetNotes').value = '';
                     loadBudget();
-    // --- 11. Settings Logic ---
-    const btnSettings = document.getElementById('btnSettings');
-
-    const tabProfile = document.getElementById('tabProfile');
-    const tabPreferences = document.getElementById('tabPreferences');
-    const tabIntegrations = document.getElementById('tabIntegrations');
-    
-    const settingsProfile = document.getElementById('settingsProfile');
-    const settingsPreferences = document.getElementById('settingsPreferences');
-    const settingsIntegrations = document.getElementById('settingsIntegrations');
-
-    function switchSettingsTab(activeTab, activeContent) {
-        [tabProfile, tabPreferences, tabIntegrations].forEach(t => {
-            if(t) {
-                t.classList.remove('active', 'btn-neon-blue');
-                t.classList.add('btn-outline');
-            }
-        });
-        [settingsProfile, settingsPreferences, settingsIntegrations].forEach(c => {
-            if(c) c.classList.add('hidden');
-        });
-
-        if(activeTab) {
-            activeTab.classList.remove('btn-outline');
-            activeTab.classList.add('active', 'btn-neon-blue');
-        }
-        if(activeContent) {
-            activeContent.classList.remove('hidden');
-        }
-    }
-
-    if (tabProfile) tabProfile.addEventListener('click', () => switchSettingsTab(tabProfile, settingsProfile));
-    if (tabPreferences) tabPreferences.addEventListener('click', () => switchSettingsTab(tabPreferences, settingsPreferences));
-    if (tabIntegrations) tabIntegrations.addEventListener('click', () => switchSettingsTab(tabIntegrations, settingsIntegrations));
-
-    const settingsModal = document.getElementById('settingsModal');
-    const btnCloseSettings = document.getElementById('btnCloseSettings');
-    const themeSelector = document.getElementById('themeSelector');
-
-    if (btnSettings && settingsModal) {
-        btnSettings.addEventListener('click', () => {
-            settingsModal.classList.remove('hidden');
-        });
-    }
-
-    if (btnCloseSettings && settingsModal) {
-        btnCloseSettings.addEventListener('click', () => {
-            settingsModal.classList.add('hidden');
-        });
-    }
-
-    if (themeSelector) {
-        // Load saved theme
-        const savedTheme = localStorage.getItem('rumble_theme') || 'theme-default';
-        themeSelector.value = savedTheme;
-        applyTheme(savedTheme);
-
-        themeSelector.addEventListener('change', (e) => {
-            const newTheme = e.target.value;
-            applyTheme(newTheme);
-            localStorage.setItem('rumble_theme', newTheme);
-        });
-    }
-
-    function applyTheme(themeName) {
-        // Remove existing theme classes
-        document.body.classList.remove('theme-default', 'theme-midnight', 'theme-cyberpunk', 'theme-forest');
-        if (themeName !== 'theme-default') {
-            document.body.classList.add(themeName);
-        }
-    }
                 } else {
                     showToast('Failed to add expense');
                 }

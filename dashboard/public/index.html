@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Rumble OS - Command Center</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/styles.css?v=14">
+    <link rel="stylesheet" href="/styles.css?v=15">
 </head>
 
 <body>
@@ -44,6 +44,29 @@
         <!-- Main Content Grid -->
         <main class="main-content">
             
+            <!-- Budget Widget -->
+            <section class="widget glass-panel sticky-budget" id="budgetWidget">
+                <div class="widget-header">
+                    <h2>Budget Overview</h2>
+                    <span class="badge neon-green" id="budgetTotalSpent">Spent: $0</span>
+                </div>
+                <div class="budget-body" id="budgetSummary" style="margin-bottom: 14px; display: flex; flex-wrap: wrap; gap: 8px;">
+                    <!-- Dynamic Summary -->
+                </div>
+                <div class="budget-form hidden" id="budgetForm" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <input type="text" id="budgetDesc" class="glass-input" placeholder="Description" style="flex: 1; min-width: 150px; padding: 8px;">
+                    <input type="number" id="budgetAmount" class="glass-input" placeholder="Amount" style="width: 100px; padding: 8px;">
+                    <select id="budgetCategory" class="glass-select" style="padding: 8px;">
+                        <option value="Groceries">Groceries</option>
+                        <option value="Medical">Medical</option>
+                        <option value="Transport">Transport</option>
+                        <option value="Entertainment">Entertainment</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <input type="text" id="budgetNotes" class="glass-input" placeholder="Notes" style="flex: 1; min-width: 150px; padding: 8px;">
+                    <button class="btn btn-neon-green" id="btnLogBudget">Add Expense</button>
+                </div>
+            </section>
 
             <!-- Daily Agenda Stream -->
             <section class="agenda-section">
@@ -115,30 +138,6 @@
                     <div id="fullCalendar" style="min-height: 500px; margin-top: 15px;"></div>
                 </section>
             </div>
-
-            <!-- Budget Widget -->
-            <section class="widget glass-panel" id="budgetWidget">
-                <div class="widget-header">
-                    <h2>Budget Overview</h2>
-                    <span class="badge neon-green" id="budgetTotalSpent">Spent: $0</span>
-                </div>
-                <div class="budget-body" id="budgetSummary" style="margin-bottom: 14px; display: flex; flex-wrap: wrap; gap: 8px;">
-                    <!-- Dynamic Summary -->
-                </div>
-                <div class="budget-form" style="display: flex; gap: 8px; flex-wrap: wrap;">
-                    <input type="text" id="budgetDesc" class="glass-input" placeholder="Description" style="flex: 1; min-width: 150px; padding: 8px;">
-                    <input type="number" id="budgetAmount" class="glass-input" placeholder="Amount" style="width: 100px; padding: 8px;">
-                    <select id="budgetCategory" class="glass-select" style="padding: 8px;">
-                        <option value="Groceries">Groceries</option>
-                        <option value="Medical">Medical</option>
-                        <option value="Transport">Transport</option>
-                        <option value="Entertainment">Entertainment</option>
-                        <option value="Other">Other</option>
-                    </select>
-                    <input type="text" id="budgetNotes" class="glass-input" placeholder="Notes" style="flex: 1; min-width: 150px; padding: 8px;">
-                    <button class="btn btn-neon-green" id="btnLogBudget">Add Expense</button>
-                </div>
-            </section>
 
         </main>
 
@@ -578,6 +577,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
-    <script src="app.js?v=18"></script>
+    <script src="app.js?v=19"></script>
 </body>
 </html>

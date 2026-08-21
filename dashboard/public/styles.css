@@ -217,6 +217,14 @@ h3 { font-size: 1.05rem; }
 .widget {
     margin-bottom: 14px;
 }
+.sticky-budget {
+    position: sticky;
+    top: 70px;
+    z-index: 90;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background: rgba(15, 17, 26, 0.9);
+}
 .widget-header {
     display: flex;
     justify-content: space-between;
