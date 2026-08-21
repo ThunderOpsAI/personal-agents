@@ -1,4 +1,14 @@
 {
+  "crons": [
+    {
+      "path": "/api/v1/retrieval/scan?cron=true",
+      "schedule": "0 20 * * *"
+    },
+    {
+      "path": "/api/v1/retrieval/scan?cron=true",
+      "schedule": "0 4 * * *"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)\\.(js|css|png|jpg|jpeg|gif|ico|svg)",

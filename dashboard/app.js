@@ -1,25 +1,40 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- Notification Scheduler ---
-    function schedulePainLogNotifications() {
-        if ('Notification' in window && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+    let notificationPermissionRequested = false;
+
+    function requestNotificationPermission() {
+        if (notificationPermissionRequested) return;
+        if ('Notification' in window && Notification.permission === 'default') {
+            notificationPermissionRequested = true;
             Notification.requestPermission();
         }
-        
+    }
+
+    // Request permission on first user interaction (required by modern browsers)
+    document.addEventListener('click', requestNotificationPermission, { once: true });
+
+    function schedulePainLogNotifications() {
+        let lastFiredHour = -1;
+
         function checkNotification() {
             const now = new Date();
             const hours = now.getHours();
             const minutes = now.getMinutes();
-            const seconds = now.getSeconds();
-            
+
             // 6am, 9am, 12pm, 3pm, 6pm, 9pm, 12am (0)
             const validHours = [0, 6, 9, 12, 15, 18, 21];
-            if (validHours.includes(hours) && minutes === 0 && seconds === 0) {
+            if (validHours.includes(hours) && minutes === 0 && lastFiredHour !== hours) {
+                lastFiredHour = hours;
                 triggerPainLogPrompt();
             }
+            // Reset once we leave the trigger minute
+            if (minutes !== 0) {
+                lastFiredHour = -1;
+            }
         }
-        
-        setInterval(checkNotification, 1000);
+
+        setInterval(checkNotification, 10000);
     }
 
     function triggerPainLogPrompt() {
@@ -46,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
-    
+
     schedulePainLogNotifications();
 
     
@@ -244,6 +259,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     loadWeather();
     loadAgenda();
+    // --- Agenda Auto-Refresh (picks up injected alerts) ---
+    setInterval(loadAgenda, 60000);
 
     // --- Agenda Loader ---
     async function loadAgenda() {

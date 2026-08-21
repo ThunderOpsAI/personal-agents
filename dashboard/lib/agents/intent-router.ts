@@ -290,7 +290,7 @@ async function callGemini(systemPrompt: string, userMessage: string, responseSch
     return `Rumble: I received your message: "${userMessage}". Let me know if you would like to log pain, create a note, or check your agenda.`;
   }
 
-  const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+  const model = process.env.GEMINI_MODEL || "gemini-3.7-flash";
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
   const res = await fetch(url, {
