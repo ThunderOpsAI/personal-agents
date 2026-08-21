@@ -1073,6 +1073,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             isChatRecording = false;
             btnRumbleVoice.innerText = 'Voice';
+            btnRumbleVoice.classList.remove('recording');
         } else {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -1111,6 +1112,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 mediaRecorder.start();
                 isChatRecording = true;
                 btnRumbleVoice.innerText = 'Recording...';
+                btnRumbleVoice.classList.add('recording');
             } catch (err) {
                 console.error("Error accessing microphone:", err);
                 showToast("Could not access microphone for recording");
