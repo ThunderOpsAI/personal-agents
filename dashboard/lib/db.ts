@@ -26,7 +26,9 @@ import {
   CREATE_MAINTENANCE_RECORDS_TABLE_SQL,
   MedicalReceipt,
   CreateMedicalReceiptInput,
-  CREATE_MEDICAL_RECEIPTS_TABLE_SQL
+  CREATE_MEDICAL_RECEIPTS_TABLE_SQL,
+  EncyclopediaProgress,
+  CREATE_LEARNING_PROGRESS_TABLE_SQL
 } from './schema';
 
 let pgPool: Pool | null = null;
@@ -108,6 +110,7 @@ export async function ensureTableExists(): Promise<void> {
       await pgPool.query(CREATE_BILLS_SUBSCRIPTIONS_TABLE_SQL);
       await pgPool.query(CREATE_MAINTENANCE_RECORDS_TABLE_SQL);
       await pgPool.query(CREATE_MEDICAL_RECEIPTS_TABLE_SQL);
+      await pgPool.query(CREATE_LEARNING_PROGRESS_TABLE_SQL);
     }
   } else {
     if (!sqliteDb) {
@@ -122,6 +125,7 @@ export async function ensureTableExists(): Promise<void> {
       sqliteDb.exec(CREATE_BILLS_SUBSCRIPTIONS_TABLE_SQL);
       sqliteDb.exec(CREATE_MAINTENANCE_RECORDS_TABLE_SQL);
       sqliteDb.exec(CREATE_MEDICAL_RECEIPTS_TABLE_SQL);
+      sqliteDb.exec(CREATE_LEARNING_PROGRESS_TABLE_SQL);
     }
   }
 }
@@ -925,3 +929,118 @@ export async function getMedicalReceipts(): Promise<MedicalReceipt[]> {
   }
   return [];
 }
+
+export async function getLearningProgress(encyclopediaId: string): Promise<EncyclopediaProgress | null> {
+  await ensureTableExists();
+  const status = getDbStatus();
+
+  if (status.provider === 'neon' && pgPool) {
+    const res = await pgPool.query(
+      'SELECT encyclopedia_id, current_chapter_index, completed_chapters, last_read_at, created_at, updated_at FROM learning_progress WHERE encyclopedia_id = $1',
+      [encyclopediaId]
+    );
+    if (res.rows.length === 0) return null;
+    const r = res.rows[0];
+    return {
+      encyclopedia_id: r.encyclopedia_id,
+      current_chapter_index: Number(r.current_chapter_index) || 0,
+      completed_chapters: typeof r.completed_chapters === 'string' ? JSON.parse(r.completed_chapters) : (r.completed_chapters || []),
+      last_read_at: r.last_read_at,
+      created_at: r.created_at,
+      updated_at: r.updated_at
+    };
+  } else if (sqliteDb) {
+    const row = sqliteDb.prepare(
+      'SELECT encyclopedia_id, current_chapter_index, completed_chapters, last_read_at, created_at, updated_at FROM learning_progress WHERE encyclopedia_id = ?'
+    ).get(encyclopediaId) as any;
+    if (!row) return null;
+    return {
+      encyclopedia_id: row.encyclopedia_id,
+      current_chapter_index: Number(row.current_chapter_index) || 0,
+      completed_chapters: typeof row.completed_chapters === 'string' ? JSON.parse(row.completed_chapters) : (row.completed_chapters || []),
+      last_read_at: row.last_read_at,
+      created_at: row.created_at,
+      updated_at: row.updated_at
+    };
+  }
+  return null;
+}
+
+export async function getAllLearningProgress(): Promise<Record<string, EncyclopediaProgress>> {
+  await ensureTableExists();
+  const status = getDbStatus();
+  const result: Record<string, EncyclopediaProgress> = {};
+
+  if (status.provider === 'neon' && pgPool) {
+    const res = await pgPool.query('SELECT encyclopedia_id, current_chapter_index, completed_chapters, last_read_at, created_at, updated_at FROM learning_progress');
+    for (const r of res.rows) {
+      result[r.encyclopedia_id] = {
+        encyclopedia_id: r.encyclopedia_id,
+        current_chapter_index: Number(r.current_chapter_index) || 0,
+        completed_chapters: typeof r.completed_chapters === 'string' ? JSON.parse(r.completed_chapters) : (r.completed_chapters || []),
+        last_read_at: r.last_read_at,
+        created_at: r.created_at,
+        updated_at: r.updated_at
+      };
+    }
+  } else if (sqliteDb) {
+    const rows = sqliteDb.prepare('SELECT encyclopedia_id, current_chapter_index, completed_chapters, last_read_at, created_at, updated_at FROM learning_progress').all() as any[];
+    for (const row of rows) {
+      result[row.encyclopedia_id] = {
+        encyclopedia_id: row.encyclopedia_id,
+        current_chapter_index: Number(row.current_chapter_index) || 0,
+        completed_chapters: typeof row.completed_chapters === 'string' ? JSON.parse(row.completed_chapters) : (row.completed_chapters || []),
+        last_read_at: row.last_read_at,
+        created_at: row.created_at,
+        updated_at: row.updated_at
+      };
+    }
+  }
+  return result;
+}
+
+export async function saveLearningProgress(
+  encyclopediaId: string,
+  chapterIndex: number,
+  completedChapterId?: string
+): Promise<EncyclopediaProgress> {
+  await ensureTableExists();
+  const status = getDbStatus();
+  const existing = await getLearningProgress(encyclopediaId);
+  const now = new Date().toISOString();
+
+  let completedList: string[] = existing?.completed_chapters || [];
+  if (completedChapterId && !completedList.includes(completedChapterId)) {
+    completedList = [...completedList, completedChapterId];
+  }
+
+  const record: EncyclopediaProgress = {
+    encyclopedia_id: encyclopediaId,
+    current_chapter_index: chapterIndex,
+    completed_chapters: completedList,
+    last_read_at: now,
+    created_at: existing?.created_at || now,
+    updated_at: now
+  };
+
+  if (status.provider === 'neon' && pgPool) {
+    await pgPool.query(
+      `INSERT INTO learning_progress (encyclopedia_id, current_chapter_index, completed_chapters, last_read_at, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       ON CONFLICT (encyclopedia_id)
+       DO UPDATE SET current_chapter_index = $2, completed_chapters = $3, last_read_at = $4, updated_at = $6`,
+      [record.encyclopedia_id, record.current_chapter_index, JSON.stringify(record.completed_chapters), record.last_read_at, record.created_at, record.updated_at]
+    );
+  } else if (sqliteDb) {
+    const stmt = sqliteDb.prepare(
+      `INSERT INTO learning_progress (encyclopedia_id, current_chapter_index, completed_chapters, last_read_at, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?)
+       ON CONFLICT(encyclopedia_id)
+       DO UPDATE SET current_chapter_index = excluded.current_chapter_index, completed_chapters = excluded.completed_chapters, last_read_at = excluded.last_read_at, updated_at = excluded.updated_at`
+    );
+    stmt.run(record.encyclopedia_id, record.current_chapter_index, JSON.stringify(record.completed_chapters), record.last_read_at, record.created_at, record.updated_at);
+  }
+
+  return record;
+}
+

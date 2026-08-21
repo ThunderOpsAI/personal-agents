@@ -122,25 +122,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const weeklyAgendaList = document.getElementById('weeklyAgendaList');
     const monthlyAgendaList = document.getElementById('monthlyAgendaList');
 
-    // Continuous Learning Card Elements
-    const learnCategoryTag = document.getElementById('learnCategoryTag');
-    const learnTitleText = document.getElementById('learnTitleText');
-    const learnSummaryText = document.getElementById('learnSummaryText');
-    const btnLearnMore = document.getElementById('btnLearnMore');
-    const btnLearnDifferent = document.getElementById('btnLearnDifferent');
-    const btnChooseLearnTopic = document.getElementById('btnChooseLearnTopic');
-    const chooseLearnModal = document.getElementById('chooseLearnModal');
-    const learnTopicInput = document.getElementById('learnTopicInput');
+    // Continuous Learning & Encyclopedias Elements
+    const painProgressBadge = document.getElementById('painProgressBadge');
+    const painCurrentTitle = document.getElementById('painCurrentTitle');
+    const aiProgressBadge = document.getElementById('aiProgressBadge');
+    const aiCurrentTitle = document.getElementById('aiCurrentTitle');
+    const techProgressBadge = document.getElementById('techProgressBadge');
+    const techCurrentTitle = document.getElementById('techCurrentTitle');
 
-    // Learn Modal Elements
+    // Encyclopedia Reader Modal Elements
     const learnModal = document.getElementById('learnModal');
     const btnCloseLearnModal = document.getElementById('btnCloseLearnModal');
     const btnCloseLearnDone = document.getElementById('btnCloseLearnDone');
-    const btnRotateTopicInsideModal = document.getElementById('btnRotateTopicInsideModal');
     const modalLearnTitle = document.getElementById('modalLearnTitle');
+    const modalLearnSubtitle = document.getElementById('modalLearnSubtitle');
     const modalLearnCategory = document.getElementById('modalLearnCategory');
-    const modalLearnDetails = document.getElementById('modalLearnDetails');
-    const modalLearnTable = document.getElementById('modalLearnTable').querySelector('tbody');
+    const modalLearnReadingTime = document.getElementById('modalLearnReadingTime');
+    const modalChapterIndicator = document.getElementById('modalChapterIndicator');
+    const modalProgressBar = document.getElementById('modalProgressBar');
+    const modalChapterSelect = document.getElementById('modalChapterSelect');
+    const modalLearnContent = document.getElementById('modalLearnContent');
+    const modalLearnTakeaways = document.getElementById('modalLearnTakeaways');
+    const btnPrevChapter = document.getElementById('btnPrevChapter');
+    const btnNextChapter = document.getElementById('btnNextChapter');
+    const btnSaveSummaryLearn = document.getElementById('btnSaveSummaryLearn');
     
     const notesModal = document.getElementById('notesModal');
     const btnCloseNotes = document.getElementById('btnCloseNotes');
@@ -785,84 +790,215 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- Continuous Learning Topic Engine ---
-    async function loadLearnTopic() {
+    // --- 3 Encyclopedias (Pain, AI, Tech) Engine ---
+    let activeEncyclopediaId = "pain";
+    let activeChapterIndex = 0;
+    let currentChapterData = null;
+    let currentEncyclopediaMeta = null;
+
+    async function loadEncyclopediasSummary() {
         try {
-            const res = await fetch(API_LEARN_TOPIC);
-            if (res.ok) {
-                const data = await res.json();
-                updateLearnCard(data.topic);
-            }
+            const res = await fetch('/api/v1/learn/encyclopedias');
+            if (!res.ok) return;
+            const data = await res.json();
+            if (!data.encyclopedias) return;
+
+            data.encyclopedias.forEach(enc => {
+                const badgeText = `Ch. ${(enc.currentChapterIndex || 0) + 1}/${enc.totalChapters}`;
+                const titleText = enc.currentChapter ? enc.currentChapter.title : 'Loading...';
+                
+                if (enc.id === 'pain') {
+                    if (painProgressBadge) painProgressBadge.innerText = badgeText;
+                    if (painCurrentTitle) painCurrentTitle.innerText = titleText;
+                } else if (enc.id === 'ai') {
+                    if (aiProgressBadge) aiProgressBadge.innerText = badgeText;
+                    if (aiCurrentTitle) aiCurrentTitle.innerText = titleText;
+                } else if (enc.id === 'tech') {
+                    if (techProgressBadge) techProgressBadge.innerText = badgeText;
+                    if (techCurrentTitle) techCurrentTitle.innerText = titleText;
+                }
+            });
         } catch (e) {
-            showToast('Failed to load learn topic');
+            console.error('Failed to load encyclopedias summary:', e);
+        }
+    }
+
+    async function openEncyclopediaReader(encyclopediaId, chapterIndex = null) {
+        activeEncyclopediaId = encyclopediaId;
+        try {
+            const url = chapterIndex !== null 
+                ? `/api/v1/learn/encyclopedias/${encyclopediaId}?chapter=${chapterIndex}`
+                : `/api/v1/learn/encyclopedias/${encyclopediaId}`;
+            
+            const res = await fetch(url);
+            if (!res.ok) throw new Error('Failed to load encyclopedia chapter');
+            const data = await res.json();
+
+            currentEncyclopediaMeta = data.encyclopedia;
+            currentChapterData = data.currentChapter;
+            activeChapterIndex = data.encyclopedia.currentChapterIndex;
+
+            renderEncyclopediaReader();
+            if (learnModal) learnModal.classList.remove('hidden');
+        } catch (e) {
+            showToast('Could not load encyclopedia', 'error');
             console.error(e);
         }
     }
 
-    function updateLearnCard(topic) {
-        currentLearnTopic = topic;
-        if (!topic) return;
-        learnCategoryTag.innerText = topic.category;
-        learnTitleText.innerText = `Learn: ${topic.title}`;
-        learnSummaryText.innerText = topic.summary;
-    }
+    function renderEncyclopediaReader() {
+        if (!currentEncyclopediaMeta || !currentChapterData) return;
 
-    async function rotateLearnTopic() {
-        btnLearnDifferent.innerText = "Rotating...";
-        try {
-            const res = await fetch(API_LEARN_ROTATE, { method: 'POST' });
-            if (res.ok) {
-                const data = await res.json();
-                updateLearnCard(data.topic);
-            }
-        } catch (e) {
-            showToast('Failed to rotate learn topic');
-            console.error(e);
+        if (modalLearnCategory) {
+            modalLearnCategory.innerText = currentEncyclopediaMeta.id.toUpperCase();
+            modalLearnCategory.className = `badge ${currentEncyclopediaMeta.badgeClass}`;
         }
-        setTimeout(() => { btnLearnDifferent.innerText = "Learn Something Different"; }, 600);
-    }
+        if (modalLearnReadingTime) {
+            modalLearnReadingTime.innerText = `${currentChapterData.readingTimeMin || 4} min read`;
+        }
+        if (modalLearnTitle) {
+            modalLearnTitle.innerText = `${currentChapterData.chapterNumber}. ${currentChapterData.title}`;
+        }
+        if (modalLearnSubtitle) {
+            modalLearnSubtitle.innerText = currentChapterData.subtitle || currentEncyclopediaMeta.title;
+        }
+        if (modalChapterIndicator) {
+            modalChapterIndicator.innerText = `Chapter ${activeChapterIndex + 1} of ${currentEncyclopediaMeta.totalChapters}`;
+        }
+        if (modalProgressBar) {
+            const pct = Math.round(((activeChapterIndex + 1) / currentEncyclopediaMeta.totalChapters) * 100);
+            modalProgressBar.style.width = `${pct}%`;
+            modalProgressBar.style.background = currentEncyclopediaMeta.color || 'var(--neon-blue)';
+        }
 
-    btnLearnDifferent.addEventListener('click', rotateLearnTopic);
-    btnChooseLearnTopic.addEventListener('click', () => chooseLearnModal.classList.remove('hidden'));
-    document.getElementById('btnCloseChooseLearn').addEventListener('click', () => chooseLearnModal.classList.add('hidden'));
-    document.getElementById('btnCancelChooseLearn').addEventListener('click', () => chooseLearnModal.classList.add('hidden'));
-    document.getElementById('btnSaveChooseLearn').addEventListener('click', async () => {
-        const topic = learnTopicInput.value.trim();
-        if (!topic) return showToast('Enter a topic to continue');
-        const response = await fetch(`${API_BASE}/api/v1/learn/topic`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({topic}) });
-        if (!response.ok) return showToast('Could not save learning topic');
-        updateLearnCard((await response.json()).topic);
-        chooseLearnModal.classList.add('hidden');
-        learnTopicInput.value = '';
-    });
-
-    function openLearnModal() {
-        if (!currentLearnTopic) return;
-        modalLearnCategory.innerText = currentLearnTopic.category;
-        modalLearnTitle.innerText = currentLearnTopic.title;
-        modalLearnDetails.innerText = currentLearnTopic.details;
-
-        modalLearnTable.innerHTML = '';
-        if (currentLearnTopic.table) {
-            currentLearnTopic.table.forEach(row => {
-                const tr = document.createElement('tr');
-                const keys = Object.keys(row);
-                tr.innerHTML = `<td><strong>${row[keys[0]]}</strong></td><td>${row[keys[1]] || row[keys[2]] || 'N/A'}</td>`;
-                modalLearnTable.appendChild(tr);
+        // Chapter selector dropdown
+        if (modalChapterSelect && currentEncyclopediaMeta.chapters) {
+            modalChapterSelect.innerHTML = '';
+            currentEncyclopediaMeta.chapters.forEach((ch, idx) => {
+                const opt = document.createElement('option');
+                opt.value = idx;
+                opt.innerText = `Ch. ${ch.chapterNumber}: ${ch.title}`;
+                if (idx === activeChapterIndex) opt.selected = true;
+                modalChapterSelect.appendChild(opt);
             });
         }
-        learnModal.classList.remove('hidden');
+
+        // Content
+        if (modalLearnContent) {
+            modalLearnContent.innerHTML = currentChapterData.content || `<p>${currentChapterData.summary}</p>`;
+        }
+
+        // Key Takeaways
+        if (modalLearnTakeaways) {
+            modalLearnTakeaways.innerHTML = '';
+            if (Array.isArray(currentChapterData.keyTakeaways)) {
+                currentChapterData.keyTakeaways.forEach(t => {
+                    const li = document.createElement('li');
+                    li.innerText = t;
+                    modalLearnTakeaways.appendChild(li);
+                });
+            }
+        }
+
+        // Navigation buttons state
+        if (btnPrevChapter) {
+            btnPrevChapter.disabled = activeChapterIndex <= 0;
+            btnPrevChapter.style.opacity = activeChapterIndex <= 0 ? '0.5' : '1';
+        }
+        if (btnNextChapter) {
+            btnNextChapter.disabled = activeChapterIndex >= currentEncyclopediaMeta.totalChapters - 1;
+            btnNextChapter.style.opacity = activeChapterIndex >= currentEncyclopediaMeta.totalChapters - 1 ? '0.5' : '1';
+        }
     }
 
-    btnLearnMore.addEventListener('click', openLearnModal);
-    btnCloseLearnModal.addEventListener('click', () => learnModal.classList.add('hidden'));
-    btnCloseLearnDone.addEventListener('click', () => learnModal.classList.add('hidden'));
-    btnRotateTopicInsideModal.addEventListener('click', async () => {
-        await rotateLearnTopic();
-        openLearnModal();
+    // Save Summary to learning/ folder and advance
+    async function saveChapterSummary() {
+        if (!currentEncyclopediaMeta || !currentChapterData) return;
+        if (btnSaveSummaryLearn) btnSaveSummaryLearn.innerText = "Saving...";
+
+        try {
+            const res = await fetch('/api/v1/learn/summary', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    encyclopediaId: activeEncyclopediaId,
+                    chapterId: currentChapterData.id,
+                    chapterTitle: currentChapterData.title,
+                    summary: currentChapterData.summary,
+                    keyTakeaways: currentChapterData.keyTakeaways
+                })
+            });
+
+            if (!res.ok) throw new Error('Save failed');
+            const data = await res.json();
+            showToast(`Summary saved to ${data.filename}`, 'success');
+
+            // Refresh progress on dashboard
+            loadEncyclopediasSummary();
+
+            // Advance to next chapter if available
+            if (activeChapterIndex < currentEncyclopediaMeta.totalChapters - 1) {
+                openEncyclopediaReader(activeEncyclopediaId, activeChapterIndex + 1);
+            } else {
+                if (learnModal) learnModal.classList.add('hidden');
+                showToast(`Finished ${currentEncyclopediaMeta.title}!`, 'success');
+            }
+        } catch (e) {
+            showToast('Failed to save summary to learning folder', 'error');
+            console.error(e);
+        } finally {
+            if (btnSaveSummaryLearn) btnSaveSummaryLearn.innerText = "Save Summary & Finish";
+        }
+    }
+
+    // Bind Encyclopedia buttons
+    document.querySelectorAll('.encyclopedia-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const encId = btn.getAttribute('data-enc');
+            if (encId) openEncyclopediaReader(encId);
+        });
     });
 
-    loadLearnTopic();
+    if (modalChapterSelect) {
+        modalChapterSelect.addEventListener('change', (e) => {
+            const targetIdx = parseInt(e.target.value, 10);
+            if (!isNaN(targetIdx)) openEncyclopediaReader(activeEncyclopediaId, targetIdx);
+        });
+    }
+
+    if (btnPrevChapter) {
+        btnPrevChapter.addEventListener('click', () => {
+            if (activeChapterIndex > 0) openEncyclopediaReader(activeEncyclopediaId, activeChapterIndex - 1);
+        });
+    }
+
+    if (btnNextChapter) {
+        btnNextChapter.addEventListener('click', () => {
+            if (currentEncyclopediaMeta && activeChapterIndex < currentEncyclopediaMeta.totalChapters - 1) {
+                openEncyclopediaReader(activeEncyclopediaId, activeChapterIndex + 1);
+            }
+        });
+    }
+
+    if (btnSaveSummaryLearn) {
+        btnSaveSummaryLearn.addEventListener('click', saveChapterSummary);
+    }
+
+    if (btnCloseLearnModal) {
+        btnCloseLearnModal.addEventListener('click', () => {
+            if (learnModal) learnModal.classList.add('hidden');
+            loadEncyclopediasSummary();
+        });
+    }
+
+    if (btnCloseLearnDone) {
+        btnCloseLearnDone.addEventListener('click', () => {
+            if (learnModal) learnModal.classList.add('hidden');
+            loadEncyclopediasSummary();
+        });
+    }
+
+    loadEncyclopediasSummary();
 
     // --- 1. Rumble Insights & Chat ("Discuss" & "Rumble" Header Button) ---
     async function loadRumbleInsights() {

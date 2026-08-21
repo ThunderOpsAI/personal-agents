@@ -1147,3 +1147,166 @@ body.theme-forest {
     background: var(--neon-red);
     border-color: var(--neon-red);
 }
+
+/* ==========================================================================
+   Google Top Stories News Component & Executive Briefing News
+   ========================================================================== */
+.briefing-news-section {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.news-story-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 12px;
+    padding: 12px 14px;
+    text-decoration: none !important;
+    transition: transform 0.15s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+}
+
+.news-story-card:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(0, 229, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.news-story-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.news-story-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+}
+
+.news-story-meta strong {
+    color: var(--neon-blue);
+    font-weight: 600;
+}
+
+.news-story-title {
+    color: var(--text-primary);
+    font-size: 0.92rem;
+    font-weight: 600;
+    line-height: 1.35;
+    margin-bottom: 4px;
+}
+
+.news-story-blurb {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    line-height: 1.35;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.news-story-thumb-wrap {
+    flex-shrink: 0;
+    width: 90px;
+    height: 68px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.news-story-thumb-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.news-story-card:hover .news-story-thumb-wrap img {
+    transform: scale(1.05);
+}
+
+/* ==========================================================================
+   Encyclopedia Quick Grid & Reader Modal
+   ========================================================================== */
+.encyclopedia-quick-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.encyclopedia-btn {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.encyclopedia-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.encyclopedia-btn[data-enc="pain"]:hover {
+    border-color: var(--neon-red) !important;
+    background: rgba(255, 60, 60, 0.08) !important;
+}
+
+.encyclopedia-btn[data-enc="ai"]:hover {
+    border-color: var(--neon-purple) !important;
+    background: rgba(168, 85, 247, 0.08) !important;
+}
+
+.encyclopedia-btn[data-enc="tech"]:hover {
+    border-color: var(--neon-blue) !important;
+    background: rgba(0, 229, 255, 0.08) !important;
+}
+
+.learn-reading-prose h3 {
+    color: var(--text-primary);
+    font-size: 1.05rem;
+    margin-top: 18px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding-bottom: 4px;
+}
+
+.learn-reading-prose h3:first-child {
+    margin-top: 0;
+}
+
+.learn-reading-prose p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin-bottom: 12px;
+}
+
+.learn-reading-prose ul {
+    margin: 8px 0 16px 0;
+    padding-left: 20px;
+    color: var(--text-secondary);
+    font-size: 0.88rem;
+    line-height: 1.55;
+}
+
+.learn-reading-prose li {
+    margin-bottom: 6px;
+}
+
+@media (max-width: 768px) {
+    .encyclopedia-quick-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
