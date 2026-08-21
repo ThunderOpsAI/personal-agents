@@ -1,7 +1,10 @@
+import { rumbleAuth } from "../../../../../lib/rumble-request-validation";
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
   try {
+    const authError = rumbleAuth(request);
+    if (authError) return authError;
     const data = await request.formData();
     const audioFile = data.get('audio');
 
