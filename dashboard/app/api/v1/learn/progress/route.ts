@@ -16,6 +16,13 @@ export async function POST(request: Request) {
 
     const updated = await saveLearningProgress(encyclopediaId, index, completedChapterId);
 
+    // Simulate RUMBLE background generation trigger
+    // index 7 is Chapter 8 (0-indexed)
+    if (index >= 7) {
+      console.log(`[RUMBLE] User reached chapter ${index + 1} of ${encyclopediaId}. Triggering background generation of 10 more chapters...`);
+      // In production, this would publish to a queue or trigger an Antigravity subagent
+    }
+
     return NextResponse.json({
       success: true,
       progress: updated

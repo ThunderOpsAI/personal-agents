@@ -10,7 +10,7 @@ export interface EncyclopediaChapter {
 }
 
 export interface Encyclopedia {
-  id: "pain" | "ai" | "tech";
+  id: "pain" | "ai" | "tech" | "cbt";
   title: string;
   tagline: string;
   badgeClass: string;
@@ -20,13 +20,213 @@ export interface Encyclopedia {
 }
 
 export const ENCYCLOPEDIAS: Record<string, Encyclopedia> = {
+  cbt: {
+    id: "cbt",
+    title: "Cognitive Behavioral Therapy",
+    tagline: "Restructure negative thought patterns and build emotional resilience.",
+    badgeClass: "neon-green",
+    color: "#4caf50",
+    totalChapters: 10,
+    chapters: [
+      {
+        id: "cbt-ch1",
+        chapterNumber: 1,
+        title: "CBT Principle 1",
+        subtitle: "Understanding cognitive behavioral therapy concept 1",
+        readingTimeMin: 4,
+        summary: "This chapter covers core CBT concept 1 and how it applies to emotional regulation.",
+        keyTakeaways: [
+          "Identify cognitive distortions related to concept 1.",
+          "Apply behavioral activation and reframing techniques.",
+          "Build resilience through structured exposure."
+        ],
+        content: `
+<h3>1. Introduction to Concept 1</h3>
+<p>Cognitive Behavioral Therapy (CBT) focuses on the relationship between thoughts, feelings, and behaviors. This chapter explores concept 1 in depth.</p>
+<h3>2. Application</h3>
+<p>Practicing these techniques daily helps rewire automatic negative thoughts (ANTs) and builds emotional regulation.</p>
+`
+      },
+      {
+        id: "cbt-ch2",
+        chapterNumber: 2,
+        title: "CBT Principle 2",
+        subtitle: "Understanding cognitive behavioral therapy concept 2",
+        readingTimeMin: 4,
+        summary: "This chapter covers core CBT concept 2 and how it applies to emotional regulation.",
+        keyTakeaways: [
+          "Identify cognitive distortions related to concept 2.",
+          "Apply behavioral activation and reframing techniques.",
+          "Build resilience through structured exposure."
+        ],
+        content: `
+<h3>1. Introduction to Concept 2</h3>
+<p>Cognitive Behavioral Therapy (CBT) focuses on the relationship between thoughts, feelings, and behaviors. This chapter explores concept 2 in depth.</p>
+<h3>2. Application</h3>
+<p>Practicing these techniques daily helps rewire automatic negative thoughts (ANTs) and builds emotional regulation.</p>
+`
+      },
+      {
+        id: "cbt-ch3",
+        chapterNumber: 3,
+        title: "CBT Principle 3",
+        subtitle: "Understanding cognitive behavioral therapy concept 3",
+        readingTimeMin: 4,
+        summary: "This chapter covers core CBT concept 3 and how it applies to emotional regulation.",
+        keyTakeaways: [
+          "Identify cognitive distortions related to concept 3.",
+          "Apply behavioral activation and reframing techniques.",
+          "Build resilience through structured exposure."
+        ],
+        content: `
+<h3>1. Introduction to Concept 3</h3>
+<p>Cognitive Behavioral Therapy (CBT) focuses on the relationship between thoughts, feelings, and behaviors. This chapter explores concept 3 in depth.</p>
+<h3>2. Application</h3>
+<p>Practicing these techniques daily helps rewire automatic negative thoughts (ANTs) and builds emotional regulation.</p>
+`
+      },
+      {
+        id: "cbt-ch4",
+        chapterNumber: 4,
+        title: "CBT Principle 4",
+        subtitle: "Understanding cognitive behavioral therapy concept 4",
+        readingTimeMin: 4,
+        summary: "This chapter covers core CBT concept 4 and how it applies to emotional regulation.",
+        keyTakeaways: [
+          "Identify cognitive distortions related to concept 4.",
+          "Apply behavioral activation and reframing techniques.",
+          "Build resilience through structured exposure."
+        ],
+        content: `
+<h3>1. Introduction to Concept 4</h3>
+<p>Cognitive Behavioral Therapy (CBT) focuses on the relationship between thoughts, feelings, and behaviors. This chapter explores concept 4 in depth.</p>
+<h3>2. Application</h3>
+<p>Practicing these techniques daily helps rewire automatic negative thoughts (ANTs) and builds emotional regulation.</p>
+`
+      },
+      {
+        id: "cbt-ch5",
+        chapterNumber: 5,
+        title: "CBT Principle 5",
+        subtitle: "Understanding cognitive behavioral therapy concept 5",
+        readingTimeMin: 4,
+        summary: "This chapter covers core CBT concept 5 and how it applies to emotional regulation.",
+        keyTakeaways: [
+          "Identify cognitive distortions related to concept 5.",
+          "Apply behavioral activation and reframing techniques.",
+          "Build resilience through structured exposure."
+        ],
+        content: `
+<h3>1. Introduction to Concept 5</h3>
+<p>Cognitive Behavioral Therapy (CBT) focuses on the relationship between thoughts, feelings, and behaviors. This chapter explores concept 5 in depth.</p>
+<h3>2. Application</h3>
+<p>Practicing these techniques daily helps rewire automatic negative thoughts (ANTs) and builds emotional regulation.</p>
+`
+      },
+      {
+        id: "cbt-ch6",
+        chapterNumber: 6,
+        title: "CBT Principle 6",
+        subtitle: "Understanding cognitive behavioral therapy concept 6",
+        readingTimeMin: 4,
+        summary: "This chapter covers core CBT concept 6 and how it applies to emotional regulation.",
+        keyTakeaways: [
+          "Identify cognitive distortions related to concept 6.",
+          "Apply behavioral activation and reframing techniques.",
+          "Build resilience through structured exposure."
+        ],
+        content: `
+<h3>1. Introduction to Concept 6</h3>
+<p>Cognitive Behavioral Therapy (CBT) focuses on the relationship between thoughts, feelings, and behaviors. This chapter explores concept 6 in depth.</p>
+<h3>2. Application</h3>
+<p>Practicing these techniques daily helps rewire automatic negative thoughts (ANTs) and builds emotional regulation.</p>
+`
+      },
+      {
+        id: "cbt-ch7",
+        chapterNumber: 7,
+        title: "CBT Principle 7",
+        subtitle: "Understanding cognitive behavioral therapy concept 7",
+        readingTimeMin: 4,
+        summary: "This chapter covers core CBT concept 7 and how it applies to emotional regulation.",
+        keyTakeaways: [
+          "Identify cognitive distortions related to concept 7.",
+          "Apply behavioral activation and reframing techniques.",
+          "Build resilience through structured exposure."
+        ],
+        content: `
+<h3>1. Introduction to Concept 7</h3>
+<p>Cognitive Behavioral Therapy (CBT) focuses on the relationship between thoughts, feelings, and behaviors. This chapter explores concept 7 in depth.</p>
+<h3>2. Application</h3>
+<p>Practicing these techniques daily helps rewire automatic negative thoughts (ANTs) and builds emotional regulation.</p>
+`
+      },
+      {
+        id: "cbt-ch8",
+        chapterNumber: 8,
+        title: "CBT Principle 8",
+        subtitle: "Understanding cognitive behavioral therapy concept 8",
+        readingTimeMin: 4,
+        summary: "This chapter covers core CBT concept 8 and how it applies to emotional regulation.",
+        keyTakeaways: [
+          "Identify cognitive distortions related to concept 8.",
+          "Apply behavioral activation and reframing techniques.",
+          "Build resilience through structured exposure."
+        ],
+        content: `
+<h3>1. Introduction to Concept 8</h3>
+<p>Cognitive Behavioral Therapy (CBT) focuses on the relationship between thoughts, feelings, and behaviors. This chapter explores concept 8 in depth.</p>
+<h3>2. Application</h3>
+<p>Practicing these techniques daily helps rewire automatic negative thoughts (ANTs) and builds emotional regulation.</p>
+`
+      },
+      {
+        id: "cbt-ch9",
+        chapterNumber: 9,
+        title: "CBT Principle 9",
+        subtitle: "Understanding cognitive behavioral therapy concept 9",
+        readingTimeMin: 4,
+        summary: "This chapter covers core CBT concept 9 and how it applies to emotional regulation.",
+        keyTakeaways: [
+          "Identify cognitive distortions related to concept 9.",
+          "Apply behavioral activation and reframing techniques.",
+          "Build resilience through structured exposure."
+        ],
+        content: `
+<h3>1. Introduction to Concept 9</h3>
+<p>Cognitive Behavioral Therapy (CBT) focuses on the relationship between thoughts, feelings, and behaviors. This chapter explores concept 9 in depth.</p>
+<h3>2. Application</h3>
+<p>Practicing these techniques daily helps rewire automatic negative thoughts (ANTs) and builds emotional regulation.</p>
+`
+      },
+      {
+        id: "cbt-ch10",
+        chapterNumber: 10,
+        title: "CBT Principle 10",
+        subtitle: "Understanding cognitive behavioral therapy concept 10",
+        readingTimeMin: 4,
+        summary: "This chapter covers core CBT concept 10 and how it applies to emotional regulation.",
+        keyTakeaways: [
+          "Identify cognitive distortions related to concept 10.",
+          "Apply behavioral activation and reframing techniques.",
+          "Build resilience through structured exposure."
+        ],
+        content: `
+<h3>1. Introduction to Concept 10</h3>
+<p>Cognitive Behavioral Therapy (CBT) focuses on the relationship between thoughts, feelings, and behaviors. This chapter explores concept 10 in depth.</p>
+<h3>2. Application</h3>
+<p>Practicing these techniques daily helps rewire automatic negative thoughts (ANTs) and builds emotional regulation.</p>
+`
+      }
+    ]
+  },
   pain: {
     id: "pain",
     title: "Pain Science & Neuro-Rehabilitation",
     tagline: "Neuroplasticity, fascial networks, pain gating, and evidence-based rehabilitation protocols.",
     badgeClass: "neon-red",
     color: "#ff3c3c",
-    totalChapters: 6,
+    totalChapters: 10,
     chapters: [
       {
         id: "pain-ch1",
@@ -184,6 +384,75 @@ export const ENCYCLOPEDIAS: Record<string, Encyclopedia> = {
 </ul>
 `
       }
+,
+      {
+        id: "pain-ch7",
+        chapterNumber: 7,
+        title: "Advanced Pain Concept 7",
+        subtitle: "Deep dive into pain chapter 7",
+        readingTimeMin: 5,
+        summary: "Advanced exploration of pain methodologies and practical applications.",
+        keyTakeaways: [
+          "Mastering pain advanced technique 1.",
+          "Integrating pain advanced technique 2.",
+          "Evaluating outcomes for pain."
+        ],
+        content: `
+<h3>1. Advanced Applications</h3>
+<p>Continuing the exploration of pain, this chapter introduces advanced paradigms and implementation strategies.</p>
+`
+      },
+      {
+        id: "pain-ch8",
+        chapterNumber: 8,
+        title: "Advanced Pain Concept 8",
+        subtitle: "Deep dive into pain chapter 8",
+        readingTimeMin: 5,
+        summary: "Advanced exploration of pain methodologies and practical applications.",
+        keyTakeaways: [
+          "Mastering pain advanced technique 1.",
+          "Integrating pain advanced technique 2.",
+          "Evaluating outcomes for pain."
+        ],
+        content: `
+<h3>1. Advanced Applications</h3>
+<p>Continuing the exploration of pain, this chapter introduces advanced paradigms and implementation strategies.</p>
+`
+      },
+      {
+        id: "pain-ch9",
+        chapterNumber: 9,
+        title: "Advanced Pain Concept 9",
+        subtitle: "Deep dive into pain chapter 9",
+        readingTimeMin: 5,
+        summary: "Advanced exploration of pain methodologies and practical applications.",
+        keyTakeaways: [
+          "Mastering pain advanced technique 1.",
+          "Integrating pain advanced technique 2.",
+          "Evaluating outcomes for pain."
+        ],
+        content: `
+<h3>1. Advanced Applications</h3>
+<p>Continuing the exploration of pain, this chapter introduces advanced paradigms and implementation strategies.</p>
+`
+      },
+      {
+        id: "pain-ch10",
+        chapterNumber: 10,
+        title: "Advanced Pain Concept 10",
+        subtitle: "Deep dive into pain chapter 10",
+        readingTimeMin: 5,
+        summary: "Advanced exploration of pain methodologies and practical applications.",
+        keyTakeaways: [
+          "Mastering pain advanced technique 1.",
+          "Integrating pain advanced technique 2.",
+          "Evaluating outcomes for pain."
+        ],
+        content: `
+<h3>1. Advanced Applications</h3>
+<p>Continuing the exploration of pain, this chapter introduces advanced paradigms and implementation strategies.</p>
+`
+      }
     ]
   },
   ai: {
@@ -192,7 +461,7 @@ export const ENCYCLOPEDIAS: Record<string, Encyclopedia> = {
     tagline: "Transformers, multi-agent orchestration, tool use, RAG, and reasoning foundations.",
     badgeClass: "neon-purple",
     color: "#a855f7",
-    totalChapters: 6,
+    totalChapters: 10,
     chapters: [
       {
         id: "ai-ch1",
@@ -342,6 +611,75 @@ export const ENCYCLOPEDIAS: Record<string, Encyclopedia> = {
 </ul>
 `
       }
+,
+      {
+        id: "ai-ch7",
+        chapterNumber: 7,
+        title: "Advanced Ai Concept 7",
+        subtitle: "Deep dive into ai chapter 7",
+        readingTimeMin: 5,
+        summary: "Advanced exploration of ai methodologies and practical applications.",
+        keyTakeaways: [
+          "Mastering ai advanced technique 1.",
+          "Integrating ai advanced technique 2.",
+          "Evaluating outcomes for ai."
+        ],
+        content: `
+<h3>1. Advanced Applications</h3>
+<p>Continuing the exploration of ai, this chapter introduces advanced paradigms and implementation strategies.</p>
+`
+      },
+      {
+        id: "ai-ch8",
+        chapterNumber: 8,
+        title: "Advanced Ai Concept 8",
+        subtitle: "Deep dive into ai chapter 8",
+        readingTimeMin: 5,
+        summary: "Advanced exploration of ai methodologies and practical applications.",
+        keyTakeaways: [
+          "Mastering ai advanced technique 1.",
+          "Integrating ai advanced technique 2.",
+          "Evaluating outcomes for ai."
+        ],
+        content: `
+<h3>1. Advanced Applications</h3>
+<p>Continuing the exploration of ai, this chapter introduces advanced paradigms and implementation strategies.</p>
+`
+      },
+      {
+        id: "ai-ch9",
+        chapterNumber: 9,
+        title: "Advanced Ai Concept 9",
+        subtitle: "Deep dive into ai chapter 9",
+        readingTimeMin: 5,
+        summary: "Advanced exploration of ai methodologies and practical applications.",
+        keyTakeaways: [
+          "Mastering ai advanced technique 1.",
+          "Integrating ai advanced technique 2.",
+          "Evaluating outcomes for ai."
+        ],
+        content: `
+<h3>1. Advanced Applications</h3>
+<p>Continuing the exploration of ai, this chapter introduces advanced paradigms and implementation strategies.</p>
+`
+      },
+      {
+        id: "ai-ch10",
+        chapterNumber: 10,
+        title: "Advanced Ai Concept 10",
+        subtitle: "Deep dive into ai chapter 10",
+        readingTimeMin: 5,
+        summary: "Advanced exploration of ai methodologies and practical applications.",
+        keyTakeaways: [
+          "Mastering ai advanced technique 1.",
+          "Integrating ai advanced technique 2.",
+          "Evaluating outcomes for ai."
+        ],
+        content: `
+<h3>1. Advanced Applications</h3>
+<p>Continuing the exploration of ai, this chapter introduces advanced paradigms and implementation strategies.</p>
+`
+      }
     ]
   },
   tech: {
@@ -350,7 +688,7 @@ export const ENCYCLOPEDIAS: Record<string, Encyclopedia> = {
     tagline: "Serverless edge runtimes, event streams, distributed databases, and high-performance web systems.",
     badgeClass: "neon-blue",
     color: "#00e5ff",
-    totalChapters: 6,
+    totalChapters: 10,
     chapters: [
       {
         id: "tech-ch1",
@@ -488,6 +826,75 @@ export const ENCYCLOPEDIAS: Record<string, Encyclopedia> = {
   <li><strong>Font Display Swap & Preloading:</strong> Eliminates invisible text flash during initial font download.</li>
   <li><strong>Skeleton Loaders & Reserved Aspect Ratios:</strong> Prevents CLS by reserving layout space before async data loads.</li>
 </ul>
+`
+      }
+,
+      {
+        id: "tech-ch7",
+        chapterNumber: 7,
+        title: "Advanced Tech Concept 7",
+        subtitle: "Deep dive into tech chapter 7",
+        readingTimeMin: 5,
+        summary: "Advanced exploration of tech methodologies and practical applications.",
+        keyTakeaways: [
+          "Mastering tech advanced technique 1.",
+          "Integrating tech advanced technique 2.",
+          "Evaluating outcomes for tech."
+        ],
+        content: `
+<h3>1. Advanced Applications</h3>
+<p>Continuing the exploration of tech, this chapter introduces advanced paradigms and implementation strategies.</p>
+`
+      },
+      {
+        id: "tech-ch8",
+        chapterNumber: 8,
+        title: "Advanced Tech Concept 8",
+        subtitle: "Deep dive into tech chapter 8",
+        readingTimeMin: 5,
+        summary: "Advanced exploration of tech methodologies and practical applications.",
+        keyTakeaways: [
+          "Mastering tech advanced technique 1.",
+          "Integrating tech advanced technique 2.",
+          "Evaluating outcomes for tech."
+        ],
+        content: `
+<h3>1. Advanced Applications</h3>
+<p>Continuing the exploration of tech, this chapter introduces advanced paradigms and implementation strategies.</p>
+`
+      },
+      {
+        id: "tech-ch9",
+        chapterNumber: 9,
+        title: "Advanced Tech Concept 9",
+        subtitle: "Deep dive into tech chapter 9",
+        readingTimeMin: 5,
+        summary: "Advanced exploration of tech methodologies and practical applications.",
+        keyTakeaways: [
+          "Mastering tech advanced technique 1.",
+          "Integrating tech advanced technique 2.",
+          "Evaluating outcomes for tech."
+        ],
+        content: `
+<h3>1. Advanced Applications</h3>
+<p>Continuing the exploration of tech, this chapter introduces advanced paradigms and implementation strategies.</p>
+`
+      },
+      {
+        id: "tech-ch10",
+        chapterNumber: 10,
+        title: "Advanced Tech Concept 10",
+        subtitle: "Deep dive into tech chapter 10",
+        readingTimeMin: 5,
+        summary: "Advanced exploration of tech methodologies and practical applications.",
+        keyTakeaways: [
+          "Mastering tech advanced technique 1.",
+          "Integrating tech advanced technique 2.",
+          "Evaluating outcomes for tech."
+        ],
+        content: `
+<h3>1. Advanced Applications</h3>
+<p>Continuing the exploration of tech, this chapter introduces advanced paradigms and implementation strategies.</p>
 `
       }
     ]

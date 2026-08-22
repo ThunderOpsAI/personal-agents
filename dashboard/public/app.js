@@ -150,16 +150,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const notesModal = document.getElementById('notesModal');
     const btnCloseNotes = document.getElementById('btnCloseNotes');
     const notesGrid = document.getElementById('notesGrid');
-    const tabNotesActive = document.getElementById('tabNotesActive');
-    const tabNotesPinned = document.getElementById('tabNotesPinned');
-    const tabNotesArchive = document.getElementById('tabNotesArchive');
-    const btnNewNote = document.getElementById('btnNewNote');
-    const noteEditorContainer = document.getElementById('noteEditorContainer');
+    const pinnedNotesGrid = document.getElementById('pinnedNotesGrid');
+    const notesSectionTitle = document.getElementById('notesSectionTitle');
+    const unpinnedNotesSectionTitle = document.getElementById('unpinnedNotesSectionTitle');
+    const btnToggleArchiveView = document.getElementById('btnToggleArchiveView');
+    
+    // Inline Note Editor
+    const noteEditorCollapsed = document.getElementById('noteEditorCollapsed');
+    const noteEditorExpanded = document.getElementById('noteEditorExpanded');
     const editNoteTitle = document.getElementById('editNoteTitle');
     const editNoteBody = document.getElementById('editNoteBody');
-    const btnPinNote = document.getElementById('btnPinNote');
     const btnSaveNoteEdit = document.getElementById('btnSaveNoteEdit');
     const btnCancelNoteEdit = document.getElementById('btnCancelNoteEdit');
+    const btnPinNote = document.getElementById('btnPinNote');
     
     // Logger Elements
     const painValDisplay = document.getElementById('painValDisplay');
@@ -1507,21 +1510,28 @@ document.addEventListener('DOMContentLoaded', () => {
     let editingNoteId = null;
 
     function renderNotesGrid() {
-        if (!notesGrid) return;
+        if (!notesGrid || !pinnedNotesGrid) return;
         notesGrid.innerHTML = '';
+        pinnedNotesGrid.innerHTML = '';
         
-        const filteredNotes = currentNotes.filter(note => {
-            if (currentNotesTab === 'pinned') return note.pinned && !note.isArchived;
-            if (currentNotesTab === 'archive') return note.isArchived;
-            return !note.isArchived; // 'active'
-        });
+        const isArchiveView = currentNotesTab === 'archive';
+        const filteredNotes = currentNotes.filter(n => isArchiveView ? n.isArchived : !n.isArchived);
 
         if (filteredNotes.length === 0) {
-            notesGrid.innerHTML = `<p style="color: var(--text-secondary); width: 100%; grid-column: 1 / -1; text-align: center; margin-top: 20px;">No notes found in ${currentNotesTab}.</p>`;
+            notesGrid.innerHTML = `<p style="color: var(--text-secondary); width: 100%; text-align: center; margin-top: 20px;">No notes found in ${isArchiveView ? 'Archive' : 'Active'}.</p>`;
+            notesSectionTitle.style.display = 'none';
+            unpinnedNotesSectionTitle.style.display = 'none';
             return;
         }
 
-        filteredNotes.forEach(note => {
+        const pinnedNotes = filteredNotes.filter(n => n.pinned);
+        const unpinnedNotes = filteredNotes.filter(n => !n.pinned);
+
+        const showSections = !isArchiveView && pinnedNotes.length > 0;
+        notesSectionTitle.style.display = showSections ? 'block' : 'none';
+        unpinnedNotesSectionTitle.style.display = showSections && unpinnedNotes.length > 0 ? 'block' : 'none';
+        
+        const renderCard = (note, container) => {
             const lines = note.content.split('\n');
             const title = lines.length > 0 && lines[0].trim().startsWith('# ') ? lines[0].replace('# ', '') : (lines[0].length > 30 ? lines[0].substring(0, 30) + '...' : lines[0]);
             const body = lines.slice(1).join('<br>').substring(0, 150) || lines.join('<br>').substring(0, 150);
@@ -1579,8 +1589,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 toggleNoteArchive(note);
             });
 
-            notesGrid.appendChild(card);
-        });
+            container.appendChild(card);
+        };
+
+        if (!isArchiveView) {
+            pinnedNotes.forEach(note => renderCard(note, pinnedNotesGrid));
+            unpinnedNotes.forEach(note => renderCard(note, notesGrid));
+        } else {
+            filteredNotes.forEach(note => renderCard(note, notesGrid));
+        }
     }
 
     async function loadNotes() {
@@ -1614,7 +1631,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 if (res.ok) showToast('Note created', 'success');
             }
-            noteEditorContainer.classList.add('hidden');
+            noteEditorExpanded.classList.add('hidden');
+            noteEditorCollapsed.classList.remove('hidden');
+            editingNoteId = null;
             loadNotes();
         } catch (e) {
             showToast('Failed to save note');
@@ -1668,46 +1687,45 @@ document.addEventListener('DOMContentLoaded', () => {
             btnPinNote.classList.remove('btn-neon-blue');
             btnPinNote.dataset.pinned = "false";
         }
-        noteEditorContainer.classList.remove('hidden');
+        noteEditorCollapsed.classList.add('hidden');
+        noteEditorExpanded.classList.remove('hidden');
+        if (!note) {
+            editNoteTitle.focus();
+        }
     }
 
-    btnNewNote.addEventListener('click', () => openNoteEditor());
-    btnCancelNoteEdit.addEventListener('click', () => noteEditorContainer.classList.add('hidden'));
+    noteEditorCollapsed.addEventListener('click', () => openNoteEditor());
+    
+    function closeAndSaveNote() {
+        const title = editNoteTitle.value.trim();
+        const body = editNoteBody.value.trim();
+        if (title || body) {
+            const content = title ? `# ${title}\n${body}` : body;
+            const pinned = btnPinNote.dataset.pinned === "true";
+            saveNote({ content, pinned });
+        } else {
+            noteEditorExpanded.classList.add('hidden');
+            noteEditorCollapsed.classList.remove('hidden');
+            editingNoteId = null;
+        }
+    }
+
+    btnCancelNoteEdit.addEventListener('click', closeAndSaveNote);
     
     btnPinNote.addEventListener('click', () => {
         const isPinned = btnPinNote.dataset.pinned === "true";
         btnPinNote.dataset.pinned = !isPinned ? "true" : "false";
-        btnPinNote.classList.toggle('btn-neon-blue', !isPinned);
+        btnPinNote.style.color = !isPinned ? '#ffeb3b' : 'rgba(255,255,255,0.5)';
+        btnPinNote.querySelector('svg').setAttribute('fill', !isPinned ? 'currentColor' : 'none');
     });
 
-    btnSaveNoteEdit.addEventListener('click', () => {
-        const title = editNoteTitle.value.trim();
-        const body = editNoteBody.value.trim();
-        if (!title && !body) return showToast("Note cannot be empty");
-        
-        const content = title ? `# \${title}\\n\${body}` : body;
-        const pinned = btnPinNote.dataset.pinned === "true";
-        saveNote({ content, pinned });
-    });
-
-    const tabs = [
-        { btn: tabNotesActive, name: 'active' },
-        { btn: tabNotesPinned, name: 'pinned' },
-        { btn: tabNotesArchive, name: 'archive' }
-    ];
-
-    tabs.forEach(tab => {
-        if (tab.btn) {
-            tab.btn.addEventListener('click', () => {
-                tabs.forEach(t => t.btn.classList.remove('btn-neon-blue', 'active'));
-                tabs.forEach(t => t.btn.classList.add('btn-outline'));
-                tab.btn.classList.remove('btn-outline');
-                tab.btn.classList.add('btn-neon-blue', 'active');
-                currentNotesTab = tab.name;
-                renderNotesGrid();
-            });
-        }
-    });
+    if (btnToggleArchiveView) {
+        btnToggleArchiveView.addEventListener('click', () => {
+            currentNotesTab = currentNotesTab === 'archive' ? 'active' : 'archive';
+            btnToggleArchiveView.style.color = currentNotesTab === 'archive' ? '#2196f3' : 'rgba(255,255,255,0.7)';
+            renderNotesGrid();
+        });
+    }
 
     loadNotes();
 
