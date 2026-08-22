@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
           
           await createPainLog({
             score,
-            locations: {}, // Can't easily parse locations without NLP here, left blank
+            locations: [], // Can't easily parse locations without NLP here, left blank
             mood: "neutral",
             notes: notes
           });

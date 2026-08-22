@@ -28,20 +28,21 @@ describe("3 Encyclopedias (Pain, AI, Tech) & News Suite", () => {
     }
   });
 
-  it("GET /api/v1/learn/encyclopedias returns all 3 encyclopedias with progress metadata", async () => {
+  it("GET /api/v1/learn/encyclopedias returns all 4 encyclopedias with progress metadata", async () => {
     const res = await getEncyclopedias();
     expect(res.status).toBe(200);
     const data = await res.json();
-    expect(data.encyclopedias).toHaveLength(3);
+    expect(data.encyclopedias).toHaveLength(4);
     const ids = data.encyclopedias.map((e: any) => e.id);
     expect(ids).toContain("pain");
     expect(ids).toContain("ai");
     expect(ids).toContain("tech");
+    expect(ids).toContain("cbt");
   });
 
   it("GET /api/v1/learn/encyclopedias/[id] returns chapter details and navigation", async () => {
     const req = new Request("http://localhost:3000/api/v1/learn/encyclopedias/pain?chapter=1");
-    const res = await getSingleEncyclopedia(req, { params: { id: "pain" } });
+    const res = await getSingleEncyclopedia(req, { params: Promise.resolve({ id: "pain" }) } as any);
     expect(res.status).toBe(200);
     const data = await res.json();
     expect(data.encyclopedia.id).toBe("pain");
