@@ -7,10 +7,6 @@
     {
       "path": "/api/v1/retrieval/scan?cron=true",
       "schedule": "0 4 * * *"
-    },
-    {
-      "path": "/api/v1/pain/notify",
-      "schedule": "0 20,23,2,5,8,11,14 * * *"
     }
   ],
   "headers": [
@@ -25,5 +21,3 @@
     }
   ]
 }
-
-
