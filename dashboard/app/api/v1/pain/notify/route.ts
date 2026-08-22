@@ -19,3 +19,4 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: error.message || "Failed to send notification" }, { status: 500 });
   }
 }
+// Trigger Vercel build
