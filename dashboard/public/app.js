@@ -705,12 +705,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnDoneCalView) btnDoneCalView.addEventListener('click', () => calendarEventViewModal.classList.add('hidden'));
 
     // Postpone Modal Logic
-    if (postponeDateInput) {
-        flatpickr(postponeDateInput, {
-            dateFormat: "Y-m-d",
-            defaultDate: new Date().fp_incr(1)
-        });
-    }
     
     if (btnClosePostpone) btnClosePostpone.addEventListener('click', () => postponeModal.classList.add('hidden'));
     if (btnCancelPostpone) btnCancelPostpone.addEventListener('click', () => postponeModal.classList.add('hidden'));
@@ -1534,19 +1528,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const card = document.createElement('div');
             card.className = 'keep-note glass-panel';
-            card.style.cssText = 'background: rgba(255, 235, 59, 0.05); border-left: 4px solid #ffeb3b; padding: 15px; border-radius: 8px; position: relative; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; min-height: 120px;';
+            card.style.cssText = `
+                break-inside: avoid; margin-bottom: 15px; 
+                background: rgba(30, 30, 30, 0.6); 
+                border: 1px solid rgba(255,255,255,0.2); 
+                padding: 16px; border-radius: 8px; 
+                position: relative; cursor: pointer; 
+                display: flex; flex-direction: column; 
+                min-height: 120px; transition: box-shadow 0.2s, background 0.2s;
+            `;
+            
+            card.addEventListener('mouseenter', () => card.style.boxShadow = '0 2px 5px rgba(0,0,0,0.5)');
+            card.addEventListener('mouseleave', () => card.style.boxShadow = 'none');
+
+            const pinIcon = `<svg width="20" height="20" viewBox="0 0 24 24" fill="${note.pinned ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"></line><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.68V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3v4.68a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path></svg>`;
+            const archiveIcon = note.isArchived 
+                ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="12" y1="12" x2="12" y2="16"></line><polyline points="10 14 12 12 14 14"></polyline></svg>` 
+                : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>`;
+
             card.innerHTML = `
-                <div>
-                    ${note.pinned ? '<div style="position: absolute; top: 10px; right: 10px; font-size: 1.2em;" title="Pinned">📌</div>' : ''}
-                    <h4 style="margin: 0 0 8px 0; font-size: 1.1em; color: var(--text-primary); padding-right: 20px;">${title}</h4>
-                    <p style="margin: 0; font-size: 0.85em; color: var(--text-secondary); overflow-wrap: anywhere;">${body}</p>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                    <h4 style="margin: 0; font-size: 1.1em; font-weight: 500; color: var(--text-primary);">${title}</h4>
+                    <button class="btn-icon btn-pin-toggle" data-id="${note.id}" style="background: none; border: none; color: ${note.pinned ? '#ffeb3b' : 'rgba(255,255,255,0.5)'}; cursor: pointer; padding: 4px;" title="${note.pinned ? 'Unpin' : 'Pin'}">
+                        ${pinIcon}
+                    </button>
                 </div>
-                <div style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
-                    <div style="font-size: 0.7em; color: var(--text-secondary);">${new Date(note.created_at).toLocaleDateString()}</div>
-                    <div style="display: flex; gap: 8px;">
-                        <button class="btn btn-sm btn-outline btn-pin-toggle" data-id="${note.id}" style="padding: 2px 6px; min-height: 24px;">${note.pinned ? 'Unpin' : 'Pin'}</button>
-                        <button class="btn btn-sm btn-outline btn-archive-toggle" data-id="${note.id}" style="padding: 2px 6px; min-height: 24px;">${note.isArchived ? 'Restore' : 'Archive'}</button>
-                    </div>
+                <div style="flex-grow: 1;">
+                    <p style="margin: 0; font-size: 0.95em; color: rgba(255,255,255,0.85); overflow-wrap: anywhere; line-height: 1.4;">${body}</p>
+                </div>
+                <div style="margin-top: 16px; display: flex; justify-content: space-between; align-items: center; opacity: 0.7;">
+                    <div style="font-size: 0.75em; color: rgba(255,255,255,0.5);">${new Date(note.created_at).toLocaleDateString()}</div>
+                    <button class="btn-icon btn-archive-toggle" data-id="${note.id}" style="background: none; border: none; color: rgba(255,255,255,0.7); cursor: pointer; padding: 4px;" title="${note.isArchived ? 'Restore' : 'Archive'}">
+                        ${archiveIcon}
+                    </button>
                 </div>
             `;
             
@@ -1834,6 +1848,12 @@ document.addEventListener('DOMContentLoaded', () => {
             postponeBtn.addEventListener('click', () => {
                 if (id) {
                     itemToPostpone = id;
+                    const tmr = new Date();
+                    tmr.setDate(tmr.getDate() + 1);
+                    tmr.setHours(10, 0, 0, 0);
+                    const tzOffset = tmr.getTimezoneOffset() * 60000;
+                    const localIso = new Date(tmr - tzOffset).toISOString().slice(0, 16);
+                    if (postponeDateInput) postponeDateInput.value = localIso;
                     postponeModal.classList.remove('hidden');
                 }
             });
