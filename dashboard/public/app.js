@@ -2730,4 +2730,214 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // --- 12. Pain Analytics & GP Report Logic ---
+    const btnOpenPainAnalytics = document.getElementById('btnOpenPainAnalytics');
+    const painAnalyticsModal = document.getElementById('painAnalyticsModal');
+    const btnClosePainAnalytics = document.getElementById('btnClosePainAnalytics');
+    const btnDismissPainAnalytics = document.getElementById('btnDismissPainAnalytics');
+    const btnPrintPainReport = document.getElementById('btnPrintPainReport');
+    const btnAskRumbleForGP = document.getElementById('btnAskRumbleForGP');
+
+    let painTrendsChartInstance = null;
+    let painAnatomyChartInstance = null;
+
+    if (btnOpenPainAnalytics && painAnalyticsModal) {
+        btnOpenPainAnalytics.addEventListener('click', () => {
+            painAnalyticsModal.classList.remove('hidden');
+            loadPainAnalytics();
+        });
+    }
+
+    if (btnClosePainAnalytics && painAnalyticsModal) {
+        btnClosePainAnalytics.addEventListener('click', () => {
+            painAnalyticsModal.classList.add('hidden');
+        });
+    }
+
+    if (btnDismissPainAnalytics && painAnalyticsModal) {
+        btnDismissPainAnalytics.addEventListener('click', () => {
+            painAnalyticsModal.classList.add('hidden');
+        });
+    }
+
+    if (btnPrintPainReport) {
+        btnPrintPainReport.addEventListener('click', () => {
+            window.print();
+        });
+    }
+
+    if (btnAskRumbleForGP) {
+        btnAskRumbleForGP.addEventListener('click', () => {
+            if (painAnalyticsModal) painAnalyticsModal.classList.add('hidden');
+            if (rumbleChatModal) rumbleChatModal.classList.remove('hidden');
+            sendRumbleChatMessage("Please generate a concise, structured clinical summary of my last month's pain logs, flare patterns, and functional restrictions for my upcoming GP appointment.");
+        });
+    }
+
+    async function loadPainAnalytics() {
+        try {
+            const res = await fetch('/api/v1/pain/analytics');
+            if (!res.ok) throw new Error("Failed to load pain analytics");
+            const data = await res.json();
+            if (data.status !== "success") return;
+
+            // Populate KPI metrics
+            const statPainAvg = document.getElementById('statPainAvg');
+            const statPainRange = document.getElementById('statPainRange');
+            const statPainPrimary = document.getElementById('statPainPrimary');
+            const statPainPrimaryPct = document.getElementById('statPainPrimaryPct');
+            const statPainTotalLogs = document.getElementById('statPainTotalLogs');
+            const statPainMorningNight = document.getElementById('statPainMorningNight');
+
+            if (statPainAvg) statPainAvg.innerText = `${data.average_score} / 10`;
+            if (statPainRange) statPainRange.innerText = `Range: ${data.min_score} - ${data.max_score}`;
+            
+            // Determine primary generator
+            const sortedAnatomy = Object.entries(data.anatomical_distribution || {}).sort((a, b) => b[1] - a[1]);
+            if (sortedAnatomy.length > 0) {
+                if (statPainPrimary) statPainPrimary.innerText = sortedAnatomy[0][0];
+                if (statPainPrimaryPct) statPainPrimaryPct.innerText = `${sortedAnatomy[0][1]}% of Total Burden`;
+            }
+
+            if (statPainTotalLogs) statPainTotalLogs.innerText = `${data.total_logs} Entries`;
+
+            // Morning vs night
+            const morningSlot = (data.time_of_day_distribution || []).find(t => t.slot.includes('Morning'));
+            const eveningSlot = (data.time_of_day_distribution || []).find(t => t.slot.includes('Evening'));
+            if (statPainMorningNight && morningSlot && eveningSlot) {
+                statPainMorningNight.innerText = `${morningSlot.average} AM · ${eveningSlot.average} PM`;
+            }
+
+            // Render Chart 1: 30-Day Pain Trajectory Line Chart
+            const trendsCtx = document.getElementById('painTrendsChart');
+            if (trendsCtx && typeof Chart !== 'undefined') {
+                if (painTrendsChartInstance) painTrendsChartInstance.destroy();
+
+                const labels = (data.daily_trends || []).map(d => d.date);
+                const avgData = (data.daily_trends || []).map(d => d.avg);
+                const peakData = (data.daily_trends || []).map(d => d.peak);
+
+                painTrendsChartInstance = new Chart(trendsCtx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Daily Average Score',
+                                data: avgData,
+                                borderColor: 'rgba(0, 240, 255, 1)',
+                                backgroundColor: 'rgba(0, 240, 255, 0.1)',
+                                borderWidth: 2,
+                                fill: true,
+                                tension: 0.3,
+                                pointRadius: 3,
+                                pointBackgroundColor: 'rgba(0, 240, 255, 1)'
+                            },
+                            {
+                                label: 'Peak Flare Spike',
+                                data: peakData,
+                                borderColor: 'rgba(255, 0, 85, 0.8)',
+                                backgroundColor: 'transparent',
+                                borderWidth: 1.5,
+                                borderDash: [4, 4],
+                                pointRadius: 2,
+                                pointBackgroundColor: 'rgba(255, 0, 85, 1)'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                min: 0,
+                                max: 10,
+                                grid: { color: 'rgba(255,255,255,0.08)' },
+                                ticks: { color: 'rgba(255,255,255,0.6)', stepSize: 2 }
+                            },
+                            x: {
+                                grid: { display: false },
+                                ticks: { color: 'rgba(255,255,255,0.6)', maxTicksLimit: 10 }
+                            }
+                        },
+                        plugins: {
+                            legend: { labels: { color: 'rgba(255,255,255,0.8)', font: { size: 11 } } }
+                        }
+                    }
+                });
+            }
+
+            // Render Chart 2: Anatomical Burden Doughnut Chart
+            const anatomyCtx = document.getElementById('painAnatomyChart');
+            if (anatomyCtx && typeof Chart !== 'undefined') {
+                if (painAnatomyChartInstance) painAnatomyChartInstance.destroy();
+
+                const anatomyLabels = sortedAnatomy.map(a => a[0]);
+                const anatomyValues = sortedAnatomy.map(a => a[1]);
+                const colors = [
+                    'rgba(255, 0, 85, 0.85)',
+                    'rgba(180, 0, 255, 0.85)',
+                    'rgba(0, 240, 255, 0.85)',
+                    'rgba(0, 230, 118, 0.85)',
+                    'rgba(255, 170, 0, 0.85)',
+                    'rgba(100, 100, 255, 0.7)'
+                ];
+
+                painAnatomyChartInstance = new Chart(anatomyCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: anatomyLabels,
+                        datasets: [{
+                            data: anatomyValues,
+                            backgroundColor: colors.slice(0, anatomyLabels.length),
+                            borderColor: '#121218',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                                labels: { color: 'rgba(255,255,255,0.8)', font: { size: 11 }, boxWidth: 12 }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Populate Table
+            const tableBody = document.getElementById('painLogsTableBody');
+            if (tableBody && Array.isArray(data.recent_logs)) {
+                tableBody.innerHTML = '';
+                data.recent_logs.forEach(log => {
+                    const row = document.createElement('tr');
+                    row.style.borderBottom = '1px solid rgba(255,255,255,0.06)';
+
+                    const dateStr = new Date(log.created_at).toLocaleString('en-AU', {
+                        month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Australia/Melbourne'
+                    });
+
+                    const locsStr = Array.isArray(log.locations)
+                        ? log.locations.map(l => `${l.side && l.side !== 'unspecified' ? l.side + ' ' : ''}${l.area} (${l.percentage || l.weight}%)`).join(', ')
+                        : 'Unspecified';
+
+                    const scoreColor = log.score >= 8 ? 'var(--neon-red)' : log.score >= 6 ? 'var(--neon-orange, #ffaa00)' : 'var(--neon-green)';
+
+                    row.innerHTML = `
+                        <td style="padding: 8px; color: var(--text-secondary); white-space: nowrap;">${dateStr}</td>
+                        <td style="padding: 8px; font-weight: 700; color: ${scoreColor};">${log.score}/10</td>
+                        <td style="padding: 8px; color: var(--text-primary);">${locsStr}</td>
+                        <td style="padding: 8px; color: var(--text-secondary);">${log.mood ? log.mood + '/10' : 'N/A'}</td>
+                        <td style="padding: 8px; color: var(--text-muted); font-size: 0.8rem;">${log.notes || '—'}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            }
+        } catch (err) {
+            console.error("Error loading pain analytics:", err);
+        }
+    }
+
 });

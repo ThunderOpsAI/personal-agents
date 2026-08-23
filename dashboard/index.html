@@ -24,6 +24,7 @@
                 </div>
                 
                 <div class="header-actions">
+                    <button class="btn btn-sm btn-outline" id="btnOpenPainAnalytics" title="Clinical Pain Analytics & GP Report">📊 Pain Analytics</button>
                     <button class="btn btn-sm btn-outline" id="btnOpenNotes">Notes</button>
                     <button class="btn btn-sm btn-outline btn-icon btn-rumble" id="btnOpenRumbleChat" title="Rumble Chat" aria-label="Rumble Chat">
                         <img src="Rumble_Icon.png" alt="Rumble" class="rumble-header-icon">
@@ -660,6 +661,103 @@
                         <button type="submit" class="btn btn-neon-blue" id="btnSaveCalEvent">Save Event</button>
                     </div>
                 </form>
+            </div>
+        </div>
+
+        <!-- Clinical Pain Analytics & GP Report Modal -->
+        <div class="modal-overlay hidden" id="painAnalyticsModal">
+            <div class="modal-content glass-panel" style="max-width: 900px; width: 95%; max-height: 90vh; overflow-y: auto;">
+                <div class="modal-header">
+                    <div>
+                        <h2 style="display: flex; align-items: center; gap: 8px;">📊 Longitudinal Pain Analytics & Clinical GP Report</h2>
+                        <div style="font-size: 0.82rem; color: var(--text-secondary); margin-top: 2px;">Clinical decision support & 30-day anatomical flare tracking for GP/specialist review.</div>
+                    </div>
+                    <button class="btn-close" id="btnClosePainAnalytics">&times;</button>
+                </div>
+
+                <div class="modal-body" style="display: flex; flex-direction: column; gap: 18px; margin-top: 10px;">
+                    <!-- Key Clinical Metric Cards -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px;" id="painKpiGrid">
+                        <div class="glass-panel" style="padding: 12px; border-radius: 8px; border-left: 3px solid var(--neon-red);">
+                            <div style="font-size: 0.78rem; color: var(--text-secondary); text-transform: uppercase;">30-Day Average Pain</div>
+                            <div style="font-size: 1.6rem; font-weight: 700; color: var(--neon-red);" id="statPainAvg">7.4 / 10</div>
+                            <div style="font-size: 0.72rem; color: var(--text-secondary);" id="statPainRange">Range: 5.0 - 9.5</div>
+                        </div>
+                        <div class="glass-panel" style="padding: 12px; border-radius: 8px; border-left: 3px solid var(--neon-purple);">
+                            <div style="font-size: 0.78rem; color: var(--text-secondary); text-transform: uppercase;">Primary Pain Driver</div>
+                            <div style="font-size: 1.3rem; font-weight: 600; color: var(--neon-purple); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" id="statPainPrimary">Right Lumbar</div>
+                            <div style="font-size: 0.72rem; color: var(--text-secondary);" id="statPainPrimaryPct">51% of Total Burden</div>
+                        </div>
+                        <div class="glass-panel" style="padding: 12px; border-radius: 8px; border-left: 3px solid var(--neon-blue);">
+                            <div style="font-size: 0.78rem; color: var(--text-secondary); text-transform: uppercase;">Total Clinical Logs</div>
+                            <div style="font-size: 1.6rem; font-weight: 700; color: var(--neon-blue);" id="statPainTotalLogs">310 Entries</div>
+                            <div style="font-size: 0.72rem; color: var(--text-secondary);">Recorded 4x Daily</div>
+                        </div>
+                        <div class="glass-panel" style="padding: 12px; border-radius: 8px; border-left: 3px solid var(--neon-green);">
+                            <div style="font-size: 0.78rem; color: var(--text-secondary); text-transform: uppercase;">Morning vs Night Flares</div>
+                            <div style="font-size: 1.3rem; font-weight: 600; color: var(--neon-green);" id="statPainMorningNight">6.8 AM · 7.7 PM</div>
+                            <div style="font-size: 0.72rem; color: var(--text-secondary);">Nighttime Cumulative Strain</div>
+                        </div>
+                    </div>
+
+                    <!-- Visual Graphs Grid -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 16px;">
+                        <!-- 30-Day Trend Chart -->
+                        <div class="glass-panel" style="padding: 14px; border-radius: 8px;">
+                            <div style="font-weight: 600; font-size: 0.95rem; margin-bottom: 8px; display: flex; justify-content: space-between;">
+                                <span>30-Day Pain Score Trajectory</span>
+                                <span class="badge neon-red" style="font-size: 0.72rem;">Severe Threshold ≥ 7</span>
+                            </div>
+                            <div style="position: relative; height: 220px;">
+                                <canvas id="painTrendsChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Anatomical Burden Distribution Chart -->
+                        <div class="glass-panel" style="padding: 14px; border-radius: 8px;">
+                            <div style="font-weight: 600; font-size: 0.95rem; margin-bottom: 8px; display: flex; justify-content: space-between;">
+                                <span>Anatomical Burden Distribution</span>
+                                <span class="badge neon-purple" style="font-size: 0.72rem;">Relative Weight %</span>
+                            </div>
+                            <div style="position: relative; height: 220px; display: flex; justify-content: center;">
+                                <canvas id="painAnatomyChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Time-of-Day Pattern & Recent Logs -->
+                    <div class="glass-panel" style="padding: 14px; border-radius: 8px;">
+                        <div style="font-weight: 600; font-size: 0.95rem; margin-bottom: 8px;">Recent Clinical Observations & Symptoms</div>
+                        <div style="max-height: 200px; overflow-y: auto;">
+                            <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: left;" id="painLogsTable">
+                                <thead>
+                                    <tr style="border-bottom: 1px solid var(--glass-border); color: var(--text-secondary);">
+                                        <th style="padding: 6px 8px;">Date & Time</th>
+                                        <th style="padding: 6px 8px;">Score</th>
+                                        <th style="padding: 6px 8px;">Generators & Distribution</th>
+                                        <th style="padding: 6px 8px;">Mood</th>
+                                        <th style="padding: 6px 8px;">Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="painLogsTableBody">
+                                    <!-- Injected dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div style="font-size: 0.76rem; color: var(--text-secondary); font-style: italic; border-left: 2px solid var(--neon-blue); padding-left: 8px;">
+                        Medical output is decision support, not diagnosis. Preserve clinician restrictions; recommend clinician review for worsening or concerning symptoms.
+                    </div>
+                </div>
+
+                <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; flex-wrap: wrap; gap: 8px;">
+                    <button class="btn btn-neon-blue btn-sm" id="btnAskRumbleForGP">💬 Ask Rumble to Summarize for GP</button>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-outline btn-sm" id="btnPrintPainReport">🖨 Print / Export GP Report</button>
+                        <button class="btn btn-outline btn-sm" id="btnDismissPainAnalytics">Close</button>
+                    </div>
+                </div>
             </div>
         </div>
 
