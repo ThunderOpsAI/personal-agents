@@ -507,6 +507,7 @@ ${weatherText}
       disclaimer: MEDICAL_GUARDRAIL,
     };
   } catch (err: any) {
+    console.error("[RouteChatMessage Error]:", err);
     return {
       reply: `Rumble: I am here to assist with your recovery and daily operations.\n\n${MEDICAL_GUARDRAIL}`,
       intent: "CONVERSATION",
@@ -591,26 +592,51 @@ export async function executeConfirmedAction(action: ActionPreview | { type: str
   if (action.type === "multi_action") {
     const results = [];
     for (const subAction of action.data.actions) {
-      const res = await executeConfirmedAction(subAction);
-      results.push(res.message);
+      try {
+        const res = await executeConfirmedAction(subAction);
+        results.push(res.message);
+      } catch (err: any) {
+        results.push(`Failed to execute ${subAction.type}: ${err.message}`);
+      }
     }
     return {
       success: true,
-      message: `Rumble: Executed multiple actions:\n${results.map(r => `• ${r.replace('Rumble: ', '')}`).join('\n')}`,
+      message: `Rumble: Executed actions:\n${results.map(r => `• ${r.replace('Rumble: ', '')}`).join('\n')}`,
       result: results,
     };
   }
 
   if (action.type === "calendar_event") {
-    const { addLiveCalendarEvent } = await import('../google-auth-add');
-    const res = await addLiveCalendarEvent(action.data);
-    if (res.status !== "success") {
-      throw new Error(`Failed to add calendar event: ${res.message}`);
+    let savedAgendaItem = null;
+    try {
+      savedAgendaItem = await createAgendaItem({
+        item_type: "appointment",
+        title: action.data.summary,
+        scheduled_time: action.data.start?.dateTime || new Date().toISOString(),
+        status: "pending",
+      });
+    } catch (dbErr) {
+      console.warn("Could not write appointment to agenda_items table:", dbErr);
     }
+
+    try {
+      const { addLiveCalendarEvent } = await import('../google-auth-add');
+      const res = await addLiveCalendarEvent(action.data);
+      if (res.status === "success") {
+        return {
+          success: true,
+          message: `Rumble: Confirmed and added to agenda & Google Calendar: "${action.data.summary}".`,
+          result: res.event,
+        };
+      }
+    } catch (gcalErr) {
+      // Graceful fallback to agenda item
+    }
+
     return {
       success: true,
-      message: `Rumble: Confirmed and added calendar event: "${action.data.summary}".`,
-      result: res.event,
+      message: `Rumble: Confirmed and added to agenda: "${action.data.summary}".`,
+      result: savedAgendaItem,
     };
   }
 

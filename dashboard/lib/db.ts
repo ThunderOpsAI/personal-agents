@@ -592,20 +592,20 @@ export async function createPainLog(input: CreatePainLogInput): Promise<PainLogR
   );
   const mood = input.mood?.trim() || null;
   const notes = input.notes?.trim() || null;
-  const now = new Date().toISOString();
+  const createdAt = input.created_at || new Date().toISOString();
 
   if (status.provider === 'neon' && pgPool) {
     await pgPool.query(
       `INSERT INTO pain_logs (id, score, locations, mood, notes, created_at)
        VALUES ($1, $2, $3, $4, $5, $6)`,
-      [id, score, locationsJson, mood, notes, now]
+      [id, score, locationsJson, mood, notes, createdAt]
     );
   } else if (sqliteDb) {
     const stmt = sqliteDb.prepare(
       `INSERT INTO pain_logs (id, score, locations, mood, notes, created_at)
        VALUES (?, ?, ?, ?, ?, ?)`
     );
-    stmt.run(id, score, locationsJson, mood, notes, now);
+    stmt.run(id, score, locationsJson, mood, notes, createdAt);
   }
 
   return {
@@ -614,7 +614,7 @@ export async function createPainLog(input: CreatePainLogInput): Promise<PainLogR
     locations: JSON.parse(locationsJson),
     mood,
     notes,
-    created_at: now,
+    created_at: createdAt,
   };
 }
 

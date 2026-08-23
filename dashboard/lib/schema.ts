@@ -105,6 +105,7 @@ export interface CreatePainLogInput {
   }>;
   mood?: string;
   notes?: string;
+  created_at?: string;
 }
 
 export const CREATE_PAIN_LOGS_TABLE_SQL = `

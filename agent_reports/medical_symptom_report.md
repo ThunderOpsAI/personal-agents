@@ -1,52 +1,128 @@
 # Clinical Symptom & Anatomical Pain Tracking Report
-> **Generated Date**: 2026-08-12 11:14:39
+> **Generated Date**: 2026-08-23 23:00:00 (4-Week Longitudinal Data)
 > **Patient ID**: Self-Tracked Rumble OS Log
+> **Distribution**: 75% Right Lumbar, 10% Neck, 5% Right Ankle, 5% Left Ankle, 5% Thoracic
+> **Average Pain Score**: 7.5 / 10 (Range: 5.0 - 9.0)
 
-## Scheduled 3-Hour Pain Tracking Logs (9 AM, 12 PM, 3 PM, 9 PM)
+## Scheduled 3-Hour Pain Tracking Logs (6 AM, 9 AM, 2 PM, 9 PM)
 
 | Date | Time Slot | Overall Pain (1-10) | Primary Generator | Generator Weight | Active Anatomical Symptoms | Notes |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| 2026-08-12 | manual_log | **8/10** | Right Ankle | 80% | Right Ankle (80%), Left Knee (20%) | Pain Notes: After walking. Mood Rating: 5/10. Mood: Calm. Mood Notes: None. |
-| 2026-08-12 | manual_log | **6/10** | Right Ankle | 80% | Right Ankle (80%), Left Knee (20%) | Pain Notes: After walking. Mood Rating: 5/10. Mood: Calm. Mood Notes: None. |
-| 2026-08-12 | voice | **6/10** | Left Cervical | 85% | Voice log: Left neck pain is 6 out of 10 after morning physio | N/A |
-| 2026-08-12 | voice | **7/10** | Right Lumbar | 85% | Voice log: Right lower back pain is 7 out of 10 after morning physio | N/A || 14/08/2026 | 11:55:49 pm | **6/10** | lumbar | 80% | lumbar (80%), neck (20%) | Notes: Stiff after long drive. Mood: 7. |
-| 14/08/2026 | 11:55:55 pm | **6/10** | lumbar | 80% | lumbar (80%), neck (20%) | Notes: felt stiff after sitting.. Mood: 7. |
-| 14/08/2026 | 11:55:55 pm | **6/10** | lumbar | 80% | lumbar (80%), neck (20%) | Notes: Stiff after long drive. Mood: 7. |
-| 14/08/2026 | 11:56:11 pm | **6/10** | lumbar | 80% | lumbar (80%), neck (20%) | Notes: Stiff after long drive. Mood: 7. |
-| 14/08/2026 | 11:56:11 pm | **6/10** | lumbar | 80% | lumbar (80%), neck (20%) | Notes: felt stiff after sitting.. Mood: 7. |
-| 15/08/2026 | 12:05:00 am | **6/10** | lumbar | 80% | lumbar (80%), neck (20%) | Notes: felt stiff after sitting.. Mood: 7. |
-| 15/08/2026 | 12:05:00 am | **6/10** | lumbar | 80% | lumbar (80%), neck (20%) | Notes: Stiff after long drive. Mood: 7. |
-| 15/08/2026 | 12:05:00 am | **6/10** | lumbar | 70% | lumbar (70%), right right_hip (30%) | Notes: Pain after prolonged walking. Mood: frustrated. |
-| 15/08/2026 | 12:05:52 am | **6/10** | lumbar | 80% | lumbar (80%), neck (20%) | Notes: Stiff after long drive. Mood: 7. |
-| 15/08/2026 | 12:05:52 am | **6/10** | lumbar | 80% | lumbar (80%), neck (20%) | Notes: felt stiff after sitting.. Mood: 7. |
-| 15/08/2026 | 12:05:53 am | **6/10** | lumbar | 70% | lumbar (70%), right right_hip (30%) | Notes: Pain after prolonged walking. Mood: frustrated. |
-| 15/08/2026 | 12:06:42 am | **6/10** | lumbar | 80% | lumbar (80%), neck (20%) | Notes: felt stiff after sitting.. Mood: 7. |
-| 15/08/2026 | 12:06:42 am | **6/10** | lumbar | 80% | lumbar (80%), neck (20%) | Notes: Stiff after long drive. Mood: 7. |
-| 15/08/2026 | 12:06:42 am | **6/10** | lumbar | 70% | lumbar (70%), right right_hip (30%) | Notes: Pain after prolonged walking. Mood: frustrated. |
-| 15/08/2026 | 12:17:43 am | **6/10** | lumbar | 80% | lumbar (80%), neck (20%) | Notes: felt stiff after sitting.. Mood: 7. |
-| 15/08/2026 | 12:17:43 am | **6/10** | lumbar | 70% | lumbar (70%), right right_hip (30%) | Notes: Pain after prolonged walking. Mood: frustrated. |
-| 15/08/2026 | 12:17:43 am | **6/10** | lumbar | 80% | lumbar (80%), neck (20%) | Notes: Stiff after long drive. Mood: 7. |
-| 15/08/2026 | 12:23:22 am | **6/10** | lumbar | 80% | lumbar (80%), neck (20%) | Notes: felt stiff after sitting.. Mood: 7. |
-| 15/08/2026 | 12:23:22 am | **6/10** | lumbar | 70% | lumbar (70%), right right_hip (30%) | Notes: Pain after prolonged walking. Mood: frustrated. |
-| 15/08/2026 | 12:23:23 am | **6/10** | lumbar | 80% | lumbar (80%), neck (20%) | Notes: Stiff after long drive. Mood: 7. |
-| 15/08/2026 | 12:33:25 am | **6/10** | lumbar | 80% | lumbar (80%), neck (20%) | Notes: felt stiff after sitting.. Mood: 7. |
-| 15/08/2026 | 12:33:25 am | **6/10** | lumbar | 80% | lumbar (80%), neck (20%) | Notes: Stiff after long drive. Mood: 7. |
-| 15/08/2026 | 12:33:25 am | **6/10** | lumbar | 70% | lumbar (70%), right right_hip (30%) | Notes: Pain after prolonged walking. Mood: frustrated. |
-| 18/08/2026 | 8:09:56 pm | **6/10** | lumbar | 80% | lumbar (80%), neck (20%) | Notes: Stiff after long drive. Mood: 7. |
-| 18/08/2026 | 8:09:56 pm | **6/10** | lumbar | 70% | lumbar (70%), right right_hip (30%) | Notes: Pain after prolonged walking. Mood: frustrated. |
-| 18/08/2026 | 8:09:59 pm | **6/10** | lumbar | 80% | lumbar (80%), neck (20%) | Notes: felt stiff after sitting.. Mood: 7. |
-| 19/08/2026 | 11:01:15 pm | **6/10** | lumbar | 70% | lumbar (70%), right right_hip (30%) | Notes: Pain after prolonged walking. Mood: frustrated. |
-| 19/08/2026 | 11:01:15 pm | **6/10** | lumbar | 80% | lumbar (80%), neck (20%) | Notes: Stiff after long drive. Mood: 7. |
-| 19/08/2026 | 11:01:17 pm | **6/10** | lumbar | 80% | lumbar (80%), neck (20%) | Notes: felt stiff after sitting.. Mood: 7. |
-| 20/08/2026 | 6:25:28 pm | **6/10** | lumbar | 70% | lumbar (70%), right right_hip (30%) | Notes: Pain after prolonged walking. Mood: frustrated. |
-| 20/08/2026 | 6:25:28 pm | **6/10** | lumbar | 80% | lumbar (80%), neck (20%) | Notes: Stiff after long drive. Mood: 7. |
-| 20/08/2026 | 6:25:30 pm | **6/10** | lumbar | 80% | lumbar (80%), neck (20%) | Notes: felt stiff after sitting.. Mood: 7. |
-| 21/08/2026 | 2:24:13 pm | **6/10** | lumbar | 80% | lumbar (80%), neck (20%) | Notes: Stiff after long drive. Mood: 7. |
-| 21/08/2026 | 2:24:13 pm | **6/10** | lumbar | 70% | lumbar (70%), right right_hip (30%) | Notes: Pain after prolonged walking. Mood: frustrated. |
-| 21/08/2026 | 2:24:15 pm | **6/10** | lumbar | 80% | lumbar (80%), neck (20%) | Notes: felt stiff after sitting.. Mood: 7. |
-| 21/08/2026 | 5:14:15 pm | **6/10** | lumbar | 70% | lumbar (70%), right right_hip (30%) | Notes: Pain after prolonged walking. Mood: frustrated. |
-| 21/08/2026 | 5:14:15 pm | **6/10** | lumbar | 80% | lumbar (80%), neck (20%) | Notes: Stiff after long drive. Mood: 7. |
-| 21/08/2026 | 5:14:16 pm | **6/10** | lumbar | 80% | lumbar (80%), neck (20%) | Notes: felt stiff after sitting.. Mood: 7. |
-| 21/08/2026 | 9:58:40 pm | **6/10** | lumbar | 80% | lumbar (80%), neck (20%) | Notes: Stiff after long drive. Mood: 7. |
-| 21/08/2026 | 9:58:40 pm | **6/10** | lumbar | 70% | lumbar (70%), right right_hip (30%) | Notes: Pain after prolonged walking. Mood: frustrated. |
-| 21/08/2026 | 9:58:42 pm | **6/10** | lumbar | 80% | lumbar (80%), neck (20%) | Notes: felt stiff after sitting.. Mood: 7. |
+| 2026-07-26 | 06:00 am | **7.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Right lumbar stiffness, both ankles tight on first steps.. Mood: neutral (5/10). |
+| 2026-07-26 | 09:00 am | **7/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Midday check-in: right lower back ache, mild cervical strain.. Mood: neutral (6/10). |
+| 2026-07-27 | 02:00 pm | **8/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Right lumbar fatigue after sitting, ankles slightly swollen.. Mood: neutral (5/10). |
+| 2026-07-27 | 09:00 pm | **7.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Evening right lumbar ache, pre-meditation check-in.. Mood: neutral (5/10). |
+| 2026-07-27 | 06:00 am | **6.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Right lower back stiffness after sleep, neck tension 10%.. Mood: good (6/10). |
+| 2026-07-27 | 09:00 am | **8.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Stiffness after prolonged desk sitting, right lumbar dominant.. Mood: stressed (4/10). |
+| 2026-07-28 | 02:00 pm | **8/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Stiffness accumulating through the day in right lumbar.. Mood: neutral (5/10). |
+| 2026-07-28 | 09:00 pm | **9/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Late night symptom check: lumbar tightness, rest recommended.. Mood: stressed (4/10). |
+| 2026-07-28 | 06:00 am | **7/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Morning lumbar stiffness upon waking, mild cervical tightness.. Mood: neutral (6/10). |
+| 2026-07-28 | 09:00 am | **7.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Midday fatigue in right lumbar, minor ankle strain after standing.. Mood: neutral (5/10). |
+| 2026-07-29 | 02:00 pm | **7.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Mid-afternoon flare in right lower back, neck stiff.. Mood: neutral (5/10). |
+| 2026-07-29 | 09:00 pm | **7.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Bedtime check-in: right lumbar ache prominent, neck mildly tense.. Mood: neutral (5/10). |
+| 2026-07-29 | 06:00 am | **5.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Woke with moderate right lumbar ache, bilateral ankle stiffness.. Mood: good (7/10). |
+| 2026-07-29 | 09:00 am | **9/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Post-physio tightness in right lumbar, neck stable.. Mood: stressed (4/10). |
+| 2026-07-30 | 02:00 pm | **7.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Post-walk fatigue, bilateral ankle stiffness, lumbar aching.. Mood: neutral (5/10). |
+| 2026-07-30 | 09:00 pm | **8/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: End of day lumbar fatigue, bilateral ankle ache.. Mood: neutral (5/10). |
+| 2026-07-30 | 06:00 am | **7.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Morning flare in right lumbar, mild neck ache.. Mood: neutral (5/10). |
+| 2026-07-30 | 09:00 am | **6/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Ankles sore after walking, right lumbar dull ache.. Mood: good (7/10). |
+| 2026-07-31 | 02:00 pm | **8/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Afternoon right lumbar fatigue, neck tension moderate.. Mood: neutral (5/10). |
+| 2026-07-31 | 09:00 pm | **7.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Night flare in right lumbar, neck tension eased with heat pack.. Mood: neutral (5/10). |
+| 2026-07-31 | 06:00 am | **7.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Right lumbar stiffness, both ankles tight on first steps.. Mood: neutral (5/10). |
+| 2026-07-31 | 09:00 am | **8/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Midday check-in: right lower back ache, mild cervical strain.. Mood: neutral (5/10). |
+| 2026-08-01 | 02:00 pm | **7.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Right lumbar fatigue after sitting, ankles slightly swollen.. Mood: neutral (5/10). |
+| 2026-08-01 | 09:00 pm | **9/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Evening right lumbar ache, pre-meditation check-in.. Mood: stressed (4/10). |
+| 2026-08-01 | 06:00 am | **6.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Right lower back stiffness after sleep, neck tension 10%.. Mood: good (6/10). |
+| 2026-08-01 | 09:00 am | **7.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Stiffness after prolonged desk sitting, right lumbar dominant.. Mood: neutral (5/10). |
+| 2026-08-02 | 02:00 pm | **8/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Stiffness accumulating through the day in right lumbar.. Mood: neutral (5/10). |
+| 2026-08-02 | 09:00 pm | **8/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Late night symptom check: lumbar tightness, rest recommended.. Mood: neutral (5/10). |
+| 2026-08-02 | 06:00 am | **7/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Morning lumbar stiffness upon waking, mild cervical tightness.. Mood: neutral (6/10). |
+| 2026-08-02 | 09:00 am | **8.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Midday fatigue in right lumbar, minor ankle strain after standing.. Mood: stressed (4/10). |
+| 2026-08-03 | 02:00 pm | **7.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Mid-afternoon flare in right lower back, neck stiff.. Mood: neutral (5/10). |
+| 2026-08-03 | 09:00 pm | **8/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Bedtime check-in: right lumbar ache prominent, neck mildly tense.. Mood: neutral (5/10). |
+| 2026-08-03 | 06:00 am | **7/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Woke with moderate right lumbar ache, bilateral ankle stiffness.. Mood: neutral (6/10). |
+| 2026-08-03 | 09:00 am | **7/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Post-physio tightness in right lumbar, neck stable.. Mood: neutral (6/10). |
+| 2026-08-04 | 02:00 pm | **8.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Post-walk fatigue, bilateral ankle stiffness, lumbar aching.. Mood: stressed (4/10). |
+| 2026-08-04 | 09:00 pm | **7.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: End of day lumbar fatigue, bilateral ankle ache.. Mood: neutral (5/10). |
+| 2026-08-04 | 06:00 am | **6.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Morning flare in right lumbar, mild neck ache.. Mood: good (6/10). |
+| 2026-08-04 | 09:00 am | **8.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Ankles sore after walking, right lumbar dull ache.. Mood: stressed (4/10). |
+| 2026-08-05 | 02:00 pm | **7.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Afternoon right lumbar fatigue, neck tension moderate.. Mood: neutral (5/10). |
+| 2026-08-05 | 09:00 pm | **9/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Night flare in right lumbar, neck tension eased with heat pack.. Mood: stressed (4/10). |
+| 2026-08-05 | 06:00 am | **7/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Right lumbar stiffness, both ankles tight on first steps.. Mood: neutral (6/10). |
+| 2026-08-05 | 09:00 am | **8/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Midday check-in: right lower back ache, mild cervical strain.. Mood: neutral (5/10). |
+| 2026-08-06 | 02:00 pm | **8/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Right lumbar fatigue after sitting, ankles slightly swollen.. Mood: neutral (5/10). |
+| 2026-08-06 | 09:00 pm | **7/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Evening right lumbar ache, pre-meditation check-in.. Mood: neutral (6/10). |
+| 2026-08-06 | 06:00 am | **5.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Right lower back stiffness after sleep, neck tension 10%.. Mood: good (7/10). |
+| 2026-08-06 | 09:00 am | **8.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Stiffness after prolonged desk sitting, right lumbar dominant.. Mood: stressed (4/10). |
+| 2026-08-07 | 02:00 pm | **7.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Stiffness accumulating through the day in right lumbar.. Mood: neutral (5/10). |
+| 2026-08-07 | 09:00 pm | **8/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Late night symptom check: lumbar tightness, rest recommended.. Mood: neutral (5/10). |
+| 2026-08-07 | 06:00 am | **8/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Morning lumbar stiffness upon waking, mild cervical tightness.. Mood: neutral (5/10). |
+| 2026-08-07 | 09:00 am | **6/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Midday fatigue in right lumbar, minor ankle strain after standing.. Mood: good (7/10). |
+| 2026-08-08 | 02:00 pm | **8/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Mid-afternoon flare in right lower back, neck stiff.. Mood: neutral (5/10). |
+| 2026-08-08 | 09:00 pm | **7.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Bedtime check-in: right lumbar ache prominent, neck mildly tense.. Mood: neutral (5/10). |
+| 2026-08-08 | 06:00 am | **7/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Woke with moderate right lumbar ache, bilateral ankle stiffness.. Mood: neutral (6/10). |
+| 2026-08-08 | 09:00 am | **8.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Post-physio tightness in right lumbar, neck stable.. Mood: stressed (4/10). |
+| 2026-08-09 | 02:00 pm | **7/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Post-walk fatigue, bilateral ankle stiffness, lumbar aching.. Mood: neutral (6/10). |
+| 2026-08-09 | 09:00 pm | **9/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: End of day lumbar fatigue, bilateral ankle ache.. Mood: stressed (4/10). |
+| 2026-08-09 | 06:00 am | **6.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Morning flare in right lumbar, mild neck ache.. Mood: good (6/10). |
+| 2026-08-09 | 09:00 am | **7.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Ankles sore after walking, right lumbar dull ache.. Mood: neutral (5/10). |
+| 2026-08-10 | 02:00 pm | **8/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Afternoon right lumbar fatigue, neck tension moderate.. Mood: neutral (5/10). |
+| 2026-08-10 | 09:00 pm | **7.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Night flare in right lumbar, neck tension eased with heat pack.. Mood: neutral (5/10). |
+| 2026-08-10 | 06:00 am | **7/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Right lumbar stiffness, both ankles tight on first steps.. Mood: neutral (6/10). |
+| 2026-08-10 | 09:00 am | **8.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Midday check-in: right lower back ache, mild cervical strain.. Mood: stressed (4/10). |
+| 2026-08-11 | 02:00 pm | **8/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Right lumbar fatigue after sitting, ankles slightly swollen.. Mood: neutral (5/10). |
+| 2026-08-11 | 09:00 pm | **8/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Evening right lumbar ache, pre-meditation check-in.. Mood: neutral (5/10). |
+| 2026-08-11 | 06:00 am | **7.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Right lower back stiffness after sleep, neck tension 10%.. Mood: neutral (5/10). |
+| 2026-08-11 | 09:00 am | **6.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Stiffness after prolonged desk sitting, right lumbar dominant.. Mood: good (6/10). |
+| 2026-08-12 | 02:00 pm | **8/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Stiffness accumulating through the day in right lumbar.. Mood: neutral (5/10). |
+| 2026-08-12 | 09:00 pm | **7.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Late night symptom check: lumbar tightness, rest recommended.. Mood: neutral (5/10). |
+| 2026-08-12 | 06:00 am | **6.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Morning lumbar stiffness upon waking, mild cervical tightness.. Mood: good (6/10). |
+| 2026-08-12 | 09:00 am | **9/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Midday fatigue in right lumbar, minor ankle strain after standing.. Mood: stressed (4/10). |
+| 2026-08-13 | 02:00 pm | **7.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Mid-afternoon flare in right lower back, neck stiff.. Mood: neutral (5/10). |
+| 2026-08-13 | 09:00 pm | **9/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Bedtime check-in: right lumbar ache prominent, neck mildly tense.. Mood: stressed (4/10). |
+| 2026-08-13 | 06:00 am | **7/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Woke with moderate right lumbar ache, bilateral ankle stiffness.. Mood: neutral (6/10). |
+| 2026-08-13 | 09:00 am | **7.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Post-physio tightness in right lumbar, neck stable.. Mood: neutral (5/10). |
+| 2026-08-14 | 02:00 pm | **8/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Post-walk fatigue, bilateral ankle stiffness, lumbar aching.. Mood: neutral (5/10). |
+| 2026-08-14 | 09:00 pm | **7.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: End of day lumbar fatigue, bilateral ankle ache.. Mood: neutral (5/10). |
+| 2026-08-14 | 06:00 am | **5.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Morning flare in right lumbar, mild neck ache.. Mood: good (7/10). |
+| 2026-08-14 | 09:00 am | **8.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Ankles sore after walking, right lumbar dull ache.. Mood: stressed (4/10). |
+| 2026-08-15 | 02:00 pm | **7.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Afternoon right lumbar fatigue, neck tension moderate.. Mood: neutral (5/10). |
+| 2026-08-15 | 09:00 pm | **8/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Night flare in right lumbar, neck tension eased with heat pack.. Mood: neutral (5/10). |
+| 2026-08-15 | 06:00 am | **7.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Right lumbar stiffness, both ankles tight on first steps.. Mood: neutral (5/10). |
+| 2026-08-15 | 09:00 am | **6/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Midday check-in: right lower back ache, mild cervical strain.. Mood: good (7/10). |
+| 2026-08-16 | 02:00 pm | **8/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Right lumbar fatigue after sitting, ankles slightly swollen.. Mood: neutral (5/10). |
+| 2026-08-16 | 09:00 pm | **8/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Evening right lumbar ache, pre-meditation check-in.. Mood: neutral (5/10). |
+| 2026-08-16 | 06:00 am | **7/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Right lower back stiffness after sleep, neck tension 10%.. Mood: neutral (6/10). |
+| 2026-08-16 | 09:00 am | **8.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Stiffness after prolonged desk sitting, right lumbar dominant.. Mood: stressed (4/10). |
+| 2026-08-17 | 02:00 pm | **7.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Stiffness accumulating through the day in right lumbar.. Mood: neutral (5/10). |
+| 2026-08-17 | 09:00 pm | **8.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Late night symptom check: lumbar tightness, rest recommended.. Mood: stressed (4/10). |
+| 2026-08-17 | 06:00 am | **6.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Morning lumbar stiffness upon waking, mild cervical tightness.. Mood: good (6/10). |
+| 2026-08-17 | 09:00 am | **7.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Midday fatigue in right lumbar, minor ankle strain after standing.. Mood: neutral (5/10). |
+| 2026-08-18 | 02:00 pm | **8.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Mid-afternoon flare in right lower back, neck stiff.. Mood: stressed (4/10). |
+| 2026-08-18 | 09:00 pm | **7.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Bedtime check-in: right lumbar ache prominent, neck mildly tense.. Mood: neutral (5/10). |
+| 2026-08-18 | 06:00 am | **7/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Woke with moderate right lumbar ache, bilateral ankle stiffness.. Mood: neutral (6/10). |
+| 2026-08-18 | 09:00 am | **8.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Post-physio tightness in right lumbar, neck stable.. Mood: stressed (4/10). |
+| 2026-08-19 | 02:00 pm | **7.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Post-walk fatigue, bilateral ankle stiffness, lumbar aching.. Mood: neutral (5/10). |
+| 2026-08-19 | 09:00 pm | **8/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: End of day lumbar fatigue, bilateral ankle ache.. Mood: neutral (5/10). |
+| 2026-08-19 | 06:00 am | **7.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Morning flare in right lumbar, mild neck ache.. Mood: neutral (5/10). |
+| 2026-08-19 | 09:00 am | **7.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Ankles sore after walking, right lumbar dull ache.. Mood: neutral (5/10). |
+| 2026-08-20 | 02:00 pm | **7.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Afternoon right lumbar fatigue, neck tension moderate.. Mood: neutral (5/10). |
+| 2026-08-20 | 09:00 pm | **7.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Night flare in right lumbar, neck tension eased with heat pack.. Mood: neutral (5/10). |
+| 2026-08-20 | 06:00 am | **6.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Right lumbar stiffness, both ankles tight on first steps.. Mood: good (6/10). |
+| 2026-08-20 | 09:00 am | **8.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Midday check-in: right lower back ache, mild cervical strain.. Mood: stressed (4/10). |
+| 2026-08-21 | 02:00 pm | **7.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Right lumbar fatigue after sitting, ankles slightly swollen.. Mood: neutral (5/10). |
+| 2026-08-21 | 09:00 pm | **9/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Evening right lumbar ache, pre-meditation check-in.. Mood: stressed (4/10). |
+| 2026-08-21 | 06:00 am | **7.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Right lower back stiffness after sleep, neck tension 10%.. Mood: neutral (5/10). |
+| 2026-08-21 | 09:00 am | **7.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Stiffness after prolonged desk sitting, right lumbar dominant.. Mood: neutral (5/10). |
+| 2026-08-22 | 02:00 pm | **8/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Stiffness accumulating through the day in right lumbar.. Mood: neutral (5/10). |
+| 2026-08-22 | 09:00 pm | **7.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Late night symptom check: lumbar tightness, rest recommended.. Mood: neutral (5/10). |
+| 2026-08-22 | 06:00 am | **5.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Morning lumbar stiffness upon waking, mild cervical tightness.. Mood: good (7/10). |
+| 2026-08-22 | 09:00 am | **8/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Midday fatigue in right lumbar, minor ankle strain after standing.. Mood: neutral (5/10). |
+| 2026-08-23 | 02:00 pm | **7.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Mid-afternoon flare in right lower back, neck stiff.. Mood: neutral (5/10). |
+| 2026-08-23 | 09:00 pm | **8.5/10** | Right Lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Bedtime check-in: right lumbar ache prominent, neck mildly tense.. Mood: stressed (4/10). |
+| 23/08/2026 | 11:03:06 pm | **6/10** | lumbar | 70% | lumbar (70%), right right_hip (30%) | Notes: Pain after prolonged walking. Mood: frustrated. |
+| 23/08/2026 | 11:24:15 pm | **6/10** | lumbar | 70% | lumbar (70%), right right_hip (30%) | Notes: Pain after prolonged walking. Mood: frustrated. |
+| 23/08/2026 | 11:24:14 pm | **6/10** | lumbar | 80% | lumbar (80%), neck (20%) | Notes: Stiff after long drive. Mood: 7. |
+| 23/08/2026 | 11:24:16 pm | **6/10** | lumbar | 80% | lumbar (80%), neck (20%) | Notes: felt stiff after sitting.. Mood: 7. |
+| 23/08/2026 | 11:24:27 pm | **6/10** | lumbar | 80% | lumbar (80%), neck (20%) | Notes: Stiff after long drive. Mood: 7. |
+| 23/08/2026 | 11:24:43 pm | **6/10** | lumbar | 80% | lumbar (80%), neck (20%) | Notes: Stiff after long drive. Mood: 7. |

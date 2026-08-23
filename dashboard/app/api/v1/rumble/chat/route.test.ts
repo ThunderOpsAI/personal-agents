@@ -192,6 +192,45 @@ describe("POST /api/v1/rumble/chat", () => {
       const turn2Data = await turn2Res.json();
       expect(turn2Data.status).toBe("success");
     });
+
+    it("MULTI_ACTION: Turn 1 produces preview with multi-day events and tasks, Turn 2 commits all items", async () => {
+      chat.mockResolvedValueOnce({
+        reply: "I've drafted your schedule and tasks for next week.",
+        intent: "GENERAL",
+        requires_confirmation: true,
+        preview: {
+          type: "multi_action",
+          data: {
+            actions: [
+              { type: "calendar_event", data: { summary: "GP Appointment", start: { dateTime: "2026-08-24T11:30:00+10:00" }, end: { dateTime: "2026-08-24T12:00:00+10:00" } } },
+              { type: "task", data: { title: "Call Legal Aid", scheduled_time: "2026-08-25T09:00:00+10:00" } }
+            ]
+          }
+        }
+      });
+
+      const turn1Res = await POST(
+        jsonRequest({ message: "Add Monday 11:30am GP and Tuesday task Call Legal Aid" })
+      );
+
+      expect(turn1Res.status).toBe(200);
+      const turn1Data = await turn1Res.json();
+      expect(turn1Data.requires_confirmation).toBe(true);
+      expect(turn1Data.preview.type).toBe("multi_action");
+      expect(turn1Data.preview.data.actions).toHaveLength(2);
+
+      const turn2Res = await POST(
+        jsonRequest({
+          message: "Confirm",
+          confirm_action: turn1Data.preview,
+        })
+      );
+
+      expect(turn2Res.status).toBe(200);
+      const turn2Data = await turn2Res.json();
+      expect(turn2Data.status).toBe("success");
+      expect(turn2Data.reply).toContain("Rumble: Executed actions:");
+    });
   });
 });
 

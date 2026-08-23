@@ -1,185 +1,4034 @@
 [
   {
-    "id": 1,
-    "pain_score": 4,
-    "mood": 7,
-    "location_breakdown": {
-      "lumbar": 80,
-      "cervical": 20
-    },
-    "notes": "Mild right lumbar tightness in morning",
-    "timestamp": "2026-08-08T15:12:53.190354+00:00"
+    "id": "pain_1785096031000_86eom",
+    "pain_score": 7.5,
+    "pain_level": 7.5,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Right lumbar stiffness, both ankles tight on first steps.",
+    "timestamp": "2026-07-26T20:00:31.000Z"
   },
   {
-    "id": 2,
+    "id": "pain_1785106808000_ebjn9",
     "pain_score": 7,
     "pain_level": 7,
-    "mood": 5,
+    "mood": "neutral",
+    "mood_level": 6,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Midday check-in: right lower back ache, mild cervical strain.",
+    "timestamp": "2026-07-26T23:00:08.000Z"
+  },
+  {
+    "id": "pain_1785124832000_vkbc0",
+    "pain_score": 8,
+    "pain_level": 8,
+    "mood": "neutral",
     "mood_level": 5,
     "location_breakdown": [
       {
         "area": "lumbar",
         "side": "right",
-        "percentage": 100
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
       }
     ],
-    "notes": "Sore but positive",
-    "timestamp": "2026-08-08T15:16:58.978336+00:00"
+    "notes": "Right lumbar fatigue after sitting, ankles slightly swollen.",
+    "timestamp": "2026-07-27T04:00:32.000Z"
   },
   {
-    "id": 3,
+    "id": "pain_1785150041000_aotrl",
+    "pain_score": 7.5,
+    "pain_level": 7.5,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Evening right lumbar ache, pre-meditation check-in.",
+    "timestamp": "2026-07-27T11:00:41.000Z"
+  },
+  {
+    "id": "pain_1785182434000_z8btd",
+    "pain_score": 6.5,
+    "pain_level": 6.5,
+    "mood": "good",
+    "mood_level": 6,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Right lower back stiffness after sleep, neck tension 10%.",
+    "timestamp": "2026-07-27T20:00:34.000Z"
+  },
+  {
+    "id": "pain_1785193200000_k92ts",
+    "pain_score": 8.5,
+    "pain_level": 8.5,
+    "mood": "stressed",
+    "mood_level": 4,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Stiffness after prolonged desk sitting, right lumbar dominant.",
+    "timestamp": "2026-07-27T23:00:00.000Z"
+  },
+  {
+    "id": "pain_1785211242000_2g2y0",
     "pain_score": 8,
     "pain_level": 8,
-    "mood": 5,
+    "mood": "neutral",
     "mood_level": 5,
-    "location_breakdown": {
-      "lumbar": 100
-    },
-    "notes": "I have lumbar pain 8 out of 10 tonight",
-    "timestamp": "2026-08-12T01:09:04.047824+00:00"
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Stiffness accumulating through the day in right lumbar.",
+    "timestamp": "2026-07-28T04:00:42.000Z"
   },
   {
-    "id": 4,
-    "pain_score": 5,
-    "pain_level": 5,
-    "mood": 5,
-    "mood_level": 5,
-    "location_breakdown": {
-      "knee": 100
-    },
-    "notes": "What specialist should I see for my knee pain?",
-    "timestamp": "2026-08-12T01:09:04.079803+00:00"
+    "id": "pain_1785236436000_904ak",
+    "pain_score": 9,
+    "pain_level": 9,
+    "mood": "stressed",
+    "mood_level": 4,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Late night symptom check: lumbar tightness, rest recommended.",
+    "timestamp": "2026-07-28T11:00:36.000Z"
   },
   {
-    "id": 5,
-    "pain_score": 6,
-    "pain_level": 6,
-    "mood": 7,
+    "id": "pain_1785268846000_wz34v",
+    "pain_score": 7,
+    "pain_level": 7,
+    "mood": "neutral",
+    "mood_level": 6,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Morning lumbar stiffness upon waking, mild cervical tightness.",
+    "timestamp": "2026-07-28T20:00:46.000Z"
+  },
+  {
+    "id": "pain_1785279635000_hgjrs",
+    "pain_score": 7.5,
+    "pain_level": 7.5,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Midday fatigue in right lumbar, minor ankle strain after standing.",
+    "timestamp": "2026-07-28T23:00:35.000Z"
+  },
+  {
+    "id": "pain_1785297640000_ezbm3",
+    "pain_score": 7.5,
+    "pain_level": 7.5,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Mid-afternoon flare in right lower back, neck stiff.",
+    "timestamp": "2026-07-29T04:00:40.000Z"
+  },
+  {
+    "id": "pain_1785322834000_7ok2u",
+    "pain_score": 7.5,
+    "pain_level": 7.5,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Bedtime check-in: right lumbar ache prominent, neck mildly tense.",
+    "timestamp": "2026-07-29T11:00:34.000Z"
+  },
+  {
+    "id": "pain_1785355225000_tctzo",
+    "pain_score": 5.5,
+    "pain_level": 5.5,
+    "mood": "good",
     "mood_level": 7,
     "location_breakdown": [
       {
         "area": "lumbar",
         "side": "right",
-        "percentage": 80
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
       }
     ],
-    "notes": "Stiffness after sitting",
-    "timestamp": "2026-08-12T01:09:04.101016+00:00"
+    "notes": "Woke with moderate right lumbar ache, bilateral ankle stiffness.",
+    "timestamp": "2026-07-29T20:00:25.000Z"
   },
   {
-    "id": 6,
-    "pain_score": 6,
-    "pain_level": 6,
-    "mood": 5,
+    "id": "pain_1785366040000_oybd1",
+    "pain_score": 9,
+    "pain_level": 9,
+    "mood": "stressed",
+    "mood_level": 4,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Post-physio tightness in right lumbar, neck stable.",
+    "timestamp": "2026-07-29T23:00:40.000Z"
+  },
+  {
+    "id": "pain_1785384003000_4vjav",
+    "pain_score": 7.5,
+    "pain_level": 7.5,
+    "mood": "neutral",
     "mood_level": 5,
-    "location_breakdown": {
-      "knee": 100
-    },
-    "notes": "Right knee pain 6 out of 10",
-    "timestamp": "2026-08-12T01:09:04.106174+00:00"
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Post-walk fatigue, bilateral ankle stiffness, lumbar aching.",
+    "timestamp": "2026-07-30T04:00:03.000Z"
   },
   {
-    "id": 7,
+    "id": "pain_1785409212000_vgxxe",
     "pain_score": 8,
     "pain_level": 8,
-    "mood": 5,
+    "mood": "neutral",
     "mood_level": 5,
-    "location_breakdown": {
-      "lumbar": 100
-    },
-    "notes": "I have lumbar pain 8 out of 10 tonight",
-    "timestamp": "2026-08-12T01:14:26.266853+00:00"
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "End of day lumbar fatigue, bilateral ankle ache.",
+    "timestamp": "2026-07-30T11:00:12.000Z"
   },
   {
-    "id": 8,
-    "pain_score": 5,
-    "pain_level": 5,
-    "mood": 5,
+    "id": "pain_1785441600000_xmy0i",
+    "pain_score": 7.5,
+    "pain_level": 7.5,
+    "mood": "neutral",
     "mood_level": 5,
-    "location_breakdown": {
-      "knee": 100
-    },
-    "notes": "What specialist should I see for my knee pain?",
-    "timestamp": "2026-08-12T01:14:26.286493+00:00"
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Morning flare in right lumbar, mild neck ache.",
+    "timestamp": "2026-07-30T20:00:00.000Z"
   },
   {
-    "id": 9,
+    "id": "pain_1785452446000_83uzn",
     "pain_score": 6,
     "pain_level": 6,
-    "mood": 7,
+    "mood": "good",
     "mood_level": 7,
     "location_breakdown": [
       {
         "area": "lumbar",
         "side": "right",
-        "percentage": 80
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
       }
     ],
-    "notes": "Stiffness after sitting",
-    "timestamp": "2026-08-12T01:14:26.313666+00:00"
+    "notes": "Ankles sore after walking, right lumbar dull ache.",
+    "timestamp": "2026-07-30T23:00:46.000Z"
   },
   {
-    "id": 10,
-    "pain_score": 6,
-    "pain_level": 6,
-    "mood": 5,
-    "mood_level": 5,
-    "location_breakdown": {
-      "knee": 100
-    },
-    "notes": "Right knee pain 6 out of 10",
-    "timestamp": "2026-08-12T01:14:26.319401+00:00"
-  },
-  {
-    "id": 11,
+    "id": "pain_1785470409000_3zjhf",
     "pain_score": 8,
     "pain_level": 8,
-    "mood": 5,
+    "mood": "neutral",
     "mood_level": 5,
-    "location_breakdown": {
-      "lumbar": 100
-    },
-    "notes": "I have lumbar pain 8 out of 10 tonight",
-    "timestamp": "2026-08-12T01:22:04.330757+00:00"
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Afternoon right lumbar fatigue, neck tension moderate.",
+    "timestamp": "2026-07-31T04:00:09.000Z"
   },
   {
-    "id": 12,
-    "pain_score": 5,
-    "pain_level": 5,
-    "mood": 5,
+    "id": "pain_1785495622000_58806",
+    "pain_score": 7.5,
+    "pain_level": 7.5,
+    "mood": "neutral",
     "mood_level": 5,
-    "location_breakdown": {
-      "knee": 100
-    },
-    "notes": "What specialist should I see for my knee pain?",
-    "timestamp": "2026-08-12T01:22:04.336792+00:00"
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Night flare in right lumbar, neck tension eased with heat pack.",
+    "timestamp": "2026-07-31T11:00:22.000Z"
   },
   {
-    "id": 13,
-    "pain_score": 6,
-    "pain_level": 6,
-    "mood": 7,
+    "id": "pain_1785528018000_9ysqw",
+    "pain_score": 7.5,
+    "pain_level": 7.5,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Right lumbar stiffness, both ankles tight on first steps.",
+    "timestamp": "2026-07-31T20:00:18.000Z"
+  },
+  {
+    "id": "pain_1785538801000_asz2k",
+    "pain_score": 8,
+    "pain_level": 8,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Midday check-in: right lower back ache, mild cervical strain.",
+    "timestamp": "2026-07-31T23:00:01.000Z"
+  },
+  {
+    "id": "pain_1785556844000_rmuch",
+    "pain_score": 7.5,
+    "pain_level": 7.5,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Right lumbar fatigue after sitting, ankles slightly swollen.",
+    "timestamp": "2026-08-01T04:00:44.000Z"
+  },
+  {
+    "id": "pain_1785582036000_wmv01",
+    "pain_score": 9,
+    "pain_level": 9,
+    "mood": "stressed",
+    "mood_level": 4,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Evening right lumbar ache, pre-meditation check-in.",
+    "timestamp": "2026-08-01T11:00:36.000Z"
+  },
+  {
+    "id": "pain_1785614424000_xyexi",
+    "pain_score": 6.5,
+    "pain_level": 6.5,
+    "mood": "good",
+    "mood_level": 6,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Right lower back stiffness after sleep, neck tension 10%.",
+    "timestamp": "2026-08-01T20:00:24.000Z"
+  },
+  {
+    "id": "pain_1785625232000_sohtc",
+    "pain_score": 7.5,
+    "pain_level": 7.5,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Stiffness after prolonged desk sitting, right lumbar dominant.",
+    "timestamp": "2026-08-01T23:00:32.000Z"
+  },
+  {
+    "id": "pain_1785643205000_qaxfu",
+    "pain_score": 8,
+    "pain_level": 8,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Stiffness accumulating through the day in right lumbar.",
+    "timestamp": "2026-08-02T04:00:05.000Z"
+  },
+  {
+    "id": "pain_1785668426000_tf9lq",
+    "pain_score": 8,
+    "pain_level": 8,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Late night symptom check: lumbar tightness, rest recommended.",
+    "timestamp": "2026-08-02T11:00:26.000Z"
+  },
+  {
+    "id": "pain_1785700840000_28km6",
+    "pain_score": 7,
+    "pain_level": 7,
+    "mood": "neutral",
+    "mood_level": 6,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Morning lumbar stiffness upon waking, mild cervical tightness.",
+    "timestamp": "2026-08-02T20:00:40.000Z"
+  },
+  {
+    "id": "pain_1785711626000_mg6xz",
+    "pain_score": 8.5,
+    "pain_level": 8.5,
+    "mood": "stressed",
+    "mood_level": 4,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Midday fatigue in right lumbar, minor ankle strain after standing.",
+    "timestamp": "2026-08-02T23:00:26.000Z"
+  },
+  {
+    "id": "pain_1785729620000_yud2x",
+    "pain_score": 7.5,
+    "pain_level": 7.5,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Mid-afternoon flare in right lower back, neck stiff.",
+    "timestamp": "2026-08-03T04:00:20.000Z"
+  },
+  {
+    "id": "pain_1785754846000_ppm79",
+    "pain_score": 8,
+    "pain_level": 8,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Bedtime check-in: right lumbar ache prominent, neck mildly tense.",
+    "timestamp": "2026-08-03T11:00:46.000Z"
+  },
+  {
+    "id": "pain_1785787218000_571qk",
+    "pain_score": 7,
+    "pain_level": 7,
+    "mood": "neutral",
+    "mood_level": 6,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Woke with moderate right lumbar ache, bilateral ankle stiffness.",
+    "timestamp": "2026-08-03T20:00:18.000Z"
+  },
+  {
+    "id": "pain_1785798028000_eaohh",
+    "pain_score": 7,
+    "pain_level": 7,
+    "mood": "neutral",
+    "mood_level": 6,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Post-physio tightness in right lumbar, neck stable.",
+    "timestamp": "2026-08-03T23:00:28.000Z"
+  },
+  {
+    "id": "pain_1785816012000_lym80",
+    "pain_score": 8.5,
+    "pain_level": 8.5,
+    "mood": "stressed",
+    "mood_level": 4,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Post-walk fatigue, bilateral ankle stiffness, lumbar aching.",
+    "timestamp": "2026-08-04T04:00:12.000Z"
+  },
+  {
+    "id": "pain_1785841217000_oaja7",
+    "pain_score": 7.5,
+    "pain_level": 7.5,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "End of day lumbar fatigue, bilateral ankle ache.",
+    "timestamp": "2026-08-04T11:00:17.000Z"
+  },
+  {
+    "id": "pain_1785873629000_v3hhy",
+    "pain_score": 6.5,
+    "pain_level": 6.5,
+    "mood": "good",
+    "mood_level": 6,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Morning flare in right lumbar, mild neck ache.",
+    "timestamp": "2026-08-04T20:00:29.000Z"
+  },
+  {
+    "id": "pain_1785884426000_6m97r",
+    "pain_score": 8.5,
+    "pain_level": 8.5,
+    "mood": "stressed",
+    "mood_level": 4,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Ankles sore after walking, right lumbar dull ache.",
+    "timestamp": "2026-08-04T23:00:26.000Z"
+  },
+  {
+    "id": "pain_1785902413000_n4x62",
+    "pain_score": 7.5,
+    "pain_level": 7.5,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Afternoon right lumbar fatigue, neck tension moderate.",
+    "timestamp": "2026-08-05T04:00:13.000Z"
+  },
+  {
+    "id": "pain_1785927606000_blw5t",
+    "pain_score": 9,
+    "pain_level": 9,
+    "mood": "stressed",
+    "mood_level": 4,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Night flare in right lumbar, neck tension eased with heat pack.",
+    "timestamp": "2026-08-05T11:00:06.000Z"
+  },
+  {
+    "id": "pain_1785960028000_2b8w1",
+    "pain_score": 7,
+    "pain_level": 7,
+    "mood": "neutral",
+    "mood_level": 6,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Right lumbar stiffness, both ankles tight on first steps.",
+    "timestamp": "2026-08-05T20:00:28.000Z"
+  },
+  {
+    "id": "pain_1785970809000_obdva",
+    "pain_score": 8,
+    "pain_level": 8,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Midday check-in: right lower back ache, mild cervical strain.",
+    "timestamp": "2026-08-05T23:00:09.000Z"
+  },
+  {
+    "id": "pain_1785988843000_5j6he",
+    "pain_score": 8,
+    "pain_level": 8,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Right lumbar fatigue after sitting, ankles slightly swollen.",
+    "timestamp": "2026-08-06T04:00:43.000Z"
+  },
+  {
+    "id": "pain_1786014044000_j5sh5",
+    "pain_score": 7,
+    "pain_level": 7,
+    "mood": "neutral",
+    "mood_level": 6,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Evening right lumbar ache, pre-meditation check-in.",
+    "timestamp": "2026-08-06T11:00:44.000Z"
+  },
+  {
+    "id": "pain_1786046402000_wa1g9",
+    "pain_score": 5.5,
+    "pain_level": 5.5,
+    "mood": "good",
     "mood_level": 7,
     "location_breakdown": [
       {
         "area": "lumbar",
         "side": "right",
-        "percentage": 80
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
       }
     ],
-    "notes": "Stiffness after sitting",
-    "timestamp": "2026-08-12T01:22:04.346774+00:00"
+    "notes": "Right lower back stiffness after sleep, neck tension 10%.",
+    "timestamp": "2026-08-06T20:00:02.000Z"
   },
   {
-    "id": 14,
+    "id": "pain_1786057229000_s6xz4",
+    "pain_score": 8.5,
+    "pain_level": 8.5,
+    "mood": "stressed",
+    "mood_level": 4,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Stiffness after prolonged desk sitting, right lumbar dominant.",
+    "timestamp": "2026-08-06T23:00:29.000Z"
+  },
+  {
+    "id": "pain_1786075230000_9fzvz",
+    "pain_score": 7.5,
+    "pain_level": 7.5,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Stiffness accumulating through the day in right lumbar.",
+    "timestamp": "2026-08-07T04:00:30.000Z"
+  },
+  {
+    "id": "pain_1786100417000_knzl7",
+    "pain_score": 8,
+    "pain_level": 8,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Late night symptom check: lumbar tightness, rest recommended.",
+    "timestamp": "2026-08-07T11:00:17.000Z"
+  },
+  {
+    "id": "pain_1786132844000_lcsij",
+    "pain_score": 8,
+    "pain_level": 8,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Morning lumbar stiffness upon waking, mild cervical tightness.",
+    "timestamp": "2026-08-07T20:00:44.000Z"
+  },
+  {
+    "id": "pain_1786143601000_onl5n",
     "pain_score": 6,
     "pain_level": 6,
-    "mood": 5,
+    "mood": "good",
+    "mood_level": 7,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Midday fatigue in right lumbar, minor ankle strain after standing.",
+    "timestamp": "2026-08-07T23:00:01.000Z"
+  },
+  {
+    "id": "pain_1786161639000_zwtlv",
+    "pain_score": 8,
+    "pain_level": 8,
+    "mood": "neutral",
     "mood_level": 5,
-    "location_breakdown": {
-      "knee": 100
-    },
-    "notes": "Right knee pain 6 out of 10",
-    "timestamp": "2026-08-12T01:22:04.348533+00:00"
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Mid-afternoon flare in right lower back, neck stiff.",
+    "timestamp": "2026-08-08T04:00:39.000Z"
+  },
+  {
+    "id": "pain_1786186821000_nhd2q",
+    "pain_score": 7.5,
+    "pain_level": 7.5,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Bedtime check-in: right lumbar ache prominent, neck mildly tense.",
+    "timestamp": "2026-08-08T11:00:21.000Z"
+  },
+  {
+    "id": "pain_1786219209000_uj0i4",
+    "pain_score": 7,
+    "pain_level": 7,
+    "mood": "neutral",
+    "mood_level": 6,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Woke with moderate right lumbar ache, bilateral ankle stiffness.",
+    "timestamp": "2026-08-08T20:00:09.000Z"
+  },
+  {
+    "id": "pain_1786230007000_dy13y",
+    "pain_score": 8.5,
+    "pain_level": 8.5,
+    "mood": "stressed",
+    "mood_level": 4,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Post-physio tightness in right lumbar, neck stable.",
+    "timestamp": "2026-08-08T23:00:07.000Z"
+  },
+  {
+    "id": "pain_1786248017000_yyab8",
+    "pain_score": 7,
+    "pain_level": 7,
+    "mood": "neutral",
+    "mood_level": 6,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Post-walk fatigue, bilateral ankle stiffness, lumbar aching.",
+    "timestamp": "2026-08-09T04:00:17.000Z"
+  },
+  {
+    "id": "pain_1786273224000_tfuvv",
+    "pain_score": 9,
+    "pain_level": 9,
+    "mood": "stressed",
+    "mood_level": 4,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "End of day lumbar fatigue, bilateral ankle ache.",
+    "timestamp": "2026-08-09T11:00:24.000Z"
+  },
+  {
+    "id": "pain_1786305629000_5lc2z",
+    "pain_score": 6.5,
+    "pain_level": 6.5,
+    "mood": "good",
+    "mood_level": 6,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Morning flare in right lumbar, mild neck ache.",
+    "timestamp": "2026-08-09T20:00:29.000Z"
+  },
+  {
+    "id": "pain_1786316434000_38ixt",
+    "pain_score": 7.5,
+    "pain_level": 7.5,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Ankles sore after walking, right lumbar dull ache.",
+    "timestamp": "2026-08-09T23:00:34.000Z"
+  },
+  {
+    "id": "pain_1786334400000_z59xh",
+    "pain_score": 8,
+    "pain_level": 8,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Afternoon right lumbar fatigue, neck tension moderate.",
+    "timestamp": "2026-08-10T04:00:00.000Z"
+  },
+  {
+    "id": "pain_1786359617000_sjcil",
+    "pain_score": 7.5,
+    "pain_level": 7.5,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Night flare in right lumbar, neck tension eased with heat pack.",
+    "timestamp": "2026-08-10T11:00:17.000Z"
+  },
+  {
+    "id": "pain_1786392009000_9zirv",
+    "pain_score": 7,
+    "pain_level": 7,
+    "mood": "neutral",
+    "mood_level": 6,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Right lumbar stiffness, both ankles tight on first steps.",
+    "timestamp": "2026-08-10T20:00:09.000Z"
+  },
+  {
+    "id": "pain_1786402811000_oft4t",
+    "pain_score": 8.5,
+    "pain_level": 8.5,
+    "mood": "stressed",
+    "mood_level": 4,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Midday check-in: right lower back ache, mild cervical strain.",
+    "timestamp": "2026-08-10T23:00:11.000Z"
+  },
+  {
+    "id": "pain_1786420816000_my7ws",
+    "pain_score": 8,
+    "pain_level": 8,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Right lumbar fatigue after sitting, ankles slightly swollen.",
+    "timestamp": "2026-08-11T04:00:16.000Z"
+  },
+  {
+    "id": "pain_1786446034000_udiky",
+    "pain_score": 8,
+    "pain_level": 8,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Evening right lumbar ache, pre-meditation check-in.",
+    "timestamp": "2026-08-11T11:00:34.000Z"
+  },
+  {
+    "id": "pain_1786478422000_bkr6d",
+    "pain_score": 7.5,
+    "pain_level": 7.5,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Right lower back stiffness after sleep, neck tension 10%.",
+    "timestamp": "2026-08-11T20:00:22.000Z"
+  },
+  {
+    "id": "pain_1786489230000_42gxn",
+    "pain_score": 6.5,
+    "pain_level": 6.5,
+    "mood": "good",
+    "mood_level": 6,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Stiffness after prolonged desk sitting, right lumbar dominant.",
+    "timestamp": "2026-08-11T23:00:30.000Z"
+  },
+  {
+    "id": "pain_1786507209000_38yus",
+    "pain_score": 8,
+    "pain_level": 8,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Stiffness accumulating through the day in right lumbar.",
+    "timestamp": "2026-08-12T04:00:09.000Z"
+  },
+  {
+    "id": "pain_1786532406000_vsbcn",
+    "pain_score": 7.5,
+    "pain_level": 7.5,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Late night symptom check: lumbar tightness, rest recommended.",
+    "timestamp": "2026-08-12T11:00:06.000Z"
+  },
+  {
+    "id": "pain_1786564822000_nypkp",
+    "pain_score": 6.5,
+    "pain_level": 6.5,
+    "mood": "good",
+    "mood_level": 6,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Morning lumbar stiffness upon waking, mild cervical tightness.",
+    "timestamp": "2026-08-12T20:00:22.000Z"
+  },
+  {
+    "id": "pain_1786575626000_81x97",
+    "pain_score": 9,
+    "pain_level": 9,
+    "mood": "stressed",
+    "mood_level": 4,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Midday fatigue in right lumbar, minor ankle strain after standing.",
+    "timestamp": "2026-08-12T23:00:26.000Z"
+  },
+  {
+    "id": "pain_1786593608000_rcp1b",
+    "pain_score": 7.5,
+    "pain_level": 7.5,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Mid-afternoon flare in right lower back, neck stiff.",
+    "timestamp": "2026-08-13T04:00:08.000Z"
+  },
+  {
+    "id": "pain_1786618832000_qrrcx",
+    "pain_score": 9,
+    "pain_level": 9,
+    "mood": "stressed",
+    "mood_level": 4,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Bedtime check-in: right lumbar ache prominent, neck mildly tense.",
+    "timestamp": "2026-08-13T11:00:32.000Z"
+  },
+  {
+    "id": "pain_1786651204000_vo2sq",
+    "pain_score": 7,
+    "pain_level": 7,
+    "mood": "neutral",
+    "mood_level": 6,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Woke with moderate right lumbar ache, bilateral ankle stiffness.",
+    "timestamp": "2026-08-13T20:00:04.000Z"
+  },
+  {
+    "id": "pain_1786662020000_eovcn",
+    "pain_score": 7.5,
+    "pain_level": 7.5,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Post-physio tightness in right lumbar, neck stable.",
+    "timestamp": "2026-08-13T23:00:20.000Z"
+  },
+  {
+    "id": "pain_1786680030000_04dyl",
+    "pain_score": 8,
+    "pain_level": 8,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Post-walk fatigue, bilateral ankle stiffness, lumbar aching.",
+    "timestamp": "2026-08-14T04:00:30.000Z"
+  },
+  {
+    "id": "pain_1786705234000_gty22",
+    "pain_score": 7.5,
+    "pain_level": 7.5,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "End of day lumbar fatigue, bilateral ankle ache.",
+    "timestamp": "2026-08-14T11:00:34.000Z"
+  },
+  {
+    "id": "pain_1786737638000_zkh3r",
+    "pain_score": 5.5,
+    "pain_level": 5.5,
+    "mood": "good",
+    "mood_level": 7,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Morning flare in right lumbar, mild neck ache.",
+    "timestamp": "2026-08-14T20:00:38.000Z"
+  },
+  {
+    "id": "pain_1786748440000_3xjdb",
+    "pain_score": 8.5,
+    "pain_level": 8.5,
+    "mood": "stressed",
+    "mood_level": 4,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Ankles sore after walking, right lumbar dull ache.",
+    "timestamp": "2026-08-14T23:00:40.000Z"
+  },
+  {
+    "id": "pain_1786766430000_q0lep",
+    "pain_score": 7.5,
+    "pain_level": 7.5,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Afternoon right lumbar fatigue, neck tension moderate.",
+    "timestamp": "2026-08-15T04:00:30.000Z"
+  },
+  {
+    "id": "pain_1786791626000_3n6ss",
+    "pain_score": 8,
+    "pain_level": 8,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Night flare in right lumbar, neck tension eased with heat pack.",
+    "timestamp": "2026-08-15T11:00:26.000Z"
+  },
+  {
+    "id": "pain_1786824009000_kapfm",
+    "pain_score": 7.5,
+    "pain_level": 7.5,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Right lumbar stiffness, both ankles tight on first steps.",
+    "timestamp": "2026-08-15T20:00:09.000Z"
+  },
+  {
+    "id": "pain_1786834804000_i3u4m",
+    "pain_score": 6,
+    "pain_level": 6,
+    "mood": "good",
+    "mood_level": 7,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Midday check-in: right lower back ache, mild cervical strain.",
+    "timestamp": "2026-08-15T23:00:04.000Z"
+  },
+  {
+    "id": "pain_1786852838000_wmf8t",
+    "pain_score": 8,
+    "pain_level": 8,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Right lumbar fatigue after sitting, ankles slightly swollen.",
+    "timestamp": "2026-08-16T04:00:38.000Z"
+  },
+  {
+    "id": "pain_1786878003000_b9085",
+    "pain_score": 8,
+    "pain_level": 8,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Evening right lumbar ache, pre-meditation check-in.",
+    "timestamp": "2026-08-16T11:00:03.000Z"
+  },
+  {
+    "id": "pain_1786910444000_fadza",
+    "pain_score": 7,
+    "pain_level": 7,
+    "mood": "neutral",
+    "mood_level": 6,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Right lower back stiffness after sleep, neck tension 10%.",
+    "timestamp": "2026-08-16T20:00:44.000Z"
+  },
+  {
+    "id": "pain_1786921240000_pwkes",
+    "pain_score": 8.5,
+    "pain_level": 8.5,
+    "mood": "stressed",
+    "mood_level": 4,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Stiffness after prolonged desk sitting, right lumbar dominant.",
+    "timestamp": "2026-08-16T23:00:40.000Z"
+  },
+  {
+    "id": "pain_1786939249000_6xe4u",
+    "pain_score": 7.5,
+    "pain_level": 7.5,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Stiffness accumulating through the day in right lumbar.",
+    "timestamp": "2026-08-17T04:00:49.000Z"
+  },
+  {
+    "id": "pain_1786964446000_pq0oo",
+    "pain_score": 8.5,
+    "pain_level": 8.5,
+    "mood": "stressed",
+    "mood_level": 4,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Late night symptom check: lumbar tightness, rest recommended.",
+    "timestamp": "2026-08-17T11:00:46.000Z"
+  },
+  {
+    "id": "pain_1786996802000_6mrb4",
+    "pain_score": 6.5,
+    "pain_level": 6.5,
+    "mood": "good",
+    "mood_level": 6,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Morning lumbar stiffness upon waking, mild cervical tightness.",
+    "timestamp": "2026-08-17T20:00:02.000Z"
+  },
+  {
+    "id": "pain_1787007628000_ew1fp",
+    "pain_score": 7.5,
+    "pain_level": 7.5,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Midday fatigue in right lumbar, minor ankle strain after standing.",
+    "timestamp": "2026-08-17T23:00:28.000Z"
+  },
+  {
+    "id": "pain_1787025638000_sjvnc",
+    "pain_score": 8.5,
+    "pain_level": 8.5,
+    "mood": "stressed",
+    "mood_level": 4,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Mid-afternoon flare in right lower back, neck stiff.",
+    "timestamp": "2026-08-18T04:00:38.000Z"
+  },
+  {
+    "id": "pain_1787050838000_fh26y",
+    "pain_score": 7.5,
+    "pain_level": 7.5,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Bedtime check-in: right lumbar ache prominent, neck mildly tense.",
+    "timestamp": "2026-08-18T11:00:38.000Z"
+  },
+  {
+    "id": "pain_1787083238000_atg71",
+    "pain_score": 7,
+    "pain_level": 7,
+    "mood": "neutral",
+    "mood_level": 6,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Woke with moderate right lumbar ache, bilateral ankle stiffness.",
+    "timestamp": "2026-08-18T20:00:38.000Z"
+  },
+  {
+    "id": "pain_1787094043000_m1scw",
+    "pain_score": 8.5,
+    "pain_level": 8.5,
+    "mood": "stressed",
+    "mood_level": 4,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Post-physio tightness in right lumbar, neck stable.",
+    "timestamp": "2026-08-18T23:00:43.000Z"
+  },
+  {
+    "id": "pain_1787112046000_n3xkf",
+    "pain_score": 7.5,
+    "pain_level": 7.5,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Post-walk fatigue, bilateral ankle stiffness, lumbar aching.",
+    "timestamp": "2026-08-19T04:00:46.000Z"
+  },
+  {
+    "id": "pain_1787137214000_5btw7",
+    "pain_score": 8,
+    "pain_level": 8,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "End of day lumbar fatigue, bilateral ankle ache.",
+    "timestamp": "2026-08-19T11:00:14.000Z"
+  },
+  {
+    "id": "pain_1787169641000_5kjjp",
+    "pain_score": 7.5,
+    "pain_level": 7.5,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Morning flare in right lumbar, mild neck ache.",
+    "timestamp": "2026-08-19T20:00:41.000Z"
+  },
+  {
+    "id": "pain_1787180424000_mvxx6",
+    "pain_score": 7.5,
+    "pain_level": 7.5,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Ankles sore after walking, right lumbar dull ache.",
+    "timestamp": "2026-08-19T23:00:24.000Z"
+  },
+  {
+    "id": "pain_1787198403000_wivnd",
+    "pain_score": 7.5,
+    "pain_level": 7.5,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Afternoon right lumbar fatigue, neck tension moderate.",
+    "timestamp": "2026-08-20T04:00:03.000Z"
+  },
+  {
+    "id": "pain_1787223626000_tubp4",
+    "pain_score": 7.5,
+    "pain_level": 7.5,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Night flare in right lumbar, neck tension eased with heat pack.",
+    "timestamp": "2026-08-20T11:00:26.000Z"
+  },
+  {
+    "id": "pain_1787256045000_0aum3",
+    "pain_score": 6.5,
+    "pain_level": 6.5,
+    "mood": "good",
+    "mood_level": 6,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Right lumbar stiffness, both ankles tight on first steps.",
+    "timestamp": "2026-08-20T20:00:45.000Z"
+  },
+  {
+    "id": "pain_1787266820000_hufrv",
+    "pain_score": 8.5,
+    "pain_level": 8.5,
+    "mood": "stressed",
+    "mood_level": 4,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Midday check-in: right lower back ache, mild cervical strain.",
+    "timestamp": "2026-08-20T23:00:20.000Z"
+  },
+  {
+    "id": "pain_1787284836000_uegrf",
+    "pain_score": 7.5,
+    "pain_level": 7.5,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Right lumbar fatigue after sitting, ankles slightly swollen.",
+    "timestamp": "2026-08-21T04:00:36.000Z"
+  },
+  {
+    "id": "pain_1787310013000_mj2z8",
+    "pain_score": 9,
+    "pain_level": 9,
+    "mood": "stressed",
+    "mood_level": 4,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Evening right lumbar ache, pre-meditation check-in.",
+    "timestamp": "2026-08-21T11:00:13.000Z"
+  },
+  {
+    "id": "pain_1787342435000_bjrx0",
+    "pain_score": 7.5,
+    "pain_level": 7.5,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Right lower back stiffness after sleep, neck tension 10%.",
+    "timestamp": "2026-08-21T20:00:35.000Z"
+  },
+  {
+    "id": "pain_1787353209000_a5w3h",
+    "pain_score": 7.5,
+    "pain_level": 7.5,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Stiffness after prolonged desk sitting, right lumbar dominant.",
+    "timestamp": "2026-08-21T23:00:09.000Z"
+  },
+  {
+    "id": "pain_1787371227000_dlc00",
+    "pain_score": 8,
+    "pain_level": 8,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Stiffness accumulating through the day in right lumbar.",
+    "timestamp": "2026-08-22T04:00:27.000Z"
+  },
+  {
+    "id": "pain_1787396422000_zw8jv",
+    "pain_score": 7.5,
+    "pain_level": 7.5,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Late night symptom check: lumbar tightness, rest recommended.",
+    "timestamp": "2026-08-22T11:00:22.000Z"
+  },
+  {
+    "id": "pain_1787428814000_s6f4w",
+    "pain_score": 5.5,
+    "pain_level": 5.5,
+    "mood": "good",
+    "mood_level": 7,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Morning lumbar stiffness upon waking, mild cervical tightness.",
+    "timestamp": "2026-08-22T20:00:14.000Z"
+  },
+  {
+    "id": "pain_1787439649000_pfuo1",
+    "pain_score": 8,
+    "pain_level": 8,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Midday fatigue in right lumbar, minor ankle strain after standing.",
+    "timestamp": "2026-08-22T23:00:49.000Z"
+  },
+  {
+    "id": "pain_1787457625000_wi9y6",
+    "pain_score": 7.5,
+    "pain_level": 7.5,
+    "mood": "neutral",
+    "mood_level": 5,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Mid-afternoon flare in right lower back, neck stiff.",
+    "timestamp": "2026-08-23T04:00:25.000Z"
+  },
+  {
+    "id": "pain_1787482801000_wga9x",
+    "pain_score": 8.5,
+    "pain_level": 8.5,
+    "mood": "stressed",
+    "mood_level": 4,
+    "location_breakdown": [
+      {
+        "area": "lumbar",
+        "side": "right",
+        "percentage": 75
+      },
+      {
+        "area": "neck",
+        "side": "unspecified",
+        "percentage": 10
+      },
+      {
+        "area": "ankle",
+        "side": "right",
+        "percentage": 5
+      },
+      {
+        "area": "ankle",
+        "side": "left",
+        "percentage": 5
+      },
+      {
+        "area": "thoracic",
+        "side": "unspecified",
+        "percentage": 5
+      }
+    ],
+    "notes": "Bedtime check-in: right lumbar ache prominent, neck mildly tense.",
+    "timestamp": "2026-08-23T11:00:01.000Z"
   }
 ]

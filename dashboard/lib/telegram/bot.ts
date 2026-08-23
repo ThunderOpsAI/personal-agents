@@ -1,3 +1,50 @@
+export interface TelegramInlineKeyboardButton {
+  text: string;
+  callback_data?: string;
+  url?: string;
+}
+
+export interface TelegramInlineKeyboardMarkup {
+  inline_keyboard: TelegramInlineKeyboardButton[][];
+}
+
+export interface TelegramReplyKeyboardButton {
+  text: string;
+}
+
+export interface TelegramReplyKeyboardMarkup {
+  keyboard: TelegramReplyKeyboardButton[][];
+  resize_keyboard?: boolean;
+  one_time_keyboard?: boolean;
+}
+
+export type TelegramReplyMarkup = TelegramInlineKeyboardMarkup | TelegramReplyKeyboardMarkup;
+
+export interface TelegramCallbackQuery {
+  id: string;
+  from: {
+    id: number;
+    is_bot: boolean;
+    first_name: string;
+    username?: string;
+  };
+  message?: {
+    message_id: number;
+    chat: {
+      id: number;
+      type: string;
+    };
+    date: number;
+    text?: string;
+  };
+  data?: string;
+}
+
+export interface TelegramSendMessageOptions {
+  parse_mode?: 'Markdown' | 'HTML' | 'MarkdownV2';
+  reply_markup?: TelegramReplyMarkup;
+}
+
 export interface TelegramUpdate {
   update_id: number;
   message?: {
@@ -15,6 +62,7 @@ export interface TelegramUpdate {
     date: number;
     text?: string;
   };
+  callback_query?: TelegramCallbackQuery;
 }
 
 export class TelegramBot {
@@ -29,11 +77,36 @@ export class TelegramBot {
     this.apiUrl = `https://api.telegram.org/bot${this.token}`;
   }
 
-  async sendMessage(chatId: string | number, text: string) {
+  async sendMessage(chatId: string | number, text: string, options?: TelegramSendMessageOptions) {
+    const payload: any = {
+      chat_id: chatId,
+      text,
+      ...options,
+    };
+
     const res = await fetch(`${this.apiUrl}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: chatId, text }),
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      throw new Error(`Telegram API Error: ${res.status} ${res.statusText}`);
+    }
+    return res.json();
+  }
+
+  async answerCallbackQuery(callbackQueryId: string, text?: string, showAlert = false) {
+    const payload: any = {
+      callback_query_id: callbackQueryId,
+      text,
+      show_alert: showAlert,
+    };
+
+    const res = await fetch(`${this.apiUrl}/answerCallbackQuery`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
     });
 
     if (!res.ok) {

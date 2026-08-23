@@ -30,7 +30,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ status: "success", intent: "LOG_PAIN", data });
     }
 
-    const chat = await sendConversationalChat(input.message, input.history || []);
+    const chat = input.history && input.history.length > 0
+      ? await sendConversationalChat(input.message, input.history)
+      : await sendConversationalChat(input.message);
     const disclaimer = "Medical output is decision support, not diagnosis. Preserve clinician restrictions; recommend clinician review for worsening or concerning symptoms.";
     return NextResponse.json({
       status: "success",

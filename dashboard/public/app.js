@@ -1155,6 +1155,24 @@ document.addEventListener('DOMContentLoaded', () => {
                     showToast('Task added to agenda', 'success');
                 } else if (data.intent === 'ADD_EXPENSE') {
                     if (typeof loadBudget === 'function') loadBudget();
+                    showToast('Expense added', 'success');
+                }
+            }
+
+            if (actionToCommit) {
+                if (typeof loadAgenda === 'function') loadAgenda();
+                if (typeof loadNotes === 'function') loadNotes();
+                if (typeof loadBudget === 'function') loadBudget();
+            }
+        } catch (err) {
+            const rumbleDiv = document.createElement('div');
+            rumbleDiv.className = 'message rumble-message';
+            rumbleDiv.innerHTML = `<strong>RUMBLE:</strong> Communication error. Unable to reach backend.`;
+            rumbleChatMessages.appendChild(rumbleDiv);
+            rumbleChatMessages.scrollTop = rumbleChatMessages.scrollHeight;
+        }
+    }
+
     // --- 11. Settings Logic ---
     const btnSettings = document.getElementById('btnSettings');
 
@@ -1224,16 +1242,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.classList.remove('theme-default', 'theme-midnight', 'theme-cyberpunk', 'theme-forest');
         if (themeName !== 'theme-default') {
             document.body.classList.add(themeName);
-        }
-    }
-                }
-            }
-        } catch (err) {
-            const rumbleDiv = document.createElement('div');
-            rumbleDiv.className = 'message rumble-message';
-            rumbleDiv.innerHTML = `<strong>RUMBLE:</strong> Communication error. Unable to reach backend.`;
-            rumbleChatMessages.appendChild(rumbleDiv);
-            rumbleChatMessages.scrollTop = rumbleChatMessages.scrollHeight;
         }
     }
 
