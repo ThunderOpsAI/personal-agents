@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createNote, getNotes } from "../../../../lib/db";
 
-
+export const dynamic = 'force-dynamic';
 export async function GET() {
   try {
     const notes = await getNotes();

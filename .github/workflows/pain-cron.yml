@@ -1,0 +1,14 @@
+name: Telegram Pain Reminder Cron
+
+on:
+  schedule:
+    # 6am, 9am, 12pm, 3pm, 6pm, 9pm, 12am AEST (UTC+10)
+    - cron: '0 20,23,2,5,8,11,14 * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+jobs:
+  ping-endpoint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Vercel Telegram Notification
+        run: curl -s -X GET "https://rumble-os.vercel.app/api/v1/pain/notify"

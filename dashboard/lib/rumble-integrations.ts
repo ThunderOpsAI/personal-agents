@@ -85,7 +85,11 @@ async function postLiveJson(url: string, body: unknown, integration: "chat" | "p
   }
 }
 
-export async function sendConversationalChat(message: string, history: any[] = []): Promise<EveChatResult & { requires_confirmation?: boolean; preview?: any }> {
+export async function sendConversationalChat(
+  message: string,
+  history: any[] = [],
+  attachment?: { data: string; mimeType: string; filename?: string }
+): Promise<EveChatResult & { requires_confirmation?: boolean; preview?: any }> {
   if (process.env.RUMBLE_EVE_CHAT_URL && !process.env.GEMINI_API_KEY) {
     const result = await postLiveJson(
       configuredUrl("RUMBLE_EVE_CHAT_URL", "chat"),
@@ -100,7 +104,7 @@ export async function sendConversationalChat(message: string, history: any[] = [
 
   // Use TypeScript Intent Router
   const { routeChatMessage } = await import("./agents/intent-router");
-  const routed = await routeChatMessage(message, history);
+  const routed = await routeChatMessage(message, history, attachment);
   return {
     reply: routed.reply,
     intent: routed.intent,

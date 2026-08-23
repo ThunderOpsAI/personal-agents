@@ -122,39 +122,47 @@ document.addEventListener('DOMContentLoaded', () => {
     const weeklyAgendaList = document.getElementById('weeklyAgendaList');
     const monthlyAgendaList = document.getElementById('monthlyAgendaList');
 
-    // Continuous Learning Card Elements
-    const learnCategoryTag = document.getElementById('learnCategoryTag');
-    const learnTitleText = document.getElementById('learnTitleText');
-    const learnSummaryText = document.getElementById('learnSummaryText');
-    const btnLearnMore = document.getElementById('btnLearnMore');
-    const btnLearnDifferent = document.getElementById('btnLearnDifferent');
-    const btnChooseLearnTopic = document.getElementById('btnChooseLearnTopic');
-    const chooseLearnModal = document.getElementById('chooseLearnModal');
-    const learnTopicInput = document.getElementById('learnTopicInput');
+    // Continuous Learning & Encyclopedias Elements
+    const painProgressBadge = document.getElementById('painProgressBadge');
+    const painCurrentTitle = document.getElementById('painCurrentTitle');
+    const aiProgressBadge = document.getElementById('aiProgressBadge');
+    const aiCurrentTitle = document.getElementById('aiCurrentTitle');
+    const techProgressBadge = document.getElementById('techProgressBadge');
+    const techCurrentTitle = document.getElementById('techCurrentTitle');
 
-    // Learn Modal Elements
+    // Encyclopedia Reader Modal Elements
     const learnModal = document.getElementById('learnModal');
     const btnCloseLearnModal = document.getElementById('btnCloseLearnModal');
     const btnCloseLearnDone = document.getElementById('btnCloseLearnDone');
-    const btnRotateTopicInsideModal = document.getElementById('btnRotateTopicInsideModal');
     const modalLearnTitle = document.getElementById('modalLearnTitle');
+    const modalLearnSubtitle = document.getElementById('modalLearnSubtitle');
     const modalLearnCategory = document.getElementById('modalLearnCategory');
-    const modalLearnDetails = document.getElementById('modalLearnDetails');
-    const modalLearnTable = document.getElementById('modalLearnTable').querySelector('tbody');
+    const modalLearnReadingTime = document.getElementById('modalLearnReadingTime');
+    const modalChapterIndicator = document.getElementById('modalChapterIndicator');
+    const modalProgressBar = document.getElementById('modalProgressBar');
+    const modalChapterSelect = document.getElementById('modalChapterSelect');
+    const modalLearnContent = document.getElementById('modalLearnContent');
+    const modalLearnTakeaways = document.getElementById('modalLearnTakeaways');
+    const btnPrevChapter = document.getElementById('btnPrevChapter');
+    const btnNextChapter = document.getElementById('btnNextChapter');
+    const btnSaveSummaryLearn = document.getElementById('btnSaveSummaryLearn');
     
     const notesModal = document.getElementById('notesModal');
     const btnCloseNotes = document.getElementById('btnCloseNotes');
     const notesGrid = document.getElementById('notesGrid');
-    const tabNotesActive = document.getElementById('tabNotesActive');
-    const tabNotesPinned = document.getElementById('tabNotesPinned');
-    const tabNotesArchive = document.getElementById('tabNotesArchive');
-    const btnNewNote = document.getElementById('btnNewNote');
-    const noteEditorContainer = document.getElementById('noteEditorContainer');
+    const pinnedNotesGrid = document.getElementById('pinnedNotesGrid');
+    const notesSectionTitle = document.getElementById('notesSectionTitle');
+    const unpinnedNotesSectionTitle = document.getElementById('unpinnedNotesSectionTitle');
+    const btnToggleArchiveView = document.getElementById('btnToggleArchiveView');
+    
+    // Inline Note Editor
+    const noteEditorCollapsed = document.getElementById('noteEditorCollapsed');
+    const noteEditorExpanded = document.getElementById('noteEditorExpanded');
     const editNoteTitle = document.getElementById('editNoteTitle');
     const editNoteBody = document.getElementById('editNoteBody');
-    const btnPinNote = document.getElementById('btnPinNote');
     const btnSaveNoteEdit = document.getElementById('btnSaveNoteEdit');
     const btnCancelNoteEdit = document.getElementById('btnCancelNoteEdit');
+    const btnPinNote = document.getElementById('btnPinNote');
     
     // Logger Elements
     const painValDisplay = document.getElementById('painValDisplay');
@@ -209,6 +217,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const rumbleChatInput = document.getElementById('rumbleChatInput');
     const btnSendRumbleChat = document.getElementById('btnSendRumbleChat');
     const btnRumbleVoice = document.getElementById('btnRumbleVoice');
+    const btnChatCamera = document.getElementById('btnChatCamera');
+    const btnChatAttach = document.getElementById('btnChatAttach');
+    const chatFileInput = document.getElementById('chatFileInput');
+    const chatCameraInput = document.getElementById('chatCameraInput');
+    const chatAttachmentPreview = document.getElementById('chatAttachmentPreview');
+    const chatAttachmentImg = document.getElementById('chatAttachmentImg');
+    const chatAttachmentFileIcon = document.getElementById('chatAttachmentFileIcon');
+    const chatAttachmentName = document.getElementById('chatAttachmentName');
+    const chatAttachmentSize = document.getElementById('chatAttachmentSize');
+    const btnRemoveChatAttachment = document.getElementById('btnRemoveChatAttachment');
+    let currentChatAttachment = null;
 
     let currentPainLevel = 0;
     let currentMoodLevel = 5;
@@ -325,7 +344,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const countBadge = document.getElementById('agendaCount');
         if (countBadge) countBadge.textContent = `${dailyItems.length} Items`;
         
-        document.querySelectorAll('.protocol-card:not(#protocol-learn)').forEach(c => c.remove());
+        document.querySelectorAll('.protocol-card:not(#protocol-learn):not(#executive-briefing)').forEach(c => c.remove());
 
         if (dailyItems.length > 0) {
             dailyItems.forEach(item => {
@@ -346,7 +365,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <small class="form-hint">Dismissed</small>
                         </div>
                         <div class="protocol-actions">
-                            <button class="btn btn-outline btn-reinstate" data-id="${item.id}" data-type="${item.item_type || ''}">Reinstate</button>
+                            <button class="btn btn-outline btn-sm btn-reinstate" data-id="${item.id}" data-type="${item.item_type || ''}">Reinstate</button>
                         </div>
                     `;
                 } else {
@@ -357,10 +376,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             ${item.choices ? `<small class="form-hint">Choices: ${item.choices.join(' · ')}</small>` : ''}
                         </div>
                         <div class="protocol-actions">
-                            <button class="btn btn-neon-purple btn-show-me" data-id="${item.id}" data-type="${item.item_type || ''}" ${isCompleted ? 'disabled' : ''}>Show Me</button>
-                            <button class="btn btn-neon-green btn-done" data-id="${item.id}" data-type="${item.item_type || ''}" ${isCompleted ? 'disabled' : ''}>${isCompleted ? 'Done' : 'Done'}</button>
-                            <button class="btn btn-outline btn-postpone" data-id="${item.id}" data-type="${item.item_type || ''}" ${isCompleted ? 'disabled' : ''}>Postpone</button>
-                            <button class="btn btn-outline btn-dismiss" data-id="${item.id}" data-type="${item.item_type || ''}" ${isCompleted ? '' : 'disabled'}>Dismiss</button>
+                            <button class="btn btn-neon-purple btn-sm btn-show-me" data-id="${item.id}" data-type="${item.item_type || ''}" ${isCompleted ? 'disabled' : ''}>View</button>
+                            <button class="btn btn-neon-green btn-sm btn-done" data-id="${item.id}" data-type="${item.item_type || ''}" ${isCompleted ? 'disabled' : ''}>${isCompleted ? 'Done' : 'Done'}</button>
+                            <button class="btn btn-outline btn-sm btn-postpone" data-id="${item.id}" data-type="${item.item_type || ''}" ${isCompleted ? 'disabled' : ''}>Delay</button>
+                            <button class="btn btn-outline btn-sm btn-dismiss" data-id="${item.id}" data-type="${item.item_type || ''}" ${isCompleted ? '' : 'disabled'}>Skip</button>
                         </div>
                     `;
                 }
@@ -404,6 +423,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     right: 'dayGridMonth,timeGridWeek,timeGridDay'
                 },
                 height: 'auto',
+                selectable: true,
+                dateClick: function(info) {
+                    let datePart = info.dateStr;
+                    let timePart = '09:00';
+                    if (info.dateStr.includes('T')) {
+                        const parts = info.dateStr.split('T');
+                        datePart = parts[0];
+                        timePart = parts[1].substring(0, 5); // get HH:MM
+                    }
+                    openCalendarEventEdit({ rawDate: datePart, startTime: timePart });
+                },
                 eventClick: function(info) {
                     if (info.event.extendedProps.originalEvent) {
                         openCalendarEventView(info.event.extendedProps.originalEvent);
@@ -482,7 +512,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (window.btnYesterdayAgenda) window.btnYesterdayAgenda.style.display = 'flex';
 
         // Remove non-learning cards
-        document.querySelectorAll('.protocol-card:not(#protocol-learn)').forEach(c => c.remove());
+        document.querySelectorAll('.protocol-card:not(#protocol-learn):not(#executive-briefing)').forEach(c => c.remove());
         
         const yesterdayProtocols = [
             { id: 'yest_retrieval_0600', time: '06:00 AM', title: 'Automated Retrieval: Scrape Gmail & Calendar', item_type: 'retrieval', status: 'completed' },
@@ -503,7 +533,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <p>${item.title}</p>
                 </div>
                 <div class="protocol-actions">
-                    <button class="btn btn-neon-green btn-done" disabled>Done</button>
+                    <button class="btn btn-neon-green btn-sm btn-done" disabled>Done</button>
                 </div>
             `;
             document.getElementById("agendaStream").appendChild(card);
@@ -529,7 +559,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (btnTomorrowIcon) btnTomorrowIcon.innerHTML = "&larr;";
         
         // Remove non-learning cards
-        document.querySelectorAll('.protocol-card:not(#protocol-learn)').forEach(c => c.remove());
+        document.querySelectorAll('.protocol-card:not(#protocol-learn):not(#executive-briefing)').forEach(c => c.remove());
         
         const tomorrowProtocols = [
             { id: 'tom_retrieval_0600', time: '06:00 AM', title: 'Automated Retrieval: Scrape Gmail & Calendar', item_type: 'retrieval', status: 'pending' },
@@ -571,9 +601,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${item.choices ? `<small class="form-hint">Choices: ${item.choices.join(' · ')}</small>` : ''}
                 </div>
                 <div class="protocol-actions">
-                    <button class="btn btn-neon-purple btn-show-me" data-id="${item.id}" data-type="${item.item_type || ''}">Preview</button>
-                    <button class="btn btn-neon-green btn-done" data-id="${item.id}" data-type="${item.item_type || ''}">Pre-Done</button>
-                    <button class="btn btn-outline btn-dismiss" data-id="${item.id}" data-type="${item.item_type || ''}">Dismiss</button>
+                    <button class="btn btn-neon-purple btn-sm btn-show-me" data-id="${item.id}" data-type="${item.item_type || ''}">Preview</button>
+                    <button class="btn btn-neon-green btn-sm btn-done" data-id="${item.id}" data-type="${item.item_type || ''}">Pre-Done</button>
+                    <button class="btn btn-outline btn-sm btn-dismiss" data-id="${item.id}" data-type="${item.item_type || ''}">Skip</button>
                 </div>
             `;
             document.getElementById("agendaStream").appendChild(card);
@@ -687,6 +717,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (btnCloseCalView) btnCloseCalView.addEventListener('click', () => calendarEventViewModal.classList.add('hidden'));
     if (btnDoneCalView) btnDoneCalView.addEventListener('click', () => calendarEventViewModal.classList.add('hidden'));
+
+    // Postpone Modal Logic
+    
+    if (btnClosePostpone) btnClosePostpone.addEventListener('click', () => postponeModal.classList.add('hidden'));
+    if (btnCancelPostpone) btnCancelPostpone.addEventListener('click', () => postponeModal.classList.add('hidden'));
+    
+    if (btnConfirmPostpone) {
+        btnConfirmPostpone.addEventListener('click', () => {
+            if (itemToPostpone && postponeDateInput.value) {
+                fetch(API_AGENDA, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        id: itemToPostpone,
+                        action: 'reschedule',
+                        new_date: postponeDateInput.value
+                    })
+                }).then(() => {
+                    postponeModal.classList.add('hidden');
+                    loadAgenda();
+                }).catch(err => {
+                    console.error('Failed to reschedule:', err);
+                    showToast('Failed to postpone item');
+                });
+            }
+        });
+    }
     
     if (btnEditCalendarEvent) {
         btnEditCalendarEvent.addEventListener('click', () => {
@@ -719,6 +776,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error(err);
             }
         });
+    }
+
+    const btnAddCalendarEvent = document.getElementById('btnAddCalendarEvent');
+    if (btnAddCalendarEvent) {
+        btnAddCalendarEvent.addEventListener('click', () => openCalendarEventEdit(null));
     }
 
     if (typeof btnAddWeeklyEvent !== "undefined" && btnAddWeeklyEvent) {
@@ -785,84 +847,215 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- Continuous Learning Topic Engine ---
-    async function loadLearnTopic() {
+    // --- 3 Encyclopedias (Pain, AI, Tech) Engine ---
+    let activeEncyclopediaId = "pain";
+    let activeChapterIndex = 0;
+    let currentChapterData = null;
+    let currentEncyclopediaMeta = null;
+
+    async function loadEncyclopediasSummary() {
         try {
-            const res = await fetch(API_LEARN_TOPIC);
-            if (res.ok) {
-                const data = await res.json();
-                updateLearnCard(data.topic);
-            }
+            const res = await fetch('/api/v1/learn/encyclopedias');
+            if (!res.ok) return;
+            const data = await res.json();
+            if (!data.encyclopedias) return;
+
+            data.encyclopedias.forEach(enc => {
+                const badgeText = `Ch. ${(enc.currentChapterIndex || 0) + 1}/${enc.totalChapters}`;
+                const titleText = enc.currentChapter ? enc.currentChapter.title : 'Loading...';
+                
+                if (enc.id === 'pain') {
+                    if (painProgressBadge) painProgressBadge.innerText = badgeText;
+                    if (painCurrentTitle) painCurrentTitle.innerText = titleText;
+                } else if (enc.id === 'ai') {
+                    if (aiProgressBadge) aiProgressBadge.innerText = badgeText;
+                    if (aiCurrentTitle) aiCurrentTitle.innerText = titleText;
+                } else if (enc.id === 'tech') {
+                    if (techProgressBadge) techProgressBadge.innerText = badgeText;
+                    if (techCurrentTitle) techCurrentTitle.innerText = titleText;
+                }
+            });
         } catch (e) {
-            showToast('Failed to load learn topic');
+            console.error('Failed to load encyclopedias summary:', e);
+        }
+    }
+
+    async function openEncyclopediaReader(encyclopediaId, chapterIndex = null) {
+        activeEncyclopediaId = encyclopediaId;
+        try {
+            const url = chapterIndex !== null 
+                ? `/api/v1/learn/encyclopedias/${encyclopediaId}?chapter=${chapterIndex}`
+                : `/api/v1/learn/encyclopedias/${encyclopediaId}`;
+            
+            const res = await fetch(url);
+            if (!res.ok) throw new Error('Failed to load encyclopedia chapter');
+            const data = await res.json();
+
+            currentEncyclopediaMeta = data.encyclopedia;
+            currentChapterData = data.currentChapter;
+            activeChapterIndex = data.encyclopedia.currentChapterIndex;
+
+            renderEncyclopediaReader();
+            if (learnModal) learnModal.classList.remove('hidden');
+        } catch (e) {
+            showToast('Could not load encyclopedia', 'error');
             console.error(e);
         }
     }
 
-    function updateLearnCard(topic) {
-        currentLearnTopic = topic;
-        if (!topic) return;
-        learnCategoryTag.innerText = topic.category;
-        learnTitleText.innerText = `Learn: ${topic.title}`;
-        learnSummaryText.innerText = topic.summary;
-    }
+    function renderEncyclopediaReader() {
+        if (!currentEncyclopediaMeta || !currentChapterData) return;
 
-    async function rotateLearnTopic() {
-        btnLearnDifferent.innerText = "Rotating...";
-        try {
-            const res = await fetch(API_LEARN_ROTATE, { method: 'POST' });
-            if (res.ok) {
-                const data = await res.json();
-                updateLearnCard(data.topic);
-            }
-        } catch (e) {
-            showToast('Failed to rotate learn topic');
-            console.error(e);
+        if (modalLearnCategory) {
+            modalLearnCategory.innerText = currentEncyclopediaMeta.id.toUpperCase();
+            modalLearnCategory.className = `badge ${currentEncyclopediaMeta.badgeClass}`;
         }
-        setTimeout(() => { btnLearnDifferent.innerText = "Learn Something Different"; }, 600);
-    }
+        if (modalLearnReadingTime) {
+            modalLearnReadingTime.innerText = `${currentChapterData.readingTimeMin || 4} min read`;
+        }
+        if (modalLearnTitle) {
+            modalLearnTitle.innerText = `${currentChapterData.chapterNumber}. ${currentChapterData.title}`;
+        }
+        if (modalLearnSubtitle) {
+            modalLearnSubtitle.innerText = currentChapterData.subtitle || currentEncyclopediaMeta.title;
+        }
+        if (modalChapterIndicator) {
+            modalChapterIndicator.innerText = `Chapter ${activeChapterIndex + 1} of ${currentEncyclopediaMeta.totalChapters}`;
+        }
+        if (modalProgressBar) {
+            const pct = Math.round(((activeChapterIndex + 1) / currentEncyclopediaMeta.totalChapters) * 100);
+            modalProgressBar.style.width = `${pct}%`;
+            modalProgressBar.style.background = currentEncyclopediaMeta.color || 'var(--neon-blue)';
+        }
 
-    btnLearnDifferent.addEventListener('click', rotateLearnTopic);
-    btnChooseLearnTopic.addEventListener('click', () => chooseLearnModal.classList.remove('hidden'));
-    document.getElementById('btnCloseChooseLearn').addEventListener('click', () => chooseLearnModal.classList.add('hidden'));
-    document.getElementById('btnCancelChooseLearn').addEventListener('click', () => chooseLearnModal.classList.add('hidden'));
-    document.getElementById('btnSaveChooseLearn').addEventListener('click', async () => {
-        const topic = learnTopicInput.value.trim();
-        if (!topic) return showToast('Enter a topic to continue');
-        const response = await fetch(`${API_BASE}/api/v1/learn/topic`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({topic}) });
-        if (!response.ok) return showToast('Could not save learning topic');
-        updateLearnCard((await response.json()).topic);
-        chooseLearnModal.classList.add('hidden');
-        learnTopicInput.value = '';
-    });
-
-    function openLearnModal() {
-        if (!currentLearnTopic) return;
-        modalLearnCategory.innerText = currentLearnTopic.category;
-        modalLearnTitle.innerText = currentLearnTopic.title;
-        modalLearnDetails.innerText = currentLearnTopic.details;
-
-        modalLearnTable.innerHTML = '';
-        if (currentLearnTopic.table) {
-            currentLearnTopic.table.forEach(row => {
-                const tr = document.createElement('tr');
-                const keys = Object.keys(row);
-                tr.innerHTML = `<td><strong>${row[keys[0]]}</strong></td><td>${row[keys[1]] || row[keys[2]] || 'N/A'}</td>`;
-                modalLearnTable.appendChild(tr);
+        // Chapter selector dropdown
+        if (modalChapterSelect && currentEncyclopediaMeta.chapters) {
+            modalChapterSelect.innerHTML = '';
+            currentEncyclopediaMeta.chapters.forEach((ch, idx) => {
+                const opt = document.createElement('option');
+                opt.value = idx;
+                opt.innerText = `Ch. ${ch.chapterNumber}: ${ch.title}`;
+                if (idx === activeChapterIndex) opt.selected = true;
+                modalChapterSelect.appendChild(opt);
             });
         }
-        learnModal.classList.remove('hidden');
+
+        // Content
+        if (modalLearnContent) {
+            modalLearnContent.innerHTML = currentChapterData.content || `<p>${currentChapterData.summary}</p>`;
+        }
+
+        // Key Takeaways
+        if (modalLearnTakeaways) {
+            modalLearnTakeaways.innerHTML = '';
+            if (Array.isArray(currentChapterData.keyTakeaways)) {
+                currentChapterData.keyTakeaways.forEach(t => {
+                    const li = document.createElement('li');
+                    li.innerText = t;
+                    modalLearnTakeaways.appendChild(li);
+                });
+            }
+        }
+
+        // Navigation buttons state
+        if (btnPrevChapter) {
+            btnPrevChapter.disabled = activeChapterIndex <= 0;
+            btnPrevChapter.style.opacity = activeChapterIndex <= 0 ? '0.5' : '1';
+        }
+        if (btnNextChapter) {
+            btnNextChapter.disabled = activeChapterIndex >= currentEncyclopediaMeta.totalChapters - 1;
+            btnNextChapter.style.opacity = activeChapterIndex >= currentEncyclopediaMeta.totalChapters - 1 ? '0.5' : '1';
+        }
     }
 
-    btnLearnMore.addEventListener('click', openLearnModal);
-    btnCloseLearnModal.addEventListener('click', () => learnModal.classList.add('hidden'));
-    btnCloseLearnDone.addEventListener('click', () => learnModal.classList.add('hidden'));
-    btnRotateTopicInsideModal.addEventListener('click', async () => {
-        await rotateLearnTopic();
-        openLearnModal();
+    // Save Summary to learning/ folder and advance
+    async function saveChapterSummary() {
+        if (!currentEncyclopediaMeta || !currentChapterData) return;
+        if (btnSaveSummaryLearn) btnSaveSummaryLearn.innerText = "Saving...";
+
+        try {
+            const res = await fetch('/api/v1/learn/summary', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    encyclopediaId: activeEncyclopediaId,
+                    chapterId: currentChapterData.id,
+                    chapterTitle: currentChapterData.title,
+                    summary: currentChapterData.summary,
+                    keyTakeaways: currentChapterData.keyTakeaways
+                })
+            });
+
+            if (!res.ok) throw new Error('Save failed');
+            const data = await res.json();
+            showToast(`Summary saved to ${data.filename}`, 'success');
+
+            // Refresh progress on dashboard
+            loadEncyclopediasSummary();
+
+            // Advance to next chapter if available
+            if (activeChapterIndex < currentEncyclopediaMeta.totalChapters - 1) {
+                openEncyclopediaReader(activeEncyclopediaId, activeChapterIndex + 1);
+            } else {
+                if (learnModal) learnModal.classList.add('hidden');
+                showToast(`Finished ${currentEncyclopediaMeta.title}!`, 'success');
+            }
+        } catch (e) {
+            showToast('Failed to save summary to learning folder', 'error');
+            console.error(e);
+        } finally {
+            if (btnSaveSummaryLearn) btnSaveSummaryLearn.innerText = "Save Summary & Finish";
+        }
+    }
+
+    // Bind Encyclopedia buttons
+    document.querySelectorAll('.encyclopedia-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const encId = btn.getAttribute('data-enc');
+            if (encId) openEncyclopediaReader(encId);
+        });
     });
 
-    loadLearnTopic();
+    if (modalChapterSelect) {
+        modalChapterSelect.addEventListener('change', (e) => {
+            const targetIdx = parseInt(e.target.value, 10);
+            if (!isNaN(targetIdx)) openEncyclopediaReader(activeEncyclopediaId, targetIdx);
+        });
+    }
+
+    if (btnPrevChapter) {
+        btnPrevChapter.addEventListener('click', () => {
+            if (activeChapterIndex > 0) openEncyclopediaReader(activeEncyclopediaId, activeChapterIndex - 1);
+        });
+    }
+
+    if (btnNextChapter) {
+        btnNextChapter.addEventListener('click', () => {
+            if (currentEncyclopediaMeta && activeChapterIndex < currentEncyclopediaMeta.totalChapters - 1) {
+                openEncyclopediaReader(activeEncyclopediaId, activeChapterIndex + 1);
+            }
+        });
+    }
+
+    if (btnSaveSummaryLearn) {
+        btnSaveSummaryLearn.addEventListener('click', saveChapterSummary);
+    }
+
+    if (btnCloseLearnModal) {
+        btnCloseLearnModal.addEventListener('click', () => {
+            if (learnModal) learnModal.classList.add('hidden');
+            loadEncyclopediasSummary();
+        });
+    }
+
+    if (btnCloseLearnDone) {
+        btnCloseLearnDone.addEventListener('click', () => {
+            if (learnModal) learnModal.classList.add('hidden');
+            loadEncyclopediasSummary();
+        });
+    }
+
+    loadEncyclopediasSummary();
 
     // --- 1. Rumble Insights & Chat ("Discuss" & "Rumble" Header Button) ---
     async function loadRumbleInsights() {
@@ -895,23 +1088,93 @@ document.addEventListener('DOMContentLoaded', () => {
     let pendingChatAction = null;
 
 
+    function handleChatFileSelection(file) {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            currentChatAttachment = {
+                data: e.target.result,
+                mimeType: file.type || 'application/octet-stream',
+                filename: file.name
+            };
+            if (chatAttachmentName) chatAttachmentName.innerText = file.name;
+            if (chatAttachmentSize) chatAttachmentSize.innerText = `${Math.round(file.size / 1024)} KB`;
+            if (file.type.startsWith('image/')) {
+                if (chatAttachmentImg) {
+                    chatAttachmentImg.src = e.target.result;
+                    chatAttachmentImg.style.display = 'block';
+                }
+                if (chatAttachmentFileIcon) chatAttachmentFileIcon.style.display = 'none';
+            } else {
+                if (chatAttachmentImg) chatAttachmentImg.style.display = 'none';
+                if (chatAttachmentFileIcon) chatAttachmentFileIcon.style.display = 'block';
+            }
+            if (chatAttachmentPreview) chatAttachmentPreview.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+    }
+
+    if (btnChatAttach && chatFileInput) {
+        btnChatAttach.addEventListener('click', () => chatFileInput.click());
+        chatFileInput.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files.length > 0) {
+                handleChatFileSelection(e.target.files[0]);
+            }
+        });
+    }
+
+    if (btnChatCamera && chatCameraInput) {
+        btnChatCamera.addEventListener('click', () => chatCameraInput.click());
+        chatCameraInput.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files.length > 0) {
+                handleChatFileSelection(e.target.files[0]);
+            }
+        });
+    }
+
+    function clearChatAttachment() {
+        currentChatAttachment = null;
+        if (chatFileInput) chatFileInput.value = '';
+        if (chatCameraInput) chatCameraInput.value = '';
+        if (chatAttachmentPreview) chatAttachmentPreview.classList.add('hidden');
+        if (chatAttachmentImg) {
+            chatAttachmentImg.src = '';
+            chatAttachmentImg.style.display = 'none';
+        }
+    }
+
+    if (btnRemoveChatAttachment) {
+        btnRemoveChatAttachment.addEventListener('click', clearChatAttachment);
+    }
+
     async function sendRumbleChatMessage(textToSend, explicitAction) {
         const msg = (textToSend || rumbleChatInput.value).trim();
-        if (!msg) return;
+        const attached = currentChatAttachment;
+        if (!msg && !attached && !explicitAction) return;
 
         const userDiv = document.createElement('div');
         userDiv.className = 'message user-message';
-        userDiv.innerHTML = `<strong>You:</strong> ${msg}`;
+        let userContent = `<strong>You:</strong> ${msg || 'Attached photo/document for analysis'}`;
+        if (attached) {
+            if (attached.mimeType.startsWith('image/')) {
+                userContent += `<div style="margin-top: 6px;"><img src="${attached.data}" style="max-width: 180px; max-height: 140px; border-radius: 8px; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);"></div>`;
+            } else {
+                userContent += `<div style="margin-top: 6px; font-size: 0.85rem; color: var(--neon-blue);">📄 ${attached.filename || 'Attached document'}</div>`;
+            }
+        }
+        userDiv.innerHTML = userContent;
         rumbleChatMessages.appendChild(userDiv);
         rumbleChatInput.value = '';
+        clearChatAttachment();
         rumbleChatMessages.scrollTop = rumbleChatMessages.scrollHeight;
 
         const isConfirmation = explicitAction || (pendingChatAction && /^(?:yes|confirm|confirmed|save|commit|proceed|do it|add it)\b/i.test(msg));
         const actionToCommit = explicitAction || (isConfirmation ? pendingChatAction : null);
 
         const payload = {
-            message: msg,
+            message: msg || 'Please analyze this attached photo/document and extract relevant appointments, instructions, or notes.',
             proposal_context: currentProposalText,
+            ...(attached ? { attachment: attached } : {}),
             ...(actionToCommit ? { confirm_action: actionToCommit } : {})
         };
 
@@ -973,6 +1236,24 @@ document.addEventListener('DOMContentLoaded', () => {
                     showToast('Task added to agenda', 'success');
                 } else if (data.intent === 'ADD_EXPENSE') {
                     if (typeof loadBudget === 'function') loadBudget();
+                    showToast('Expense added', 'success');
+                }
+            }
+
+            if (actionToCommit) {
+                if (typeof loadAgenda === 'function') loadAgenda();
+                if (typeof loadNotes === 'function') loadNotes();
+                if (typeof loadBudget === 'function') loadBudget();
+            }
+        } catch (err) {
+            const rumbleDiv = document.createElement('div');
+            rumbleDiv.className = 'message rumble-message';
+            rumbleDiv.innerHTML = `<strong>RUMBLE:</strong> Communication error. Unable to reach backend.`;
+            rumbleChatMessages.appendChild(rumbleDiv);
+            rumbleChatMessages.scrollTop = rumbleChatMessages.scrollHeight;
+        }
+    }
+
     // --- 11. Settings Logic ---
     const btnSettings = document.getElementById('btnSettings');
 
@@ -1042,16 +1323,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.classList.remove('theme-default', 'theme-midnight', 'theme-cyberpunk', 'theme-forest');
         if (themeName !== 'theme-default') {
             document.body.classList.add(themeName);
-        }
-    }
-                }
-            }
-        } catch (err) {
-            const rumbleDiv = document.createElement('div');
-            rumbleDiv.className = 'message rumble-message';
-            rumbleDiv.innerHTML = `<strong>RUMBLE:</strong> Communication error. Unable to reach backend.`;
-            rumbleChatMessages.appendChild(rumbleDiv);
-            rumbleChatMessages.scrollTop = rumbleChatMessages.scrollHeight;
         }
     }
 
@@ -1220,14 +1491,61 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Briefing Modal Triggers ---
     const btnViewBriefing = document.getElementById('btnViewBriefing');
-    if (btnViewBriefing) {
-        btnViewBriefing.addEventListener('click', () => {
-            if (rumbleChatModal) rumbleChatModal.classList.remove('hidden');
-            sendRumbleChatMessage('Show me my morning executive briefing');
+    const briefingModal = document.getElementById('briefingModal');
+    const btnCloseBriefing = document.getElementById('btnCloseBriefing');
+    const btnDismissBriefing = document.getElementById('btnDismissBriefing');
+    const briefingLoading = document.getElementById('briefingLoading');
+    const briefingContent = document.getElementById('briefingContent');
+    const btnDoneBriefing = document.getElementById('btnDoneBriefing');
+    const btnDismissBriefingCard = document.getElementById('btnDismissBriefingCard');
+    const executiveBriefingCard = document.getElementById('executive-briefing');
+
+    if (btnViewBriefing && briefingModal) {
+        btnViewBriefing.addEventListener('click', async () => {
+            briefingModal.classList.remove('hidden');
+            briefingLoading.classList.remove('hidden');
+            briefingContent.classList.add('hidden');
+            briefingContent.innerHTML = '';
+            
+            try {
+                const res = await fetch('/api/v1/briefing/executive', { method: 'POST' });
+                const data = await res.json();
+                
+                if (data.html || data.markdown) {
+                    // Very simple markdown formatting just for display if needed
+                    briefingContent.innerHTML = data.html || data.markdown.replace(/\n/g, '<br>');
+                } else {
+                    briefingContent.innerHTML = 'Error loading briefing.';
+                }
+            } catch (err) {
+                console.error(err);
+                briefingContent.innerHTML = 'Failed to load briefing.';
+            } finally {
+                briefingLoading.classList.add('hidden');
+                briefingContent.classList.remove('hidden');
+            }
+        });
+        
+        const closeBriefingModal = () => briefingModal.classList.add('hidden');
+        if (btnCloseBriefing) btnCloseBriefing.addEventListener('click', closeBriefingModal);
+        if (btnDismissBriefing) btnDismissBriefing.addEventListener('click', closeBriefingModal);
+    }
+    
+    if (btnDoneBriefing && executiveBriefingCard) {
+        btnDoneBriefing.addEventListener('click', () => {
+            executiveBriefingCard.classList.add('completed');
+            showToast('Executive Briefing marked as done', 'success');
+        });
+    }
+    
+    if (btnDismissBriefingCard && executiveBriefingCard) {
+        btnDismissBriefingCard.addEventListener('click', () => {
+            executiveBriefingCard.style.display = 'none';
+            showToast('Executive Briefing dismissed', 'info');
         });
     }
 
-    loadRumbleInsights();
+    // loadRumbleInsights();
 
     // --- 2. Persistent Notes Modal ---
     btnOpenNotes.addEventListener('click', () => {
@@ -1281,40 +1599,67 @@ document.addEventListener('DOMContentLoaded', () => {
     let editingNoteId = null;
 
     function renderNotesGrid() {
-        if (!notesGrid) return;
+        if (!notesGrid || !pinnedNotesGrid) return;
         notesGrid.innerHTML = '';
+        pinnedNotesGrid.innerHTML = '';
         
-        const filteredNotes = currentNotes.filter(note => {
-            if (currentNotesTab === 'pinned') return note.pinned && !note.isArchived;
-            if (currentNotesTab === 'archive') return note.isArchived;
-            return !note.isArchived; // 'active'
-        });
+        const isArchiveView = currentNotesTab === 'archive';
+        const filteredNotes = currentNotes.filter(n => isArchiveView ? n.isArchived : !n.isArchived);
 
         if (filteredNotes.length === 0) {
-            notesGrid.innerHTML = `<p style="color: var(--text-secondary); width: 100%; grid-column: 1 / -1; text-align: center; margin-top: 20px;">No notes found in ${currentNotesTab}.</p>`;
+            notesGrid.innerHTML = `<p style="color: var(--text-secondary); width: 100%; text-align: center; margin-top: 20px;">No notes found in ${isArchiveView ? 'Archive' : 'Active'}.</p>`;
+            notesSectionTitle.style.display = 'none';
+            unpinnedNotesSectionTitle.style.display = 'none';
             return;
         }
 
-        filteredNotes.forEach(note => {
+        const pinnedNotes = filteredNotes.filter(n => n.pinned);
+        const unpinnedNotes = filteredNotes.filter(n => !n.pinned);
+
+        const showSections = !isArchiveView && pinnedNotes.length > 0;
+        notesSectionTitle.style.display = showSections ? 'block' : 'none';
+        unpinnedNotesSectionTitle.style.display = showSections && unpinnedNotes.length > 0 ? 'block' : 'none';
+        
+        const renderCard = (note, container) => {
             const lines = note.content.split('\n');
             const title = lines.length > 0 && lines[0].trim().startsWith('# ') ? lines[0].replace('# ', '') : (lines[0].length > 30 ? lines[0].substring(0, 30) + '...' : lines[0]);
             const body = lines.slice(1).join('<br>').substring(0, 150) || lines.join('<br>').substring(0, 150);
 
             const card = document.createElement('div');
             card.className = 'keep-note glass-panel';
-            card.style.cssText = 'background: rgba(255, 235, 59, 0.05); border-left: 4px solid #ffeb3b; padding: 15px; border-radius: 8px; position: relative; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; min-height: 120px;';
+            card.style.cssText = `
+                break-inside: avoid; margin-bottom: 15px; 
+                background: rgba(30, 30, 30, 0.6); 
+                border: 1px solid rgba(255,255,255,0.2); 
+                padding: 16px; border-radius: 8px; 
+                position: relative; cursor: pointer; 
+                display: flex; flex-direction: column; 
+                min-height: 120px; transition: box-shadow 0.2s, background 0.2s;
+            `;
+            
+            card.addEventListener('mouseenter', () => card.style.boxShadow = '0 2px 5px rgba(0,0,0,0.5)');
+            card.addEventListener('mouseleave', () => card.style.boxShadow = 'none');
+
+            const pinIcon = `<svg width="20" height="20" viewBox="0 0 24 24" fill="${note.pinned ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"></line><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.68V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3v4.68a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path></svg>`;
+            const archiveIcon = note.isArchived 
+                ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="12" y1="12" x2="12" y2="16"></line><polyline points="10 14 12 12 14 14"></polyline></svg>` 
+                : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>`;
+
             card.innerHTML = `
-                <div>
-                    ${note.pinned ? '<div style="position: absolute; top: 10px; right: 10px; font-size: 1.2em;" title="Pinned">📌</div>' : ''}
-                    <h4 style="margin: 0 0 8px 0; font-size: 1.1em; color: var(--text-primary); padding-right: 20px;">${title}</h4>
-                    <p style="margin: 0; font-size: 0.85em; color: var(--text-secondary); overflow-wrap: anywhere;">${body}</p>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                    <h4 style="margin: 0; font-size: 1.1em; font-weight: 500; color: var(--text-primary);">${title}</h4>
+                    <button class="btn-icon btn-pin-toggle" data-id="${note.id}" style="background: none; border: none; color: ${note.pinned ? '#ffeb3b' : 'rgba(255,255,255,0.5)'}; cursor: pointer; padding: 4px;" title="${note.pinned ? 'Unpin' : 'Pin'}">
+                        ${pinIcon}
+                    </button>
                 </div>
-                <div style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
-                    <div style="font-size: 0.7em; color: var(--text-secondary);">${new Date(note.created_at).toLocaleDateString()}</div>
-                    <div style="display: flex; gap: 8px;">
-                        <button class="btn btn-sm btn-outline btn-pin-toggle" data-id="${note.id}" style="padding: 2px 6px; min-height: 24px;">${note.pinned ? 'Unpin' : 'Pin'}</button>
-                        <button class="btn btn-sm btn-outline btn-archive-toggle" data-id="${note.id}" style="padding: 2px 6px; min-height: 24px;">${note.isArchived ? 'Restore' : 'Archive'}</button>
-                    </div>
+                <div style="flex-grow: 1;">
+                    <p style="margin: 0; font-size: 0.95em; color: rgba(255,255,255,0.85); overflow-wrap: anywhere; line-height: 1.4;">${body}</p>
+                </div>
+                <div style="margin-top: 16px; display: flex; justify-content: space-between; align-items: center; opacity: 0.7;">
+                    <div style="font-size: 0.75em; color: rgba(255,255,255,0.5);">${new Date(note.created_at).toLocaleDateString()}</div>
+                    <button class="btn-icon btn-archive-toggle" data-id="${note.id}" style="background: none; border: none; color: rgba(255,255,255,0.7); cursor: pointer; padding: 4px;" title="${note.isArchived ? 'Restore' : 'Archive'}">
+                        ${archiveIcon}
+                    </button>
                 </div>
             `;
             
@@ -1333,8 +1678,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 toggleNoteArchive(note);
             });
 
-            notesGrid.appendChild(card);
-        });
+            container.appendChild(card);
+        };
+
+        if (!isArchiveView) {
+            pinnedNotes.forEach(note => renderCard(note, pinnedNotesGrid));
+            unpinnedNotes.forEach(note => renderCard(note, notesGrid));
+        } else {
+            filteredNotes.forEach(note => renderCard(note, notesGrid));
+        }
     }
 
     async function loadNotes() {
@@ -1368,7 +1720,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 if (res.ok) showToast('Note created', 'success');
             }
-            noteEditorContainer.classList.add('hidden');
+            noteEditorExpanded.classList.add('hidden');
+            noteEditorCollapsed.classList.remove('hidden');
+            editingNoteId = null;
             loadNotes();
         } catch (e) {
             showToast('Failed to save note');
@@ -1422,46 +1776,45 @@ document.addEventListener('DOMContentLoaded', () => {
             btnPinNote.classList.remove('btn-neon-blue');
             btnPinNote.dataset.pinned = "false";
         }
-        noteEditorContainer.classList.remove('hidden');
+        noteEditorCollapsed.classList.add('hidden');
+        noteEditorExpanded.classList.remove('hidden');
+        if (!note) {
+            editNoteTitle.focus();
+        }
     }
 
-    btnNewNote.addEventListener('click', () => openNoteEditor());
-    btnCancelNoteEdit.addEventListener('click', () => noteEditorContainer.classList.add('hidden'));
+    noteEditorCollapsed.addEventListener('click', () => openNoteEditor());
+    
+    function closeAndSaveNote() {
+        const title = editNoteTitle.value.trim();
+        const body = editNoteBody.value.trim();
+        if (title || body) {
+            const content = title ? `# ${title}\n${body}` : body;
+            const pinned = btnPinNote.dataset.pinned === "true";
+            saveNote({ content, pinned });
+        } else {
+            noteEditorExpanded.classList.add('hidden');
+            noteEditorCollapsed.classList.remove('hidden');
+            editingNoteId = null;
+        }
+    }
+
+    btnCancelNoteEdit.addEventListener('click', closeAndSaveNote);
     
     btnPinNote.addEventListener('click', () => {
         const isPinned = btnPinNote.dataset.pinned === "true";
         btnPinNote.dataset.pinned = !isPinned ? "true" : "false";
-        btnPinNote.classList.toggle('btn-neon-blue', !isPinned);
+        btnPinNote.style.color = !isPinned ? '#ffeb3b' : 'rgba(255,255,255,0.5)';
+        btnPinNote.querySelector('svg').setAttribute('fill', !isPinned ? 'currentColor' : 'none');
     });
 
-    btnSaveNoteEdit.addEventListener('click', () => {
-        const title = editNoteTitle.value.trim();
-        const body = editNoteBody.value.trim();
-        if (!title && !body) return showToast("Note cannot be empty");
-        
-        const content = title ? `# \${title}\\n\${body}` : body;
-        const pinned = btnPinNote.dataset.pinned === "true";
-        saveNote({ content, pinned });
-    });
-
-    const tabs = [
-        { btn: tabNotesActive, name: 'active' },
-        { btn: tabNotesPinned, name: 'pinned' },
-        { btn: tabNotesArchive, name: 'archive' }
-    ];
-
-    tabs.forEach(tab => {
-        if (tab.btn) {
-            tab.btn.addEventListener('click', () => {
-                tabs.forEach(t => t.btn.classList.remove('btn-neon-blue', 'active'));
-                tabs.forEach(t => t.btn.classList.add('btn-outline'));
-                tab.btn.classList.remove('btn-outline');
-                tab.btn.classList.add('btn-neon-blue', 'active');
-                currentNotesTab = tab.name;
-                renderNotesGrid();
-            });
-        }
-    });
+    if (btnToggleArchiveView) {
+        btnToggleArchiveView.addEventListener('click', () => {
+            currentNotesTab = currentNotesTab === 'archive' ? 'active' : 'archive';
+            btnToggleArchiveView.style.color = currentNotesTab === 'archive' ? '#2196f3' : 'rgba(255,255,255,0.7)';
+            renderNotesGrid();
+        });
+    }
 
     loadNotes();
 
@@ -1498,8 +1851,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         <p>${data.added_event.title}</p>
                     </div>
                     <div class="protocol-actions">
-                        <button class="btn btn-neon-purple btn-show-me" data-id="${data.added_event.id}">Show Me</button>
-                        <button class="btn btn-neon-green btn-done" data-id="${data.added_event.id}">Done</button>
+                        <button class="btn btn-neon-purple btn-sm btn-show-me" data-id="${data.added_event.id}">View</button>
+                        <button class="btn btn-neon-green btn-sm btn-done" data-id="${data.added_event.id}">Done</button>
                     </div>
                 `;
                 agendaStream.prepend(card);
@@ -1602,6 +1955,12 @@ document.addEventListener('DOMContentLoaded', () => {
             postponeBtn.addEventListener('click', () => {
                 if (id) {
                     itemToPostpone = id;
+                    const tmr = new Date();
+                    tmr.setDate(tmr.getDate() + 1);
+                    tmr.setHours(10, 0, 0, 0);
+                    const tzOffset = tmr.getTimezoneOffset() * 60000;
+                    const localIso = new Date(tmr - tzOffset).toISOString().slice(0, 16);
+                    if (postponeDateInput) postponeDateInput.value = localIso;
                     postponeModal.classList.remove('hidden');
                 }
             });
@@ -2022,7 +2381,7 @@ document.addEventListener('DOMContentLoaded', () => {
             data.suggestions.forEach(exercise => {
                 const card = document.createElement('article');
                 card.className = 'exercise-card';
-                card.innerHTML = `<div><h3>${exercise.name}</h3><p>${exercise.instruction}</p><small>${exercise.duration_minutes} min · ${exercise.intensity}</small></div><div class="exercise-actions"><button class="btn btn-neon-green btn-sm exercise-done">Done</button><button class="btn btn-outline btn-sm exercise-show">Show Me</button><button class="btn btn-outline btn-sm exercise-reject">Dismiss</button><div class="reject-reasons hidden"><button class="btn btn-sm btn-outline reject-reason" data-reason="Too tired">Too tired</button><button class="btn btn-sm btn-outline reject-reason" data-reason="Hurts">Hurts</button></div></div>`;
+                card.innerHTML = `<div><h3>${exercise.name}</h3><p>${exercise.instruction}</p><small>${exercise.duration_minutes} min · ${exercise.intensity}</small></div><div class="exercise-actions"><button class="btn btn-neon-green btn-sm exercise-done">Done</button><button class="btn btn-outline btn-sm exercise-show">View</button><button class="btn btn-outline btn-sm exercise-reject">Skip</button><div class="reject-reasons hidden"><button class="btn btn-sm btn-outline reject-reason" data-reason="Too tired">Too tired</button><button class="btn btn-sm btn-outline reject-reason" data-reason="Hurts">Hurts</button></div></div>`;
                 card.querySelector('.exercise-done').addEventListener('click', () => {
                     pendingProtocol = { id: exercise.id, name: exercise.name, beforePain: painLevel };
                     reliefExerciseName.innerText = exercise.name;
@@ -2093,12 +2452,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (data.summary) {
                         for (const [cat, val] of Object.entries(data.summary)) {
                             if (cat !== 'Total') {
-                                summaryHtml += `<span class="badge neon-blue">${cat}: $${val}</span>`;
+                                summaryHtml += `<span class="badge neon-blue">${cat}: $${Number(val).toFixed(2)}</span>`;
                             }
                         }
                     }
                     if (budgetSummaryContainer) budgetSummaryContainer.innerHTML = summaryHtml;
-                    if (budgetTotalSpent && data.summary) budgetTotalSpent.innerText = `Spent: $${data.summary.Total || 0}`;
+                    if (budgetTotalSpent && data.summary) budgetTotalSpent.innerText = `Spent: $${Number(data.summary.Total || 0).toFixed(2)}`;
                 }
             }
         } catch (e) {

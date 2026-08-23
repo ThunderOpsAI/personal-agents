@@ -105,6 +105,7 @@ export interface CreatePainLogInput {
   }>;
   mood?: string;
   notes?: string;
+  created_at?: string;
 }
 
 export const CREATE_PAIN_LOGS_TABLE_SQL = `
@@ -256,3 +257,24 @@ CREATE TABLE IF NOT EXISTS medical_receipts (
     created_at TEXT NOT NULL
 );
 `;
+
+export interface EncyclopediaProgress {
+  encyclopedia_id: string;
+  current_chapter_index: number;
+  completed_chapters: string[];
+  last_read_at: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export const CREATE_LEARNING_PROGRESS_TABLE_SQL = `
+CREATE TABLE IF NOT EXISTS learning_progress (
+    encyclopedia_id TEXT PRIMARY KEY,
+    current_chapter_index INTEGER NOT NULL DEFAULT 0,
+    completed_chapters TEXT NOT NULL DEFAULT '[]',
+    last_read_at TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+`;
+
