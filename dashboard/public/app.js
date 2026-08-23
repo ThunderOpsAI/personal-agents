@@ -1858,12 +1858,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 agendaStream.prepend(card);
                 attachCardEvents(card);
             }
+
+            // Immediately reload and render daily, weekly, and monthly agenda panels
+            await loadAgenda();
+
             if (syncIcon) {
                 syncIcon.classList.remove('spinning');
                 syncIcon.textContent = '✅';
             }
             btnSyncOps.title = "Synced";
-            showToast("Operations synchronized", "success");
+            const syncedCount = (data.scanned_calendar_count || 0) + (data.scanned_gmail_count || 0);
+            showToast(syncedCount > 0 ? `Synced ${syncedCount} Gmail & Calendar items with Agenda` : "Gmail & Calendar synchronized with Agenda", "success");
             setTimeout(() => {
                 if (syncIcon) syncIcon.textContent = '🔄';
                 btnSyncOps.title = "Sync Live Data";

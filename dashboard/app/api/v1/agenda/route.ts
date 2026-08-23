@@ -24,32 +24,13 @@ export async function GET(request: Request) {
 
 
 
-    // 2. Fetch live Google Calendar events within the view window
-    let timeMin: string | undefined;
-    let timeMax: string | undefined;
-
-
-    if (view === "daily") {
-      const startOfDay = new Date(now);
-      startOfDay.setHours(0, 0, 0, 0);
-      const endOfDay = new Date(now);
-      endOfDay.setHours(23, 59, 59, 999);
-      timeMin = startOfDay.toISOString();
-      timeMax = endOfDay.toISOString();
-    } else if (view === "weekly") {
-      const startOfWeek = new Date(now);
-      startOfWeek.setDate(now.getDate() - now.getDay());
-      startOfWeek.setHours(0, 0, 0, 0);
-      const endOfWeek = new Date(startOfWeek);
-      endOfWeek.setDate(startOfWeek.getDate() + 7);
-      timeMin = startOfWeek.toISOString();
-      timeMax = endOfWeek.toISOString();
-    } else if (view === "monthly") {
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
-      timeMin = startOfMonth.toISOString();
-      timeMax = endOfMonth.toISOString();
-    }
+    // 2. Fetch live Google Calendar events spanning the current and next month
+    const startOfWindow = new Date(now.getFullYear(), now.getMonth(), 1);
+    startOfWindow.setHours(0, 0, 0, 0);
+    const endOfWindow = new Date(now.getFullYear(), now.getMonth() + 2, 0);
+    endOfWindow.setHours(23, 59, 59, 999);
+    const timeMin = startOfWindow.toISOString();
+    const timeMax = endOfWindow.toISOString();
 
     let calendarStatus: "connected" | "auth_required" | "error" = "connected";
     let calendarEvents: any[] = [];
@@ -142,9 +123,9 @@ export async function GET(request: Request) {
       }
     } catch {}
 
-    // Map DB calendar events
+    // Map DB calendar events and appointments
     const dbCalEvents = rawItems
-      .filter((i) => i.item_type === "calendar_event" && i.status !== "dismissed")
+      .filter((i) => (i.item_type === "calendar_event" || i.item_type === "appointment") && i.status !== "dismissed")
       .map((i) => {
         const d = parseEventDate(i);
         const dayStr = d.toLocaleDateString("en-AU", { weekday: "short", day: "numeric", month: "short", timeZone: "Australia/Melbourne" });
