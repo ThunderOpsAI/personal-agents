@@ -474,8 +474,23 @@
                         <strong>RUMBLE:</strong> Hello. Type or use the voice button below to speak directly with me regarding your agenda, symptoms, or recovery.
                     </div>
                 </div>
-                <div class="chat-input-row">
-                    <input type="text" id="rumbleChatInput" class="glass-input" placeholder="Type to Rumble or use voice...">
+                <div class="chat-attachment-preview hidden" id="chatAttachmentPreview" style="margin: 8px 12px 0 12px; padding: 8px; background: rgba(0,0,0,0.35); border-radius: 8px; display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--glass-border);">
+                    <div style="display: flex; align-items: center; gap: 8px; overflow: hidden;">
+                        <img id="chatAttachmentImg" src="" alt="Attachment" style="width: 36px; height: 36px; object-fit: cover; border-radius: 6px; display: none;">
+                        <span id="chatAttachmentFileIcon" style="font-size: 1.2rem; display: none;">📄</span>
+                        <div style="display: flex; flex-direction: column; overflow: hidden;">
+                            <span id="chatAttachmentName" style="font-size: 0.82rem; color: var(--text-primary); text-overflow: ellipsis; white-space: nowrap; overflow: hidden; max-width: 220px;">file.png</span>
+                            <span id="chatAttachmentSize" style="font-size: 0.72rem; color: var(--text-secondary);">0 KB</span>
+                        </div>
+                    </div>
+                    <button class="btn-close" id="btnRemoveChatAttachment" style="font-size: 1.1rem; line-height: 1; padding: 2px 6px;">&times;</button>
+                </div>
+                <div class="chat-input-row" style="position: relative;">
+                    <input type="file" id="chatFileInput" accept="image/*,application/pdf,.doc,.docx,.txt" style="display: none;">
+                    <input type="file" id="chatCameraInput" accept="image/*" capture="environment" style="display: none;">
+                    <input type="text" id="rumbleChatInput" class="glass-input" placeholder="Type to Rumble, attach files, or use voice...">
+                    <button class="btn btn-outline btn-sm" id="btnChatCamera" title="Take Photo with Camera" aria-label="Take Photo with Camera">📷</button>
+                    <button class="btn btn-outline btn-sm" id="btnChatAttach" title="Attach Photo or Document" aria-label="Attach Photo or Document">📎</button>
                     <button class="btn btn-voice btn-sm" id="btnRumbleVoice" title="Voice Input">Voice</button>
                     <button class="btn btn-neon-blue btn-sm" id="btnSendRumbleChat">Send</button>
                 </div>

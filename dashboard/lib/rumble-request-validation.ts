@@ -13,21 +13,36 @@ export function rumbleAuth(request: Request): NextResponse | null {
   return null;
 }
 
-export type ChatRequest = { message: string; history?: { role: string; content: string }[]; confirmedPainLog?: ConfirmedPainLog };
+export type ChatAttachment = { data: string; mimeType: string; filename?: string };
+export type ChatRequest = {
+  message: string;
+  history?: { role: string; content: string }[];
+  confirmedPainLog?: ConfirmedPainLog;
+  attachment?: ChatAttachment;
+};
 
 export function parseChatRequest(value: unknown): ChatRequest | null {
   if (!isRecord(value) || typeof value.message !== "string") return null;
   const message = value.message.trim();
-  if (!message || message.length > MAX_MESSAGE_LENGTH) return null;
+  if (message.length > MAX_MESSAGE_LENGTH) return null;
 
   let history: { role: string; content: string }[] | undefined = undefined;
   if (Array.isArray(value.history)) {
     history = value.history.filter((h: any) => isRecord(h) && typeof h.role === "string" && typeof h.content === "string") as { role: string; content: string }[];
   }
 
-  if (value.confirmedPainLog === undefined) return { message, history };
+  let attachment: ChatAttachment | undefined = undefined;
+  if (isRecord(value.attachment) && typeof value.attachment.data === "string" && typeof value.attachment.mimeType === "string") {
+    attachment = {
+      data: value.attachment.data,
+      mimeType: value.attachment.mimeType,
+      filename: typeof value.attachment.filename === "string" ? value.attachment.filename : undefined,
+    };
+  }
+
+  if (value.confirmedPainLog === undefined) return { message, history, ...(attachment ? { attachment } : {}) };
   const confirmedPainLog = parseConfirmedPainLog(value.confirmedPainLog);
-  return confirmedPainLog ? { message, history, confirmedPainLog } : null;
+  return confirmedPainLog ? { message, history, confirmedPainLog, ...(attachment ? { attachment } : {}) } : null;
 }
 
 export function parseExerciseSuggestionRequest(value: unknown): ExerciseSuggestionInput | null {

@@ -282,16 +282,39 @@ export function parseTaskDirective(message: string): { title: string; scheduled_
 }
 
 /**
- * Call Gemini model with live grounding data.
+ * Call Gemini model with live grounding data and optional multimodal attachments.
  */
-async function callGemini(systemPrompt: string, userMessage: string, responseSchema?: any, history: any[] = []): Promise<string> {
+async function callGemini(
+  systemPrompt: string,
+  userMessage: string,
+  responseSchema?: any,
+  history: any[] = [],
+  attachment?: { data: string; mimeType: string; filename?: string }
+): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     return `Rumble: I received your message: "${userMessage}". Let me know if you would like to log pain, create a note, or check your agenda.`;
   }
 
-  const model = process.env.GEMINI_MODEL || "gemini-3.7-flash";
+  const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
+  const userParts: any[] = [
+    { text: userMessage || "Please analyze this attached photo/document and extract all relevant appointments, instructions, medical details, or tasks." }
+  ];
+
+  if (attachment && attachment.data) {
+    let rawBase64 = attachment.data;
+    if (rawBase64.includes(",")) {
+      rawBase64 = rawBase64.split(",")[1];
+    }
+    userParts.push({
+      inlineData: {
+        mimeType: attachment.mimeType || "image/jpeg",
+        data: rawBase64,
+      }
+    });
+  }
 
   const res = await fetch(url, {
     method: "POST",
@@ -302,9 +325,9 @@ async function callGemini(systemPrompt: string, userMessage: string, responseSch
       },
       contents: [
         ...history.map((h: any) => ({ role: h.role === "user" ? "user" : "model", parts: [{ text: h.content }] })),
-        { role: "user", parts: [{ text: userMessage }] }
+        { role: "user", parts: userParts }
       ],
-        ...(responseSchema ? { generationConfig: { responseMimeType: "application/json", responseSchema } } : {})
+      ...(responseSchema ? { generationConfig: { responseMimeType: "application/json", responseSchema } } : {})
     }),
   });
 
@@ -322,9 +345,13 @@ async function callGemini(systemPrompt: string, userMessage: string, responseSch
 }
 
 /**
- * Routes and handles incoming chat messages dynamically.
+ * Routes and handles incoming chat messages dynamically with multimodal support.
  */
-export async function routeChatMessage(message: string, history: any[] = []): Promise<IntentRouteResult> {
+export async function routeChatMessage(
+  message: string,
+  history: any[] = [],
+  attachment?: { data: string; mimeType: string; filename?: string }
+): Promise<IntentRouteResult> {
   const nowMel = new Date().toLocaleString("en-AU", { timeZone: "Australia/Melbourne" });
   
   let liveAgendaText = "No active agenda items.";
@@ -445,7 +472,7 @@ ${weatherText}
   };
 
   try {
-    const replyStr = await callGemini(systemPrompt, message, responseSchema, history);
+    const replyStr = await callGemini(systemPrompt, message, responseSchema, history, attachment);
     const parsed = JSON.parse(replyStr);
     
     let finalReply = parsed.reply;

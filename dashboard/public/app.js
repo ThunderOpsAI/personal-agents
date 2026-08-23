@@ -217,6 +217,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const rumbleChatInput = document.getElementById('rumbleChatInput');
     const btnSendRumbleChat = document.getElementById('btnSendRumbleChat');
     const btnRumbleVoice = document.getElementById('btnRumbleVoice');
+    const btnChatCamera = document.getElementById('btnChatCamera');
+    const btnChatAttach = document.getElementById('btnChatAttach');
+    const chatFileInput = document.getElementById('chatFileInput');
+    const chatCameraInput = document.getElementById('chatCameraInput');
+    const chatAttachmentPreview = document.getElementById('chatAttachmentPreview');
+    const chatAttachmentImg = document.getElementById('chatAttachmentImg');
+    const chatAttachmentFileIcon = document.getElementById('chatAttachmentFileIcon');
+    const chatAttachmentName = document.getElementById('chatAttachmentName');
+    const chatAttachmentSize = document.getElementById('chatAttachmentSize');
+    const btnRemoveChatAttachment = document.getElementById('btnRemoveChatAttachment');
+    let currentChatAttachment = null;
 
     let currentPainLevel = 0;
     let currentMoodLevel = 5;
@@ -1077,23 +1088,93 @@ document.addEventListener('DOMContentLoaded', () => {
     let pendingChatAction = null;
 
 
+    function handleChatFileSelection(file) {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            currentChatAttachment = {
+                data: e.target.result,
+                mimeType: file.type || 'application/octet-stream',
+                filename: file.name
+            };
+            if (chatAttachmentName) chatAttachmentName.innerText = file.name;
+            if (chatAttachmentSize) chatAttachmentSize.innerText = `${Math.round(file.size / 1024)} KB`;
+            if (file.type.startsWith('image/')) {
+                if (chatAttachmentImg) {
+                    chatAttachmentImg.src = e.target.result;
+                    chatAttachmentImg.style.display = 'block';
+                }
+                if (chatAttachmentFileIcon) chatAttachmentFileIcon.style.display = 'none';
+            } else {
+                if (chatAttachmentImg) chatAttachmentImg.style.display = 'none';
+                if (chatAttachmentFileIcon) chatAttachmentFileIcon.style.display = 'block';
+            }
+            if (chatAttachmentPreview) chatAttachmentPreview.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+    }
+
+    if (btnChatAttach && chatFileInput) {
+        btnChatAttach.addEventListener('click', () => chatFileInput.click());
+        chatFileInput.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files.length > 0) {
+                handleChatFileSelection(e.target.files[0]);
+            }
+        });
+    }
+
+    if (btnChatCamera && chatCameraInput) {
+        btnChatCamera.addEventListener('click', () => chatCameraInput.click());
+        chatCameraInput.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files.length > 0) {
+                handleChatFileSelection(e.target.files[0]);
+            }
+        });
+    }
+
+    function clearChatAttachment() {
+        currentChatAttachment = null;
+        if (chatFileInput) chatFileInput.value = '';
+        if (chatCameraInput) chatCameraInput.value = '';
+        if (chatAttachmentPreview) chatAttachmentPreview.classList.add('hidden');
+        if (chatAttachmentImg) {
+            chatAttachmentImg.src = '';
+            chatAttachmentImg.style.display = 'none';
+        }
+    }
+
+    if (btnRemoveChatAttachment) {
+        btnRemoveChatAttachment.addEventListener('click', clearChatAttachment);
+    }
+
     async function sendRumbleChatMessage(textToSend, explicitAction) {
         const msg = (textToSend || rumbleChatInput.value).trim();
-        if (!msg) return;
+        const attached = currentChatAttachment;
+        if (!msg && !attached && !explicitAction) return;
 
         const userDiv = document.createElement('div');
         userDiv.className = 'message user-message';
-        userDiv.innerHTML = `<strong>You:</strong> ${msg}`;
+        let userContent = `<strong>You:</strong> ${msg || 'Attached photo/document for analysis'}`;
+        if (attached) {
+            if (attached.mimeType.startsWith('image/')) {
+                userContent += `<div style="margin-top: 6px;"><img src="${attached.data}" style="max-width: 180px; max-height: 140px; border-radius: 8px; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);"></div>`;
+            } else {
+                userContent += `<div style="margin-top: 6px; font-size: 0.85rem; color: var(--neon-blue);">📄 ${attached.filename || 'Attached document'}</div>`;
+            }
+        }
+        userDiv.innerHTML = userContent;
         rumbleChatMessages.appendChild(userDiv);
         rumbleChatInput.value = '';
+        clearChatAttachment();
         rumbleChatMessages.scrollTop = rumbleChatMessages.scrollHeight;
 
         const isConfirmation = explicitAction || (pendingChatAction && /^(?:yes|confirm|confirmed|save|commit|proceed|do it|add it)\b/i.test(msg));
         const actionToCommit = explicitAction || (isConfirmation ? pendingChatAction : null);
 
         const payload = {
-            message: msg,
+            message: msg || 'Please analyze this attached photo/document and extract relevant appointments, instructions, or notes.',
             proposal_context: currentProposalText,
+            ...(attached ? { attachment: attached } : {}),
             ...(actionToCommit ? { confirm_action: actionToCommit } : {})
         };
 

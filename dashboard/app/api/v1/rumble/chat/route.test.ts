@@ -231,6 +231,38 @@ describe("POST /api/v1/rumble/chat", () => {
       expect(turn2Data.status).toBe("success");
       expect(turn2Data.reply).toContain("Rumble: Executed actions:");
     });
+
+    it("ATTACHMENT: passes attached photo or document to conversational chat", async () => {
+      chat.mockResolvedValueOnce({
+        reply: "I analyzed the doctor referral photo and prepared an appointment for Dr Churchill.",
+        intent: "GENERAL",
+      });
+
+      const response = await POST(
+        jsonRequest({
+          message: "Please analyze this referral letter",
+          attachment: {
+            data: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+            mimeType: "image/png",
+            filename: "referral.png",
+          },
+        })
+      );
+
+      expect(response.status).toBe(200);
+      expect(chat).toHaveBeenCalledWith(
+        "Please analyze this referral letter",
+        [],
+        {
+          data: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+          mimeType: "image/png",
+          filename: "referral.png",
+        }
+      );
+      const data = await response.json();
+      expect(data.status).toBe("success");
+      expect(data.reply).toContain("I analyzed the doctor referral photo");
+    });
   });
 });
 
