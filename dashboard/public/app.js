@@ -417,6 +417,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!interactiveCalendar) {
             interactiveCalendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
+                weekends: false,
+                firstDay: 1,
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
