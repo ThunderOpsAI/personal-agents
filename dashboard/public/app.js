@@ -340,7 +340,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (window.btnYesterdayAgenda) window.btnYesterdayAgenda.style.display = 'flex';
         if (window.btnTomorrowAgenda) window.btnTomorrowAgenda.style.display = 'flex';
 
-        const dailyItems = data.daily || [];
+        const dailyItems = (data.daily || []).filter(item => item.status !== 'completed');
         const countBadge = document.getElementById('agendaCount');
         if (countBadge) countBadge.textContent = `${dailyItems.length} Items`;
         
@@ -349,7 +349,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (dailyItems.length > 0) {
             dailyItems.forEach(item => {
                 if (item.item_type === 'learning' || item.id === 'protocol-learn') return;
-                const isCompleted = item.status === 'completed';
                 const isDismissed = item.status === 'dismissed';
 
                 const card = document.createElement('div');
@@ -1939,9 +1938,12 @@ document.addEventListener('DOMContentLoaded', () => {
             doneBtn.addEventListener('click', async () => {
                 try {
                     const title = card.querySelector('.protocol-info p')?.innerText || id;
-                    card.classList.add('completed');
-                    doneBtn.innerText = "Done";
-                    doneBtn.disabled = true;
+                    card.style.transition = 'all 0.3s ease';
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(-10px)';
+                    setTimeout(() => card.remove(), 300);
+                    showToast(`Completed: ${title}`, 'success');
+
                     if (id) {
                         await fetch(API_AGENDA, {
                             method: 'POST',
