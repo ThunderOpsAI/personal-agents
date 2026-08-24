@@ -1,7 +1,7 @@
 # Monthly Budget Report (2026-08)
 
 * **Period:** Sat, 1 Aug 2026 to Mon, 31 Aug 2026
-* **Generated At:** 2026-08-24T11:42:07.501Z
+* **Generated At:** 2026-08-24T13:32:55.682Z
 * **Total Spent:** $85.50
 * **Total Income:** $0.00
 * **Net Balance:** $85.50
@@ -21,7 +21,7 @@
 
 | Date & Time | Description | Category | Type | Amount |
 | :--- | :--- | :--- | :--- | :--- |
-| 24 Aug, 09:42 pm | Target Organic Groceries | Groceries | EXPENSE | $85.50 |
+| 24 Aug, 11:32 pm | Target Organic Groceries | Groceries | EXPENSE | $85.50 |
 
 ---
 

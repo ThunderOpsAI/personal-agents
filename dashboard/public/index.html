@@ -26,19 +26,14 @@
                 </div>
                 
                 <div class="header-actions">
-                    <div class="header-actions-top">
-                        <button class="btn btn-sm btn-outline btn-icon btn-rumble" id="btnOpenRumbleChat" title="Rumble Chat" aria-label="Rumble Chat">
-                            <img src="Rumble_Icon.png" alt="Rumble" class="rumble-header-icon">
-                        </button>
-                        <button class="btn btn-sm btn-outline btn-icon btn-sync" id="btnSyncOps" title="Sync Live Data" aria-label="Sync Live Data">
-                            <span class="sync-icon">🔄</span>
-                        </button>
-                        <button class="btn btn-sm btn-outline btn-icon" id="btnSettings" title="Settings" aria-label="Settings">⚙️</button>
-                    </div>
-                    <div class="header-actions-bottom">
-                        <button class="btn btn-sm btn-outline" id="btnOpenPainAnalytics" title="Clinical Pain Analytics & GP Report">Analytics</button>
-                        <button class="btn btn-sm btn-outline" id="btnOpenNotes">Notes</button>
-                    </div>
+                    <button class="btn btn-sm btn-outline" id="btnOpenNotes" title="Notes & Scratchpad">Notes</button>
+                    <button class="btn btn-sm btn-outline btn-icon btn-rumble" id="btnOpenRumbleChat" title="Rumble Chat" aria-label="Rumble Chat">
+                        <img src="Rumble_Icon.png" alt="Rumble" class="rumble-header-icon">
+                    </button>
+                    <button class="btn btn-sm btn-outline btn-icon btn-sync" id="btnSyncOps" title="Sync Live Data" aria-label="Sync Live Data">
+                        <span class="sync-icon">🔄</span>
+                    </button>
+                    <button class="btn btn-sm btn-outline btn-icon" id="btnSettings" title="Settings" aria-label="Settings">⚙️</button>
                 </div>
             </div>
             
@@ -272,6 +267,8 @@
                     <div id="settingsIntegrations" class="hidden">
                         <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;"><label style="margin:0;">Google Calendar</label><button class="btn btn-sm btn-neon-green">Connected</button></div>
                         <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;"><label style="margin:0;">Emails</label><button class="btn btn-sm btn-neon-green">Connected</button></div>
+                        <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;"><label style="margin:0;">Telegram Bot</label><button class="btn btn-sm btn-outline" id="btnTriggerTelegramCheckin" title="Dispatch an immediate pain check-in prompt to Telegram">Send Check-in Prompt Now</button></div>
+                        <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;"><label style="margin:0;">Manual Data Scrape</label><button class="btn btn-sm btn-outline" id="btnTriggerRetrieval">Run Retrieval Scan</button></div>
                         <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;"><label style="margin:0;">Google Keep</label><button class="btn btn-sm btn-outline" disabled title="API Not Available">Not Available</button></div>
                     </div>
                 </div>

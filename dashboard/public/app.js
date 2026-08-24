@@ -73,6 +73,16 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => toast.remove(), 4000);
     }
 
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
     // --- API Endpoints ---
     const API_BASE = (window.NEXT_PUBLIC_API_URL) || (typeof process !== 'undefined' && process.env && process.env.NEXT_PUBLIC_API_URL) || '';
     const API_REFLECTION_USAGE = `${API_BASE}/api/v1/reflection/usage`;
@@ -117,7 +127,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnOpenRumbleChat = document.getElementById('btnOpenRumbleChat');
     const btnSyncOps = document.getElementById('btnSyncOps');
     const btnOpenNotes = document.getElementById('btnOpenNotes');
+    const btnSettings = document.getElementById('btnSettings');
+    const settingsModal = document.getElementById('settingsModal');
     const btnOpenPainLog = document.getElementById('btnOpenPainLog');
+    const painAnalyticsModal = document.getElementById('painAnalyticsModal');
     const btnOpenExercises = document.getElementById('btnOpenExercises');
     
     const agendaStream = document.getElementById('agendaStream');
@@ -1313,8 +1326,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- 11. Settings Logic ---
-    const btnSettings = document.getElementById('btnSettings');
-
     const tabProfile = document.getElementById('tabProfile');
     const tabPreferences = document.getElementById('tabPreferences');
     const tabIntegrations = document.getElementById('tabIntegrations');
@@ -1347,7 +1358,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (tabPreferences) tabPreferences.addEventListener('click', () => switchSettingsTab(tabPreferences, settingsPreferences));
     if (tabIntegrations) tabIntegrations.addEventListener('click', () => switchSettingsTab(tabIntegrations, settingsIntegrations));
 
-    const settingsModal = document.getElementById('settingsModal');
     const btnCloseSettings = document.getElementById('btnCloseSettings');
     const themeSelector = document.getElementById('themeSelector');
 
@@ -1359,6 +1369,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (btnCloseSettings && settingsModal) {
         btnCloseSettings.addEventListener('click', () => {
+            settingsModal.classList.add('hidden');
+        });
+    }
+
+    const btnCancelSettings = document.getElementById('btnCancelSettings');
+    if (btnCancelSettings && settingsModal) {
+        btnCancelSettings.addEventListener('click', () => {
+            settingsModal.classList.add('hidden');
+        });
+    }
+
+    const btnSaveSettings = document.getElementById('btnSaveSettings');
+    if (btnSaveSettings && settingsModal) {
+        btnSaveSettings.addEventListener('click', () => {
+            showToast('Settings saved successfully', 'success');
             settingsModal.classList.add('hidden');
         });
     }
@@ -3193,7 +3218,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 12. Pain Analytics & GP Report Logic ---
     const btnOpenPainAnalytics = document.getElementById('btnOpenPainAnalytics');
-    const painAnalyticsModal = document.getElementById('painAnalyticsModal');
     const btnClosePainAnalytics = document.getElementById('btnClosePainAnalytics');
     const btnDismissPainAnalytics = document.getElementById('btnDismissPainAnalytics');
     const btnPrintPainReport = document.getElementById('btnPrintPainReport');
