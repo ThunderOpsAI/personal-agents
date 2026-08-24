@@ -152,6 +152,22 @@ h3 { font-size: 1.05rem; }
     flex-shrink: 0;
 }
 
+.header-sub-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.header-sub-actions .btn {
+    padding: 5px 12px;
+    font-size: 0.82rem;
+    font-weight: 500;
+}
+
 .btn-icon {
     display: inline-flex;
     align-items: center;
@@ -892,6 +908,19 @@ h3 { font-size: 1.05rem; }
 
     .header-actions {
         gap: 6px;
+    }
+
+    .header-sub-actions {
+        justify-content: stretch;
+        gap: 6px;
+    }
+
+    .header-sub-actions .btn {
+        flex: 1;
+        text-align: center;
+        justify-content: center;
+        min-height: 32px;
+        font-size: 0.8rem;
     }
 
     .header-actions .btn {
