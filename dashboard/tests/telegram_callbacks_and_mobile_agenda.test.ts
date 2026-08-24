@@ -241,5 +241,33 @@ describe('Telegram Bot Inline Callbacks & Symptoms Logging & Mobile Agenda', () 
       expect(data.status).toBe('success');
       expect(data).toHaveProperty('html');
     });
+
+    it('POST /api/v1/telegram/checkin dispatches inline pain check-in prompt to Telegram', async () => {
+      const sendSpy = vi.spyOn(telegramBot, 'sendMessage').mockResolvedValue({ ok: true, result: {} });
+
+      const { POST: checkinPost } = await import('../app/api/v1/telegram/checkin/route');
+      const req = new Request('https://rumble.test/api/v1/telegram/checkin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chatId: '123456789' }),
+      });
+
+      const res = await checkinPost(req as any);
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data.status).toBe('success');
+
+      expect(sendSpy).toHaveBeenCalledWith('123456789', expect.stringContaining('Rumble OS Pain & Symptom Check-in'), expect.objectContaining({
+        reply_markup: expect.objectContaining({
+          inline_keyboard: expect.arrayContaining([
+            expect.arrayContaining([
+              expect.objectContaining({ callback_data: 'pain_preset:5.5' }),
+              expect.objectContaining({ callback_data: 'pain_preset:7.0' }),
+            ]),
+          ]),
+        }),
+      }));
+    });
   });
 });
+

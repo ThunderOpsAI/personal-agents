@@ -208,6 +208,7 @@
                 <span class="footer-status">Rumble OS live data controls</span>
                 <div class="footer-actions">
                     <button class="btn btn-neon-red btn-sm" id="btnOpenPainLog">Log Pain</button>
+                    <button class="btn btn-outline btn-sm" id="btnOpenPainAnalyticsBottom" title="Clinical Pain Analytics & GP Report">Analytics</button>
                     <button class="btn btn-neon-purple btn-sm" id="btnOpenExercises">Explore Exercises</button>
                 </div>
             </div>
@@ -341,6 +342,10 @@
             <div class="modal-content glass-panel slide-up-widget pain-log-widget" style="max-width: 960px; width: 100%;">
                 <div class="modal-header">
                     <h2>Log Pain & Symptom Check-in</h2>
+                    <div style="margin-left: auto; display: flex; align-items: center; gap: 8px; margin-right: 12px;">
+                        <button type="button" class="btn btn-sm btn-outline" id="btnOpenPainAnalyticsFromModal" title="Open Clinical Analytics">Analytics</button>
+                        <button type="button" class="btn btn-sm btn-outline" id="btnTriggerTelegramCheckinFromModal" title="Send Check-in Prompt to Telegram">Test Telegram Bot</button>
+                    </div>
                     <button class="btn-close" id="btnClosePainLog">&times;</button>
                 </div>
                 <div class="modal-body-form pain-modal-two-col">
@@ -415,6 +420,17 @@
                                 <button class="btn btn-outline" id="btnCancelPainLog" type="button">Cancel</button>
                                 <button class="btn btn-neon-red" id="btnLogPain" type="button" style="flex: 1;">Save pain log</button>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Today's Logged Check-ins Section -->
+                    <div class="todays-pain-history-section" style="grid-column: 1 / -1; width: 100%;">
+                        <div class="todays-history-header">
+                            <span class="section-label-cyan">Today's Check-ins</span>
+                            <span class="val-tag" id="todaysPainLogsCount">0 Logged Today</span>
+                        </div>
+                        <div class="todays-pain-logs-list" id="todaysPainLogsList">
+                            <div class="empty-history-hint">Loading today's logged check-ins...</div>
                         </div>
                     </div>
                 </div>

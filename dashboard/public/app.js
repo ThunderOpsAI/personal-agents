@@ -1613,6 +1613,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function closePainLog() { painLogModal.classList.add('hidden'); }
     if (btnOpenPainLog) btnOpenPainLog.addEventListener('click', () => {
         renderPainModal();
+        if (typeof loadTodaysPainLogs === 'function') loadTodaysPainLogs();
         painLogModal.classList.remove('hidden');
     });
     if (btnClosePainLog) btnClosePainLog.addEventListener('click', closePainLog);
@@ -1831,6 +1832,131 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initial render of pain modal
     renderPainModal();
+
+    // --- Today's Logged Check-ins Feed Logic ---
+    async function loadTodaysPainLogs() {
+        const todaysListEl = document.getElementById('todaysPainLogsList');
+        const countBadge = document.getElementById('todaysPainLogsCount');
+        if (!todaysListEl) return;
+
+        try {
+            const res = await fetch('/api/v1/symptoms/log');
+            if (!res.ok) throw new Error('Failed to fetch pain logs');
+            const data = await res.json();
+            const logs = Array.isArray(data) ? data : (data.logs || []);
+
+            const todayStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
+            const todaysLogs = logs.filter(item => {
+                const ts = item.created_at || item.timestamp;
+                if (!ts) return false;
+                const d = new Date(ts);
+                return d.toLocaleDateString('en-CA') === todayStr;
+            });
+
+            if (countBadge) {
+                countBadge.innerText = `${todaysLogs.length} Logged Today`;
+            }
+
+            if (todaysLogs.length === 0) {
+                todaysListEl.innerHTML = '<div class="empty-history-hint">No pain check-ins logged yet today. Use the form above to record one.</div>';
+                return;
+            }
+
+            todaysListEl.innerHTML = todaysLogs.map(item => {
+                const ts = item.created_at || item.timestamp;
+                const timeStr = ts ? new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Today';
+                const score = Number(item.score ?? item.pain_level ?? 0);
+                const scoreColor = score >= 8 ? 'var(--neon-red)' : score >= 6 ? '#ff6e40' : 'var(--neon-green)';
+                const badgeBg = score >= 8 ? 'rgba(255, 61, 0, 0.2)' : score >= 6 ? 'rgba(255, 110, 64, 0.2)' : 'rgba(0, 230, 118, 0.2)';
+
+                let locText = "Standard Distribution";
+                if (Array.isArray(item.locations) && item.locations.length > 0) {
+                    locText = item.locations.map(l => {
+                        const side = l.side && l.side !== 'unspecified' ? `${l.side.charAt(0).toUpperCase() + l.side.slice(1)} ` : '';
+                        const area = (l.area || '').toUpperCase();
+                        const pct = l.percentage ?? l.weight ?? '';
+                        return `${pct ? pct + '% ' : ''}${side}${area}`;
+                    }).join(', ');
+                } else if (Array.isArray(item.generators) && item.generators.length > 0) {
+                    locText = item.generators.map(g => {
+                        const side = g.side && g.side !== 'unspecified' ? `${g.side.charAt(0).toUpperCase() + g.side.slice(1)} ` : '';
+                        const area = (g.area || '').toUpperCase();
+                        return `${g.percentage ? g.percentage + '% ' : ''}${side}${area}`;
+                    }).join(', ');
+                }
+
+                const moodText = item.mood_emoji ? `${item.mood_emoji} ${item.mood_level ?? item.mood ?? ''}` : (item.mood ? `Mood: ${item.mood}` : '');
+                const notesText = item.notes || item.pain_notes || item.mood_notes || '';
+
+                return `
+                    <div class="todays-log-item">
+                        <div class="todays-log-item-left">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span class="todays-log-time">${timeStr}</span>
+                                <span class="todays-log-areas">${locText}</span>
+                            </div>
+                            ${notesText ? `<div class="todays-log-notes">"${escapeHtml(notesText)}"</div>` : ''}
+                        </div>
+                        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px;">
+                            <div class="todays-log-score-badge" style="background: ${badgeBg}; color: ${scoreColor}; border: 1px solid ${scoreColor};">
+                                ${score.toFixed(1)}/10
+                            </div>
+                            ${moodText ? `<span style="font-size: 0.72rem; color: #94a3b8;">${moodText}</span>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        } catch (err) {
+            console.warn("Failed to load today's pain logs:", err);
+            if (todaysListEl) {
+                todaysListEl.innerHTML = '<div class="empty-history-hint">Could not load today\'s history feed.</div>';
+            }
+        }
+    }
+
+    // --- On-Demand Telegram Check-in Trigger ---
+    async function triggerTelegramCheckinPrompt() {
+        showToast('Sending check-in prompt to Telegram...', 'info');
+        try {
+            const res = await fetch('/api/v1/telegram/checkin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data.error || 'Failed to dispatch Telegram prompt');
+            }
+            showToast('Telegram check-in prompt sent to your bot!', 'success');
+        } catch (err) {
+            showToast(err.message || 'Could not send Telegram check-in', 'error');
+        }
+    }
+
+    const btnTriggerTelegramCheckin = document.getElementById('btnTriggerTelegramCheckin');
+    if (btnTriggerTelegramCheckin) {
+        btnTriggerTelegramCheckin.addEventListener('click', triggerTelegramCheckinPrompt);
+    }
+    const btnTriggerTelegramCheckinFromModal = document.getElementById('btnTriggerTelegramCheckinFromModal');
+    if (btnTriggerTelegramCheckinFromModal) {
+        btnTriggerTelegramCheckinFromModal.addEventListener('click', triggerTelegramCheckinPrompt);
+    }
+
+    const btnOpenPainAnalyticsBottom = document.getElementById('btnOpenPainAnalyticsBottom');
+    if (btnOpenPainAnalyticsBottom && painAnalyticsModal) {
+        btnOpenPainAnalyticsBottom.addEventListener('click', () => {
+            painAnalyticsModal.classList.remove('hidden');
+            loadPainAnalytics();
+        });
+    }
+
+    const btnOpenPainAnalyticsFromModal = document.getElementById('btnOpenPainAnalyticsFromModal');
+    if (btnOpenPainAnalyticsFromModal && painAnalyticsModal) {
+        btnOpenPainAnalyticsFromModal.addEventListener('click', () => {
+            painLogModal.classList.add('hidden');
+            painAnalyticsModal.classList.remove('hidden');
+            loadPainAnalytics();
+        });
+    }
 
     btnCloseNotes.addEventListener('click', () => {
         notesModal.classList.add('hidden');
@@ -2617,6 +2743,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             closePainLog();
             showToast('Pain log saved to live database', 'success');
+            if (typeof loadTodaysPainLogs === 'function') loadTodaysPainLogs();
             if (typeof loadPainAnalytics === 'function') loadPainAnalytics();
             if (typeof loadAgendaItems === 'function') loadAgendaItems();
         } catch (e) {
