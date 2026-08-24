@@ -147,25 +147,32 @@ h3 { font-size: 1.05rem; }
 
 .header-actions {
     display: flex;
-    align-items: center;
-    gap: 8px;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
     flex-shrink: 0;
 }
 
-.header-sub-actions {
+.header-actions-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.header-actions-bottom {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 8px;
-    margin-top: 6px;
-    padding-top: 6px;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    gap: 6px;
 }
 
-.header-sub-actions .btn {
-    padding: 5px 12px;
-    font-size: 0.82rem;
+.header-actions-bottom .btn {
+    padding: 3px 10px;
+    font-size: 0.78rem;
     font-weight: 500;
+    line-height: 1.2;
+    min-height: 26px;
+    border-radius: 8px;
 }
 
 .btn-icon {
@@ -907,26 +914,22 @@ h3 { font-size: 1.05rem; }
     }
 
     .header-actions {
+        gap: 4px;
+        align-items: flex-end;
+    }
+
+    .header-actions-top {
         gap: 6px;
     }
 
-    .header-sub-actions {
-        justify-content: stretch;
-        gap: 6px;
+    .header-actions-bottom {
+        gap: 4px;
     }
 
-    .header-sub-actions .btn {
-        flex: 1;
-        text-align: center;
-        justify-content: center;
-        min-height: 32px;
-        font-size: 0.8rem;
-    }
-
-    .header-actions .btn {
-        min-height: 32px;
-        padding: 4px 8px;
-        font-size: 0.8rem;
+    .header-actions-bottom .btn {
+        padding: 2px 8px;
+        font-size: 0.74rem;
+        min-height: 24px;
     }
 
     .btn-icon {
