@@ -71,13 +71,21 @@ export class TelegramBot {
 
   constructor(token?: string) {
     this.token = token || process.env.TELEGRAM_BOT_TOKEN || '';
-    if (!this.token) {
-      throw new Error("TelegramBot requires TELEGRAM_BOT_TOKEN environment variable");
-    }
     this.apiUrl = `https://api.telegram.org/bot${this.token}`;
   }
 
+  private ensureToken() {
+    if (!this.token) {
+      this.token = process.env.TELEGRAM_BOT_TOKEN || '';
+      this.apiUrl = `https://api.telegram.org/bot${this.token}`;
+    }
+    if (!this.token) {
+      throw new Error("TelegramBot requires TELEGRAM_BOT_TOKEN environment variable");
+    }
+  }
+
   async sendMessage(chatId: string | number, text: string, options?: TelegramSendMessageOptions) {
+    this.ensureToken();
     const payload: any = {
       chat_id: chatId,
       text,
@@ -96,7 +104,29 @@ export class TelegramBot {
     return res.json();
   }
 
+  async editMessageText(chatId: string | number, messageId: number, text: string, options?: TelegramSendMessageOptions) {
+    this.ensureToken();
+    const payload: any = {
+      chat_id: chatId,
+      message_id: messageId,
+      text,
+      ...options,
+    };
+
+    const res = await fetch(`${this.apiUrl}/editMessageText`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      throw new Error(`Telegram API Error: ${res.status} ${res.statusText}`);
+    }
+    return res.json();
+  }
+
   async answerCallbackQuery(callbackQueryId: string, text?: string, showAlert = false) {
+    this.ensureToken();
     const payload: any = {
       callback_query_id: callbackQueryId,
       text,
@@ -116,6 +146,7 @@ export class TelegramBot {
   }
   
   async setWebhook(url: string, secretToken?: string) {
+    this.ensureToken();
     const body: any = { url };
     if (secretToken) {
       body.secret_token = secretToken;

@@ -216,6 +216,8 @@ export async function GET(request: Request) {
       daily,
       weekly,
       monthly: uniqueMonthly,
+      hydrotherapy: hydroItems,
+      washing: washingItems,
       calendar_status: calendarStatus,
       calendar_events: calendarEvents,
       ...(authUrl ? { authUrl } : {}),

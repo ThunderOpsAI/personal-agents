@@ -919,6 +919,9 @@ h3 { font-size: 1.05rem; }
         align-items: stretch;
         gap: 10px;
         padding: 14px;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
     }
 
     .protocol-info {
@@ -933,23 +936,43 @@ h3 { font-size: 1.05rem; }
 
     .protocol-actions,
     .learn-actions-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        display: flex;
+        flex-wrap: wrap;
         gap: 6px;
         width: 100%;
     }
 
     .protocol-actions .btn,
     .learn-actions-grid .btn {
-        width: 100%;
-        min-height: 34px;
-        padding: 6px 2px;
-        font-size: 0.76rem;
+        flex: 1 1 calc(50% - 6px);
+        min-width: 70px;
+        min-height: 36px;
+        padding: 6px 8px;
+        font-size: 0.8rem;
         justify-content: center;
         text-align: center;
         white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+    }
+
+    .protocol-actions .btn:only-child {
+        flex: 1 1 100%;
+    }
+
+    .agenda-skeleton-card {
+        pointer-events: none;
+        opacity: 0.6;
+    }
+
+    .skeleton-line {
+        background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.05) 75%);
+        background-size: 200% 100%;
+        animation: skeleton-shimmer 1.5s infinite;
+        border-radius: 4px;
+    }
+
+    @keyframes skeleton-shimmer {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
     }
 
     .widget-actions {

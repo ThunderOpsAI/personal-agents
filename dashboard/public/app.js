@@ -282,13 +282,45 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(loadAgenda, 60000);
 
     // --- Agenda Loader ---
+    function showAgendaSkeleton() {
+        const stream = document.getElementById("agendaStream");
+        if (!stream) return;
+        if (stream.querySelector('.agenda-skeleton-card')) return;
+        const skeletonHtml = `
+            <div class="protocol-card glass-panel agenda-skeleton-card">
+                <div class="protocol-info">
+                    <div class="skeleton-line" style="width: 35%; height: 16px; margin-bottom: 8px;"></div>
+                    <div class="skeleton-line" style="width: 75%; height: 14px;"></div>
+                </div>
+            </div>
+            <div class="protocol-card glass-panel agenda-skeleton-card">
+                <div class="protocol-info">
+                    <div class="skeleton-line" style="width: 30%; height: 16px; margin-bottom: 8px;"></div>
+                    <div class="skeleton-line" style="width: 85%; height: 14px;"></div>
+                </div>
+            </div>
+        `;
+        stream.insertAdjacentHTML('beforeend', skeletonHtml);
+    }
+
+    function removeAgendaSkeletons() {
+        document.querySelectorAll('.agenda-skeleton-card').forEach(s => s.remove());
+    }
+
     async function loadAgenda() {
+        if (!cachedAgendaData) {
+            showAgendaSkeleton();
+        }
         try {
             const res = await fetch(API_AGENDA);
+            removeAgendaSkeletons();
             if (res.ok) {
                 const data = await res.json();
                 cachedAgendaData = data;
                 
+                // Clear any previous error boundary
+                document.querySelectorAll('.agenda-error-card').forEach(e => e.remove());
+
                 if (data.calendar_status === 'auth_required' && window.authRecoveryBanner) {
                     window.authRecoveryBanner.classList.remove('hidden');
                 } else if (window.authRecoveryBanner) {
@@ -311,8 +343,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error("Failed to load agenda with status:", res.status);
             }
         } catch (e) {
-            showToast('Failed to load agenda');
+            removeAgendaSkeletons();
+            showToast('Failed to load agenda', 'error');
             console.error(e);
+            const stream = document.getElementById("agendaStream");
+            if (stream && !stream.querySelector('.agenda-error-card') && !stream.querySelector('.protocol-card:not(#protocol-learn):not(#executive-briefing)')) {
+                const errCard = document.createElement('div');
+                errCard.className = 'protocol-card glass-panel agenda-error-card';
+                errCard.innerHTML = `
+                    <div class="protocol-info">
+                        <h3 style="color: var(--neon-red);">⚠️ Sync Latency</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.85rem;">Failed to connect to live agenda service. Tap retry to reconnect.</p>
+                    </div>
+                    <div class="protocol-actions">
+                        <button class="btn btn-neon-blue btn-sm btn-retry-agenda">Retry Sync</button>
+                    </div>
+                `;
+                stream.appendChild(errCard);
+                errCard.querySelector('.btn-retry-agenda')?.addEventListener('click', () => {
+                    errCard.remove();
+                    loadAgenda();
+                });
+            }
         }
     }
 
@@ -344,12 +396,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const countBadge = document.getElementById('agendaCount');
         if (countBadge) countBadge.textContent = `${dailyItems.length} Items`;
         
-        document.querySelectorAll('.protocol-card:not(#protocol-learn):not(#executive-briefing)').forEach(c => c.remove());
+        document.querySelectorAll('.protocol-card:not(#protocol-learn):not(#executive-briefing):not(.agenda-skeleton-card):not(.agenda-error-card)').forEach(c => c.remove());
 
         if (dailyItems.length > 0) {
             dailyItems.forEach(item => {
                 if (item.item_type === 'learning' || item.id === 'protocol-learn') return;
                 const isDismissed = item.status === 'dismissed';
+                const isCompleted = item.status === 'completed';
 
                 const card = document.createElement('div');
                 card.className = `protocol-card glass-panel${isCompleted ? ' completed' : ''}${isDismissed ? ' dismissed' : ''}`;
@@ -375,10 +428,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             ${item.choices ? `<small class="form-hint">Choices: ${item.choices.join(' · ')}</small>` : ''}
                         </div>
                         <div class="protocol-actions">
-                            <button class="btn btn-neon-purple btn-sm btn-show-me" data-id="${item.id}" data-type="${item.item_type || ''}" ${isCompleted ? 'disabled' : ''}>View</button>
-                            <button class="btn btn-neon-green btn-sm btn-done" data-id="${item.id}" data-type="${item.item_type || ''}" ${isCompleted ? 'disabled' : ''}>${isCompleted ? 'Done' : 'Done'}</button>
-                            <button class="btn btn-outline btn-sm btn-postpone" data-id="${item.id}" data-type="${item.item_type || ''}" ${isCompleted ? 'disabled' : ''}>Delay</button>
-                            <button class="btn btn-outline btn-sm btn-dismiss" data-id="${item.id}" data-type="${item.item_type || ''}" ${isCompleted ? '' : 'disabled'}>Skip</button>
+                            <button class="btn btn-neon-purple btn-sm btn-show-me" data-id="${item.id}" data-type="${item.item_type || ''}">View</button>
+                            <button class="btn btn-neon-green btn-sm btn-done" data-id="${item.id}" data-type="${item.item_type || ''}">Done</button>
+                            <button class="btn btn-outline btn-sm btn-postpone" data-id="${item.id}" data-type="${item.item_type || ''}">Delay</button>
+                            <button class="btn btn-outline btn-sm btn-dismiss" data-id="${item.id}" data-type="${item.item_type || ''}">Dismiss</button>
                         </div>
                     `;
                 }
@@ -387,13 +440,15 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
         
-        const cards = Array.from(document.getElementById("agendaStream").querySelectorAll('.protocol-card'));
+        const cards = Array.from(document.getElementById("agendaStream").querySelectorAll('.protocol-card:not(.agenda-skeleton-card):not(.agenda-error-card)'));
         cards.sort((a, b) => {
-            const timeStrA = a.querySelector('h3').innerText.trim();
-            const timeStrB = b.querySelector('h3').innerText.trim();
+            const h3A = a.querySelector('h3');
+            const h3B = b.querySelector('h3');
+            const timeStrA = h3A ? h3A.innerText.trim() : '';
+            const timeStrB = h3B ? h3B.innerText.trim() : '';
             const parseTime = (str) => {
                 const match = str.match(/(\d+):(\d+)\s*(AM|PM)/i);
-                if (!match) return 0;
+                if (!match) return 999;
                 let h = parseInt(match[1]);
                 let m = parseInt(match[2]);
                 let ampm = match[3].toUpperCase();
