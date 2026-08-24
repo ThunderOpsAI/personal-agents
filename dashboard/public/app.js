@@ -249,6 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentProposalText = "";
     let currentLearnTopic = null;
     let currentAgendaView = 'today';
+    let cachedAgendaData = null;
     
     const customAreaContextMap = {};
 
@@ -3024,8 +3025,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     document.querySelectorAll('.btn-view-report').forEach(btn => {
                         btn.addEventListener('click', async (e) => {
-                            const reportId = (e.currentTarget as HTMLElement).getAttribute('data-report-id');
-                            const selectedReport = data.reports.find((item: any) => item.id === reportId);
+                            const target = e.currentTarget;
+                            const reportId = target ? target.getAttribute('data-report-id') : null;
+                            const selectedReport = data.reports.find(item => item.id === reportId);
                             if (selectedReport && budgetReportDetail && budgetReportDetailContent) {
                                 if (budgetReportDetailTitle) budgetReportDetailTitle.innerText = `${selectedReport.period_type === 'weekly' ? 'Weekly' : 'Monthly'} Budget Report (${selectedReport.period_label})`;
                                 budgetReportDetailContent.innerText = selectedReport.report_markdown;
