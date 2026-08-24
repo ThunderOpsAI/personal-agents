@@ -89,6 +89,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const API_HEALTHZ = `${API_BASE}/healthz`;
     const API_BUDGET = `${API_BASE}/api/v1/budget`;
     const API_BUDGET_SUMMARY = `${API_BASE}/api/v1/budget/summary`;
+    const API_BUDGET_REPORTS = `${API_BASE}/api/v1/budget/reports`;
+    const API_BUDGET_RESET = `${API_BASE}/api/v1/budget/reset`;
     const API_EXERCISE_SUGGEST = `${API_BASE}/api/v1/exercises/suggest`;
     const API_EXERCISE_RELIEF = `${API_BASE}/api/v1/rehab/complete`;
     const API_EXERCISE_REJECT = `${API_BASE}/api/v1/rehab/dismiss`;
@@ -1609,42 +1611,226 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function closePainLog() { painLogModal.classList.add('hidden'); }
-    btnOpenPainLog.addEventListener('click', () => painLogModal.classList.remove('hidden'));
-    btnClosePainLog.addEventListener('click', closePainLog);
-    btnCancelPainLog.addEventListener('click', closePainLog);
+    if (btnOpenPainLog) btnOpenPainLog.addEventListener('click', () => {
+        renderPainModal();
+        painLogModal.classList.remove('hidden');
+    });
+    if (btnClosePainLog) btnClosePainLog.addEventListener('click', closePainLog);
+    if (btnCancelPainLog) btnCancelPainLog.addEventListener('click', closePainLog);
 
-    function updatePainWeightTotal() {
-        const total = [...painLocations.querySelectorAll('.pain-percentage')]
-            .reduce((sum, input) => sum + (parseInt(input.value, 10) || 0), 0);
-        painWeightTotal.innerText = `Total: ${total}%`;
-        painWeightTotal.classList.toggle('weight-invalid', total !== 100);
-        return total;
+    // Dynamic 1-3 Pain Areas State
+    let selectedPainAreas = [
+        { area: "Right Lumbar", percent: 75, score: 7.5 },
+        { area: "Neck / Cervical", percent: 25, score: 5.0 }
+    ];
+
+    const dynamicPainCardsContainer = document.getElementById('dynamicPainCardsContainer');
+    const painAnatomyChipsGrid = document.getElementById('painAnatomyChipsGrid');
+    const painSelectedCountBadge = document.getElementById('painSelectedCountBadge');
+    const painTotalPercentDisplay = document.getElementById('painTotalPercentDisplay');
+    const btnAutoBalancePain = document.getElementById('btnAutoBalancePain');
+    const moodLabelDisplay = document.getElementById('moodLabelDisplay');
+
+    function getPainTotalPercent() {
+        return selectedPainAreas.reduce((sum, s) => sum + Number(s.percent), 0);
     }
 
-    function wirePainLocationRow(row) {
-        row.querySelector('.pain-percentage').addEventListener('input', updatePainWeightTotal);
-        row.querySelector('.remove-location').addEventListener('click', () => {
-            if (painLocations.children.length > 1) row.remove();
-            updatePainWeightTotal();
+    function autoBalancePainModal() {
+        const count = selectedPainAreas.length;
+        if (count === 1) {
+            selectedPainAreas[0].percent = 100;
+        } else if (count === 2) {
+            selectedPainAreas[0].percent = 75;
+            selectedPainAreas[1].percent = 25;
+        } else if (count === 3) {
+            selectedPainAreas[0].percent = 70;
+            selectedPainAreas[1].percent = 20;
+            selectedPainAreas[2].percent = 10;
+        }
+    }
+
+    function togglePainAreaSelection(areaName) {
+        const existingIdx = selectedPainAreas.findIndex(s => s.area === areaName);
+        if (existingIdx !== -1) {
+            if (selectedPainAreas.length <= 1) {
+                showToast('You must keep at least 1 pain area selected');
+                return;
+            }
+            selectedPainAreas.splice(existingIdx, 1);
+            autoBalancePainModal();
+        } else {
+            if (selectedPainAreas.length >= 3) {
+                showToast('Maximum 3 pain areas can be selected at a time');
+                return;
+            }
+            selectedPainAreas.push({
+                area: areaName,
+                percent: 10,
+                score: 5.0
+            });
+            autoBalancePainModal();
+        }
+        renderPainModal();
+    }
+
+    function adjustPainSlotPercent(areaName, delta) {
+        const slot = selectedPainAreas.find(s => s.area === areaName);
+        if (!slot) return;
+
+        const currentTotal = getPainTotalPercent();
+        const maxAllowed = 100 - (currentTotal - slot.percent);
+
+        if (delta > 0) {
+            const nextVal = Math.min(maxAllowed, slot.percent + delta);
+            slot.percent = Math.floor(nextVal / 5) * 5;
+        } else {
+            const nextVal = Math.max(5, slot.percent + delta);
+            slot.percent = Math.floor(nextVal / 5) * 5;
+        }
+        renderPainModal();
+    }
+
+    function renderPainModal() {
+        if (!dynamicPainCardsContainer || !painAnatomyChipsGrid) return;
+        
+        const totalPct = getPainTotalPercent();
+        const selectedNames = selectedPainAreas.map(s => s.area);
+
+        // Update Top Chips
+        painAnatomyChipsGrid.querySelectorAll('.anatomy-chip-btn').forEach(btn => {
+            const area = btn.getAttribute('data-area');
+            const isSel = selectedNames.includes(area);
+            btn.classList.toggle('selected', isSel);
+            btn.innerText = (isSel ? '✓ ' : '') + area;
+        });
+
+        // Update Count Badge
+        if (painSelectedCountBadge) {
+            painSelectedCountBadge.innerText = `${selectedPainAreas.length}/3 Selected`;
+        }
+
+        // Render Dynamic Cards
+        const borderColors = ['#00f0ff', '#a855f7', '#00e676'];
+        dynamicPainCardsContainer.innerHTML = selectedPainAreas.map((slot, idx) => {
+            const color = borderColors[idx % borderColors.length];
+            const canStepUp = totalPct < 100;
+            const canStepDown = slot.percent > 5;
+
+            return `
+                <div class="pain-slot-card" style="border-left: 4px solid ${color};">
+                    <div class="pain-slot-header">
+                        <strong style="color: ${color}; font-size: 0.9rem;">
+                            Section ${idx + 1}: ${slot.area}
+                        </strong>
+                        ${selectedPainAreas.length > 1 ? `
+                            <button type="button" class="btn btn-sm btn-outline btn-deselect-pain-slot" data-area="${slot.area}" style="font-size: 0.72rem; padding: 2px 8px; color: #ff6e40; border-color: rgba(255, 61, 0, 0.4);">
+                                Deselect
+                            </button>
+                        ` : ''}
+                    </div>
+                    <div class="pain-slot-controls">
+                        <div>
+                            <label style="font-size: 0.75rem; color: var(--text-secondary); display: block; margin-bottom: 4px;">Pain % Weight</label>
+                            <div class="stepper-box-5pct">
+                                <button type="button" class="btn-step-down-pain" data-area="${slot.area}" ${!canStepDown ? 'disabled' : ''} title="Decrease 5%">▼</button>
+                                <span class="stepper-val">${slot.percent}%</span>
+                                <button type="button" class="btn-step-up-pain" data-area="${slot.area}" ${!canStepUp ? 'disabled' : ''} title="Increase 5%">▲</button>
+                            </div>
+                        </div>
+                        <div>
+                            <label style="font-size: 0.75rem; color: var(--text-secondary); display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                <span>Pain Score</span>
+                                <strong style="color: var(--neon-red);" class="pain-score-val-label">${slot.score}/10</strong>
+                            </label>
+                            <input type="range" class="glass-input pain-slot-slider" data-area="${slot.area}" min="0" max="10" step="0.5" value="${slot.score}" style="width: 100%; height: 6px; padding: 0;">
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        // Wire Event Listeners inside Dynamic Cards
+        dynamicPainCardsContainer.querySelectorAll('.btn-deselect-pain-slot').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const area = btn.getAttribute('data-area');
+                togglePainAreaSelection(area);
+            });
+        });
+
+        dynamicPainCardsContainer.querySelectorAll('.btn-step-up-pain').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const area = btn.getAttribute('data-area');
+                adjustPainSlotPercent(area, 5);
+            });
+        });
+
+        dynamicPainCardsContainer.querySelectorAll('.btn-step-down-pain').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const area = btn.getAttribute('data-area');
+                adjustPainSlotPercent(area, -5);
+            });
+        });
+
+        dynamicPainCardsContainer.querySelectorAll('.pain-slot-slider').forEach(slider => {
+            slider.addEventListener('input', (e) => {
+                const area = slider.getAttribute('data-area');
+                const slot = selectedPainAreas.find(s => s.area === area);
+                if (slot) {
+                    slot.score = Number(e.target.value);
+                    const label = slider.parentElement.querySelector('.pain-score-val-label');
+                    if (label) label.innerText = `${slot.score}/10`;
+                }
+            });
+        });
+
+        // Update Total Percentage Bar
+        if (painTotalPercentDisplay) {
+            painTotalPercentDisplay.innerText = `${totalPct}% ${totalPct === 100 ? '(Balanced ✓)' : `(${100 - totalPct}% remaining)`}`;
+            painTotalPercentDisplay.style.color = totalPct === 100 ? 'var(--neon-green)' : 'var(--neon-red)';
+        }
+        if (btnAutoBalancePain) {
+            btnAutoBalancePain.style.display = totalPct !== 100 ? 'inline-block' : 'none';
+        }
+    }
+
+    // Top Area Chips listener
+    if (painAnatomyChipsGrid) {
+        painAnatomyChipsGrid.querySelectorAll('.anatomy-chip-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const area = btn.getAttribute('data-area');
+                togglePainAreaSelection(area);
+            });
         });
     }
-    wirePainLocationRow(painLocations.querySelector('.pain-location-row'));
-    btnAddPainLocation.addEventListener('click', () => {
-        const first = painLocations.querySelector('.pain-location-row');
-        const row = first.cloneNode(true);
-        row.querySelector('.pain-percentage').value = '0';
-        row.querySelector('.pain-area-select').value = 'knee';
-        row.querySelector('.pain-side-select').value = 'left';
-        painLocations.appendChild(row);
-        wirePainLocationRow(row);
-        updatePainWeightTotal();
+
+    if (btnAutoBalancePain) {
+        btnAutoBalancePain.addEventListener('click', () => {
+            autoBalancePainModal();
+            renderPainModal();
+        });
+    }
+
+    // Quick Note Chips
+    document.querySelectorAll('.pain-rhs-combined .quick-note-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            const text = chip.getAttribute('data-text');
+            if (unifiedNotesInput) {
+                unifiedNotesInput.value = unifiedNotesInput.value ? `${unifiedNotesInput.value}; ${text}` : text;
+            }
+        });
     });
 
     moodEmojiButtons.forEach(button => button.addEventListener('click', () => {
         moodEmojiButtons.forEach(item => item.classList.remove('active'));
         button.classList.add('active');
         selectedMoodEmoji = button.dataset.emoji;
+        if (moodLabelDisplay && button.dataset.label) {
+            moodLabelDisplay.innerText = `(${button.dataset.label})`;
+        }
     }));
+
+    // Initial render of pain modal
+    renderPainModal();
 
     btnCloseNotes.addEventListener('click', () => {
         notesModal.classList.add('hidden');
@@ -2362,19 +2548,47 @@ document.addEventListener('DOMContentLoaded', () => {
         closeCustomAreaModal();
     });
 
+    function parseAreaAndSide(name) {
+        const lower = name.toLowerCase();
+        let side = 'unspecified';
+        if (lower.includes('right')) side = 'right';
+        else if (lower.includes('left')) side = 'left';
+        
+        let area = 'lumbar';
+        if (lower.includes('lumbar')) area = 'lumbar';
+        else if (lower.includes('cervical') || lower.includes('neck')) area = 'cervical';
+        else if (lower.includes('thoracic') || lower.includes('mid-back')) area = 'thoracic';
+        else if (lower.includes('ankle')) area = 'ankle';
+        else if (lower.includes('knee')) area = 'knee';
+        else if (lower.includes('shoulder')) area = 'shoulder';
+        else if (lower.includes('hip')) area = 'hip';
+        else if (lower.includes('elbow')) area = 'elbow';
+        
+        return { area, side };
+    }
+
     // --- 7. Log Entry Submission ---
     btnLogPain.addEventListener('click', async () => {
-        const total = updatePainWeightTotal();
+        const total = getPainTotalPercent();
         if (total !== 100) {
-            showToast('Location percentages must total 100%');
+            showToast(`Location percentages must total 100% (currently ${total}%)`);
             return;
         }
-        const generators = [...painLocations.querySelectorAll('.pain-location-row')].map(row => ({
-            area: row.querySelector('.pain-area-select').value,
-            side: row.querySelector('.pain-side-select').value,
-            percentage: parseInt(row.querySelector('.pain-percentage').value, 10)
-        }));
-        const userNotes = unifiedNotesInput.value.trim();
+
+        const generators = selectedPainAreas.map(p => {
+            const parsed = parseAreaAndSide(p.area);
+            return {
+                area: parsed.area,
+                side: parsed.side,
+                percentage: p.percent,
+                pain_score: p.score
+            };
+        });
+
+        const weightedPainSum = selectedPainAreas.reduce((sum, s) => sum + (s.score * s.percent), 0);
+        const overallScore = total > 0 ? Number((weightedPainSum / total).toFixed(1)) : 5.0;
+
+        const userNotes = unifiedNotesInput ? unifiedNotesInput.value.trim() : "";
 
         btnLogPain.innerText = "Logged";
         btnLogPain.style.background = "var(--neon-green)";
@@ -2384,30 +2598,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    pain_level: currentPainLevel,
+                    pain_level: overallScore,
+                    score: overallScore,
                     generators,
+                    locations: generators,
                     pain_notes: userNotes,
                     mood_level: currentMoodLevel,
+                    mood: String(currentMoodLevel),
                     mood_notes: userNotes,
                     mood_emoji: selectedMoodEmoji
                 })
             });
             const data = await res.json();
-            if (!res.ok) throw new Error(data.detail || 'Pain log failed');
+            if (!res.ok) throw new Error(data.detail || data.error || 'Pain log failed');
             if (data.alert_triggered) {
                 alertBannerText.innerText = data.alert_message;
                 alertBanner.classList.remove('hidden');
             }
             closePainLog();
             showToast('Pain log saved to live database', 'success');
+            if (typeof loadPainAnalytics === 'function') loadPainAnalytics();
+            if (typeof loadAgendaItems === 'function') loadAgendaItems();
         } catch (e) {
             showToast(e.message || 'Pain log could not be saved');
         }
 
         setTimeout(() => {
-            btnLogPain.innerText = "Log Entry";
+            btnLogPain.innerText = "Save pain log";
             btnLogPain.style.background = "";
-            unifiedNotesInput.value = "";
+            if (unifiedNotesInput) unifiedNotesInput.value = "";
         }, 2000);
     });
 
@@ -2490,25 +2709,40 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast('Relief delta saved for future recommendations', 'success');
     });
 
-    // --- 9. Budget Loader ---
+    // --- 9. Budget Loader & Periodic Reset Engine ---
+    let currentBudgetPeriod = 'weekly';
     const budgetWidget = document.getElementById('budgetWidget');
     const budgetSummaryContainer = document.getElementById('budgetSummary');
     const budgetTotalSpent = document.getElementById('budgetTotalSpent');
+    const budgetPeriodBadge = document.getElementById('budgetPeriodBadge');
+    const btnToggleBudgetPeriod = document.getElementById('btnToggleBudgetPeriod');
     const btnLogBudget = document.getElementById('btnLogBudget');
     const budgetForm = document.getElementById('budgetForm');
 
     if (budgetWidget && budgetForm) {
         budgetWidget.style.cursor = 'pointer';
         budgetWidget.addEventListener('click', (e) => {
-            // Do not toggle if clicking inside the form or on the total spent badge (which opens modal)
-            if (e.target.closest('.budget-form') || e.target.id === 'budgetTotalSpent') return;
+            // Do not toggle if clicking inside the form or on button/spent badge
+            if (e.target.closest('.budget-form') || e.target.closest('button') || e.target.id === 'budgetTotalSpent') return;
             budgetForm.classList.toggle('hidden');
+        });
+    }
+
+    if (btnToggleBudgetPeriod) {
+        btnToggleBudgetPeriod.addEventListener('click', (e) => {
+            e.stopPropagation();
+            currentBudgetPeriod = currentBudgetPeriod === 'weekly' ? 'monthly' : 'weekly';
+            btnToggleBudgetPeriod.innerText = currentBudgetPeriod === 'weekly' ? 'Show Month' : 'Show Week';
+            if (budgetPeriodBadge) {
+                budgetPeriodBadge.innerText = currentBudgetPeriod === 'weekly' ? 'Weekly' : 'Monthly';
+            }
+            loadBudget();
         });
     }
 
     async function loadBudget() {
         try {
-            const res = await fetch(API_BUDGET);
+            const res = await fetch(`${API_BUDGET}?period=${currentBudgetPeriod}`);
             if (res.ok) {
                 const data = await res.json();
                 if (data.status === "success") {
@@ -2520,8 +2754,12 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                         }
                     }
-                    if (budgetSummaryContainer) budgetSummaryContainer.innerHTML = summaryHtml;
-                    if (budgetTotalSpent && data.summary) budgetTotalSpent.innerText = `Spent: $${Number(data.summary.Total || 0).toFixed(2)}`;
+                    if (budgetSummaryContainer) budgetSummaryContainer.innerHTML = summaryHtml || '<span style="font-size:0.8rem; color:var(--text-secondary);">No expenses in this period</span>';
+                    
+                    const spentVal = Number(data.summary?.Total || 0).toFixed(2);
+                    const periodLabel = currentBudgetPeriod === 'weekly' ? `Week (${data.weekly?.label || ''})` : `Month (${data.monthly?.label || ''})`;
+                    if (budgetTotalSpent) budgetTotalSpent.innerText = `Spent: $${spentVal}`;
+                    if (budgetPeriodBadge) budgetPeriodBadge.innerText = periodLabel;
                 }
             }
         } catch (e) {
@@ -2537,8 +2775,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const category = document.getElementById('budgetCategory').value;
             const notes = document.getElementById('budgetNotes').value;
 
-            if (!description || isNaN(amount)) {
-                showToast('Description and valid amount required');
+            if (!description || isNaN(amount) || amount <= 0) {
+                showToast('Description and positive amount required');
                 return;
             }
 
@@ -2546,7 +2784,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const res = await fetch(API_BUDGET, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ description, amount, category, notes })
+                    body: JSON.stringify({ description, amount, category, notes, type: 'expense' })
                 });
                 if (res.ok) {
                     showToast('Expense added successfully', 'success');
@@ -2564,10 +2802,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- 10. Budget Overview Modal & Chart ---
+    // --- 10. Budget Overview Modal, Archive Reports & Chart ---
     const budgetOverviewModal = document.getElementById('budgetOverviewModal');
     const btnCloseBudgetOverview = document.getElementById('btnCloseBudgetOverview');
+    const btnDismissBudgetModal = document.getElementById('btnDismissBudgetModal');
     const budgetMonthSelect = document.getElementById('budgetMonthSelect');
+    const budgetReportsList = document.getElementById('budgetReportsList');
+    const budgetReportDetail = document.getElementById('budgetReportDetail');
+    const budgetReportDetailTitle = document.getElementById('budgetReportDetailTitle');
+    const budgetReportDetailContent = document.getElementById('budgetReportDetailContent');
+    const btnCloseReportDetail = document.getElementById('btnCloseReportDetail');
+    const btnArchiveResetWeek = document.getElementById('btnArchiveResetWeek');
+    const btnArchiveResetMonth = document.getElementById('btnArchiveResetMonth');
     let budgetChartInstance = null;
 
     if (budgetTotalSpent) {
@@ -2576,6 +2822,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (budgetOverviewModal) {
                 budgetOverviewModal.classList.remove('hidden');
                 renderBudgetChart();
+                loadBudgetReports();
             }
         });
     }
@@ -2586,9 +2833,110 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    if (btnDismissBudgetModal) {
+        btnDismissBudgetModal.addEventListener('click', () => {
+            budgetOverviewModal.classList.add('hidden');
+        });
+    }
+
+    if (btnCloseReportDetail && budgetReportDetail) {
+        btnCloseReportDetail.addEventListener('click', () => {
+            budgetReportDetail.classList.add('hidden');
+        });
+    }
+
     if (budgetMonthSelect) {
         budgetMonthSelect.addEventListener('change', () => {
             renderBudgetChart();
+        });
+    }
+
+    async function loadBudgetReports() {
+        if (!budgetReportsList) return;
+        try {
+            const res = await fetch(API_BUDGET_REPORTS);
+            if (res.ok) {
+                const data = await res.json();
+                if (data.status === 'success' && Array.isArray(data.reports) && data.reports.length > 0) {
+                    budgetReportsList.innerHTML = data.reports.map(r => `
+                        <div class="glass-panel" style="padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.25); border-radius: 8px;">
+                            <div>
+                                <strong style="color: var(--neon-blue); font-size: 0.9rem;">${r.period_type === 'weekly' ? 'Weekly' : 'Monthly'} Report (${r.period_label})</strong>
+                                <div style="font-size: 0.76rem; color: var(--text-secondary); margin-top: 2px;">
+                                    ${new Date(r.start_date).toLocaleDateString()} - ${new Date(r.end_date).toLocaleDateString()} &bull; Total: <span style="color: var(--neon-green); font-weight: bold;">$${Number(r.total_spent).toFixed(2)}</span>
+                                </div>
+                            </div>
+                            <button class="btn btn-sm btn-outline btn-view-report" data-report-id="${r.id}" style="padding: 3px 8px; font-size: 0.75rem;">View Report</button>
+                        </div>
+                    `).join('');
+
+                    document.querySelectorAll('.btn-view-report').forEach(btn => {
+                        btn.addEventListener('click', async (e) => {
+                            const reportId = (e.currentTarget as HTMLElement).getAttribute('data-report-id');
+                            const selectedReport = data.reports.find((item: any) => item.id === reportId);
+                            if (selectedReport && budgetReportDetail && budgetReportDetailContent) {
+                                if (budgetReportDetailTitle) budgetReportDetailTitle.innerText = `${selectedReport.period_type === 'weekly' ? 'Weekly' : 'Monthly'} Budget Report (${selectedReport.period_label})`;
+                                budgetReportDetailContent.innerText = selectedReport.report_markdown;
+                                budgetReportDetail.classList.remove('hidden');
+                                budgetReportDetail.scrollIntoView({ behavior: 'smooth' });
+                            }
+                        });
+                    });
+                } else {
+                    budgetReportsList.innerHTML = '<div style="color: var(--text-secondary); font-size: 0.85rem; padding: 6px;">No archived reports yet. Click "Archive & Reset" to close out the current period.</div>';
+                }
+            }
+        } catch (e) {
+            console.error('Failed to load budget reports:', e);
+            budgetReportsList.innerHTML = '<div style="color: #ff5252; font-size: 0.85rem;">Failed to load reports.</div>';
+        }
+    }
+
+    if (btnArchiveResetWeek) {
+        btnArchiveResetWeek.addEventListener('click', async () => {
+            if (!confirm('Close out and archive the current week budget report into agent_reports/? Weekly spend will reset.')) return;
+            try {
+                const res = await fetch(API_BUDGET_RESET, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ period_type: 'weekly' })
+                });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    showToast('Weekly budget archived to agent_reports/ & reset', 'success');
+                    loadBudget();
+                    loadBudgetReports();
+                } else {
+                    showToast('Failed to archive weekly budget');
+                }
+            } catch (e) {
+                showToast('Error archiving weekly budget');
+                console.error(e);
+            }
+        });
+    }
+
+    if (btnArchiveResetMonth) {
+        btnArchiveResetMonth.addEventListener('click', async () => {
+            if (!confirm('Close out and archive the current month budget report into agent_reports/? Monthly spend will reset.')) return;
+            try {
+                const res = await fetch(API_BUDGET_RESET, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ period_type: 'monthly' })
+                });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    showToast('Monthly budget archived to agent_reports/ & reset', 'success');
+                    loadBudget();
+                    loadBudgetReports();
+                } else {
+                    showToast('Failed to archive monthly budget');
+                }
+            } catch (e) {
+                showToast('Error archiving monthly budget');
+                console.error(e);
+            }
         });
     }
 
@@ -2596,10 +2944,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const ctx = document.getElementById('budgetChart');
         if (!ctx) return;
         
-        // Mock data for weekly overviews grouped by month
         const month = budgetMonthSelect ? budgetMonthSelect.value : '2026-08';
         
-        // In a real scenario, this data would come from the API grouped by week.
         const mockData = {
             '2026-08': {
                 labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],

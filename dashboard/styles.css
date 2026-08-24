@@ -646,6 +646,160 @@ h3 { font-size: 1.05rem; }
     padding: 0 6px;
 }
 .scale-buttons-modal { gap: 4px; }
+/* Pain Modal 2-Column Responsive Layout */
+.pain-modal-two-col {
+    display: grid;
+    grid-template-columns: 1.18fr 0.82fr;
+    gap: 16px;
+}
+@media (max-width: 860px) {
+    .pain-modal-two-col {
+        grid-template-columns: 1fr;
+    }
+}
+.pain-modal-left-col {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.pain-modal-right-col {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.top-anatomy-panel {
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 12px 14px;
+}
+.anatomy-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+.section-label-cyan {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--neon-blue);
+    letter-spacing: 0.5px;
+}
+.anatomy-chips-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
+    gap: 6px;
+}
+.anatomy-chip-btn {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--glass-border);
+    color: var(--text-secondary);
+    padding: 6px 4px;
+    border-radius: 7px;
+    font-size: 0.76rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    user-select: none;
+}
+.anatomy-chip-btn:hover {
+    border-color: var(--neon-blue);
+    color: var(--text-primary);
+}
+.anatomy-chip-btn.selected {
+    background: rgba(0, 240, 255, 0.2);
+    border-color: var(--neon-blue);
+    color: var(--neon-blue);
+    font-weight: 700;
+}
+.dynamic-pain-cards-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.pain-slot-card {
+    background: rgba(20, 26, 38, 0.75);
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    padding: 12px;
+    transition: border-color 0.2s;
+}
+.pain-slot-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+.pain-slot-controls {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 12px;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.25);
+    padding: 10px;
+    border-radius: 8px;
+}
+.stepper-box-5pct {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(0, 240, 255, 0.3);
+    border-radius: 8px;
+    padding: 2px 4px;
+    gap: 4px;
+}
+.stepper-box-5pct button {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: var(--neon-blue);
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+}
+.stepper-box-5pct button:hover:not(:disabled) {
+    background: var(--neon-blue);
+    color: #000;
+}
+.stepper-box-5pct button:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    border-color: transparent;
+}
+.stepper-box-5pct .stepper-val {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--neon-green);
+    min-width: 48px;
+    text-align: center;
+}
+.pain-rhs-combined {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+.quick-note-chip {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    color: var(--text-secondary);
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.quick-note-chip:hover {
+    background: rgba(0, 240, 255, 0.15);
+    color: var(--neon-blue);
+    border-color: var(--neon-blue);
+}
 .mood-emoji-selector {
     display: flex;
     flex-wrap: wrap;

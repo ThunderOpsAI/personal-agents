@@ -18,6 +18,9 @@ import {
   BudgetItem,
   CreateBudgetItemInput,
   CREATE_BUDGET_ITEMS_TABLE_SQL,
+  BudgetReportRecord,
+  CreateBudgetReportInput,
+  CREATE_BUDGET_REPORTS_TABLE_SQL,
   BillSubscription,
   CreateBillSubscriptionInput,
   CREATE_BILLS_SUBSCRIPTIONS_TABLE_SQL,
@@ -78,8 +81,72 @@ export function initDb(overrideDbPath?: string): void {
     };
   } else {
     if (!sqliteDb) {
-      const dbPath = overrideDbPath || process.env.SQLITE_DB_PATH || 'agenda.db';
-      sqliteDb = { prepare: () => ({ run: () => {}, all: () => [], get: () => null }), exec: () => {}, close: () => {} };
+      const inMemoryTables: Record<string, any[]> = {
+        agenda_items: [],
+        notes: [],
+        pain_logs: [],
+        exercise_preferences: [],
+        budget_items: [],
+        budget_reports: [],
+        bills_subscriptions: [],
+        maintenance_records: [],
+        medical_receipts: [],
+        learning_progress: [],
+      };
+
+      sqliteDb = {
+        exec: () => {},
+        close: () => {},
+        prepare: (query: string) => {
+          const q = query.trim();
+          return {
+            run: (...params: any[]) => {
+              const insertMatch = q.match(/INSERT\s+INTO\s+([a-zA-Z0-9_]+)\s*\(([^)]+)\)/i);
+              if (insertMatch) {
+                const table = insertMatch[1].toLowerCase();
+                const cols = insertMatch[2].split(',').map((c) => c.trim());
+                const row: any = {};
+                cols.forEach((col, idx) => {
+                  row[col] = params[idx];
+                });
+                if (!inMemoryTables[table]) inMemoryTables[table] = [];
+                inMemoryTables[table].unshift(row);
+              }
+              return { changes: 1 };
+            },
+            all: (...params: any[]) => {
+              const selectMatch = q.match(/FROM\s+([a-zA-Z0-9_]+)/i);
+              if (selectMatch) {
+                const table = selectMatch[1].toLowerCase();
+                const rows = inMemoryTables[table] || [];
+                if (params.length === 2 && q.includes('created_at >=') && q.includes('created_at <=')) {
+                  return rows.filter((r) => r.created_at >= params[0] && r.created_at <= params[1]);
+                }
+                if (params.length === 1 && q.includes('created_at >=')) {
+                  return rows.filter((r) => r.created_at >= params[0]);
+                }
+                if (params.length === 1 && q.includes('period_type =')) {
+                  return rows.filter((r) => r.period_type === params[0]);
+                }
+                return [...rows];
+              }
+              return [];
+            },
+            get: (...params: any[]) => {
+              const selectMatch = q.match(/FROM\s+([a-zA-Z0-9_]+)/i);
+              if (selectMatch) {
+                const table = selectMatch[1].toLowerCase();
+                const rows = inMemoryTables[table] || [];
+                if (params.length > 0) {
+                  return rows.find((r) => r.id === params[0] || r.encyclopedia_id === params[0]) || null;
+                }
+                return rows[0] || null;
+              }
+              return null;
+            },
+          };
+        },
+      };
     }
     const warningMsg = 'SQLite local fallback active';
     console.warn(`[DB WARNING] ${warningMsg}`, {
@@ -107,6 +174,7 @@ export async function ensureTableExists(): Promise<void> {
       await pgPool.query(CREATE_PAIN_LOGS_TABLE_SQL);
       await pgPool.query(CREATE_EXERCISE_PREFERENCES_TABLE_SQL);
       await pgPool.query(CREATE_BUDGET_ITEMS_TABLE_SQL);
+      await pgPool.query(CREATE_BUDGET_REPORTS_TABLE_SQL);
       await pgPool.query(CREATE_BILLS_SUBSCRIPTIONS_TABLE_SQL);
       await pgPool.query(CREATE_MAINTENANCE_RECORDS_TABLE_SQL);
       await pgPool.query(CREATE_MEDICAL_RECEIPTS_TABLE_SQL);
@@ -122,6 +190,7 @@ export async function ensureTableExists(): Promise<void> {
       sqliteDb.exec(CREATE_PAIN_LOGS_TABLE_SQL);
       sqliteDb.exec(CREATE_EXERCISE_PREFERENCES_TABLE_SQL);
       sqliteDb.exec(CREATE_BUDGET_ITEMS_TABLE_SQL);
+      sqliteDb.exec(CREATE_BUDGET_REPORTS_TABLE_SQL);
       sqliteDb.exec(CREATE_BILLS_SUBSCRIPTIONS_TABLE_SQL);
       sqliteDb.exec(CREATE_MAINTENANCE_RECORDS_TABLE_SQL);
       sqliteDb.exec(CREATE_MEDICAL_RECEIPTS_TABLE_SQL);
@@ -160,6 +229,194 @@ export async function createBudgetItem(input: CreateBudgetItemInput): Promise<Bu
   }
 
   return newItem;
+}
+
+export async function getBudgetItems(options?: { startDate?: string; endDate?: string }): Promise<BudgetItem[]> {
+  await ensureTableExists();
+  const status = getDbStatus();
+
+  if (status.provider === 'neon' && pgPool) {
+    let query = 'SELECT id, description, amount, category, type, created_at FROM budget_items';
+    const params: any[] = [];
+    if (options?.startDate && options?.endDate) {
+      query += ' WHERE created_at >= $1 AND created_at <= $2';
+      params.push(options.startDate, options.endDate);
+    } else if (options?.startDate) {
+      query += ' WHERE created_at >= $1';
+      params.push(options.startDate);
+    } else if (options?.endDate) {
+      query += ' WHERE created_at <= $1';
+      params.push(options.endDate);
+    }
+    query += ' ORDER BY created_at DESC';
+    const res = await pgPool.query(query, params);
+    return res.rows.map((row) => ({
+      id: row.id,
+      description: row.description,
+      amount: Number(row.amount),
+      category: row.category,
+      type: row.type,
+      created_at: row.created_at,
+    }));
+  } else if (sqliteDb) {
+    let query = 'SELECT id, description, amount, category, type, created_at FROM budget_items';
+    const params: any[] = [];
+    if (options?.startDate && options?.endDate) {
+      query += ' WHERE created_at >= ? AND created_at <= ?';
+      params.push(options.startDate, options.endDate);
+    } else if (options?.startDate) {
+      query += ' WHERE created_at >= ?';
+      params.push(options.startDate);
+    } else if (options?.endDate) {
+      query += ' WHERE created_at <= ?';
+      params.push(options.endDate);
+    }
+    query += ' ORDER BY created_at DESC';
+    const stmt = sqliteDb.prepare(query);
+    const rows = stmt.all(...params) as any[];
+    return rows.map((row) => ({
+      id: row.id,
+      description: row.description,
+      amount: Number(row.amount),
+      category: row.category,
+      type: row.type,
+      created_at: row.created_at,
+    }));
+  }
+  return [];
+}
+
+export async function createBudgetReport(input: CreateBudgetReportInput): Promise<BudgetReportRecord> {
+  await ensureTableExists();
+  const id = input.id || `breport_${input.period_type}_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+  const now = input.created_at || new Date().toISOString();
+
+  const record: BudgetReportRecord = {
+    id,
+    period_type: input.period_type,
+    period_label: input.period_label,
+    start_date: input.start_date,
+    end_date: input.end_date,
+    total_spent: Number(input.total_spent),
+    breakdown_json: input.breakdown_json,
+    report_markdown: input.report_markdown,
+    created_at: now,
+  };
+
+  const status = getDbStatus();
+  if (status.provider === 'neon' && pgPool) {
+    const text = `INSERT INTO budget_reports(id, period_type, period_label, start_date, end_date, total_spent, breakdown_json, report_markdown, created_at)
+                 VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)`;
+    const values = [record.id, record.period_type, record.period_label, record.start_date, record.end_date, record.total_spent, record.breakdown_json, record.report_markdown, record.created_at];
+    await pgPool.query(text, values);
+  } else if (sqliteDb) {
+    const stmt = sqliteDb.prepare(
+      `INSERT INTO budget_reports(id, period_type, period_label, start_date, end_date, total_spent, breakdown_json, report_markdown, created_at)
+       VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    );
+    stmt.run(record.id, record.period_type, record.period_label, record.start_date, record.end_date, record.total_spent, record.breakdown_json, record.report_markdown, record.created_at);
+  }
+
+  return record;
+}
+
+export async function getBudgetReports(options?: { periodType?: 'weekly' | 'monthly'; limit?: number }): Promise<BudgetReportRecord[]> {
+  await ensureTableExists();
+  const status = getDbStatus();
+  const limit = options?.limit || 50;
+
+  if (status.provider === 'neon' && pgPool) {
+    let query = 'SELECT id, period_type, period_label, start_date, end_date, total_spent, breakdown_json, report_markdown, created_at FROM budget_reports';
+    const params: any[] = [];
+    if (options?.periodType) {
+      query += ' WHERE period_type = $1';
+      params.push(options.periodType);
+      query += ` ORDER BY created_at DESC LIMIT $2`;
+      params.push(limit);
+    } else {
+      query += ` ORDER BY created_at DESC LIMIT $1`;
+      params.push(limit);
+    }
+    const res = await pgPool.query(query, params);
+    return res.rows.map((row) => ({
+      id: row.id,
+      period_type: row.period_type,
+      period_label: row.period_label,
+      start_date: row.start_date,
+      end_date: row.end_date,
+      total_spent: Number(row.total_spent),
+      breakdown_json: row.breakdown_json,
+      report_markdown: row.report_markdown,
+      created_at: row.created_at,
+    }));
+  } else if (sqliteDb) {
+    let query = 'SELECT id, period_type, period_label, start_date, end_date, total_spent, breakdown_json, report_markdown, created_at FROM budget_reports';
+    const params: any[] = [];
+    if (options?.periodType) {
+      query += ' WHERE period_type = ? ORDER BY created_at DESC LIMIT ?';
+      params.push(options.periodType, limit);
+    } else {
+      query += ' ORDER BY created_at DESC LIMIT ?';
+      params.push(limit);
+    }
+    const stmt = sqliteDb.prepare(query);
+    const rows = stmt.all(...params) as any[];
+    return rows.map((row) => ({
+      id: row.id,
+      period_type: row.period_type,
+      period_label: row.period_label,
+      start_date: row.start_date,
+      end_date: row.end_date,
+      total_spent: Number(row.total_spent),
+      breakdown_json: row.breakdown_json,
+      report_markdown: row.report_markdown,
+      created_at: row.created_at,
+    }));
+  }
+  return [];
+}
+
+export async function getBudgetReportById(id: string): Promise<BudgetReportRecord | null> {
+  await ensureTableExists();
+  const status = getDbStatus();
+
+  if (status.provider === 'neon' && pgPool) {
+    const res = await pgPool.query(
+      'SELECT id, period_type, period_label, start_date, end_date, total_spent, breakdown_json, report_markdown, created_at FROM budget_reports WHERE id = $1',
+      [id]
+    );
+    if (res.rows.length === 0) return null;
+    const row = res.rows[0];
+    return {
+      id: row.id,
+      period_type: row.period_type,
+      period_label: row.period_label,
+      start_date: row.start_date,
+      end_date: row.end_date,
+      total_spent: Number(row.total_spent),
+      breakdown_json: row.breakdown_json,
+      report_markdown: row.report_markdown,
+      created_at: row.created_at,
+    };
+  } else if (sqliteDb) {
+    const stmt = sqliteDb.prepare(
+      'SELECT id, period_type, period_label, start_date, end_date, total_spent, breakdown_json, report_markdown, created_at FROM budget_reports WHERE id = ?'
+    );
+    const row = stmt.get(id) as any;
+    if (!row) return null;
+    return {
+      id: row.id,
+      period_type: row.period_type,
+      period_label: row.period_label,
+      start_date: row.start_date,
+      end_date: row.end_date,
+      total_spent: Number(row.total_spent),
+      breakdown_json: row.breakdown_json,
+      report_markdown: row.report_markdown,
+      created_at: row.created_at,
+    };
+  }
+  return null;
 }
 
 export async function closeDb(): Promise<void> {

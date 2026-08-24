@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Bot Pain Form Prototype — Rumble OS</title>
+    <style>
+        /* Base Reset & Cyberpunk/Neon Dark Theme */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body {
+            background: #090d16;
+            color: #f1f5f9;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px 16px 100px 16px;
+        }
+
+        /* Floating Prototype Switcher */
+        #prototype-switcher {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(15, 23, 42, 0.95);
+            padding: 8px 16px;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 9999;
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(0, 240, 255, 0.4);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6), 0 0 15px rgba(0, 240, 255, 0.25);
+        }
+        .switcher-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+        .switcher-btn:hover {
+            background: rgba(0, 240, 255, 0.2);
+            border-color: #00f0ff;
+        }
+        .switcher-label {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #00f0ff;
+            min-width: 320px;
+            text-align: center;
+        }
+
+        /* Header */
+        .prototype-header {
+            text-align: center;
+            margin-bottom: 20px;
+            max-width: 950px;
+            width: 100%;
+        }
+        .prototype-header h1 {
+            font-size: 1.6rem;
+            background: linear-gradient(135deg, #00f0ff 0%, #00e676 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 6px;
+        }
+        .prototype-header p {
+            color: #94a3b8;
+            font-size: 0.88rem;
+        }
+
+        .prototype-viewport {
+            width: 100%;
+            max-width: 1050px;
+        }
+
+        /* Two-Column Form Layout */
+        .form-grid-layout {
+            display: grid;
+            grid-template-columns: 1.18fr 0.82fr;
+            gap: 20px;
+        }
+        @media (max-width: 880px) {
+            .form-grid-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .left-pain-column {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .right-context-column {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        /* Glass Panel */
+        .glass-card {
+            background: rgba(15, 23, 42, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            padding: 16px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            transition: border-color 0.2s ease;
+        }
+        .glass-card:focus-within {
+            border-color: rgba(0, 240, 255, 0.4);
+        }
+
+        .section-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #00f0ff;
+            margin-bottom: 10px;
+        }
+
+        .field-label {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .field-label span.val {
+            color: #00e676;
+            font-weight: bold;
+        }
+
+        select, input[type="text"], input[type="number"], textarea {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            width: 100%;
+            outline: none;
+            transition: all 0.2s;
+        }
+        select:focus, input:focus, textarea:focus {
+            border-color: #00f0ff;
+            background: rgba(30, 41, 59, 1);
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+        }
+
+        /* Top Unified Anatomical Targeter */
+        .top-anatomy-panel {
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(0, 240, 255, 0.25);
+            border-radius: 14px;
+            padding: 14px 16px;
+        }
+        .anatomy-chips-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .anatomy-chip-btn {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #94a3b8;
+            padding: 8px 6px;
+            border-radius: 8px;
+            font-size: 0.78rem;
+            font-weight: 500;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            user-select: none;
+        }
+        .anatomy-chip-btn:hover {
+            border-color: #00f0ff;
+            color: #fff;
+            background: rgba(0, 240, 255, 0.08);
+        }
+        .anatomy-chip-btn.selected {
+            background: rgba(0, 240, 255, 0.2);
+            border-color: #00f0ff;
+            color: #00f0ff;
+            font-weight: 700;
+            box-shadow: 0 0 12px rgba(0, 240, 255, 0.2);
+        }
+
+        /* 5% Up/Down Stepper Control Box */
+        .stepper-box-5pct {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            border-radius: 8px;
+            padding: 3px 6px;
+            gap: 6px;
+        }
+        .stepper-box-5pct button {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #00f0ff;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+        }
+        .stepper-box-5pct button:hover:not(:disabled) {
+            background: #00f0ff;
+            color: #000;
+        }
+        .stepper-box-5pct button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            border-color: transparent;
+        }
+        .stepper-box-5pct .stepper-val {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #00e676;
+            min-width: 52px;
+            text-align: center;
+        }
+
+        /* Submit Button */
+        .btn-submit {
+            background: linear-gradient(135deg, #00f0ff 0%, #00e676 100%);
+            color: #000;
+            font-weight: 700;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(0, 240, 255, 0.3);
+            transition: transform 0.15s, opacity 0.15s;
+            margin-top: 10px;
+        }
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 240, 255, 0.4);
+        }
+
+        /* Total Percentage Badge */
+        .total-percent-bar {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px 16px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Mood Chips */
+        .mood-chip-group {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            margin-top: 8px;
+        }
+        .mood-chip {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 8px;
+            padding: 8px 4px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.15s;
+        }
+        .mood-chip:hover {
+            border-color: #00f0ff;
+        }
+        .mood-chip.active {
+            background: rgba(0, 240, 255, 0.2);
+            border-color: #00f0ff;
+            color: #00f0ff;
+            font-weight: bold;
+        }
+
+        .quick-note-chip {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #cbd5e1;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .quick-note-chip:hover {
+            background: rgba(0, 240, 255, 0.15);
+            color: #00f0ff;
+            border-color: #00f0ff;
+        }
+
+        /* State Inspector */
+        #state-inspector {
+            margin-top: 24px;
+            background: #0b1120;
+            border: 1px dashed rgba(0, 240, 255, 0.3);
+            border-radius: 10px;
+            padding: 16px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: #38bdf8;
+            max-width: 1050px;
+            width: 100%;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Prototype Header -->
+    <header class="prototype-header">
+        <h1>Telegram Bot Pain Form Prototype</h1>
+        <p>Top Selector (1–3 Active Areas) &bull; Dynamic Below Cards (Area, &plusmn;5% Stepper, Score) &bull; RHS Combined Mood & Notes</p>
+    </header>
+
+    <main class="prototype-viewport" id="prototype-viewport">
+        <!-- Dynamic Variant Rendered Here -->
+    </main>
+
+    <!-- Real-time Live State Inspector -->
+    <section id="state-inspector">
+        <strong>⚡ Live Form Payload State (Ready for /api/symptoms/log):</strong>
+        <div id="state-json">Loading state...</div>
+    </section>
+
+    <script>
+        const ALL_ANATOMY = [
+            "Right Lumbar", "Left Lumbar", "Neck / Cervical", "Thoracic",
+            "Right Ankle", "Left Ankle", "Right Knee", "Left Knee", "Right Shoulder", "Right Hip"
+        ];
+
+        // Shared Reactive Form State (Default: 2 areas selected: Right Lumbar and Neck)
+        const state = {
+            selectedAreas: [
+                { area: "Right Lumbar", percent: 75, score: 7.5 },
+                { area: "Neck / Cervical", percent: 25, score: 5.0 }
+            ],
+            moodScore: 6.0,
+            moodLabel: "Calm",
+            notes: "Post-morning hydrotherapy stiffness in lumbar; neck mobility improving."
+        };
+
+        function getTotalPercent() {
+            return state.selectedAreas.reduce((sum, s) => sum + Number(s.percent), 0);
+        }
+
+        function toggleAreaSelection(areaName) {
+            const existingIdx = state.selectedAreas.findIndex(s => s.area === areaName);
+            if (existingIdx !== -1) {
+                // Deselect: keep at least 1 area
+                if (state.selectedAreas.length <= 1) {
+                    alert('You must have at least 1 pain area selected.');
+                    return;
+                }
+                state.selectedAreas.splice(existingIdx, 1);
+                autoBalancePercentages();
+            } else {
+                // Select: up to 3 max
+                if (state.selectedAreas.length >= 3) {
+                    alert('Maximum 3 pain areas can be selected at a time.');
+                    return;
+                }
+                state.selectedAreas.push({
+                    area: areaName,
+                    percent: 10,
+                    score: 5.0
+                });
+                autoBalancePercentages();
+            }
+            renderCurrentVariant();
+        }
+
+        function adjustSlotPercent(areaName, delta) {
+            const slot = state.selectedAreas.find(s => s.area === areaName);
+            if (!slot) return;
+
+            const currentTotal = getTotalPercent();
+            const maxAllowedForSlot = 100 - (currentTotal - slot.percent);
+
+            if (delta > 0) {
+                const nextVal = Math.min(maxAllowedForSlot, slot.percent + delta);
+                slot.percent = Math.floor(nextVal / 5) * 5;
+            } else {
+                const nextVal = Math.max(5, slot.percent + delta);
+                slot.percent = Math.floor(nextVal / 5) * 5;
+            }
+            renderCurrentVariant();
+        }
+
+        function autoBalancePercentages() {
+            const count = state.selectedAreas.length;
+            if (count === 1) {
+                state.selectedAreas[0].percent = 100;
+            } else if (count === 2) {
+                state.selectedAreas[0].percent = 75;
+                state.selectedAreas[1].percent = 25;
+            } else if (count === 3) {
+                state.selectedAreas[0].percent = 70;
+                state.selectedAreas[1].percent = 20;
+                state.selectedAreas[2].percent = 10;
+            }
+        }
+
+        function updateStateDisplay() {
+            const totalPercent = getTotalPercent();
+            const weightedScoreSum = state.selectedAreas.reduce((sum, s) => sum + (s.score * s.percent), 0);
+            const overallScore = totalPercent > 0 ? (weightedScoreSum / totalPercent).toFixed(1) : "0.0";
+
+            const payload = {
+                timestamp: new Date().toISOString(),
+                source: "telegram_bot_webapp_pain_form",
+                selected_areas_count: state.selectedAreas.length,
+                total_percentage: `${totalPercent}%`,
+                is_valid_100_percent: totalPercent === 100,
+                pain_locations: state.selectedAreas.map(s => ({
+                    location: s.area,
+                    weight_percent: Number(s.percent),
+                    pain_score: Number(s.score)
+                })),
+                overall_weighted_pain_score: overallScore,
+                mood: {
+                    score: state.moodScore,
+                    label: state.moodLabel
+                },
+                notes: state.notes
+            };
+
+            const stateContainer = document.getElementById('state-json');
+            if (stateContainer) {
+                stateContainer.innerText = JSON.stringify(payload, null, 2);
+            }
+        }
+
+        function getUrlVariant() {
+            const params = new URLSearchParams(window.location.search);
+            const v = params.get('variant');
+            const foundIdx = VARIANTS.findIndex(item => item.id === v);
+            return foundIdx !== -1 ? foundIdx : 0;
+        }
+
+        function setVariant(index) {
+            currentVariantIndex = (index + VARIANTS.length) % VARIANTS.length;
+            const current = VARIANTS[currentVariantIndex];
+            
+            const url = new URL(window.location);
+            url.searchParams.set('variant', current.id);
+            window.history.replaceState({}, '', url);
+
+            document.getElementById('variant-label').innerText = current.name;
+            renderCurrentVariant();
+        }
+
+        // ========================================================
+        // VARIANT C (PREFERRED & EXACT TO SPEC)
+        // ========================================================
+        function renderVariantC() {
+            const totalPct = getTotalPercent();
+            const selectedNames = state.selectedAreas.map(s => s.area);
+
+            return `
+                <div class="form-grid-layout">
+                    <!-- LEFT COLUMN: 1 TOP SELECTOR + DYNAMIC BELOW CARDS -->
+                    <div class="left-pain-column">
+                        
+                        <!-- 1. TOP UNIFIED ANATOMICAL AREA SELECTOR -->
+                        <div class="top-anatomy-panel">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span class="section-tag" style="margin-bottom: 0;">
+                                    🎯 1. Select Pain Areas (1 to 3 Max)
+                                </span>
+                                <span style="font-size: 0.8rem; color: #00f0ff; font-weight: bold;">
+                                    ${state.selectedAreas.length}/3 Selected
+                                </span>
+                            </div>
+
+                            <div class="anatomy-chips-grid">
+                                ${ALL_ANATOMY.map(area => {
+                                    const isSel = selectedNames.includes(area);
+                                    return `
+                                        <div class="anatomy-chip-btn ${isSel ? 'selected' : ''}" data-area="${area}">
+                                            ${isSel ? '✓ ' : ''}${area}
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+
+                        <!-- 2. DYNAMICALLY RENDERED CARDS (ONLY FOR SELECTED AREAS) -->
+                        ${state.selectedAreas.map((slot, idx) => {
+                            const borderColors = ['#00f0ff', '#a855f7', '#00e676'];
+                            const color = borderColors[idx % borderColors.length];
+                            const canStepUp = totalPct < 100;
+                            const canStepDown = slot.percent > 5;
+
+                            return `
+                                <div class="glass-card" style="border-left: 4px solid ${color};">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                        <strong style="color: ${color}; font-size: 0.92rem;">
+                                            Section ${idx + 1}: ${slot.area}
+                                        </strong>
+                                        ${state.selectedAreas.length > 1 ? `
+                                            <button class="btn-deselect-area" data-area="${slot.area}" style="background: none; border: 1px solid rgba(255, 61, 0, 0.4); color: #ff6e40; font-size: 0.72rem; padding: 2px 8px; border-radius: 4px; cursor: pointer;">
+                                                Deselect
+                                            </button>
+                                        ` : ''}
+                                    </div>
+
+                                    <!-- Controls Row: ±5% Stepper Box on Left + Pain Score on Right -->
+                                    <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 14px; align-items: center; background: rgba(0,0,0,0.25); padding: 12px; border-radius: 8px;">
+                                        
+                                        <!-- Pain % (Up / Down 5% Box) -->
+                                        <div>
+                                            <label class="field-label" style="margin-bottom: 4px;">
+                                                <span>Pain % Weight</span>
+                                            </label>
+                                            <div class="stepper-box-5pct">
+                                                <button class="btn-step-down" data-area="${slot.area}" ${!canStepDown ? 'disabled' : ''} title="Decrease 5%">▼</button>
+                                                <span class="stepper-val">${slot.percent}%</span>
+                                                <button class="btn-step-up" data-area="${slot.area}" ${!canStepUp ? 'disabled' : ''} title="Increase 5%">▲</button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Pain Score (0 - 10) -->
+                                        <div>
+                                            <label class="field-label" style="margin-bottom: 4px;">
+                                                <span>Pain Score (0–10)</span>
+                                                <span class="val" style="color: #ff3d00;">${slot.score}/10</span>
+                                            </label>
+                                            <input type="range" class="slot-score-range" data-area="${slot.area}" min="0" max="10" step="0.5" value="${slot.score}">
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+
+                        <!-- Total Percentage Status -->
+                        <div class="total-percent-bar">
+                            <div>
+                                <span>Total Allocation (${state.selectedAreas.length} area${state.selectedAreas.length > 1 ? 's' : ''}): </span>
+                                <strong style="color: ${totalPct === 100 ? '#00e676' : '#ff3d00'}; font-size: 0.95rem;">
+                                    ${totalPct}% ${totalPct === 100 ? '(Balanced ✓)' : `(${100 - totalPct}% remaining)`}
+                                </strong>
+                            </div>
+                            ${totalPct !== 100 ? `
+                                <button id="btn-auto-balance" style="background: rgba(0, 240, 255, 0.15); border: 1px solid #00f0ff; color: #00f0ff; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; font-weight: 600;">Auto-Balance 100%</button>
+                            ` : ''}
+                        </div>
+                    </div>
+
+                    <!-- RIGHT COLUMN: COMBINED MOOD & NOTES PANEL -->
+                    <div class="right-context-column">
+                        <div class="glass-card" style="border-top: 3px solid #00f0ff; display: flex; flex-direction: column; gap: 16px; height: 100%;">
+                            
+                            <!-- 1. Mood Score Section (No Spoons) -->
+                            <div>
+                                <div class="section-tag" style="margin-bottom: 6px;">🧠 Mood Score & Tone</div>
+                                <div style="margin-bottom: 8px;">
+                                    <label class="field-label">
+                                        <span>Mood Score (0–10)</span>
+                                        <span class="val" id="mood-score-display">${state.moodScore}/10 (${state.moodLabel})</span>
+                                    </label>
+                                    <input type="range" id="mood-slider" min="0" max="10" step="0.5" value="${state.moodScore}">
+                                </div>
+
+                                <div class="mood-chip-group">
+                                    <div class="mood-chip ${state.moodLabel === 'Calm' ? 'active' : ''}" data-mood="Calm">😌 Calm</div>
+                                    <div class="mood-chip ${state.moodLabel === 'Good' ? 'active' : ''}" data-mood="Good">🙂 Good</div>
+                                    <div class="mood-chip ${state.moodLabel === 'Fatigued' ? 'active' : ''}" data-mood="Fatigued">😴 Tired</div>
+                                    <div class="mood-chip ${state.moodLabel === 'Stressed' ? 'active' : ''}" data-mood="Stressed">😣 Flare</div>
+                                </div>
+                            </div>
+
+                            <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.08); margin: 0;" />
+
+                            <!-- 2. Notes Section -->
+                            <div style="flex: 1; display: flex; flex-direction: column;">
+                                <div class="section-tag" style="color: #00e676; margin-bottom: 6px;">📝 Clinical Notes</div>
+                                
+                                <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px;">
+                                    <span class="quick-note-chip" data-text="Morning lumbar stiffness">Morning stiffness</span>
+                                    <span class="quick-note-chip" data-text="Post-hydrotherapy relief">Post-hydro</span>
+                                    <span class="quick-note-chip" data-text="Desk work fatigue">Desk fatigue</span>
+                                    <span class="quick-note-chip" data-text="Weather pressure flare">Weather flare</span>
+                                </div>
+
+                                <textarea id="notes-textarea" style="flex: 1; min-height: 120px; resize: vertical;" placeholder="Add specific sensation context, triggers, or relief observations...">${state.notes}</textarea>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <button class="btn-submit" id="btn-submit-form">
+                                <span>🚀 Submit Pain Check-in to Telegram</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function attachEvents() {
+            // Anatomy Top Chip Click (Select/Deselect)
+            document.querySelectorAll('.anatomy-chip-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const area = btn.getAttribute('data-area');
+                    toggleAreaSelection(area);
+                });
+            });
+
+            // Deselect button on individual card
+            document.querySelectorAll('.btn-deselect-area').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const area = btn.getAttribute('data-area');
+                    toggleAreaSelection(area);
+                });
+            });
+
+            // Step Up (+5%)
+            document.querySelectorAll('.btn-step-up').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const area = btn.getAttribute('data-area');
+                    adjustSlotPercent(area, 5);
+                });
+            });
+
+            // Step Down (-5%)
+            document.querySelectorAll('.btn-step-down').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const area = btn.getAttribute('data-area');
+                    adjustSlotPercent(area, -5);
+                });
+            });
+
+            // Auto-Balance button
+            const btnAutoBalance = document.getElementById('btn-auto-balance');
+            if (btnAutoBalance) {
+                btnAutoBalance.addEventListener('click', () => {
+                    autoBalancePercentages();
+                    initPainForm();
+                });
+            }
+
+            // Score Range
+            document.querySelectorAll('.slot-score-range').forEach(range => {
+                range.addEventListener('input', (e) => {
+                    const area = range.getAttribute('data-area');
+                    const slot = state.selectedAreas.find(s => s.area === area);
+                    if (slot) {
+                        slot.score = Number(e.target.value);
+                        updateStateDisplay();
+                        const valTag = range.parentElement.querySelector('.val');
+                        if (valTag) valTag.innerText = `${slot.score}/10`;
+                    }
+                });
+            });
+
+            // Mood Slider
+            const moodSlider = document.getElementById('mood-slider');
+            if (moodSlider) {
+                moodSlider.addEventListener('input', (e) => {
+                    state.moodScore = Number(e.target.value);
+                    const disp = document.getElementById('mood-score-display');
+                    if (disp) disp.innerText = `${state.moodScore}/10 (${state.moodLabel})`;
+                    updateStateDisplay();
+                });
+            }
+
+            // Mood Chips
+            document.querySelectorAll('.mood-chip').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    document.querySelectorAll('.mood-chip').forEach(c => c.classList.remove('active'));
+                    chip.classList.add('active');
+                    state.moodLabel = chip.getAttribute('data-mood');
+                    const disp = document.getElementById('mood-score-display');
+                    if (disp) disp.innerText = `${state.moodScore}/10 (${state.moodLabel})`;
+                    updateStateDisplay();
+                });
+            });
+
+            // Quick Note Chips
+            document.querySelectorAll('.quick-note-chip').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    const text = chip.getAttribute('data-text');
+                    const notesArea = document.getElementById('notes-textarea');
+                    if (notesArea) {
+                        notesArea.value = notesArea.value ? `${notesArea.value}; ${text}` : text;
+                        state.notes = notesArea.value;
+                        updateStateDisplay();
+                    }
+                });
+            });
+
+            // Notes Textarea
+            const notesEl = document.getElementById('notes-textarea');
+            if (notesEl) {
+                notesEl.addEventListener('input', (e) => {
+                    state.notes = e.target.value;
+                    updateStateDisplay();
+                });
+            }
+
+            // Submit Button
+            const submitBtn = document.getElementById('btn-submit-form');
+            if (submitBtn) {
+                submitBtn.addEventListener('click', () => {
+                    const totalPct = getTotalPercent();
+                    if (totalPct !== 100) {
+                        alert(`⚠️ Warning: Total percentage is ${totalPct}%. Click Auto-Balance or adjust to 100% before logging.`);
+                        return;
+                    }
+                    const summary = state.selectedAreas.map(s => `${s.area} (${s.percent}%, score ${s.score})`).join(' + ');
+                    alert(`✅ Pain check-in payload verified!\n\nBreakdown: ${summary}\nMood: ${state.moodScore}/10 (${state.moodLabel})\nNotes: "${state.notes}"`);
+                });
+            }
+        }
+
+        function initPainForm() {
+            const viewport = document.getElementById('prototype-viewport');
+            viewport.innerHTML = renderVariantC();
+            attachEvents();
+            updateStateDisplay();
+        }
+
+        // Initialize on load
+        initPainForm();
+    </script>
+</body>
+</html>

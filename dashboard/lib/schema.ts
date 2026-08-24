@@ -147,6 +147,44 @@ CREATE TABLE IF NOT EXISTS budget_items (
 );
 `;
 
+export interface BudgetReportRecord {
+  id: string;
+  period_type: 'weekly' | 'monthly';
+  period_label: string;
+  start_date: string;
+  end_date: string;
+  total_spent: number;
+  breakdown_json: string;
+  report_markdown: string;
+  created_at: string;
+}
+
+export interface CreateBudgetReportInput {
+  id?: string;
+  period_type: 'weekly' | 'monthly';
+  period_label: string;
+  start_date: string;
+  end_date: string;
+  total_spent: number;
+  breakdown_json: string;
+  report_markdown: string;
+  created_at?: string;
+}
+
+export const CREATE_BUDGET_REPORTS_TABLE_SQL = `
+CREATE TABLE IF NOT EXISTS budget_reports (
+    id TEXT PRIMARY KEY,
+    period_type TEXT NOT NULL,
+    period_label TEXT NOT NULL,
+    start_date TEXT NOT NULL,
+    end_date TEXT NOT NULL,
+    total_spent REAL NOT NULL,
+    breakdown_json TEXT NOT NULL,
+    report_markdown TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+`;
+
 export interface ExercisePreferenceRecord {
   id: string;
   routine_id: string;

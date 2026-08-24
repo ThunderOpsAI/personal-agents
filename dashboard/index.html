@@ -53,9 +53,15 @@
             
             <!-- Budget Widget -->
             <section class="widget glass-panel sticky-budget" id="budgetWidget">
-                <div class="widget-header">
-                    <h2>Budget Overview</h2>
-                    <span class="badge neon-green" id="budgetTotalSpent">Spent: $0</span>
+                <div class="widget-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <h2>Budget Overview</h2>
+                        <span class="badge neon-purple" id="budgetPeriodBadge" style="font-size: 0.72rem;">Weekly</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <button class="btn btn-sm btn-outline" id="btnToggleBudgetPeriod" style="padding: 2px 8px; font-size: 0.74rem;">Show Month</button>
+                        <span class="badge neon-green" id="budgetTotalSpent">Spent: $0.00</span>
+                    </div>
                 </div>
                 <div class="budget-body" id="budgetSummary" style="margin-bottom: 14px; display: flex; flex-wrap: wrap; gap: 8px;">
                     <!-- Dynamic Summary -->
@@ -332,39 +338,86 @@
 
         <!-- Pain logging slide-up widget -->
         <div class="modal-overlay hidden slide-up-overlay" id="painLogModal">
-            <div class="modal-content glass-panel slide-up-widget pain-log-widget">
+            <div class="modal-content glass-panel slide-up-widget pain-log-widget" style="max-width: 960px; width: 100%;">
                 <div class="modal-header">
-                    <h2>Log Pain</h2>
+                    <h2>Log Pain & Symptom Check-in</h2>
                     <button class="btn-close" id="btnClosePainLog">&times;</button>
                 </div>
-                <div class="modal-body-form">
-                    <div class="form-group">
-                        <label>Pain level <span class="val-tag" id="painValDisplay">0</span>/10</label>
-                        <div class="scale-buttons scale-buttons-modal" id="painScaleButtons">
-                            <button class="btn-num pain-num active" data-val="0">0</button><button class="btn-num pain-num" data-val="1">1</button><button class="btn-num pain-num" data-val="2">2</button><button class="btn-num pain-num" data-val="3">3</button><button class="btn-num pain-num" data-val="4">4</button><button class="btn-num pain-num" data-val="5">5</button><button class="btn-num pain-num" data-val="6">6</button><button class="btn-num pain-num" data-val="7">7</button><button class="btn-num pain-num" data-val="8">8</button><button class="btn-num pain-num" data-val="9">9</button><button class="btn-num pain-num" data-val="10">10</button>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Anatomical locations and relative weight</label>
-                        <div id="painLocations">
-                            <div class="pain-location-row">
-                                <select class="glass-select pain-area-select" id="painAreaSelect"><option value="lumbar">Lumbar</option><option value="cervical">Cervical</option><option value="thoracic">Thoracic</option><option value="ankle">Ankle</option><option value="knee">Knee</option><option value="shoulder">Shoulder</option><option value="elbow">Elbow</option><option value="hip">Hip</option></select>
-                                <select class="glass-select pain-side-select" id="painSideSelect"><option value="right">Right</option><option value="left">Left</option><option value="both">Both</option></select>
-                                <input class="glass-input pain-percentage" type="number" min="1" max="100" value="100" aria-label="Pain percentage">
-                                <span>%</span><button class="btn btn-sm btn-outline remove-location" type="button" aria-label="Remove location">Remove</button>
+                <div class="modal-body-form pain-modal-two-col">
+                    <!-- LEFT COLUMN: Top Area Selector (1-3) + Dynamic Selected Cards -->
+                    <div class="pain-modal-left-col">
+                        <div class="top-anatomy-panel">
+                            <div class="anatomy-header-row">
+                                <span class="section-label-cyan">Select Pain Areas (1 to 3)</span>
+                                <span class="val-tag" id="painSelectedCountBadge">2/3 Selected</span>
+                            </div>
+                            <div class="anatomy-chips-grid" id="painAnatomyChipsGrid">
+                                <div class="anatomy-chip-btn selected" data-area="Right Lumbar">✓ Right Lumbar</div>
+                                <div class="anatomy-chip-btn" data-area="Left Lumbar">Left Lumbar</div>
+                                <div class="anatomy-chip-btn selected" data-area="Neck / Cervical">✓ Neck / Cervical</div>
+                                <div class="anatomy-chip-btn" data-area="Thoracic">Thoracic</div>
+                                <div class="anatomy-chip-btn" data-area="Right Ankle">Right Ankle</div>
+                                <div class="anatomy-chip-btn" data-area="Left Ankle">Left Ankle</div>
+                                <div class="anatomy-chip-btn" data-area="Right Knee">Right Knee</div>
+                                <div class="anatomy-chip-btn" data-area="Left Knee">Left Knee</div>
+                                <div class="anatomy-chip-btn" data-area="Right Shoulder">Right Shoulder</div>
+                                <div class="anatomy-chip-btn" data-area="Hip">Hip</div>
                             </div>
                         </div>
-                        <button class="btn btn-sm btn-outline" id="btnAddPainLocation" type="button">+ Add location</button>
-                        <small id="painWeightTotal" class="form-hint">Total: 100%</small>
+
+                        <!-- Dynamically populated selected area cards -->
+                        <div class="dynamic-pain-cards-container" id="dynamicPainCardsContainer">
+                            <!-- Populated dynamically by app.js -->
+                        </div>
+
+                        <!-- Total Percentage Status & Auto Balance -->
+                        <div class="total-percent-bar" id="painTotalPercentBar">
+                            <div>
+                                <span>Total Allocation: </span>
+                                <strong id="painTotalPercentDisplay" style="color: var(--neon-green);">100% (Balanced ✓)</strong>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline" id="btnAutoBalancePain" style="display: none;">Auto-Balance 100%</button>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>Mood</label>
-                        <div class="mood-emoji-selector" id="moodEmojiSelector"><button type="button" class="mood-emoji active" data-emoji="🙂" aria-label="Neutral mood">🙂</button><button type="button" class="mood-emoji" data-emoji="😌" aria-label="Calm mood">😌</button><button type="button" class="mood-emoji" data-emoji="😔" aria-label="Low mood">😔</button><button type="button" class="mood-emoji" data-emoji="😣" aria-label="Stressed mood">😣</button></div>
-                        <div class="scale-buttons scale-buttons-modal" id="moodScaleButtons"><button class="btn-num mood-num" data-val="0">0</button><button class="btn-num mood-num" data-val="1">1</button><button class="btn-num mood-num" data-val="2">2</button><button class="btn-num mood-num" data-val="3">3</button><button class="btn-num mood-num" data-val="4">4</button><button class="btn-num mood-num active" data-val="5">5</button><button class="btn-num mood-num" data-val="6">6</button><button class="btn-num mood-num" data-val="7">7</button><button class="btn-num mood-num" data-val="8">8</button><button class="btn-num mood-num" data-val="9">9</button><button class="btn-num mood-num" data-val="10">10</button></div>
+
+                    <!-- RIGHT COLUMN: Combined Mood & Notes -->
+                    <div class="pain-modal-right-col">
+                        <div class="glass-card pain-rhs-combined">
+                            <!-- Mood Score -->
+                            <div class="form-group">
+                                <label>Mood Level <span class="val-tag" id="moodValDisplay">5.0</span>/10 <span id="moodLabelDisplay" style="color: var(--neon-blue); margin-left: 4px;">(Calm)</span></label>
+                                <div class="scale-buttons scale-buttons-modal" id="moodScaleButtons">
+                                    <button type="button" class="btn-num mood-num" data-val="0">0</button><button type="button" class="btn-num mood-num" data-val="1">1</button><button type="button" class="btn-num mood-num" data-val="2">2</button><button type="button" class="btn-num mood-num" data-val="3">3</button><button type="button" class="btn-num mood-num" data-val="4">4</button><button type="button" class="btn-num mood-num active" data-val="5">5</button><button type="button" class="btn-num mood-num" data-val="6">6</button><button type="button" class="btn-num mood-num" data-val="7">7</button><button type="button" class="btn-num mood-num" data-val="8">8</button><button type="button" class="btn-num mood-num" data-val="9">9</button><button type="button" class="btn-num mood-num" data-val="10">10</button>
+                                </div>
+                                <div class="mood-emoji-selector" id="moodEmojiSelector" style="margin-top: 8px;">
+                                    <button type="button" class="mood-emoji" data-emoji="😌" data-label="Calm" aria-label="Calm mood">😌 Calm</button>
+                                    <button type="button" class="mood-emoji active" data-emoji="🙂" data-label="Good" aria-label="Good mood">🙂 Good</button>
+                                    <button type="button" class="mood-emoji" data-emoji="😴" data-label="Fatigued" aria-label="Fatigued mood">😴 Tired</button>
+                                    <button type="button" class="mood-emoji" data-emoji="😣" data-label="Stressed" aria-label="Stressed mood">😣 Flare</button>
+                                </div>
+                            </div>
+
+                            <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.08); margin: 10px 0;" />
+
+                            <!-- Notes -->
+                            <div class="form-group" style="flex: 1; display: flex; flex-direction: column;">
+                                <label>Clinical Notes</label>
+                                <div class="quick-note-chips-row" style="display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 8px;">
+                                    <span class="quick-note-chip" data-text="Morning lumbar stiffness">Morning stiffness</span>
+                                    <span class="quick-note-chip" data-text="Post-hydrotherapy relief">Post-hydro</span>
+                                    <span class="quick-note-chip" data-text="Desk work fatigue">Desk fatigue</span>
+                                    <span class="quick-note-chip" data-text="Weather flare">Weather flare</span>
+                                </div>
+                                <textarea id="unifiedNotesInput" class="glass-input notes-textarea" style="flex: 1; min-height: 110px;" placeholder="Notes, triggers, relief observations..."></textarea>
+                            </div>
+
+                            <div class="modal-footer" style="padding: 0; margin-top: 10px; display: flex; gap: 8px;">
+                                <button class="btn btn-outline" id="btnCancelPainLog" type="button">Cancel</button>
+                                <button class="btn btn-neon-red" id="btnLogPain" type="button" style="flex: 1;">Save pain log</button>
+                            </div>
+                        </div>
                     </div>
-                    <textarea id="unifiedNotesInput" class="glass-input notes-textarea" placeholder="Notes..."></textarea>
                 </div>
-                <div class="modal-footer"><button class="btn btn-outline" id="btnCancelPainLog">Cancel</button><button class="btn btn-neon-red" id="btnLogPain">Save pain log</button></div>
             </div>
         </div>
 
@@ -775,19 +828,21 @@
 
         <!-- Budget Overview Modal -->
         <div class="modal-overlay hidden" id="budgetOverviewModal">
-            <div class="modal-content glass-panel" style="max-width: 800px; width: 95%;">
+            <div class="modal-content glass-panel" style="max-width: 850px; width: 95%; max-height: 90vh; overflow-y: auto;">
                 <div class="modal-header">
-                    <h2>Budget Analytics & Overviews</h2>
+                    <h2>Budget Analytics & Synthesized Reports</h2>
                     <button class="btn-close" id="btnCloseBudgetOverview">&times;</button>
                 </div>
                 <div class="modal-body" style="display: flex; flex-direction: column; gap: 16px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-                        <h3 style="margin: 0; font-size: 1.1rem; color: var(--text-primary);">Weekly Overviews</h3>
-                        <select id="budgetMonthSelect" class="glass-select" style="padding: 8px;">
-                            <option value="2026-08">August 2026</option>
-                            <option value="2026-07">July 2026</option>
-                            <option value="2026-06">June 2026</option>
-                        </select>
+                        <h3 style="margin: 0; font-size: 1.1rem; color: var(--text-primary);">Interactive Analytics</h3>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <select id="budgetMonthSelect" class="glass-select" style="padding: 6px 10px;">
+                                <option value="2026-08">August 2026</option>
+                                <option value="2026-07">July 2026</option>
+                                <option value="2026-06">June 2026</option>
+                            </select>
+                        </div>
                     </div>
                     
                     <div class="glass-panel" style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px;">
@@ -797,9 +852,37 @@
                     <div id="budgetDetailedStats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px;">
                         <!-- dynamic stats -->
                     </div>
+
+                    <!-- Periodic Archiving & Synthesized Reports Section -->
+                    <div class="glass-panel" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 16px; border-radius: 12px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
+                            <div>
+                                <h4 style="color: var(--neon-blue); margin: 0; font-size: 1rem;">📑 Periodic Reports Archive (agent_reports/)</h4>
+                                <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 4px 0 0 0;">Weekly and monthly syntheses are automatically archived and logged for review.</p>
+                            </div>
+                            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                                <button class="btn btn-outline btn-sm" id="btnArchiveResetWeek" title="Close out and archive current week report">Archive & Reset Week</button>
+                                <button class="btn btn-outline btn-sm" id="btnArchiveResetMonth" title="Close out and archive current month report">Archive & Reset Month</button>
+                            </div>
+                        </div>
+
+                        <div id="budgetReportsList" style="display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto;">
+                            <!-- Dynamic archived reports -->
+                            <div style="color: var(--text-secondary); font-size: 0.85rem;">Loading archived reports...</div>
+                        </div>
+
+                        <div id="budgetReportDetail" class="hidden" style="margin-top: 14px; padding: 14px; background: rgba(0,0,0,0.3); border: 1px solid var(--neon-blue); border-radius: 8px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <strong id="budgetReportDetailTitle" style="color: var(--neon-blue); font-size: 0.95rem;">Report Details</strong>
+                                <button class="btn btn-sm btn-outline" id="btnCloseReportDetail" style="padding: 2px 6px;">&times;</button>
+                            </div>
+                            <pre id="budgetReportDetailContent" style="white-space: pre-wrap; font-family: monospace; font-size: 0.8rem; color: var(--text-primary); max-height: 250px; overflow-y: auto; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px;"></pre>
+                        </div>
+                    </div>
                     
-                    <div style="text-align: right; margin-top: 8px;">
-                        <button class="btn btn-outline" id="btnPrintBudgetReport">🖨 Print Report</button>
+                    <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px;">
+                        <button class="btn btn-outline btn-sm" id="btnPrintBudgetReport">🖨 Print Report</button>
+                        <button class="btn btn-outline btn-sm" id="btnDismissBudgetModal">Close</button>
                     </div>
                 </div>
             </div>
