@@ -169,37 +169,46 @@ export class TelegramBot {
       throw new Error("sendCheckInPrompt requires chatId or TELEGRAM_CHAT_ID environment variable");
     }
 
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : '');
+    const webAppUrl = baseUrl ? `${baseUrl}/prototype/telegram-pain-form` : '';
+
     const message = [
       "🩺 *Rumble OS Pain & Symptom Check-in*",
       "",
       "Time for your pain tracking log.",
       "",
-      "👉 *Quick Log (75% R-Lumbar, 10% Neck, 5% R-Ankle, 5% L-Ankle, 5% Thoracic):*",
-      "Tap a preset button below, or reply with your custom score and breakdown (e.g. `7.5 75% right lumbar 25% neck`)."
+      "👉 *Ways to log:*",
+      webAppUrl ? "1️⃣ Tap *Open Pain Form* to launch the interactive slider & stepper form.\n2️⃣ Tap a *Quick Preset* below for instant 1-tap logging.\n3️⃣ Reply in chat with custom score & areas (e.g. `7.5 75% right lumbar 25% neck`)." : "1️⃣ Tap a *Quick Preset* below for instant 1-tap logging.\n2️⃣ Reply in chat with custom score & areas (e.g. `7.5 75% right lumbar 25% neck`)."
     ].join('\n');
 
-    const replyMarkup = {
-      inline_keyboard: [
-        [
-          { text: "🟢 Mild (5.5)", callback_data: "pain_preset:5.5" },
-          { text: "🟡 Mod (7.0)", callback_data: "pain_preset:7.0" },
-          { text: "🟠 Avg (7.5)", callback_data: "pain_preset:7.5" },
-          { text: "🔴 High (8.5)", callback_data: "pain_preset:8.5" },
-        ],
-        [
-          { text: "⚡ Lumbar Flare (9.0)", callback_data: "pain_lumbar_flare:9.0" },
-          { text: "💆 Neck Tension (6.5)", callback_data: "pain_neck_focus:6.5" },
-        ],
-        [
-          { text: "🦶 Ankle/Gait Strain (7.0)", callback_data: "pain_ankle_focus:7.0" },
-          { text: "📋 Custom Reply Guide", callback_data: "pain_help" },
-        ],
-      ],
-    };
+    const inline_keyboard: any[][] = [];
+
+    if (webAppUrl) {
+      inline_keyboard.push([
+        { text: "📝 Open Interactive Pain Form", web_app: { url: webAppUrl } }
+      ]);
+    }
+
+    inline_keyboard.push([
+      { text: "🟢 Mild (5.5)", callback_data: "pain_preset:5.5" },
+      { text: "🟡 Mod (7.0)", callback_data: "pain_preset:7.0" },
+      { text: "🟠 Avg (7.5)", callback_data: "pain_preset:7.5" },
+      { text: "🔴 High (8.5)", callback_data: "pain_preset:8.5" },
+    ]);
+
+    inline_keyboard.push([
+      { text: "⚡ Lumbar Flare (9.0)", callback_data: "pain_lumbar_flare:9.0" },
+      { text: "💆 Neck Tension (6.5)", callback_data: "pain_neck_focus:6.5" },
+    ]);
+
+    inline_keyboard.push([
+      { text: "🦶 Ankle/Gait Strain (7.0)", callback_data: "pain_ankle_focus:7.0" },
+      { text: "📋 Custom Reply Guide", callback_data: "pain_help" },
+    ]);
 
     return this.sendMessage(targetChatId, message, {
       parse_mode: 'Markdown',
-      reply_markup: replyMarkup,
+      reply_markup: { inline_keyboard },
     });
   }
 }

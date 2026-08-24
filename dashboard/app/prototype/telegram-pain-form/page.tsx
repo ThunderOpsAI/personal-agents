@@ -316,16 +316,67 @@ export default function TelegramPainFormPrototypePage() {
               </div>
 
               <button
-                onClick={() => {
+                onClick={async () => {
                   if (totalPercent !== 100) {
                     alert(`⚠️ Please balance total percentage to 100% (currently ${totalPercent}%).`);
                     return;
                   }
-                  alert(`✅ Pain check-in submitted for Telegram bot!\n\nAreas: ${formState.selectedAreas.map((s) => `${s.area} (${s.percent}%, score ${s.score})`).join(', ')}\nMood: ${formState.moodScore}/10 (${formState.moodLabel})\nNotes: "${formState.notes}"`);
+
+                  const weightedPainSum = formState.selectedAreas.reduce((sum, s) => sum + (s.score * s.percent), 0);
+                  const overallScore = totalPercent > 0 ? Number((weightedPainSum / totalPercent).toFixed(1)) : 5.0;
+
+                  const generators = formState.selectedAreas.map(s => {
+                    const lower = s.area.toLowerCase();
+                    let side = 'unspecified';
+                    if (lower.includes('right')) side = 'right';
+                    else if (lower.includes('left')) side = 'left';
+
+                    let area = 'lumbar';
+                    if (lower.includes('lumbar')) area = 'lumbar';
+                    else if (lower.includes('cervical') || lower.includes('neck')) area = 'cervical';
+                    else if (lower.includes('thoracic') || lower.includes('mid-back')) area = 'thoracic';
+                    else if (lower.includes('ankle')) area = 'ankle';
+                    else if (lower.includes('knee')) area = 'knee';
+                    else if (lower.includes('shoulder')) area = 'shoulder';
+                    else if (lower.includes('hip')) area = 'hip';
+
+                    return { area, side, percentage: s.percent, pain_score: s.score };
+                  });
+
+                  try {
+                    const res = await fetch('/api/symptoms/log', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        pain_level: overallScore,
+                        score: overallScore,
+                        generators,
+                        locations: generators,
+                        pain_notes: formState.notes,
+                        mood_level: formState.moodScore,
+                        mood: formState.moodLabel,
+                        mood_notes: formState.notes,
+                      }),
+                    });
+
+                    if (!res.ok) {
+                      const err = await res.json();
+                      throw new Error(err.detail || err.error || 'Failed to save pain check-in');
+                    }
+
+                    alert(`✅ Pain check-in saved to live database!\n\nOverall Score: ${overallScore}/10\nAreas: ${formState.selectedAreas.map(s => `${s.area} (${s.percent}%)`).join(', ')}`);
+
+                    // Close Telegram WebApp if running embedded inside Telegram
+                    if (typeof window !== 'undefined' && (window as any).Telegram?.WebApp) {
+                      (window as any).Telegram.WebApp.close();
+                    }
+                  } catch (e: any) {
+                    alert(`⚠️ ${e.message || 'Error submitting check-in'}`);
+                  }
                 }}
                 style={{ padding: '14px', background: 'linear-gradient(135deg, #00f0ff, #00e676)', color: '#000', border: 'none', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.95rem' }}
               >
-                🚀 Submit Pain Check-in to Telegram
+                🚀 Submit Pain Check-in
               </button>
             </div>
           </div>
