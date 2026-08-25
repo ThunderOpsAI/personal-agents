@@ -606,9 +606,12 @@ h3 { font-size: 1.05rem; }
     opacity: 1;
     transition: opacity 0.3s ease;
 }
-.modal-overlay.hidden {
-    opacity: 0;
-    pointer-events: none;
+.modal-overlay.hidden,
+.modal-overlay[hidden] {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
 }
 .slide-up-overlay {
     align-items: flex-end;

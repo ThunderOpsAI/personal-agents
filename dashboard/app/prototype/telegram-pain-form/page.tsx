@@ -16,8 +16,8 @@ interface FormState {
 }
 
 const ALL_ANATOMY = [
-  'Right Lumbar', 'Left Lumbar', 'Neck / Cervical', 'Thoracic',
-  'Right Ankle', 'Left Ankle', 'Right Knee', 'Left Knee', 'Right Shoulder', 'Right Hip'
+  'Right Lumbar', 'Left Lumbar', 'Neck / Cervical', 'Right Shoulder', 'Sciatica', 'Thoracic',
+  'Right Ankle', 'Right Knee', 'Left Knee', 'Right Hip'
 ];
 
 const INITIAL_STATE: FormState = {

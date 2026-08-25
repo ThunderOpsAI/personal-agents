@@ -120,9 +120,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnCancelPostpone = document.getElementById('btnCancelPostpone');
     const btnConfirmPostpone = document.getElementById('btnConfirmPostpone');
     const postponeDateInput = document.getElementById('postponeDate');
+    const postponeItemSummary = document.getElementById('postponeItemSummary');
     let itemToPostpone = null;
-    // const btnAcceptCro = null;
-    // const btnDiscussCro = null;
+
+    const dismissConfirmModal = document.getElementById('dismissConfirmModal');
+    const btnCloseDismissConfirm = document.getElementById('btnCloseDismissConfirm');
+    const btnCancelDismiss = document.getElementById('btnCancelDismiss');
+    const btnConfirmDismiss = document.getElementById('btnConfirmDismiss');
+    const dismissConfirmItemTitle = document.getElementById('dismissConfirmItemTitle');
+    let itemToDismiss = null;
+    let cardToDismiss = null;
     
     const btnOpenRumbleChat = document.getElementById('btnOpenRumbleChat');
     const btnSyncOps = document.getElementById('btnSyncOps');
@@ -790,14 +797,52 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnCloseCalView) btnCloseCalView.addEventListener('click', () => calendarEventViewModal.classList.add('hidden'));
     if (btnDoneCalView) btnDoneCalView.addEventListener('click', () => calendarEventViewModal.classList.add('hidden'));
 
-    // Postpone Modal Logic
-    
+    // Postpone / Delay Modal Logic
     if (btnClosePostpone) btnClosePostpone.addEventListener('click', () => postponeModal.classList.add('hidden'));
     if (btnCancelPostpone) btnCancelPostpone.addEventListener('click', () => postponeModal.classList.add('hidden'));
     
+    // Quick Postpone Preset Buttons
+    document.querySelectorAll('.btn-quick-postpone').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            if (!itemToPostpone) return;
+            const hours = btn.getAttribute('data-hours');
+            const tomorrowTime = btn.getAttribute('data-tomorrow');
+            let targetDate = new Date();
+
+            if (hours) {
+                targetDate.setHours(targetDate.getHours() + parseInt(hours, 10));
+            } else if (tomorrowTime) {
+                const [h, m] = tomorrowTime.split(':').map(n => parseInt(n, 10));
+                targetDate.setDate(targetDate.getDate() + 1);
+                targetDate.setHours(h, m, 0, 0);
+            }
+
+            const tzOffset = targetDate.getTimezoneOffset() * 60000;
+            const localIso = new Date(targetDate - tzOffset).toISOString().slice(0, 16);
+
+            try {
+                await fetch(API_AGENDA, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        id: itemToPostpone,
+                        action: 'reschedule',
+                        new_date: localIso
+                    })
+                });
+                postponeModal.classList.add('hidden');
+                showToast('Agenda item rescheduled', 'success');
+                loadAgenda();
+            } catch (err) {
+                console.error('Failed to reschedule:', err);
+                showToast('Failed to delay item');
+            }
+        });
+    });
+
     if (btnConfirmPostpone) {
         btnConfirmPostpone.addEventListener('click', () => {
-            if (itemToPostpone && postponeDateInput.value) {
+            if (itemToPostpone && postponeDateInput && postponeDateInput.value) {
                 fetch(API_AGENDA, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -808,11 +853,44 @@ document.addEventListener('DOMContentLoaded', () => {
                     })
                 }).then(() => {
                     postponeModal.classList.add('hidden');
+                    showToast('Agenda item rescheduled', 'success');
                     loadAgenda();
                 }).catch(err => {
                     console.error('Failed to reschedule:', err);
                     showToast('Failed to postpone item');
                 });
+            }
+        });
+    }
+
+    // Dismiss Confirmation Modal Logic
+    if (btnCloseDismissConfirm) btnCloseDismissConfirm.addEventListener('click', () => dismissConfirmModal && dismissConfirmModal.classList.add('hidden'));
+    if (btnCancelDismiss) btnCancelDismiss.addEventListener('click', () => dismissConfirmModal && dismissConfirmModal.classList.add('hidden'));
+
+    if (btnConfirmDismiss) {
+        btnConfirmDismiss.addEventListener('click', async () => {
+            if (itemToDismiss) {
+                try {
+                    await fetch(API_AGENDA, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: itemToDismiss, action: 'update_status', status: 'dismissed' })
+                    });
+                    if (cardToDismiss) {
+                        cardToDismiss.style.transition = 'all 0.25s ease';
+                        cardToDismiss.style.opacity = '0';
+                        setTimeout(() => cardToDismiss.remove(), 250);
+                    }
+                    if (dismissConfirmModal) dismissConfirmModal.classList.add('hidden');
+                    showToast('Item dismissed from agenda', 'info');
+                    loadAgenda();
+                } catch (err) {
+                    console.error('Failed to dismiss:', err);
+                    showToast('Failed to dismiss item');
+                }
+            } else if (cardToDismiss) {
+                cardToDismiss.remove();
+                if (dismissConfirmModal) dismissConfirmModal.classList.add('hidden');
             }
         });
     }
@@ -2357,27 +2435,43 @@ document.addEventListener('DOMContentLoaded', () => {
             postponeBtn.addEventListener('click', () => {
                 if (id) {
                     itemToPostpone = id;
+                    const title = card.querySelector('.protocol-info p')?.innerText || id;
+                    if (postponeItemSummary) {
+                        postponeItemSummary.textContent = title ? `Reschedule: ${title}` : 'Choose when you would like to reschedule this item:';
+                    }
                     const tmr = new Date();
                     tmr.setDate(tmr.getDate() + 1);
-                    tmr.setHours(10, 0, 0, 0);
+                    tmr.setHours(9, 0, 0, 0);
                     const tzOffset = tmr.getTimezoneOffset() * 60000;
                     const localIso = new Date(tmr - tzOffset).toISOString().slice(0, 16);
                     if (postponeDateInput) postponeDateInput.value = localIso;
-                    postponeModal.classList.remove('hidden');
+                    if (postponeModal) postponeModal.classList.remove('hidden');
                 }
             });
         }
 
         if (dismissBtn) {
             dismissBtn.addEventListener('click', () => {
-                if (id) {
-                    fetch(API_AGENDA, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ id, action: 'update_status', status: 'dismissed' })
-                    }).then(() => { loadAgenda(); }).catch(() => {});
+                const title = card.querySelector('.protocol-info p')?.innerText || '';
+                itemToDismiss = id;
+                cardToDismiss = card;
+                if (dismissConfirmItemTitle) {
+                    dismissConfirmItemTitle.textContent = title
+                        ? `Are you sure you want to dismiss "${title}" from today's agenda?`
+                        : 'Are you sure you want to dismiss this item from today\'s agenda?';
+                }
+                if (dismissConfirmModal) {
+                    dismissConfirmModal.classList.remove('hidden');
                 } else {
-                    card.remove();
+                    if (id) {
+                        fetch(API_AGENDA, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ id, action: 'update_status', status: 'dismissed' })
+                        }).then(() => { loadAgenda(); }).catch(() => {});
+                    } else {
+                        card.remove();
+                    }
                 }
             });
         }

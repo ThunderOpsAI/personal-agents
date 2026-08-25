@@ -211,22 +211,49 @@
 
         <!-- Modals -->
 
-        <!-- Postpone Modal Window -->
+        <!-- Postpone / Delay Modal Window -->
         <div class="modal-overlay hidden" id="postponeModal">
-            <div class="modal-content glass-panel" style="max-width: 400px;">
+            <div class="modal-content glass-panel" style="max-width: 440px; width: 92%;">
                 <div class="modal-header">
-                    <h2>Postpone Agenda Item</h2>
+                    <h2 id="postponeModalTitle" style="font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">Delay Agenda Item</h2>
                     <button class="btn-close" id="btnClosePostpone">&times;</button>
                 </div>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label>Select New Date</label>
-                        <input type="datetime-local" id="postponeDate" class="glass-input" style="width: 100%; padding: 8px;" />
+                <div class="modal-body" style="margin-top: 10px; display: flex; flex-direction: column; gap: 14px;">
+                    <div style="font-size: 0.88rem; color: var(--text-secondary);" id="postponeItemSummary">Choose when you would like to reschedule this item:</div>
+                    
+                    <!-- Quick Delay Presets -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;" id="postponeQuickPresets">
+                        <button type="button" class="btn btn-outline btn-sm btn-quick-postpone" data-hours="2">In 2 Hours</button>
+                        <button type="button" class="btn btn-outline btn-sm btn-quick-postpone" data-tomorrow="09:00">Tomorrow 9 AM</button>
+                        <button type="button" class="btn btn-outline btn-sm btn-quick-postpone" data-tomorrow="14:00">Tomorrow 2 PM</button>
+                        <button type="button" class="btn btn-outline btn-sm btn-quick-postpone" data-tomorrow="21:00">Tomorrow 9 PM</button>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 4px;">
+                        <label style="font-size: 0.8rem; color: var(--text-secondary);">Or Custom Date & Time</label>
+                        <input type="datetime-local" id="postponeDate" class="glass-input" style="width: 100%; padding: 10px; font-size: 0.9rem;" />
                     </div>
                 </div>
-                <div class="modal-footer" style="margin-top: 15px;">
+                <div class="modal-footer" style="margin-top: 16px; display: flex; gap: 8px; justify-content: flex-end;">
                     <button class="btn btn-outline" id="btnCancelPostpone">Cancel</button>
-                    <button class="btn btn-neon-blue" id="btnConfirmPostpone">Confirm Postpone</button>
+                    <button class="btn btn-neon-blue" id="btnConfirmPostpone">Reschedule</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dismiss Confirmation Modal -->
+        <div class="modal-overlay hidden" id="dismissConfirmModal">
+            <div class="modal-content glass-panel" style="max-width: 380px; width: 90%;">
+                <div class="modal-header">
+                    <h2 style="font-size: 1.05rem; color: var(--neon-red);">Dismiss Agenda Item</h2>
+                    <button class="btn-close" id="btnCloseDismissConfirm">&times;</button>
+                </div>
+                <div class="modal-body" style="margin-top: 10px;">
+                    <p style="font-size: 0.9rem; color: var(--text-secondary);" id="dismissConfirmItemTitle">Are you sure you want to dismiss this item from today's agenda?</p>
+                </div>
+                <div class="modal-footer" style="margin-top: 16px; display: flex; gap: 8px; justify-content: flex-end;">
+                    <button class="btn btn-outline" id="btnCancelDismiss">Keep</button>
+                    <button class="btn btn-neon-red" id="btnConfirmDismiss">Dismiss Item</button>
                 </div>
             </div>
         </div>
@@ -357,12 +384,12 @@
                                 <div class="anatomy-chip-btn selected" data-area="Right Lumbar">✓ Right Lumbar</div>
                                 <div class="anatomy-chip-btn" data-area="Left Lumbar">Left Lumbar</div>
                                 <div class="anatomy-chip-btn selected" data-area="Neck / Cervical">✓ Neck / Cervical</div>
+                                <div class="anatomy-chip-btn" data-area="Right Shoulder">Right Shoulder</div>
+                                <div class="anatomy-chip-btn" data-area="Sciatica">Sciatica</div>
                                 <div class="anatomy-chip-btn" data-area="Thoracic">Thoracic</div>
                                 <div class="anatomy-chip-btn" data-area="Right Ankle">Right Ankle</div>
-                                <div class="anatomy-chip-btn" data-area="Left Ankle">Left Ankle</div>
                                 <div class="anatomy-chip-btn" data-area="Right Knee">Right Knee</div>
                                 <div class="anatomy-chip-btn" data-area="Left Knee">Left Knee</div>
-                                <div class="anatomy-chip-btn" data-area="Right Shoulder">Right Shoulder</div>
                                 <div class="anatomy-chip-btn" data-area="Hip">Hip</div>
                             </div>
                         </div>
