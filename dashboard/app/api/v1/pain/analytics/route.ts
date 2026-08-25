@@ -103,8 +103,8 @@ export async function GET(request: Request) {
         timestamp: log.created_at,
         score,
         primary_area: primaryArea,
-        mood: log.mood,
-        notes: log.notes,
+        mood: log.mood || null,
+        notes: log.notes || null,
         locations: log.locations || []
       });
 
