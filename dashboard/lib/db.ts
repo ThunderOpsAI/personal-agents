@@ -564,7 +564,8 @@ export async function createAgendaItem(
 export async function updateAgendaItemStatus(
   id: string,
   newStatus: AgendaItemStatus,
-  auditNote?: string
+  auditNote?: string,
+  fallbackData?: { title?: string; item_type?: string; scheduled_time?: string }
 ): Promise<AgendaItem | null> {
   await ensureTableExists();
   const dbStatus = getDbStatus();
@@ -609,7 +610,46 @@ export async function updateAgendaItemStatus(
   }
 
   if (!existing) {
-    return null;
+    let inferredTitle = fallbackData?.title || 'Daily Protocol';
+    let inferredType: any = fallbackData?.item_type || 'task';
+
+    if (id.startsWith('yoga')) {
+      inferredTitle = 'Daily Adaptive Yoga Routine';
+      inferredType = 'yoga';
+    } else if (id.startsWith('meditation_night')) {
+      inferredTitle = 'Night Meditation Protocol';
+      inferredType = 'meditation';
+    } else if (id.startsWith('meditation_midnight')) {
+      inferredTitle = 'Sleep & Relaxation Meditation';
+      inferredType = 'meditation';
+    } else if (id.startsWith('learning')) {
+      inferredTitle = 'Continuous Learning: Recovery & Neuroplasticity';
+      inferredType = 'learning';
+    } else if (id.startsWith('pain_log_reminder')) {
+      inferredTitle = 'Log Pain Level';
+      inferredType = 'task';
+    } else if (id.startsWith('task_deakin')) {
+      inferredTitle = 'Set up Deakin password & MFA';
+      inferredType = 'task';
+    }
+
+    const completed_at = newStatus === 'completed' ? now : null;
+    const dismissed_at = newStatus === 'dismissed' ? now : null;
+
+    return await createAgendaItem({
+      id,
+      title: inferredTitle,
+      item_type: inferredType,
+      scheduled_time: fallbackData?.scheduled_time || now,
+      status: newStatus,
+      audit_trail: [
+        {
+          timestamp: now,
+          new_status: newStatus,
+          note: auditNote || `Auto-created and set status to ${newStatus}`,
+        },
+      ],
+    });
   }
 
   const prevStatus = existing.status;
@@ -970,7 +1010,11 @@ export async function getExercisePreferences(): Promise<ExercisePreferenceRecord
 
 
 
-export async function rescheduleAgendaItem(id: string, newDate: string): Promise<AgendaItem | null> {
+export async function rescheduleAgendaItem(
+  id: string,
+  newDate: string,
+  fallbackData?: { title?: string; item_type?: string }
+): Promise<AgendaItem | null> {
   await ensureTableExists();
   const dbStatus = getDbStatus();
   const now = new Date().toISOString();
@@ -990,7 +1034,45 @@ export async function rescheduleAgendaItem(id: string, newDate: string): Promise
     }
   }
 
-  if (!existing) return null;
+  if (!existing) {
+    let inferredTitle = fallbackData?.title || 'Daily Protocol';
+    let inferredType: any = fallbackData?.item_type || 'task';
+
+    if (id.startsWith('yoga')) {
+      inferredTitle = 'Daily Adaptive Yoga Routine';
+      inferredType = 'yoga';
+    } else if (id.startsWith('meditation_night')) {
+      inferredTitle = 'Night Meditation Protocol';
+      inferredType = 'meditation';
+    } else if (id.startsWith('meditation_midnight')) {
+      inferredTitle = 'Sleep & Relaxation Meditation';
+      inferredType = 'meditation';
+    } else if (id.startsWith('learning')) {
+      inferredTitle = 'Continuous Learning: Recovery & Neuroplasticity';
+      inferredType = 'learning';
+    } else if (id.startsWith('pain_log_reminder')) {
+      inferredTitle = 'Log Pain Level';
+      inferredType = 'task';
+    } else if (id.startsWith('task_deakin')) {
+      inferredTitle = 'Set up Deakin password & MFA';
+      inferredType = 'task';
+    }
+
+    return await createAgendaItem({
+      id,
+      title: inferredTitle,
+      item_type: inferredType,
+      scheduled_time: newDate,
+      status: 'pending',
+      audit_trail: [
+        {
+          timestamp: now,
+          new_status: 'pending',
+          note: `Auto-created and rescheduled to ${newDate}`,
+        },
+      ],
+    });
+  }
 
   const newAuditEntry: AuditTrailEntry = {
     timestamp: now,

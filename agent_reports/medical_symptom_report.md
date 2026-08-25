@@ -232,3 +232,7 @@
 | 2026-08-24 | 09:00 am | **8.5/10** | Right Lumbar | 65% | right lumbar (60%), right shoulder (18%), neck (14%), right sciatica (8%) | Notes: Midday fatigue in right lumbar, mild sciatica on sitting.. Mood: stressed (4/10). |
 | 2026-08-25 | 02:00 pm | **7.5/10** | Right Lumbar | 65% | right lumbar (55%), right sciatica (18%), neck (15%), right shoulder (12%) | Notes: Mid-afternoon flare in right lower back, right shoulder and neck stiff.. Mood: neutral (5/10). |
 | 2026-08-25 | 09:00 pm | **8.5/10** | Right Lumbar | 65% | right lumbar (65%), neck (15%), right shoulder (10%), right sciatica (5%), right ankle (5%) | Notes: Bedtime check-in: right lumbar ache prominent, neck mildly tense.. Mood: stressed (4/10). |
+| 25/08/2026 | 11:58:03 pm | **5.5/10** | right lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Logged via Telegram preset (Mild - Baseline distribution). Mood: neutral. |
+| 25/08/2026 | 11:58:04 pm | **9/10** | right lumbar | 85% | right lumbar (85%), neck (10%), right ankle (2.5%), left ankle (2.5%) | Notes: Logged via Telegram (Severe Lumbar Flare preset). Mood: stressed. |
+| 25/08/2026 | 11:58:04 pm | **6.5/10** | neck | 60% | neck (60%), right lumbar (30%), right ankle (5%), left ankle (5%) | Notes: Logged via Telegram (Neck Tension preset). Mood: neutral. |
+| 25/08/2026 | 11:58:04 pm | **7.5/10** | right lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: API log test. Mood: neutral. |

@@ -798,13 +798,33 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnDoneCalView) btnDoneCalView.addEventListener('click', () => calendarEventViewModal.classList.add('hidden'));
 
     // Postpone / Delay Modal Logic
-    if (btnClosePostpone) btnClosePostpone.addEventListener('click', () => postponeModal.classList.add('hidden'));
-    if (btnCancelPostpone) btnCancelPostpone.addEventListener('click', () => postponeModal.classList.add('hidden'));
+    let activePostponeItemTitle = '';
+    let activePostponeItemType = 'task';
+    let activeDismissItemTitle = '';
+    let activeDismissItemType = 'task';
+
+    if (btnClosePostpone) btnClosePostpone.addEventListener('click', () => postponeModal && postponeModal.classList.add('hidden'));
+    if (btnCancelPostpone) btnCancelPostpone.addEventListener('click', () => postponeModal && postponeModal.classList.add('hidden'));
     
+    // Close modal when clicking on backdrop
+    if (postponeModal) {
+        postponeModal.addEventListener('click', (e) => {
+            if (e.target === postponeModal) postponeModal.classList.add('hidden');
+        });
+    }
+    if (dismissConfirmModal) {
+        dismissConfirmModal.addEventListener('click', (e) => {
+            if (e.target === dismissConfirmModal) dismissConfirmModal.classList.add('hidden');
+        });
+    }
+
     // Quick Postpone Preset Buttons
     document.querySelectorAll('.btn-quick-postpone').forEach(btn => {
-        btn.addEventListener('click', async () => {
-            if (!itemToPostpone) return;
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.querySelectorAll('.btn-quick-postpone').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+
             const hours = btn.getAttribute('data-hours');
             const tomorrowTime = btn.getAttribute('data-tomorrow');
             let targetDate = new Date();
@@ -820,45 +840,52 @@ document.addEventListener('DOMContentLoaded', () => {
             const tzOffset = targetDate.getTimezoneOffset() * 60000;
             const localIso = new Date(targetDate - tzOffset).toISOString().slice(0, 16);
 
-            try {
-                await fetch(API_AGENDA, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        id: itemToPostpone,
-                        action: 'reschedule',
-                        new_date: localIso
-                    })
-                });
-                postponeModal.classList.add('hidden');
-                showToast('Agenda item rescheduled', 'success');
-                loadAgenda();
-            } catch (err) {
-                console.error('Failed to reschedule:', err);
-                showToast('Failed to delay item');
+            if (postponeDateInput) {
+                postponeDateInput.value = localIso;
             }
         });
     });
 
     if (btnConfirmPostpone) {
-        btnConfirmPostpone.addEventListener('click', () => {
-            if (itemToPostpone && postponeDateInput && postponeDateInput.value) {
-                fetch(API_AGENDA, {
+        btnConfirmPostpone.addEventListener('click', async (e) => {
+            e.preventDefault();
+            if (!itemToPostpone) return;
+
+            const selectedDate = postponeDateInput?.value;
+            if (!selectedDate) {
+                showToast('Please select a date and time');
+                return;
+            }
+
+            btnConfirmPostpone.disabled = true;
+            btnConfirmPostpone.innerText = 'Rescheduling...';
+
+            try {
+                const res = await fetch(API_AGENDA, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         id: itemToPostpone,
                         action: 'reschedule',
-                        new_date: postponeDateInput.value
+                        new_date: selectedDate,
+                        title: activePostponeItemTitle || 'Daily Protocol',
+                        item_type: activePostponeItemType || 'task'
                     })
-                }).then(() => {
-                    postponeModal.classList.add('hidden');
-                    showToast('Agenda item rescheduled', 'success');
-                    loadAgenda();
-                }).catch(err => {
-                    console.error('Failed to reschedule:', err);
-                    showToast('Failed to postpone item');
                 });
+
+                if (!res.ok) {
+                    throw new Error(`Status ${res.status}`);
+                }
+
+                if (postponeModal) postponeModal.classList.add('hidden');
+                showToast('Agenda item rescheduled', 'success');
+                loadAgenda();
+            } catch (err) {
+                console.error('Failed to reschedule:', err);
+                showToast('Failed to postpone item');
+            } finally {
+                btnConfirmPostpone.disabled = false;
+                btnConfirmPostpone.innerText = 'Reschedule';
             }
         });
     }
@@ -2436,6 +2463,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (id) {
                     itemToPostpone = id;
                     const title = card.querySelector('.protocol-info p')?.innerText || id;
+                    activePostponeItemTitle = title;
+                    activePostponeItemType = type || 'task';
                     if (postponeItemSummary) {
                         postponeItemSummary.textContent = title ? `Reschedule: ${title}` : 'Choose when you would like to reschedule this item:';
                     }
@@ -2445,6 +2474,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     const tzOffset = tmr.getTimezoneOffset() * 60000;
                     const localIso = new Date(tmr - tzOffset).toISOString().slice(0, 16);
                     if (postponeDateInput) postponeDateInput.value = localIso;
+
+                    document.querySelectorAll('.btn-quick-postpone').forEach(b => b.classList.remove('selected'));
+                    const defaultPreset = document.querySelector('.btn-quick-postpone[data-tomorrow="09:00"]');
+                    if (defaultPreset) defaultPreset.classList.add('selected');
+
                     if (postponeModal) postponeModal.classList.remove('hidden');
                 }
             });
@@ -2455,6 +2489,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const title = card.querySelector('.protocol-info p')?.innerText || '';
                 itemToDismiss = id;
                 cardToDismiss = card;
+                activeDismissItemTitle = title;
+                activeDismissItemType = type || 'task';
                 if (dismissConfirmItemTitle) {
                     dismissConfirmItemTitle.textContent = title
                         ? `Are you sure you want to dismiss "${title}" from today's agenda?`
@@ -2467,7 +2503,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         fetch(API_AGENDA, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ id, action: 'update_status', status: 'dismissed' })
+                            body: JSON.stringify({ id, action: 'update_status', status: 'dismissed', title, item_type: type || 'task' })
                         }).then(() => { loadAgenda(); }).catch(() => {});
                     } else {
                         card.remove();

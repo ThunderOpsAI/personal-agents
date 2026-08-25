@@ -250,7 +250,10 @@ export async function POST(request: Request) {
 
   if (body.action === "reschedule" && body.id && body.new_date) {
     try {
-      const updated = await rescheduleAgendaItem(body.id, body.new_date);
+      const updated = await rescheduleAgendaItem(body.id, body.new_date, {
+        title: body.title,
+        item_type: body.item_type,
+      });
       if (!updated) {
         return NextResponse.json({ status: "error", error: "Agenda item not found" }, { status: 404 });
       }
@@ -261,7 +264,7 @@ export async function POST(request: Request) {
   }
 
   if (body.action === "update_status" || (body.id && body.status && !body.title)) {
-    const { id, status, note } = body;
+    const { id, status, note, title, item_type, scheduled_time } = body;
     if (!id || !status) {
       return NextResponse.json(
         { status: "error", error: "id and status are required for status update" },
@@ -270,7 +273,11 @@ export async function POST(request: Request) {
     }
 
     try {
-      const updated = await updateAgendaItemStatus(id, status as AgendaItemStatus, note);
+      const updated = await updateAgendaItemStatus(id, status as AgendaItemStatus, note, {
+        title,
+        item_type,
+        scheduled_time,
+      });
       if (!updated) {
         return NextResponse.json({ status: "error", error: "Agenda item not found" }, { status: 404 });
       }
