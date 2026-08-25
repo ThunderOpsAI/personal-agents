@@ -3225,15 +3225,32 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnPrintPainReport = document.getElementById('btnPrintPainReport');
     const btnAskRumbleForGP = document.getElementById('btnAskRumbleForGP');
 
+    let currentPainAnalyticsPeriod = 'month';
     let painTrendsChartInstance = null;
     let painAnatomyChartInstance = null;
 
     if (btnOpenPainAnalytics && painAnalyticsModal) {
         btnOpenPainAnalytics.addEventListener('click', () => {
             painAnalyticsModal.classList.remove('hidden');
-            loadPainAnalytics();
+            loadPainAnalytics(currentPainAnalyticsPeriod);
         });
     }
+
+    // Period buttons
+    document.querySelectorAll('.pain-period-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.pain-period-btn').forEach(b => {
+                b.classList.remove('active', 'btn-neon-blue');
+                b.classList.add('btn-outline');
+            });
+            const target = e.currentTarget;
+            target.classList.remove('btn-outline');
+            target.classList.add('active', 'btn-neon-blue');
+            const selectedPeriod = target.getAttribute('data-period') || 'month';
+            currentPainAnalyticsPeriod = selectedPeriod;
+            loadPainAnalytics(selectedPeriod);
+        });
+    });
 
     if (btnClosePainAnalytics && painAnalyticsModal) {
         btnClosePainAnalytics.addEventListener('click', () => {
@@ -3257,16 +3274,22 @@ document.addEventListener('DOMContentLoaded', () => {
         btnAskRumbleForGP.addEventListener('click', () => {
             if (painAnalyticsModal) painAnalyticsModal.classList.add('hidden');
             if (rumbleChatModal) rumbleChatModal.classList.remove('hidden');
-            sendRumbleChatMessage("Please generate a concise, structured clinical summary of my last month's pain logs, flare patterns, and functional restrictions for my upcoming GP appointment.");
+            sendRumbleChatMessage(`Please generate a concise, structured clinical summary of my ${currentPainAnalyticsPeriod === 'day' ? "today's" : currentPainAnalyticsPeriod === 'week' ? "last 7 days'" : "last month's"} pain logs, flare patterns, and functional restrictions for my upcoming GP appointment.`);
         });
     }
 
-    async function loadPainAnalytics() {
+    async function loadPainAnalytics(period = 'month') {
         try {
-            const res = await fetch('/api/v1/pain/analytics');
+            const res = await fetch(`/api/v1/pain/analytics?period=${encodeURIComponent(period)}`);
             if (!res.ok) throw new Error("Failed to load pain analytics");
             const data = await res.json();
             if (data.status !== "success") return;
+
+            const badge = document.getElementById('painAnalyticsPeriodBadge');
+            if (badge) badge.innerText = `Showing ${data.period_label || period}`;
+
+            const statPainAvgLabel = document.getElementById('statPainAvgLabel');
+            if (statPainAvgLabel) statPainAvgLabel.innerText = `${data.period_label || 'Period'} Average Pain`;
 
             // Populate KPI metrics
             const statPainAvg = document.getElementById('statPainAvg');
@@ -3284,6 +3307,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (sortedAnatomy.length > 0) {
                 if (statPainPrimary) statPainPrimary.innerText = sortedAnatomy[0][0];
                 if (statPainPrimaryPct) statPainPrimaryPct.innerText = `${sortedAnatomy[0][1]}% of Total Burden`;
+            } else {
+                if (statPainPrimary) statPainPrimary.innerText = 'None';
+                if (statPainPrimaryPct) statPainPrimaryPct.innerText = '0% of Total Burden';
             }
 
             if (statPainTotalLogs) statPainTotalLogs.innerText = `${data.total_logs} Entries`;
@@ -3291,46 +3317,83 @@ document.addEventListener('DOMContentLoaded', () => {
             // Morning vs night
             const morningSlot = (data.time_of_day_distribution || []).find(t => t.slot.includes('Morning'));
             const eveningSlot = (data.time_of_day_distribution || []).find(t => t.slot.includes('Evening'));
-            if (statPainMorningNight && morningSlot && eveningSlot) {
-                statPainMorningNight.innerText = `${morningSlot.average} AM · ${eveningSlot.average} PM`;
+            if (statPainMorningNight) {
+                if (morningSlot && eveningSlot) {
+                    statPainMorningNight.innerText = `${morningSlot.average} AM · ${eveningSlot.average} PM`;
+                } else if (morningSlot) {
+                    statPainMorningNight.innerText = `${morningSlot.average} AM (Morning)`;
+                } else if (eveningSlot) {
+                    statPainMorningNight.innerText = `${eveningSlot.average} PM (Evening)`;
+                } else {
+                    statPainMorningNight.innerText = `${data.average_score} Avg`;
+                }
             }
 
-            // Render Chart 1: 30-Day Pain Trajectory Line Chart
+            // Render Chart 1: Pain Trajectory Line Chart
             const trendsCtx = document.getElementById('painTrendsChart');
             if (trendsCtx && typeof Chart !== 'undefined') {
                 if (painTrendsChartInstance) painTrendsChartInstance.destroy();
 
-                const labels = (data.daily_trends || []).map(d => d.date);
-                const avgData = (data.daily_trends || []).map(d => d.avg);
-                const peakData = (data.daily_trends || []).map(d => d.peak);
+                let labels = [];
+                let datasets = [];
+
+                if (period === 'day') {
+                    // Intra-day points
+                    const intraList = data.intra_day_trends || [];
+                    labels = intraList.length > 0 ? intraList.map(d => d.time) : ['No entries today'];
+                    const scores = intraList.length > 0 ? intraList.map(d => d.score) : [0];
+
+                    datasets = [
+                        {
+                            label: 'Intra-Day Pain Score',
+                            data: scores,
+                            borderColor: 'rgba(0, 240, 255, 1)',
+                            backgroundColor: 'rgba(0, 240, 255, 0.15)',
+                            borderWidth: 2.5,
+                            fill: true,
+                            tension: 0.3,
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                            pointBackgroundColor: 'rgba(0, 240, 255, 1)'
+                        }
+                    ];
+                } else {
+                    // Multi-day trends
+                    const dailyList = data.daily_trends || [];
+                    labels = dailyList.length > 0 ? dailyList.map(d => d.date) : ['No entries'];
+                    const avgData = dailyList.length > 0 ? dailyList.map(d => d.avg) : [0];
+                    const peakData = dailyList.length > 0 ? dailyList.map(d => d.peak) : [0];
+
+                    datasets = [
+                        {
+                            label: 'Daily Average Score',
+                            data: avgData,
+                            borderColor: 'rgba(0, 240, 255, 1)',
+                            backgroundColor: 'rgba(0, 240, 255, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.3,
+                            pointRadius: 3,
+                            pointBackgroundColor: 'rgba(0, 240, 255, 1)'
+                        },
+                        {
+                            label: 'Peak Flare Spike',
+                            data: peakData,
+                            borderColor: 'rgba(255, 0, 85, 0.8)',
+                            backgroundColor: 'transparent',
+                            borderWidth: 1.5,
+                            borderDash: [4, 4],
+                            pointRadius: 2,
+                            pointBackgroundColor: 'rgba(255, 0, 85, 1)'
+                        }
+                    ];
+                }
 
                 painTrendsChartInstance = new Chart(trendsCtx, {
                     type: 'line',
                     data: {
                         labels: labels,
-                        datasets: [
-                            {
-                                label: 'Daily Average Score',
-                                data: avgData,
-                                borderColor: 'rgba(0, 240, 255, 1)',
-                                backgroundColor: 'rgba(0, 240, 255, 0.1)',
-                                borderWidth: 2,
-                                fill: true,
-                                tension: 0.3,
-                                pointRadius: 3,
-                                pointBackgroundColor: 'rgba(0, 240, 255, 1)'
-                            },
-                            {
-                                label: 'Peak Flare Spike',
-                                data: peakData,
-                                borderColor: 'rgba(255, 0, 85, 0.8)',
-                                backgroundColor: 'transparent',
-                                borderWidth: 1.5,
-                                borderDash: [4, 4],
-                                pointRadius: 2,
-                                pointBackgroundColor: 'rgba(255, 0, 85, 1)'
-                            }
-                        ]
+                        datasets: datasets
                     },
                     options: {
                         responsive: true,
@@ -3344,7 +3407,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             },
                             x: {
                                 grid: { display: false },
-                                ticks: { color: 'rgba(255,255,255,0.6)', maxTicksLimit: 10 }
+                                ticks: { color: 'rgba(255,255,255,0.6)', maxTicksLimit: 12 }
                             }
                         },
                         plugins: {
@@ -3359,16 +3422,16 @@ document.addEventListener('DOMContentLoaded', () => {
             if (anatomyCtx && typeof Chart !== 'undefined') {
                 if (painAnatomyChartInstance) painAnatomyChartInstance.destroy();
 
-                const anatomyLabels = sortedAnatomy.map(a => a[0]);
-                const anatomyValues = sortedAnatomy.map(a => a[1]);
-                const colors = [
+                const anatomyLabels = sortedAnatomy.length > 0 ? sortedAnatomy.map(a => a[0]) : ['No data'];
+                const anatomyValues = sortedAnatomy.length > 0 ? sortedAnatomy.map(a => a[1]) : [100];
+                const colors = sortedAnatomy.length > 0 ? [
                     'rgba(255, 0, 85, 0.85)',
                     'rgba(180, 0, 255, 0.85)',
                     'rgba(0, 240, 255, 0.85)',
                     'rgba(0, 230, 118, 0.85)',
                     'rgba(255, 170, 0, 0.85)',
                     'rgba(100, 100, 255, 0.7)'
-                ];
+                ] : ['rgba(255,255,255,0.1)'];
 
                 painAnatomyChartInstance = new Chart(anatomyCtx, {
                     type: 'doughnut',
@@ -3396,31 +3459,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Populate Table
             const tableBody = document.getElementById('painLogsTableBody');
-            if (tableBody && Array.isArray(data.recent_logs)) {
-                tableBody.innerHTML = '';
-                data.recent_logs.forEach(log => {
-                    const row = document.createElement('tr');
-                    row.style.borderBottom = '1px solid rgba(255,255,255,0.06)';
+            const displayLogs = data.logs || data.recent_logs || [];
+            if (tableBody) {
+                if (displayLogs.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 16px; color: var(--text-secondary);">No check-ins logged for ${data.period_label || period}.</td></tr>`;
+                } else {
+                    tableBody.innerHTML = '';
+                    displayLogs.forEach(log => {
+                        const row = document.createElement('tr');
+                        row.style.borderBottom = '1px solid rgba(255,255,255,0.06)';
 
-                    const dateStr = new Date(log.created_at).toLocaleString('en-AU', {
-                        month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Australia/Melbourne'
+                        const dateStr = new Date(log.created_at).toLocaleString('en-AU', {
+                            month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Australia/Melbourne'
+                        });
+
+                        const locsStr = Array.isArray(log.locations) && log.locations.length > 0
+                            ? log.locations.map(l => `${l.side && l.side !== 'unspecified' ? l.side + ' ' : ''}${l.area} (${l.percentage || l.weight}%)`).join(', ')
+                            : 'Unspecified';
+
+                        const scoreVal = Number(log.score);
+                        const scoreColor = scoreVal >= 8 ? 'var(--neon-red)' : scoreVal >= 6 ? 'var(--neon-orange, #ffaa00)' : 'var(--neon-green)';
+
+                        row.innerHTML = `
+                            <td style="padding: 8px; color: var(--text-secondary); white-space: nowrap;">${escapeHtml(dateStr)}</td>
+                            <td style="padding: 8px; font-weight: 700; color: ${scoreColor};">${scoreVal}/10</td>
+                            <td style="padding: 8px; color: var(--text-primary);">${escapeHtml(locsStr)}</td>
+                            <td style="padding: 8px; color: var(--text-secondary);">${escapeHtml(log.mood ? String(log.mood) + '/10' : 'N/A')}</td>
+                            <td style="padding: 8px; color: var(--text-muted); font-size: 0.8rem;">${escapeHtml(log.notes || '—')}</td>
+                        `;
+                        tableBody.appendChild(row);
                     });
-
-                    const locsStr = Array.isArray(log.locations)
-                        ? log.locations.map(l => `${l.side && l.side !== 'unspecified' ? l.side + ' ' : ''}${l.area} (${l.percentage || l.weight}%)`).join(', ')
-                        : 'Unspecified';
-
-                    const scoreColor = log.score >= 8 ? 'var(--neon-red)' : log.score >= 6 ? 'var(--neon-orange, #ffaa00)' : 'var(--neon-green)';
-
-                    row.innerHTML = `
-                        <td style="padding: 8px; color: var(--text-secondary); white-space: nowrap;">${dateStr}</td>
-                        <td style="padding: 8px; font-weight: 700; color: ${scoreColor};">${log.score}/10</td>
-                        <td style="padding: 8px; color: var(--text-primary);">${locsStr}</td>
-                        <td style="padding: 8px; color: var(--text-secondary);">${log.mood ? log.mood + '/10' : 'N/A'}</td>
-                        <td style="padding: 8px; color: var(--text-muted); font-size: 0.8rem;">${log.notes || '—'}</td>
-                    `;
-                    tableBody.appendChild(row);
-                });
+                }
             }
         } catch (err) {
             console.error("Error loading pain analytics:", err);

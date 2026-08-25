@@ -754,10 +754,21 @@
                 </div>
 
                 <div class="modal-body" style="display: flex; flex-direction: column; gap: 18px; margin-top: 10px;">
+                    <!-- Period Filter Tabs -->
+                    <div style="display: flex; gap: 8px; align-items: center; justify-content: space-between; flex-wrap: wrap; padding-bottom: 6px; border-bottom: 1px solid var(--glass-border);">
+                        <div style="display: flex; gap: 8px; align-items: center;" id="painPeriodTabs">
+                            <button type="button" class="btn btn-sm btn-outline pain-period-btn" id="btnPainPeriodDay" data-period="day">Today (Intra-Day)</button>
+                            <button type="button" class="btn btn-sm btn-outline pain-period-btn" id="btnPainPeriodWeek" data-period="week">7 Days (Week)</button>
+                            <button type="button" class="btn btn-sm btn-neon-blue pain-period-btn active" id="btnPainPeriodMonth" data-period="month">30 Days (Month)</button>
+                            <button type="button" class="btn btn-sm btn-outline pain-period-btn" id="btnPainPeriodAll" data-period="all">All Time</button>
+                        </div>
+                        <div style="font-size: 0.82rem; color: var(--neon-blue); font-weight: 500;" id="painAnalyticsPeriodBadge">Showing Last 30 Days</div>
+                    </div>
+
                     <!-- Key Clinical Metric Cards -->
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px;" id="painKpiGrid">
                         <div class="glass-panel" style="padding: 12px; border-radius: 8px; border-left: 3px solid var(--neon-red);">
-                            <div style="font-size: 0.78rem; color: var(--text-secondary); text-transform: uppercase;">30-Day Average Pain</div>
+                            <div style="font-size: 0.78rem; color: var(--text-secondary); text-transform: uppercase;" id="statPainAvgLabel">30-Day Average Pain</div>
                             <div style="font-size: 1.6rem; font-weight: 700; color: var(--neon-red);" id="statPainAvg">7.4 / 10</div>
                             <div style="font-size: 0.72rem; color: var(--text-secondary);" id="statPainRange">Range: 5.0 - 9.5</div>
                         </div>

@@ -1,26 +1,62 @@
 import { NextResponse } from "next/server";
 import { getPainLogsFromDb } from "../../../../../lib/db";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const logs = await getPainLogsFromDb();
+    const { searchParams } = new URL(request.url);
+    const period = (searchParams.get('period') || 'month').toLowerCase();
 
-    if (!logs || logs.length === 0) {
+    const allLogs = await getPainLogsFromDb();
+
+    if (!allLogs || allLogs.length === 0) {
       return NextResponse.json({
         status: "success",
+        period,
+        period_label: period === 'day' ? 'Today' : period === 'week' ? 'Last 7 Days' : period === 'all' ? 'All Time' : 'Last 30 Days',
         total_logs: 0,
         average_score: 0,
         min_score: 0,
         max_score: 0,
         daily_trends: [],
+        intra_day_trends: [],
         anatomical_distribution: {},
         time_of_day_distribution: [],
+        logs: [],
         recent_logs: []
       });
     }
 
-    // Sort ascending by date
-    const sorted = [...logs].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+    const now = new Date();
+    const tz = "Australia/Melbourne";
+    const todayStr = new Intl.DateTimeFormat("en-CA", { timeZone: tz }).format(now); // "YYYY-MM-DD"
+
+    // Filter logs based on period
+    let filteredLogs = [...allLogs];
+
+    if (period === 'day') {
+      filteredLogs = allLogs.filter((log) => {
+        const logDateStr = new Intl.DateTimeFormat("en-CA", { timeZone: tz }).format(new Date(log.created_at));
+        return logDateStr === todayStr;
+      });
+      // If no logs yet today, fallback to last 24 hours so the user sees recent context
+      if (filteredLogs.length === 0) {
+        const last24h = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+        filteredLogs = allLogs.filter((log) => new Date(log.created_at) >= last24h);
+      }
+    } else if (period === 'week') {
+      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      filteredLogs = allLogs.filter((log) => new Date(log.created_at) >= sevenDaysAgo);
+    } else if (period === 'month') {
+      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      filteredLogs = allLogs.filter((log) => new Date(log.created_at) >= thirtyDaysAgo);
+    }
+
+    if (filteredLogs.length === 0) {
+      filteredLogs = allLogs.slice(0, 10);
+    }
+
+    // Sort ascending by date for chronological analytics
+    const sorted = [...filteredLogs].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
 
     let totalScore = 0;
     let minScore = 10;
@@ -36,6 +72,16 @@ export async function GET() {
     };
 
     const dailyMap: Record<string, { scores: number[]; count: number }> = {};
+    const intraDayTrends: Array<{
+      id: string;
+      time: string;
+      timestamp: string;
+      score: number;
+      primary_area: string;
+      mood: string | null;
+      notes: string | null;
+      locations: any[];
+    }> = [];
 
     sorted.forEach((log) => {
       const score = Number(log.score);
@@ -43,8 +89,27 @@ export async function GET() {
       if (score < minScore) minScore = score;
       if (score > maxScore) maxScore = score;
 
+      // Intra-day item
+      const timeStr = new Date(log.created_at).toLocaleTimeString("en-AU", { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: tz });
+      let primaryArea = "General";
+      if (Array.isArray(log.locations) && log.locations.length > 0) {
+        const topLoc = [...log.locations].sort((a: any, b: any) => (b.percentage || b.weight || 0) - (a.percentage || a.weight || 0))[0];
+        primaryArea = `${topLoc.side && topLoc.side !== "unspecified" ? topLoc.side + " " : ""}${topLoc.area}`;
+      }
+
+      intraDayTrends.push({
+        id: log.id,
+        time: timeStr,
+        timestamp: log.created_at,
+        score,
+        primary_area: primaryArea,
+        mood: log.mood,
+        notes: log.notes,
+        locations: log.locations || []
+      });
+
       // Daily grouping
-      const dateKey = new Date(log.created_at).toLocaleDateString("en-AU", { month: "short", day: "numeric", timeZone: "Australia/Melbourne" });
+      const dateKey = new Date(log.created_at).toLocaleDateString("en-AU", { month: "short", day: "numeric", timeZone: tz });
       if (!dailyMap[dateKey]) dailyMap[dateKey] = { scores: [], count: 0 };
       dailyMap[dateKey].scores.push(score);
       dailyMap[dateKey].count++;
@@ -58,7 +123,7 @@ export async function GET() {
         });
       }
 
-      // Time of day
+      // Time of day classification
       const hour = new Date(log.created_at).getHours();
       if (hour >= 5 && hour <= 7) {
         timeOfDayScores["06:00 AM (Morning)"].total += score;
@@ -82,7 +147,7 @@ export async function GET() {
 
     // Normalize anatomical percentages
     let totalAnatomicalWeight = 0;
-    Object.values(anatomicalWeights).forEach(w => totalAnatomicalWeight += w);
+    Object.values(anatomicalWeights).forEach((w) => (totalAnatomicalWeight += w));
     const anatomicalDistribution: Record<string, number> = {};
     Object.entries(anatomicalWeights).forEach(([area, weight]) => {
       anatomicalDistribution[area] = totalAnatomicalWeight > 0 ? Math.round((weight / totalAnatomicalWeight) * 100) : 0;
@@ -104,16 +169,22 @@ export async function GET() {
         count: data.count
       }));
 
+    const periodLabel = period === 'day' ? 'Today' : period === 'week' ? 'Last 7 Days' : period === 'all' ? 'All Time' : 'Last 30 Days';
+
     return NextResponse.json({
       status: "success",
+      period,
+      period_label: periodLabel,
       total_logs: sorted.length,
       average_score: averageScore,
       min_score: minScore,
       max_score: maxScore,
       daily_trends: dailyTrends,
+      intra_day_trends: intraDayTrends,
       anatomical_distribution: anatomicalDistribution,
       time_of_day_distribution: timeOfDayDistribution,
-      recent_logs: sorted.slice(-20).reverse()
+      logs: [...sorted].reverse(),
+      recent_logs: [...sorted].reverse().slice(0, 30)
     });
   } catch (error: any) {
     console.error("[Pain Analytics Error]:", error);
