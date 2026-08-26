@@ -352,6 +352,29 @@ export async function routeChatMessage(
   history: any[] = [],
   attachment?: { data: string; mimeType: string; filename?: string }
 ): Promise<IntentRouteResult> {
+  const lowered = message.toLowerCase();
+
+  // Fast-path deterministic parsing for direct explicit write commands
+  if (classifyIntent(message) === "LOG_PAIN") {
+    const parsedPain = parsePainLogDirective(message);
+    if (parsedPain.parsed) {
+      const preview: ActionPreview = {
+        type: "pain_log",
+        data: parsedPain.parsed,
+      };
+      const locSummary = parsedPain.parsed.locations
+        .map((l) => `${l.side && l.side !== "unspecified" ? l.side + " " : ""}${l.area} (${l.percentage}%)`)
+        .join(", ");
+      return {
+        reply: `I've prepared your pain log: **Score ${parsedPain.parsed.score}/10** in ${locSummary}${parsedPain.parsed.mood ? ` (Mood: ${parsedPain.parsed.mood})` : ""}${parsedPain.parsed.notes ? ` - Notes: "${parsedPain.parsed.notes}"` : ""}.\n\nPlease click Confirm to save this to your health records.`,
+        intent: "LOG_PAIN",
+        requires_confirmation: true,
+        preview,
+        disclaimer: MEDICAL_GUARDRAIL,
+      };
+    }
+  }
+
   const nowMel = new Date().toLocaleString("en-AU", { timeZone: "Australia/Melbourne" });
   
   let liveAgendaText = "No active agenda items.";
@@ -360,7 +383,7 @@ export async function routeChatMessage(
     const pending = items.filter(i => i.status === "pending");
     if (pending.length > 0) {
       liveAgendaText = pending
-        .map(i => `• ${i.title} (${i.item_type}) at ${new Date(i.scheduled_time).toLocaleTimeString("en-AU", { hour: "2-digit", minute: "2-digit", timeZone: "Australia/Melbourne" })}`)
+        .map(i => `• [ID: ${i.id}] ${i.title} (${i.item_type}) | Scheduled: ${new Date(i.scheduled_time).toLocaleString("en-AU", { timeZone: "Australia/Melbourne" })} | Status: ${i.status}`)
         .join("\n");
     }
   } catch {}
@@ -390,20 +413,67 @@ export async function routeChatMessage(
       calendarText = "Google Calendar is NOT connected (OAuth authorization required at /api/v1/auth/google).";
     } else if (calRes.status === "success" && calRes.events && calRes.events.length > 0) {
       calendarText = calRes.events
-        .map((e: any) => `• ${e.summary || "Event"} (${new Date(e.start?.dateTime || e.start?.date || e.start).toLocaleString("en-AU", { timeZone: "Australia/Melbourne" })})`)
+        .map((e: any) => `• ${e.summary || "Event"} (${new Date(e.start?.dateTime || e.start?.date || e.start).toLocaleString("en-AU", { timeZone: "Australia/Melbourne" })}) [ID: ${e.id}]`)
         .join("\n");
     }
   } catch {}
 
   let emailText = "No unread urgent emails.";
   try {
-    const emailRes = await fetchLiveGmailMessages({ maxResults: 5 });
+    // 1. Fetch general recent emails
+    const emailRes = await fetchLiveGmailMessages({ maxResults: 10 });
+    const collectedMessages: any[] = [];
+    const seenIds = new Set<string>();
+
+    if (emailRes.status === "success" && emailRes.messages) {
+      for (const m of emailRes.messages) {
+        if (!seenIds.has(m.id)) {
+          seenIds.add(m.id);
+          collectedMessages.push(m);
+        }
+      }
+    }
+
+    // 2. Perform targeted searches in parallel if user mentions specific keywords/entities
+    const targetedSearches: Array<{ query: string; maxResults: number }> = [];
+    if (lowered.includes("deakin")) {
+      targetedSearches.push({ query: "from:deakin OR subject:deakin OR enquire@deakin.edu.au OR deakin", maxResults: 15 });
+    }
+    if (lowered.includes("medibank")) {
+      targetedSearches.push({ query: "from:medibank OR subject:medibank OR medibank", maxResults: 10 });
+    }
+    if (lowered.includes("shine") || lowered.includes("lawyer")) {
+      targetedSearches.push({ query: "from:shine.com.au OR subject:shine OR asmedley@shine.com.au OR shine", maxResults: 10 });
+    }
+    if (lowered.includes("court") || lowered.includes("coordinator") || lowered.includes("wangaratta")) {
+      targetedSearches.push({ query: "court OR coordinator OR magistrates OR wangaratta", maxResults: 10 });
+    }
+    if (lowered.includes("police") || lowered.includes("carter")) {
+      targetedSearches.push({ query: "from:police.vic.gov.au OR Carter OR police", maxResults: 10 });
+    }
+
+    if (targetedSearches.length > 0) {
+      const searchResults = await Promise.all(
+        targetedSearches.map(s => fetchLiveGmailMessages(s).catch(() => ({ status: "error", messages: [] })))
+      );
+      for (const res of searchResults) {
+        if (res.status === "success" && res.messages) {
+          for (const m of res.messages) {
+            if (!seenIds.has(m.id)) {
+              seenIds.add(m.id);
+              collectedMessages.push(m);
+            }
+          }
+        }
+      }
+    }
+
     if (emailRes.status === "auth_required") {
       emailText = "Gmail is NOT connected (OAuth authorization required at /api/v1/auth/google).";
-    } else if (emailRes.status === "success" && emailRes.messages && emailRes.messages.length > 0) {
-      emailText = emailRes.messages
-        .map((m: any) => `• From: ${m.from || "Unknown"} | Subject: "${m.subject || "No Subject"}" | Summary: ${m.snippet || ""}`)
-        .join("\n");
+    } else if (collectedMessages.length > 0) {
+      emailText = collectedMessages
+        .map((m: any) => `• From: ${m.from || "Unknown"} | To: ${m.to || ""} | Subject: "${m.subject || "No Subject"}" | Date: ${m.date || ""} | Snippet: ${m.snippet || ""}\n  Body Content: ${m.body || m.bodySummary || "No body content"}`)
+        .join("\n\n");
     }
   } catch {}
 
@@ -418,26 +488,52 @@ export async function routeChatMessage(
   const systemPrompt = `You are Rumble, the expert personal operations and rehabilitation AI assistant for Rumble OS.
 Current Time in Australia/Melbourne: ${nowMel}.
 Location: Wangaratta, Victoria, Australia.
+User Identity: James Jones.
 
 === LIVE USER DATA (SOURCE OF TRUTH) ===
 [ACTIVE AGENDA ITEMS]
 ${liveAgendaText}
+
 [RECENT USER NOTES]
 ${liveNotesText}
+
 [LATEST HEALTH & PAIN LOG]
 ${livePainText}
+
 [LIVE GOOGLE CALENDAR]
 ${calendarText}
-[LIVE GMAIL INBOX]
+
+[LIVE GMAIL INBOX & ARCHIVE]
 ${emailText}
+
 [WANGARATTA WEATHER & WASHING FORECAST]
 ${weatherText}
 
-=== CRITICAL BEHAVIORAL & SAFETY RULES ===
-1. MEDICAL DISCLAIMER: "${MEDICAL_GUARDRAIL}". Always include this on any medical/recovery discussion.
-2. LIVE DATA ONLY: You MUST strictly use the real live events, emails, notes, and agenda items provided above. NEVER invent, hallucinate, mock, or guess doctor names, appointments, clinic locations, or emails.
-3. Determine if the user's message is a conversational query (requiring only a reply) OR if it requires actions (e.g. adding a calendar event, adding a task, logging pain).
-4. If actions are required, return them in the actions array. Writes MUST require confirmation.`;
+=== CRITICAL BEHAVIORAL & FORMATTING RULES ===
+1. MEDICAL DISCLAIMER: "${MEDICAL_GUARDRAIL}". Always append this to any medical, symptom, or treatment discussion.
+2. LIVE DATA ONLY: Strictly ground all responses in the real live emails, calendar events, agenda items, and notes provided above. NEVER hallucinate, invent, guess, or mock dummy details.
+3. SCHEDULE PRESENTATION:
+   - When presenting a schedule overview for the week or days:
+     - Group items cleanly by day (e.g. **Tonight / Today**, **Tomorrow / Thursday**, **Friday**, **Weekend**).
+     - Clearly categorize into **Scheduled Appointments / Fixed Events** vs **Flexible Tasks / Routine Items**.
+     - NEVER repeat duplicate warnings such as "(This seems very late, please confirm if the time is correct)" repeatedly. Group pending tasks cleanly under a single header.
+     - Proactively suggest rescheduling opportunities (e.g. highlight open days such as Thursday or Friday where pending items can be moved).
+4. EMAIL DRAFTING & COMMUNICATIONS:
+   - When the user asks to draft, tighten, or send an email:
+     - Present the email in a clean, highlighted block with \`To:\`, \`Subject:\`, and \`Body:\`.
+     - Maintain a polished, professional, and authentic voice for James Jones.
+     - If discussing legal matters (such as Shine Lawyers):
+       - Clarify the critical distinction: the current treating physician (**Dr. Reno**) whose ongoing care must NOT be compromised, vs the physician involved in the initial failure/negligence (**Dr. Rugara**).
+     - Explicitly remind the user that this email is a draft for review and will require explicit confirmation before sending (per the safety guardrail).
+5. EMAIL EXTRACTION & SEARCH:
+   - When searching or reading emails (such as Deakin, Medibank, Court Coordinator):
+     - Extract exact details from the live emails:
+       - Deakin: Extract Student ID / Ticket Number (e.g. \`221307614\`) and Phone Numbers (\`13 DEAKIN / 13 3325\` or \`+61 3 9244 6333\`).
+       - Medibank: Summarize recent communications (welcome, direct debit, policy inquiries) clearly.
+       - Court Coordinator / Wangaratta: If historical court emails are queried or drafting assistance is requested, provide a clear, tailored draft ready for review.
+6. ACTIONS & WRITES:
+   - If the user explicitly asks to modify/create agenda items, calendar events, notes, or log pain, populate the \`actions\` array.
+   - For informational questions, email drafting, or schedule reviews, leave \`actions\` empty.`;
 
   const responseSchema = {
     type: "OBJECT",
@@ -445,7 +541,7 @@ ${weatherText}
       reply: { type: "STRING", description: "The conversational response to the user." },
       actions: {
         type: "ARRAY",
-        description: "A list of actions to perform (e.g., writes). Leave empty if just answering a question.",
+        description: "A list of actions to perform (e.g., writes). Leave empty if just answering a question or providing drafts.",
         items: {
           type: "OBJECT",
           properties: {

@@ -19,6 +19,7 @@ export interface GoogleAuthStatus {
 }
 
 let cachedAccessToken: { token: string; expiresAt: number } | null = null;
+const messageDetailCache = new Map<string, any>();
 
 export function getGoogleAuthUrl(): string {
   const clientId = process.env.GOOGLE_CLIENT_ID || "";
@@ -46,7 +47,10 @@ export async function getGoogleAccessToken(): Promise<GoogleAuthStatus> {
 
   // 3. Refresh token flow via Google OAuth Token endpoint
   const clientId = process.env.GOOGLE_CLIENT_ID;
-  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  let clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  if (clientSecret) {
+    clientSecret = clientSecret.trim().replace(/^GOCSPX-GOCSPX-/, "GOCSPX-");
+  }
   const refreshToken = process.env.GOOGLE_REFRESH_TOKEN;
 
   if (!clientId || !clientSecret || !refreshToken) {
@@ -387,9 +391,98 @@ export async function fetchLiveGmailMessages(options?: {
     }
 
     const data = await res.json();
+    const rawList = (data.messages || []).slice(0, maxResults);
+
+    // Fetch full payload details for each message
+    const detailedMessages = await Promise.all(
+      rawList.map(async (item: { id: string; threadId: string }) => {
+        if (messageDetailCache.has(item.id)) {
+          return messageDetailCache.get(item.id);
+        }
+        try {
+          const detailRes = await fetch(
+            `https://gmail.googleapis.com/gmail/v1/users/me/messages/${item.id}?format=full`,
+            {
+              headers: { Authorization: `Bearer ${auth.accessToken}` },
+            }
+          );
+          if (!detailRes.ok) return item;
+          const msgData = await detailRes.json();
+
+          const headers: Array<{ name: string; value: string }> = msgData.payload?.headers || [];
+          const getHeader = (name: string) =>
+            headers.find((h) => h.name.toLowerCase() === name.toLowerCase())?.value;
+
+          const subject = getHeader("Subject") || "No Subject";
+          const from = getHeader("From") || "Unknown";
+          const to = getHeader("To") || "";
+          const date = getHeader("Date") || "";
+          const snippet = msgData.snippet || "";
+
+          let bodyText = "";
+          const extractBody = (part: any) => {
+            if (!part) return;
+            if (part.body && part.body.data) {
+              try {
+                const decoded = Buffer.from(
+                  part.body.data.replace(/-/g, "+").replace(/_/g, "/"),
+                  "base64"
+                ).toString("utf8");
+                if (part.mimeType === "text/plain") {
+                  bodyText += "\n" + decoded;
+                } else if (part.mimeType === "text/html" && !bodyText) {
+                  bodyText += "\n" + decoded;
+                }
+              } catch (e) {}
+            }
+            if (part.parts && Array.isArray(part.parts)) {
+              part.parts.forEach(extractBody);
+            }
+          };
+
+          if (msgData.payload) {
+            extractBody(msgData.payload);
+          }
+
+          // Clean HTML tags and excessive whitespace
+          const cleanBody = bodyText
+            .replace(/<style[\s\S]*?<\/style>/gi, "")
+            .replace(/<script[\s\S]*?<\/script>/gi, "")
+            .replace(/<[^>]+>/g, " ")
+            .replace(/&nbsp;/g, " ")
+            .replace(/&amp;/g, "&")
+            .replace(/&lt;/g, "<")
+            .replace(/&gt;/g, ">")
+            .replace(/&#39;/g, "'")
+            .replace(/&quot;/g, '"')
+            .replace(/\s{2,}/g, " ")
+            .trim();
+
+          const bodySummary = cleanBody ? cleanBody.substring(0, 800) : snippet;
+
+          const parsedMsg = {
+            id: msgData.id,
+            threadId: msgData.threadId,
+            snippet,
+            subject,
+            from,
+            to,
+            date,
+            body: cleanBody || snippet,
+            bodySummary,
+            actionRequired: /action required|due|urgent|important/i.test(`${subject} ${snippet}`),
+          };
+          messageDetailCache.set(msgData.id, parsedMsg);
+          return parsedMsg;
+        } catch (e) {
+          return item;
+        }
+      })
+    );
+
     return {
       status: "success",
-      messages: data.messages || [],
+      messages: detailedMessages,
     };
   } catch (err: any) {
     return {
