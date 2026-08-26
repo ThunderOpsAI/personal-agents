@@ -40,6 +40,22 @@ export function exportPainReportToMarkdown(entry: {
   }
 }
 
+export function exportReportToMarkdown(title: string, content: string): void {
+  try {
+    const reportsDir = path.resolve(process.cwd(), '..', 'agent_reports');
+    if (!fs.existsSync(reportsDir)) {
+      fs.mkdirSync(reportsDir, { recursive: true });
+    }
+    const safeTitle = (title || 'report').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const reportPath = path.join(reportsDir, `${safeTitle}_${timestamp}.md`);
+    
+    fs.writeFileSync(reportPath, `# ${title || 'Agent Report'}\n\n${content}`, 'utf8');
+  } catch (err) {
+    console.warn('[Report Export Warning] Could not write to agent_reports:', err);
+  }
+}
+
 
 export type IntentType =
   | "GREETING"
@@ -620,9 +636,9 @@ ${weatherText}
         items: {
           type: "OBJECT",
           properties: {
-            type: { type: "STRING", description: "One of: 'task', 'pain_log', 'note', 'calendar_event', 'budget_item'" },
+            type: { type: "STRING", description: "One of: 'task', 'pain_log', 'note', 'calendar_event', 'budget_item', 'agent_report'" },
             task_title: { type: "STRING" },
-            task_scheduled_time: { type: "STRING" },
+            task_scheduled_time: { type: "STRING", description: "Must be a valid ISO 8601 string in Australia/Melbourne timezone" },
             calendar_summary: { type: "STRING" },
             calendar_start_datetime: { type: "STRING" },
             calendar_end_datetime: { type: "STRING" },
@@ -633,7 +649,9 @@ ${weatherText}
             budget_description: { type: "STRING" },
             budget_amount: { type: "NUMBER" },
             budget_category: { type: "STRING" },
-            budget_type: { type: "STRING", description: "Either 'income' or 'expense'" }
+            budget_type: { type: "STRING", description: "Either 'income' or 'expense'" },
+            agent_report_title: { type: "STRING" },
+            agent_report_content: { type: "STRING" }
           },
           required: ["type"]
         }
@@ -654,7 +672,15 @@ ${weatherText}
     if (parsed.actions && parsed.actions.length > 0) {
       const mappedActions = parsed.actions.map((a: any) => {
         let data: any = {};
-        if (a.type === "task") data = { title: a.task_title, scheduled_time: a.task_scheduled_time };
+        if (a.type === "task") {
+            let parsedTime = a.task_scheduled_time;
+            try {
+                parsedTime = parsedTime ? new Date(parsedTime).toISOString() : new Date().toISOString();
+            } catch (e) {
+                parsedTime = new Date().toISOString();
+            }
+            data = { title: a.task_title, scheduled_time: parsedTime };
+        }
         if (a.type === "calendar_event") {
             let startStr = a.calendar_start_datetime;
             try {
@@ -677,6 +703,7 @@ ${weatherText}
         }
         if (a.type === "pain_log") data = { score: a.pain_score, locations: a.pain_locations, mood: a.pain_mood };
         if (a.type === "note") data = { content: a.note_content, author: 'rumble' };
+        if (a.type === "agent_report") data = { title: a.agent_report_title, content: a.agent_report_content };
         if (a.type === "budget_item") data = { description: a.budget_description, amount: a.budget_amount, category: a.budget_category, type: a.budget_type };
         return { type: a.type, data };
       });
@@ -803,6 +830,16 @@ export async function executeConfirmedAction(action: ActionPreview | { type: str
       success: true,
       message: `Rumble: Confirmed and saved budget item: "${description}" for $${amount}.`,
       result: savedItem,
+    };
+  }
+
+  if (action.type === "agent_report") {
+    const { title, content } = action.data;
+    exportReportToMarkdown(title, content);
+    return {
+      success: true,
+      message: `Rumble: Confirmed and saved report to agent_reports/: "${title}".`,
+      result: { title },
     };
   }
 
