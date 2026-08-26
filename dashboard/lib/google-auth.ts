@@ -440,8 +440,25 @@ export async function fetchLiveGmailMessages(options?: {
             }
           };
 
+          const attachments: Array<{ filename: string; mimeType: string; size: number; attachmentId: string }> = [];
+          const extractAttachments = (part: any) => {
+            if (!part) return;
+            if (part.filename && part.body && part.body.attachmentId) {
+              attachments.push({
+                filename: part.filename,
+                mimeType: part.mimeType,
+                size: part.body.size,
+                attachmentId: part.body.attachmentId,
+              });
+            }
+            if (part.parts && Array.isArray(part.parts)) {
+              part.parts.forEach(extractAttachments);
+            }
+          };
+
           if (msgData.payload) {
             extractBody(msgData.payload);
+            extractAttachments(msgData.payload);
           }
 
           // Clean HTML tags and excessive whitespace
@@ -470,6 +487,7 @@ export async function fetchLiveGmailMessages(options?: {
             date,
             body: cleanBody || snippet,
             bodySummary,
+            attachments,
             actionRequired: /action required|due|urgent|important/i.test(`${subject} ${snippet}`),
           };
           messageDetailCache.set(msgData.id, parsedMsg);
@@ -487,8 +505,40 @@ export async function fetchLiveGmailMessages(options?: {
   } catch (err: any) {
     return {
       status: "error",
-      message: err.message || "Failed to connect to Gmail service",
+      message: `Failed to fetch live Gmail messages: ${err.message}`,
     };
+  }
+}
+
+/**
+ * Fetches a specific attachment from Gmail and returns it as base64.
+ */
+export async function fetchLiveGmailAttachment(
+  messageId: string,
+  attachmentId: string
+): Promise<{ status: "success" | "error"; data?: string; size?: number; message?: string }> {
+  const auth = await getGoogleAccessToken();
+  if (!auth.authenticated || !auth.accessToken) {
+    return { status: "error", message: "Gmail authorization required" };
+  }
+
+  try {
+    const res = await fetch(
+      `https://gmail.googleapis.com/gmail/v1/users/me/messages/${messageId}/attachments/${attachmentId}`,
+      {
+        headers: { Authorization: `Bearer ${auth.accessToken}` },
+      }
+    );
+
+    if (!res.ok) {
+      return { status: "error", message: `Failed to fetch attachment: ${res.statusText}` };
+    }
+
+    const json = await res.json();
+    const cleanBase64 = (json.data || "").replace(/-/g, "+").replace(/_/g, "/");
+    return { status: "success", data: cleanBase64, size: json.size };
+  } catch (err: any) {
+    return { status: "error", message: err.message };
   }
 }
 

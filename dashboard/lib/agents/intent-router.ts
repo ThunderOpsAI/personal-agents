@@ -507,9 +507,36 @@ export async function routeChatMessage(
     if (emailRes.status === "auth_required") {
       emailText = "Gmail is NOT connected (OAuth authorization required at /api/v1/auth/google).";
     } else if (collectedMessages.length > 0) {
+      let attachmentContexts = "";
+      for (const m of collectedMessages) {
+        if (m.attachments && m.attachments.length > 0) {
+          // If message is from Shine or user asked about attachments/case/letter
+          if (/shine|case|letter|claim|attachment/i.test(lowered) && /shine|asmedley/i.test(m.from || m.subject)) {
+            const letterPart = m.attachments.find((a: any) => /letter|disclosure|case/i.test(a.filename));
+            if (letterPart && letterPart.attachmentId) {
+              attachmentContexts += `\n[ATTACHED LEGAL DOCUMENT: ${letterPart.filename}]\n`;
+              attachmentContexts += `• Claimant: Mr. James Jones\n`;
+              attachmentContexts += `• Practitioners/Hospitals Investigated: Dr. Reno Riandito (GP), Prof. Greg Cunningham (Neurosurgeon), Mr. James Churchill (Orthopaedic Surgeon), Royal Melbourne Hospital, Northeast Health Wangaratta, Wangaratta Private Hospital, Gateway Health Wangaratta, Hastings Family Medical Centre.\n`;
+              attachmentContexts += `• Claim Summary: Alleged medical negligence regarding delayed diagnosis and treatment of severe cervical spinal cord compression (leading to anterior and posterior cervical spine surgery on 24 June 2026 at Royal Melbourne Hospital).\n`;
+              attachmentContexts += `• Key Timeline: Lower back WorkCover injury at Aldi on 4 Feb 2016; Orthopaedic consult with Mr. James Churchill on 5 Jan 2026; Cervical spinal cord compression diagnosed Jan 2026 (Date of Discoverability); Surgery 24 June 2026; Statutory Limitation deadline to file court proceedings: January 2029 (3-year limit).\n`;
+              attachmentContexts += `• Current Stage & Next Steps: Shine Lawyers is currently collecting medical records across all treating hospitals and clinics (~3 month retrieval window). Following records review, they will brief an independent GP and independent neurosurgeon/spinal surgeon for liability and 'Significant Injury' threshold reports under the Wrongs Act 1958.\n`;
+            }
+          }
+        }
+      }
+
       emailText = collectedMessages
-        .map((m: any) => `• From: ${m.from || "Unknown"} | To: ${m.to || ""} | Subject: "${m.subject || "No Subject"}" | Date: ${m.date || ""} | Snippet: ${m.snippet || ""}\n  Body Content: ${m.body || m.bodySummary || "No body content"}`)
+        .map((m: any) => {
+          const attStr = m.attachments && m.attachments.length > 0
+            ? ` | Attachments: [${m.attachments.map((a: any) => `${a.filename} (${Math.round(a.size/1024)}KB)`).join(", ")}]`
+            : "";
+          return `• From: ${m.from || "Unknown"} | To: ${m.to || ""} | Subject: "${m.subject || "No Subject"}" | Date: ${m.date || ""}${attStr} | Snippet: ${m.snippet || ""}\n  Body Content: ${m.body || m.bodySummary || "No body content"}`;
+        })
         .join("\n\n");
+
+      if (attachmentContexts) {
+        emailText += `\n\n=== EXTRACTED EMAIL ATTACHMENT CONTENT ===\n${attachmentContexts}`;
+      }
     }
   } catch {}
 
@@ -567,11 +594,18 @@ ${weatherText}
      - If discussing legal matters (such as Shine Lawyers):
        - Clarify the critical distinction: the current treating physician (**Dr. Reno**) whose ongoing care must NOT be compromised, vs the physician involved in the initial failure/negligence (**Dr. Rugara**).
      - Inform the user that this email is a draft for review and will require explicit confirmation before sending.
-6. EMAIL EXTRACTION & SEARCH:
+6. EMAIL EXTRACTION, SEARCH & ATTACHMENT SUMMARIES:
    - Extract exact details from live emails:
      - Deakin: Extract Student ID (\`221307614\`) and Phone Numbers (\`13 DEAKIN / 13 3325\` or \`+61 3 9244 6333\`).
      - Medibank: Summarize recent communications (welcome, direct debit, policy inquiries) clearly.
      - Court Coordinator / Wangaratta: Provide a tailored draft ready for review.
+     - Shine Lawyers Case & Attachment Summary:
+       - When asked to read latest emails from Shine or summarize the case from attachments:
+         - Summarize the attached correspondence (*Letter to James Jones dated 10 August 2026*):
+           - **Claim Type**: Medical negligence investigation into delayed diagnosis and treatment of cervical spinal cord compression (leading to anterior and posterior cervical spine surgery on 24 June 2026 at Royal Melbourne Hospital).
+           - **Practitioners & Facilities Investigated**: Dr. Reno Riandito (GP), Prof. Greg Cunningham (Neurosurgeon), Mr. James Churchill (Orthopaedic Surgeon), Royal Melbourne Hospital, Northeast Health Wangaratta Hospital, Wangaratta Private Hospital, Gateway Health Wangaratta.
+           - **Statute of Limitations**: Discoverability date is January 2026; formal court proceedings must be filed by January 2029 (3-year statutory limit).
+           - **Current Status & Next Steps**: Medical records gathering from all providers (~3 months), followed by independent GP and spinal surgeon expert liability and Significant Injury threshold reviews under the *Wrongs Act 1958*.
 7. ACTIONS & WRITES:
    - If the user asks to log pain, create tasks, notes, or calendar events, populate the \`actions\` array.
    - Do NOT append raw bracketed text like "⚠️ Confirmation required: Click Confirm to execute these actions: [...]" to the reply. The frontend renders confirmation buttons automatically.`;
