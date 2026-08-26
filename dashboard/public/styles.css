@@ -1042,12 +1042,13 @@ input[type="datetime-local"].glass-input {
 
 .notes-modal-content {
     max-width: 480px;
-}
 .chat-modal-content {
-    max-width: 500px;
+    max-width: 720px;
+    width: 92vw;
     display: flex;
     flex-direction: column;
-    height: 500px;
+    height: 75vh;
+    max-height: 800px;
 }
 .modal-header {
     display: flex;
@@ -1098,22 +1099,54 @@ input[type="datetime-local"].glass-input {
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    padding-right: 4px;
+    gap: 12px;
+    padding-right: 6px;
     margin-bottom: 12px;
 }
 .message {
-    padding: 8px 12px;
-    border-radius: 12px;
-    font-size: 0.9rem;
-    line-height: 1.4;
-    max-width: 85%;
+    padding: 12px 16px;
+    border-radius: 14px;
+    font-size: 0.93rem;
+    line-height: 1.55;
+    max-width: 90%;
+    word-break: break-word;
 }
 .rumble-message {
-    background: rgba(0, 240, 255, 0.1);
+    background: rgba(0, 240, 255, 0.08);
     border: 1px solid var(--neon-blue);
     align-self: flex-start;
-    color: #e0f9ff;
+    color: #e2f8ff;
+}
+.rumble-message h3, .rumble-message h4 {
+    color: var(--neon-blue);
+    margin: 12px 0 6px 0;
+    font-size: 1.02rem;
+    font-weight: 700;
+}
+.rumble-message p {
+    margin: 6px 0;
+}
+.rumble-message ul {
+    margin: 6px 0 10px 18px;
+    padding: 0;
+}
+.rumble-message li {
+    margin-bottom: 4px;
+}
+.chat-highlight-card {
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(0, 240, 255, 0.35);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin: 10px 0;
+}
+.chat-disclaimer {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    font-style: italic;
 }
 .user-message {
     background: rgba(181, 0, 255, 0.15);
@@ -1123,7 +1156,67 @@ input[type="datetime-local"].glass-input {
 }
 .chat-input-row {
     display: flex;
-    gap: 6px;
+    gap: 8px;
+    align-items: flex-end;
+    position: relative;
+}
+#rumbleChatInput {
+    flex: 1;
+    min-height: 48px;
+    max-height: 220px;
+    padding: 12px 16px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    line-height: 1.45;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid var(--glass-border);
+    color: var(--text-primary);
+    resize: none;
+    overflow-y: auto;
+    box-sizing: border-box;
+    transition: min-height 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, box-shadow 0.2s ease;
+}
+#rumbleChatInput:focus {
+    min-height: 100px;
+    border-color: var(--neon-blue);
+    box-shadow: 0 0 16px rgba(0, 240, 255, 0.3);
+    background: rgba(0, 0, 0, 0.65);
+    outline: none;
+}
+.chat-attach-menu {
+    position: absolute;
+    bottom: 58px;
+    left: 45px;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+    z-index: 100;
+    min-width: 170px;
+}
+.chat-attach-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    font-size: 0.88rem;
+    color: var(--text-primary);
+    border-radius: 8px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s ease;
+}
+.chat-attach-option:hover {
+    background: rgba(0, 240, 255, 0.15);
+    color: var(--neon-blue);
 }
 
 /* Runner Visual */

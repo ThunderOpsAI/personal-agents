@@ -227,7 +227,10 @@ export function parsePainLogDirective(message: string): {
   let notes: string | undefined;
   const notesMatch = message.match(/\bnotes?\s*[:=]?\s*(.+)$/i);
   if (notesMatch) {
-    notes = notesMatch[1].trim();
+    let rawNotes = notesMatch[1].trim();
+    // Strip any follow-up question sentence from the notes
+    rawNotes = rawNotes.replace(/(?:\.\s+|\s+)(?:What|How|Can|Should|Why|Could|Where|When)\b.*$/i, "").trim();
+    notes = rawNotes.length > 0 ? rawNotes : undefined;
   }
 
   if (errors.length > 0 || !score) {
@@ -316,32 +319,51 @@ async function callGemini(
     });
   }
 
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      systemInstruction: {
-        parts: [{ text: systemPrompt }],
-      },
-      contents: [
-        ...history.map((h: any) => ({ role: h.role === "user" ? "user" : "model", parts: [{ text: h.content }] })),
-        { role: "user", parts: userParts }
-      ],
-      ...(responseSchema ? { generationConfig: { responseMimeType: "application/json", responseSchema } } : {})
-    }),
-  });
+  let lastError: any = null;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 25000);
 
-  if (!res.ok) {
-    throw new Error(`Gemini API returned status ${res.status}`);
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        signal: controller.signal,
+        body: JSON.stringify({
+          systemInstruction: {
+            parts: [{ text: systemPrompt }],
+          },
+          contents: [
+            ...history.map((h: any) => ({ role: h.role === "user" ? "user" : "model", parts: [{ text: h.content }] })),
+            { role: "user", parts: userParts }
+          ],
+          ...(responseSchema ? { generationConfig: { responseMimeType: "application/json", responseSchema } } : {})
+        }),
+      });
+      clearTimeout(timeoutId);
+
+      if (!res.ok) {
+        if (res.status === 429 && attempt < 3) {
+          await new Promise((r) => setTimeout(r, 2000 * (attempt + 1)));
+          continue;
+        }
+        throw new Error(`Gemini API returned status ${res.status}`);
+      }
+
+      const data = await res.json();
+      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (typeof text !== "string" || !text.trim()) {
+        throw new Error("Gemini API returned empty response");
+      }
+
+      return text.trim();
+    } catch (err: any) {
+      lastError = err;
+      await new Promise((r) => setTimeout(r, 1200 * (attempt + 1)));
+    }
   }
 
-  const data = await res.json();
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (typeof text !== "string" || !text.trim()) {
-    throw new Error("Gemini API returned empty response");
-  }
-
-  return text.trim();
+  throw lastError || new Error("Failed to call Gemini API after multiple attempts");
 }
 
 /**
@@ -354,8 +376,9 @@ export async function routeChatMessage(
 ): Promise<IntentRouteResult> {
   const lowered = message.toLowerCase();
 
-  // Fast-path deterministic parsing for direct explicit write commands
-  if (classifyIntent(message) === "LOG_PAIN") {
+  // Fast-path deterministic parsing for pure direct write commands without follow-up questions
+  const hasQuestion = message.includes("?") || /\b(?:what|how|why|should|can you recommend|advice)\b/i.test(message);
+  if (!hasQuestion && classifyIntent(message) === "LOG_PAIN") {
     const parsedPain = parsePainLogDirective(message);
     if (parsedPain.parsed) {
       const preview: ActionPreview = {
@@ -512,28 +535,33 @@ ${weatherText}
 === CRITICAL BEHAVIORAL & FORMATTING RULES ===
 1. MEDICAL DISCLAIMER: "${MEDICAL_GUARDRAIL}". Always append this to any medical, symptom, or treatment discussion.
 2. LIVE DATA ONLY: Strictly ground all responses in the real live emails, calendar events, agenda items, and notes provided above. NEVER hallucinate, invent, guess, or mock dummy details.
-3. SCHEDULE PRESENTATION:
-   - When presenting a schedule overview for the week or days:
-     - Group items cleanly by day (e.g. **Tonight / Today**, **Tomorrow / Thursday**, **Friday**, **Weekend**).
-     - Clearly categorize into **Scheduled Appointments / Fixed Events** vs **Flexible Tasks / Routine Items**.
-     - NEVER repeat duplicate warnings such as "(This seems very late, please confirm if the time is correct)" repeatedly. Group pending tasks cleanly under a single header.
-     - Proactively suggest rescheduling opportunities (e.g. highlight open days such as Thursday or Friday where pending items can be moved).
-4. EMAIL DRAFTING & COMMUNICATIONS:
-   - When the user asks to draft, tighten, or send an email:
-     - Present the email in a clean, highlighted block with \`To:\`, \`Subject:\`, and \`Body:\`.
+3. HUMAN-READABLE REPORT STRUCTURING:
+   - Format outputs cleanly like an executive report with clean spacing, bold headers, and concise bullet points.
+   - Avoid dumping dense, repetitive blocks. Never repeat identical symptom blurbs under every single calendar appointment.
+   - When summarizing medical appointments:
+     - Group upcoming appointments chronologically by date/time.
+     - Provide a dedicated, concise "Items to Discuss & Clinical Context" section for prescriptions (e.g. Panadeine Forte), referrals (Persistence Pain, ADHD, HACC-PYP, psychology), and recent pain levels.
+4. SCHEDULE PRESENTATION:
+   - When presenting a schedule overview:
+     - Group items cleanly by day (e.g. **Tonight (Wednesday)**, **Tomorrow (Thursday)**, **Friday**, **Weekend**).
+     - Clearly separate **Fixed Appointments / Calendar Events** from **Flexible Routine Tasks / To-Dos**.
+     - NEVER repeat duplicate warnings like "(This seems very late...)" repeatedly. Group pending tasks neatly under an appropriate header.
+     - Proactively suggest rescheduling opportunities (e.g. highlight open days like Thursday or Friday, matching washing with 0% rain days).
+5. EMAIL DRAFTING & COMMUNICATIONS:
+   - When drafting or tightening an email:
+     - Present the email in a clean block with \`To:\`, \`Subject:\`, and \`Body:\`.
      - Maintain a polished, professional, and authentic voice for James Jones.
      - If discussing legal matters (such as Shine Lawyers):
        - Clarify the critical distinction: the current treating physician (**Dr. Reno**) whose ongoing care must NOT be compromised, vs the physician involved in the initial failure/negligence (**Dr. Rugara**).
-     - Explicitly remind the user that this email is a draft for review and will require explicit confirmation before sending (per the safety guardrail).
-5. EMAIL EXTRACTION & SEARCH:
-   - When searching or reading emails (such as Deakin, Medibank, Court Coordinator):
-     - Extract exact details from the live emails:
-       - Deakin: Extract Student ID / Ticket Number (e.g. \`221307614\`) and Phone Numbers (\`13 DEAKIN / 13 3325\` or \`+61 3 9244 6333\`).
-       - Medibank: Summarize recent communications (welcome, direct debit, policy inquiries) clearly.
-       - Court Coordinator / Wangaratta: If historical court emails are queried or drafting assistance is requested, provide a clear, tailored draft ready for review.
-6. ACTIONS & WRITES:
-   - If the user explicitly asks to modify/create agenda items, calendar events, notes, or log pain, populate the \`actions\` array.
-   - For informational questions, email drafting, or schedule reviews, leave \`actions\` empty.`;
+     - Inform the user that this email is a draft for review and will require explicit confirmation before sending.
+6. EMAIL EXTRACTION & SEARCH:
+   - Extract exact details from live emails:
+     - Deakin: Extract Student ID (\`221307614\`) and Phone Numbers (\`13 DEAKIN / 13 3325\` or \`+61 3 9244 6333\`).
+     - Medibank: Summarize recent communications (welcome, direct debit, policy inquiries) clearly.
+     - Court Coordinator / Wangaratta: Provide a tailored draft ready for review.
+7. ACTIONS & WRITES:
+   - If the user asks to log pain, create tasks, notes, or calendar events, populate the \`actions\` array.
+   - Do NOT append raw bracketed text like "⚠️ Confirmation required: Click Confirm to execute these actions: [...]" to the reply. The frontend renders confirmation buttons automatically.`;
 
   const responseSchema = {
     type: "OBJECT",
@@ -612,10 +640,8 @@ ${weatherText}
         data: { actions: mappedActions }
       };
       
-      const actionTypes = mappedActions.map((a: any) => a.type).join(", ");
-      
       return {
-        reply: `${finalReply}\n\n⚠️ Confirmation required: Click Confirm to execute these actions: [${actionTypes}].`,
+        reply: finalReply,
         intent: "GENERAL",
         requires_confirmation: true,
         preview,
@@ -631,6 +657,27 @@ ${weatherText}
     };
   } catch (err: any) {
     console.error("[RouteChatMessage Error]:", err);
+
+    if (classifyIntent(message) === "LOG_PAIN") {
+      const parsedPain = parsePainLogDirective(message);
+      if (parsedPain.parsed) {
+        const preview: ActionPreview = {
+          type: "pain_log",
+          data: parsedPain.parsed,
+        };
+        const locSummary = parsedPain.parsed.locations
+          .map((l) => `${l.side && l.side !== "unspecified" ? l.side + " " : ""}${l.area} (${l.percentage}%)`)
+          .join(", ");
+        return {
+          reply: `I've prepared your pain log: **Score ${parsedPain.parsed.score}/10** in ${locSummary}${parsedPain.parsed.mood ? ` (Mood: ${parsedPain.parsed.mood})` : ""}.\n\n**Gentle Adjustments for Tonight:**\n• Apply a warm heat pack to the lumbar area for 15-20 minutes to ease muscle spasms.\n• Take frequent breaks from sitting, avoiding prolonged desk posture.\n• Perform gentle supported child's pose and slow pelvic tilts on a comfortable surface.\n• If sharp or radiating pain increases, rest and seek direct clinician review.\n\nPlease confirm to save this entry to your records.`,
+          intent: "LOG_PAIN",
+          requires_confirmation: true,
+          preview,
+          disclaimer: MEDICAL_GUARDRAIL,
+        };
+      }
+    }
+
     return {
       reply: `Rumble: I am here to assist with your recovery and daily operations.\n\n${MEDICAL_GUARDRAIL}`,
       intent: "CONVERSATION",

@@ -1291,8 +1291,93 @@ document.addEventListener('DOMContentLoaded', () => {
         reader.readAsDataURL(file);
     }
 
-    if (btnChatAttach && chatFileInput) {
-        btnChatAttach.addEventListener('click', () => chatFileInput.click());
+    function formatRumbleMarkdown(raw) {
+        if (!raw) return "Understood.";
+        let text = raw.trim();
+
+        // 1. Clean up internal bracket confirmations
+        text = text.replace(/⚠️\s*Confirmation required:.*$/im, "").trim();
+
+        // 2. Separate medical disclaimer to render as styled footer
+        let disclaimerHtml = "";
+        const disclaimerMatch = text.match(/(Medical output is decision support, not diagnosis\..*)$/i);
+        if (disclaimerMatch) {
+            disclaimerHtml = `<div class="chat-disclaimer">${escapeHtml(disclaimerMatch[1])}</div>`;
+            text = text.substring(0, text.length - disclaimerMatch[0].length).trim();
+        }
+
+        // 3. Highlight email drafts if present
+        text = text.replace(/(?:^|\n)(To:\s*[^\n]+\nSubject:\s*[^\n]+[\s\S]*?(?=\n\n|\n---|$))/gi, (match) => {
+            return `\n<div class="chat-highlight-card">` + match.trim().split('\n').map(l => {
+                if (/^To:/i.test(l)) return `<div style="font-weight: 600; color: var(--neon-blue);">${escapeHtml(l)}</div>`;
+                if (/^Subject:/i.test(l)) return `<div style="font-weight: 600; margin-bottom: 8px;">${escapeHtml(l)}</div>`;
+                return `<div>${escapeHtml(l)}</div>`;
+            }).join('') + `</div>\n`;
+        });
+
+        // 4. Convert markdown bold and code
+        text = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+        text = text.replace(/`([^`]+)`/g, '<code style="background: rgba(0,0,0,0.4); padding: 2px 5px; border-radius: 4px; color: var(--neon-blue);">$1</code>');
+
+        // 5. Convert markdown headers (### Header, ## Header)
+        text = text.replace(/^###\s+([^\n]+)/gm, '<h4 style="margin: 12px 0 4px 0; color: var(--neon-blue);">$1</h4>');
+        text = text.replace(/^##\s+([^\n]+)/gm, '<h3 style="margin: 14px 0 6px 0; color: var(--neon-blue); font-size: 1.05rem;">$1</h3>');
+
+        // 6. Convert bullet lists
+        text = text.replace(/^\s*[\*\-•]\s+([^\n]+)/gm, '<li style="margin-left: 18px; margin-bottom: 4px;">$1</li>');
+
+        // 7. Convert horizontal rules
+        text = text.replace(/^---+$/gm, '<hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 12px 0;">');
+
+        // 8. Convert remaining newlines
+        text = text.replace(/\n\n+/g, '<div style="height: 8px;"></div>');
+        text = text.replace(/\n/g, '<br>');
+
+        return text + disclaimerHtml;
+    }
+
+    function escapeHtml(str) {
+        if (!str) return "";
+        return str
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    const chatAttachMenu = document.getElementById('chatAttachMenu');
+    const btnMenuAttachFile = document.getElementById('btnMenuAttachFile');
+    const btnMenuAttachCamera = document.getElementById('btnMenuAttachCamera');
+
+    if (btnChatAttach && chatAttachMenu) {
+        btnChatAttach.addEventListener('click', (e) => {
+            e.stopPropagation();
+            chatAttachMenu.classList.toggle('hidden');
+        });
+
+        if (btnMenuAttachFile && chatFileInput) {
+            btnMenuAttachFile.addEventListener('click', () => {
+                chatAttachMenu.classList.add('hidden');
+                chatFileInput.click();
+            });
+        }
+
+        if (btnMenuAttachCamera && chatCameraInput) {
+            btnMenuAttachCamera.addEventListener('click', () => {
+                chatAttachMenu.classList.add('hidden');
+                chatCameraInput.click();
+            });
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!chatAttachMenu.contains(e.target) && e.target !== btnChatAttach) {
+                chatAttachMenu.classList.add('hidden');
+            }
+        });
+    }
+
+    if (chatFileInput) {
         chatFileInput.addEventListener('change', (e) => {
             if (e.target.files && e.target.files.length > 0) {
                 handleChatFileSelection(e.target.files[0]);
@@ -1300,8 +1385,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    if (btnChatCamera && chatCameraInput) {
-        btnChatCamera.addEventListener('click', () => chatCameraInput.click());
+    if (chatCameraInput) {
         chatCameraInput.addEventListener('change', (e) => {
             if (e.target.files && e.target.files.length > 0) {
                 handleChatFileSelection(e.target.files[0]);
@@ -1331,17 +1415,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const userDiv = document.createElement('div');
         userDiv.className = 'message user-message';
-        let userContent = `<strong>You:</strong> ${msg || 'Attached photo/document for analysis'}`;
+        let userContent = `<strong>You:</strong> ${escapeHtml(msg) || 'Attached photo/document for analysis'}`;
         if (attached) {
             if (attached.mimeType.startsWith('image/')) {
                 userContent += `<div style="margin-top: 6px;"><img src="${attached.data}" style="max-width: 180px; max-height: 140px; border-radius: 8px; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);"></div>`;
             } else {
-                userContent += `<div style="margin-top: 6px; font-size: 0.85rem; color: var(--neon-blue);">📄 ${attached.filename || 'Attached document'}</div>`;
+                userContent += `<div style="margin-top: 6px; font-size: 0.85rem; color: var(--neon-blue);">📄 ${escapeHtml(attached.filename) || 'Attached document'}</div>`;
             }
         }
         userDiv.innerHTML = userContent;
         rumbleChatMessages.appendChild(userDiv);
         rumbleChatInput.value = '';
+        rumbleChatInput.style.height = 'auto';
         clearChatAttachment();
         rumbleChatMessages.scrollTop = rumbleChatMessages.scrollHeight;
 
@@ -1365,7 +1450,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const rumbleDiv = document.createElement('div');
             rumbleDiv.className = 'message rumble-message';
-            rumbleDiv.innerHTML = `<strong>RUMBLE:</strong> ${data.reply || "Understood."}`;
+            rumbleDiv.innerHTML = `<strong>RUMBLE:</strong> ${formatRumbleMarkdown(data.reply)}`;
 
             if (data.requires_confirmation && data.preview) {
                 pendingChatAction = data.preview;
@@ -1516,8 +1601,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     btnSendRumbleChat.addEventListener('click', () => sendRumbleChatMessage());
-    rumbleChatInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') sendRumbleChatMessage();
+    
+    rumbleChatInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendRumbleChatMessage();
+        }
+    });
+
+    rumbleChatInput.addEventListener('input', () => {
+        rumbleChatInput.style.height = 'auto';
+        rumbleChatInput.style.height = Math.min(rumbleChatInput.scrollHeight, 220) + 'px';
     });
 
 
