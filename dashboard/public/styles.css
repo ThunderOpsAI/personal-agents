@@ -1042,6 +1042,7 @@ input[type="datetime-local"].glass-input {
 
 .notes-modal-content {
     max-width: 480px;
+}
 .chat-modal-content {
     max-width: 720px;
     width: 92vw;
@@ -1049,6 +1050,11 @@ input[type="datetime-local"].glass-input {
     flex-direction: column;
     height: 75vh;
     max-height: 800px;
+    background: rgba(15, 23, 42, 0.92);
+    backdrop-filter: blur(24px);
+    border: 1px solid rgba(0, 240, 255, 0.25);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 240, 255, 0.12);
+    border-radius: 16px;
 }
 .modal-header {
     display: flex;
@@ -1169,8 +1175,8 @@ input[type="datetime-local"].glass-input {
     font-size: 0.95rem;
     line-height: 1.45;
     border-radius: 12px;
-    background: rgba(0, 0, 0, 0.45);
-    border: 1px solid var(--glass-border);
+    background: rgba(10, 15, 30, 0.7);
+    border: 1px solid rgba(0, 240, 255, 0.25);
     color: var(--text-primary);
     resize: none;
     overflow-y: auto;
@@ -1180,43 +1186,9 @@ input[type="datetime-local"].glass-input {
 #rumbleChatInput:focus {
     min-height: 100px;
     border-color: var(--neon-blue);
-    box-shadow: 0 0 16px rgba(0, 240, 255, 0.3);
-    background: rgba(0, 0, 0, 0.65);
+    box-shadow: 0 0 16px rgba(0, 240, 255, 0.35);
+    background: rgba(10, 15, 30, 0.85);
     outline: none;
-}
-.chat-attach-menu {
-    position: absolute;
-    bottom: 58px;
-    left: 45px;
-    background: rgba(15, 23, 42, 0.95);
-    backdrop-filter: blur(16px);
-    border: 1px solid var(--glass-border);
-    border-radius: 12px;
-    padding: 6px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
-    z-index: 100;
-    min-width: 170px;
-}
-.chat-attach-option {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 12px;
-    font-size: 0.88rem;
-    color: var(--text-primary);
-    border-radius: 8px;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    text-align: left;
-    transition: background 0.15s ease;
-}
-.chat-attach-option:hover {
-    background: rgba(0, 240, 255, 0.15);
-    color: var(--neon-blue);
 }
 
 /* Runner Visual */
