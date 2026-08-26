@@ -299,8 +299,14 @@ async function callGemini(
     return `Rumble: I received your message: "${userMessage}". Let me know if you would like to log pain, create a note, or check your agenda.`;
   }
 
-  const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+  const preferredModel = process.env.GEMINI_MODEL || "gemini-flash-latest";
+  const modelPool = [
+    preferredModel,
+    "gemini-flash-latest",
+    "gemini-2.5-flash-lite",
+    "gemini-3-flash-preview",
+    "gemini-2.5-flash"
+  ].filter((v, i, a) => a.indexOf(v) === i);
 
   const userParts: any[] = [
     { text: userMessage || "Please analyze this attached photo/document and extract all relevant appointments, instructions, medical details, or tasks." }
@@ -320,50 +326,57 @@ async function callGemini(
   }
 
   let lastError: any = null;
-  for (let attempt = 0; attempt < 3; attempt++) {
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 25000);
 
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        signal: controller.signal,
-        body: JSON.stringify({
-          systemInstruction: {
-            parts: [{ text: systemPrompt }],
-          },
-          contents: [
-            ...history.map((h: any) => ({ role: h.role === "user" ? "user" : "model", parts: [{ text: h.content }] })),
-            { role: "user", parts: userParts }
-          ],
-          ...(responseSchema ? { generationConfig: { responseMimeType: "application/json", responseSchema } } : {})
-        }),
-      });
-      clearTimeout(timeoutId);
+  for (const model of modelPool) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
-      if (!res.ok) {
-        if (res.status === 429 && attempt < 3) {
-          await new Promise((r) => setTimeout(r, 2000 * (attempt + 1)));
-          continue;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 25000);
+
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          signal: controller.signal,
+          body: JSON.stringify({
+            systemInstruction: {
+              parts: [{ text: systemPrompt }],
+            },
+            contents: [
+              ...history.map((h: any) => ({ role: h.role === "user" ? "user" : "model", parts: [{ text: h.content }] })),
+              { role: "user", parts: userParts }
+            ],
+            ...(responseSchema ? { generationConfig: { responseMimeType: "application/json", responseSchema } } : {})
+          }),
+        });
+        clearTimeout(timeoutId);
+
+        if (res.status === 429) {
+          // Model quota exhausted, try next model in pool immediately
+          lastError = new Error(`Model ${model} quota exhausted (429)`);
+          break;
         }
-        throw new Error(`Gemini API returned status ${res.status}`);
-      }
 
-      const data = await res.json();
-      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (typeof text !== "string" || !text.trim()) {
-        throw new Error("Gemini API returned empty response");
-      }
+        if (!res.ok) {
+          throw new Error(`Gemini API (${model}) returned status ${res.status}`);
+        }
 
-      return text.trim();
-    } catch (err: any) {
-      lastError = err;
-      await new Promise((r) => setTimeout(r, 1200 * (attempt + 1)));
+        const data = await res.json();
+        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (typeof text !== "string" || !text.trim()) {
+          throw new Error(`Gemini API (${model}) returned empty response`);
+        }
+
+        return text.trim();
+      } catch (err: any) {
+        lastError = err;
+        await new Promise((r) => setTimeout(r, 600 * (attempt + 1)));
+      }
     }
   }
 
-  throw lastError || new Error("Failed to call Gemini API after multiple attempts");
+  throw lastError || new Error("Failed to call Gemini API after trying all candidate models");
 }
 
 /**
