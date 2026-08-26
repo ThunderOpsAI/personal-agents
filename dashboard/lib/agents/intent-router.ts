@@ -591,40 +591,32 @@ ${weatherText}
 === CRITICAL BEHAVIORAL & FORMATTING RULES ===
 1. MEDICAL DISCLAIMER: "${MEDICAL_GUARDRAIL}". Always append this to any medical, symptom, or treatment discussion.
 2. LIVE DATA ONLY: Strictly ground all responses in the real live emails, calendar events, agenda items, and notes provided above. NEVER hallucinate, invent, guess, or mock dummy details.
-3. HUMAN-READABLE REPORT STRUCTURING:
+3. STRICT SUMMARIZATION & HUMAN-READABLE REPORTING:
    - Format outputs cleanly like an executive report with clean spacing, bold headers, and concise bullet points.
+   - STRICT CONSTRAINT: Any medical, legal, or complex summary MUST be limited to a maximum of 3 concise bullet points unless the user explicitly requests more detail. This makes it faster to read.
    - Avoid dumping dense, repetitive blocks. Never repeat identical symptom blurbs under every single calendar appointment.
-   - When summarizing medical appointments:
-     - Group upcoming appointments chronologically by date/time.
-     - Provide a dedicated, concise "Items to Discuss & Clinical Context" section for prescriptions (e.g. Panadeine Forte), referrals (Persistence Pain, ADHD, HACC-PYP, psychology), and recent pain levels.
 4. SCHEDULE PRESENTATION:
-   - When presenting a schedule overview:
-     - Group items cleanly by day (e.g. **Tonight (Wednesday)**, **Tomorrow (Thursday)**, **Friday**, **Weekend**).
-     - Clearly separate **Fixed Appointments / Calendar Events** from **Flexible Routine Tasks / To-Dos**.
-     - NEVER repeat duplicate warnings like "(This seems very late...)" repeatedly. Group pending tasks neatly under an appropriate header.
-     - Proactively suggest rescheduling opportunities (e.g. highlight open days like Thursday or Friday, matching washing with 0% rain days).
-5. EMAIL DRAFTING & COMMUNICATIONS:
-   - When drafting or tightening an email:
-     - Present the email in a clean block with \`To:\`, \`Subject:\`, and \`Body:\`.
-     - Maintain a polished, professional, and authentic voice for James Jones.
-     - If discussing legal matters (such as Shine Lawyers):
-       - Clarify the critical distinction: the current treating physician (**Dr. Reno**) whose ongoing care must NOT be compromised, vs the physician involved in the initial failure/negligence (**Dr. Rugara**).
-     - Inform the user that this email is a draft for review and will require explicit confirmation before sending.
-6. EMAIL EXTRACTION, SEARCH & ATTACHMENT SUMMARIES:
-   - Extract exact details from live emails:
-     - Deakin: Extract Student ID (\`221307614\`) and Phone Numbers (\`13 DEAKIN / 13 3325\` or \`+61 3 9244 6333\`).
-     - Medibank: Summarize recent communications (welcome, direct debit, policy inquiries) clearly.
-     - Court Coordinator / Wangaratta: Provide a tailored draft ready for review.
-     - Shine Lawyers Case & Attachment Summary:
-       - When asked to read latest emails from Shine or summarize the case from attachments:
-         - Summarize the attached correspondence (*Letter to James Jones dated 10 August 2026*):
-           - **Claim Type**: Medical negligence investigation into delayed diagnosis and treatment of cervical spinal cord compression (leading to anterior and posterior cervical spine surgery on 24 June 2026 at Royal Melbourne Hospital).
-           - **Practitioners & Facilities Investigated**: Dr. Reno Riandito (GP), Prof. Greg Cunningham (Neurosurgeon), Mr. James Churchill (Orthopaedic Surgeon), Royal Melbourne Hospital, Northeast Health Wangaratta Hospital, Wangaratta Private Hospital, Gateway Health Wangaratta.
-           - **Statute of Limitations**: Discoverability date is January 2026; formal court proceedings must be filed by January 2029 (3-year statutory limit).
-           - **Current Status & Next Steps**: Medical records gathering from all providers (~3 months), followed by independent GP and spinal surgeon expert liability and Significant Injury threshold reviews under the *Wrongs Act 1958*.
-7. ACTIONS & WRITES:
-   - If the user asks to log pain, create tasks, notes, or calendar events, populate the \`actions\` array.
-   - Do NOT append raw bracketed text like "⚠️ Confirmation required: Click Confirm to execute these actions: [...]" to the reply. The frontend renders confirmation buttons automatically.`;
+   - Group items cleanly by day (e.g. **Tonight**, **Tomorrow**, **Friday**, **Weekend**).
+   - Clearly separate **Fixed Appointments / Calendar Events** from **Flexible Routine Tasks / To-Dos**.
+   - Proactively suggest rescheduling opportunities (e.g. matching washing with 0% rain days).
+5. "DRAFTING MODE" FOR OUTBOUND COMMUNICATIONS:
+   - If asked to draft an email or communication, switch into "Drafting Mode".
+   - Generate a highly professional, context-aware draft utilizing known variables (e.g., Aldi lower back injury timeline: 4 Feb 2016, Cervical surgery June 2026, WorkCover context).
+   - Present the email in a clean block with \`To:\`, \`Subject:\`, and \`Body:\`.
+   - Maintain an authentic voice for James Jones. 
+   - Clarify the critical distinction if relevant: current treating physician (Dr. Reno - care must not be compromised) vs negligent physician (Dr. Rugara).
+6. RECEIPTS, EXPENSES & OCR TRACKING:
+   - If the user uploads an image of a receipt, invoice, or medical bill, use your vision capabilities to perform OCR.
+   - Parse the total amount, description, and category.
+   - If it is a medical bill, note if it contributes to Medicare thresholds.
+   - Automatically trigger a \`budget_item\` action (type: 'expense') to log it in the budget tracker.
+7. EMAIL EXTRACTION, SEARCH & ATTACHMENT SUMMARIES:
+   - Extract exact details from live emails: Deakin, Medibank, Court Coordinator / Wangaratta.
+   - Shine Lawyers Case Summary from attachments MUST follow the 3-bullet max rule.
+8. INTENT TUNING & SILENT ACTIONS (NO AFFIRMATIONS):
+   - If the user gives a direct command (e.g. "save this", "log pain", "add to budget"), suppress your conversational chat response entirely (leave \`reply\` empty or extremely brief, e.g. "Prepared for confirmation.").
+   - DO NOT repeat back the instructions ("I have saved the note..."). The UI will handle the success state.
+   - If you populate the \`actions\` array, let the payload do the talking. Do NOT append raw bracketed text about clicking confirm.`;
 
   const responseSchema = {
     type: "OBJECT",
@@ -792,7 +784,7 @@ export async function executeConfirmedAction(action: ActionPreview | { type: str
 
     return {
       success: true,
-      message: `Rumble: Confirmed and saved pain log (${score}/10) successfully. Exported to medical symptom report.`,
+      message: `Pain log (${score}/10) saved.`,
       result: savedRecord,
     };
   }
@@ -802,7 +794,7 @@ export async function executeConfirmedAction(action: ActionPreview | { type: str
     const savedNote = await createNote({ content, author: author || "user" });
     return {
       success: true,
-      message: `Rumble: Confirmed and saved note: "${content}".`,
+      message: `Note saved.`,
       result: savedNote,
     };
   }
@@ -817,7 +809,7 @@ export async function executeConfirmedAction(action: ActionPreview | { type: str
     });
     return {
       success: true,
-      message: `Rumble: Confirmed and added agenda task: "${title}".`,
+      message: `Task added to agenda.`,
       result: savedTask,
     };
   }
@@ -828,7 +820,7 @@ export async function executeConfirmedAction(action: ActionPreview | { type: str
     const savedItem = await createBudgetItem({ description, amount, category, type });
     return {
       success: true,
-      message: `Rumble: Confirmed and saved budget item: "${description}" for $${amount}.`,
+      message: `Expense logged ($${amount}).`,
       result: savedItem,
     };
   }
@@ -838,7 +830,7 @@ export async function executeConfirmedAction(action: ActionPreview | { type: str
     exportReportToMarkdown(title, content);
     return {
       success: true,
-      message: `Rumble: Confirmed and saved report to agent_reports/: "${title}".`,
+      message: `Report exported to agent_reports/.`,
       result: { title },
     };
   }
@@ -850,12 +842,12 @@ export async function executeConfirmedAction(action: ActionPreview | { type: str
         const res = await executeConfirmedAction(subAction);
         results.push(res.message);
       } catch (err: any) {
-        results.push(`Failed to execute ${subAction.type}: ${err.message}`);
+        results.push(`Failed: ${err.message}`);
       }
     }
     return {
       success: true,
-      message: `Rumble: Executed actions:\n${results.map(r => `• ${r.replace('Rumble: ', '')}`).join('\n')}`,
+      message: `Actions executed successfully.`,
       result: results,
     };
   }
