@@ -613,22 +613,28 @@ export async function updateAgendaItemStatus(
     let inferredTitle = fallbackData?.title || 'Daily Protocol';
     let inferredType: any = fallbackData?.item_type || 'task';
 
-    if (id.startsWith('yoga')) {
+    if (id.startsWith('yoga') || id.includes('yoga')) {
       inferredTitle = 'Daily Adaptive Yoga Routine';
       inferredType = 'yoga';
-    } else if (id.startsWith('meditation_night')) {
+    } else if (id.startsWith('meditation_night') || id.includes('2100-meditation')) {
       inferredTitle = 'Night Meditation Protocol';
       inferredType = 'meditation';
-    } else if (id.startsWith('meditation_midnight')) {
+    } else if (id.startsWith('meditation_midnight') || id.includes('2400-meditation')) {
       inferredTitle = 'Sleep & Relaxation Meditation';
       inferredType = 'meditation';
-    } else if (id.startsWith('learning')) {
+    } else if (id.startsWith('learning') || id.includes('learn')) {
       inferredTitle = 'Continuous Learning: Recovery & Neuroplasticity';
       inferredType = 'learning';
-    } else if (id.startsWith('pain_log_reminder')) {
+    } else if (id.startsWith('pain_log_reminder') || id.includes('pain')) {
       inferredTitle = 'Log Pain Level';
       inferredType = 'task';
-    } else if (id.startsWith('task_deakin')) {
+    } else if (id.startsWith('hydro') || id.includes('hydro')) {
+      inferredTitle = 'Hydrotherapy Pool Rehabilitation';
+      inferredType = 'task';
+    } else if (id.startsWith('wash') || id.includes('wash')) {
+      inferredTitle = 'Weather-Optimized Washing';
+      inferredType = 'task';
+    } else if (id.startsWith('task_deakin') || id.includes('deakin')) {
       inferredTitle = 'Set up Deakin password & MFA';
       inferredType = 'task';
     }

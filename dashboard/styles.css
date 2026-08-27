@@ -389,6 +389,10 @@ h3 { font-size: 1.05rem; }
     filter: grayscale(1);
     transform: scale(0.98);
 }
+.protocol-card.completed .protocol-info p {
+    text-decoration: line-through;
+    color: var(--text-secondary);
+}
 .protocol-info h3 {
     color: var(--neon-blue);
     margin-bottom: 2px;

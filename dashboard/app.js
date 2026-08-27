@@ -152,6 +152,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const aiCurrentTitle = document.getElementById('aiCurrentTitle');
     const techProgressBadge = document.getElementById('techProgressBadge');
     const techCurrentTitle = document.getElementById('techCurrentTitle');
+    const cbtProgressBadge = document.getElementById('cbtProgressBadge');
+    const cbtCurrentTitle = document.getElementById('cbtCurrentTitle');
 
     // Encyclopedia Reader Modal Elements
     const learnModal = document.getElementById('learnModal');
@@ -426,33 +428,33 @@ document.addEventListener('DOMContentLoaded', () => {
         if (window.btnTomorrowAgenda) window.btnTomorrowAgenda.style.display = 'flex';
 
         const dailyItems = (data.daily || []).filter(item => 
-            item.status !== 'completed' && !optimisticRemovedTasks.has(item.id)
+            item.status !== 'dismissed' && !optimisticRemovedTasks.has(item.id)
         );
         const countBadge = document.getElementById('agendaCount');
-        if (countBadge) countBadge.textContent = `${dailyItems.length} Items`;
+        const remainingCount = dailyItems.filter(i => i.status !== 'completed').length;
+        if (countBadge) countBadge.textContent = `${remainingCount} Remaining`;
         
         document.querySelectorAll('.protocol-card:not(#protocol-learn):not(#executive-briefing):not(.agenda-skeleton-card):not(.agenda-error-card)').forEach(c => c.remove());
 
         if (dailyItems.length > 0) {
             dailyItems.forEach(item => {
                 if (item.item_type === 'learning' || item.id === 'protocol-learn') return;
-                const isDismissed = item.status === 'dismissed';
                 const isCompleted = item.status === 'completed';
 
                 const card = document.createElement('div');
-                card.className = `protocol-card glass-panel${isCompleted ? ' completed' : ''}${isDismissed ? ' dismissed' : ''}`;
+                card.className = `protocol-card glass-panel${isCompleted ? ' completed' : ''}`;
                 card.id = `protocol-${item.id}`;
                 
-                if (isDismissed) {
-                    card.style.opacity = '0.5';
+                if (isCompleted) {
                     card.innerHTML = `
                         <div class="protocol-info">
                             <h3>${item.time}</h3>
-                            <p style="text-decoration: line-through;">${item.title}</p>
-                            <small class="form-hint">Dismissed</small>
+                            <p style="text-decoration: line-through; opacity: 0.65;">${item.title}</p>
+                            <small class="form-hint" style="color: var(--neon-green);">Completed</small>
                         </div>
                         <div class="protocol-actions">
-                            <button class="btn btn-outline btn-sm btn-reinstate" data-id="${item.id}" data-type="${item.item_type || ''}">Reinstate</button>
+                            <span class="badge neon-green" style="margin-right: 4px;">Done</span>
+                            <button class="btn btn-outline btn-sm btn-reinstate" data-id="${item.id}" data-type="${item.item_type || ''}" title="Reopen item">Undo</button>
                         </div>
                     `;
                 } else {
@@ -477,6 +479,11 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const cards = Array.from(document.getElementById("agendaStream").querySelectorAll('.protocol-card:not(.agenda-skeleton-card):not(.agenda-error-card)'));
         cards.sort((a, b) => {
+            const isCompletedA = a.classList.contains('completed');
+            const isCompletedB = b.classList.contains('completed');
+            if (isCompletedA !== isCompletedB) {
+                return isCompletedA ? 1 : -1;
+            }
             const h3A = a.querySelector('h3');
             const h3B = b.querySelector('h3');
             const timeStrA = h3A ? h3A.innerText.trim() : '';
@@ -1063,6 +1070,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else if (enc.id === 'tech') {
                     if (techProgressBadge) techProgressBadge.innerText = badgeText;
                     if (techCurrentTitle) techCurrentTitle.innerText = titleText;
+                } else if (enc.id === 'cbt') {
+                    if (cbtProgressBadge) cbtProgressBadge.innerText = badgeText;
+                    if (cbtCurrentTitle) cbtCurrentTitle.innerText = titleText;
                 }
             });
         } catch (e) {
@@ -1421,14 +1431,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const isConfirmation = explicitAction || (pendingChatAction && /^(?:yes|confirm|confirmed|save|commit|proceed|do it|add it)\b/i.test(msg));
         const actionToCommit = explicitAction || (isConfirmation ? pendingChatAction : null);
 
-        const payload = {
-            message: msg || 'Please analyze this attached photo/document and extract relevant appointments, instructions, or notes.',
-            proposal_context: currentProposalText,
-            ...(attached ? { attachment: attached } : {}),
-            ...(actionToCommit ? { confirm_action: actionToCommit } : {})
-        };
-
         try {
+            const payload = {
+                message: msg || 'Please analyze this attached photo/document and extract relevant appointments, instructions, or notes.',
+                proposal_context: currentProposalText,
+                ...(attached ? { attachment: attached } : {}),
+                ...(actionToCommit ? { confirm_action: actionToCommit } : {})
+            };
+
             const response = await fetch(API_RUMBLE_CHAT, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -1445,9 +1455,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 const actionsRow = document.createElement('div');
                 actionsRow.style.cssText = 'margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;';
                 
+                let confirmLabel = 'Confirm';
+                const hasSendEmail = data.preview.type === 'send_email' || (data.preview.data?.actions && data.preview.data.actions.some(a => a.type === 'send_email'));
+                if (hasSendEmail) {
+                    confirmLabel = 'Confirm & Send Email';
+                } else if (data.preview.type === 'pain_log') {
+                    confirmLabel = 'Confirm Pain Log';
+                }
+
                 const btnConfirm = document.createElement('button');
                 btnConfirm.className = 'btn btn-neon-green btn-sm';
-                btnConfirm.innerText = 'Confirm';
+                btnConfirm.innerText = confirmLabel;
                 btnConfirm.onclick = () => {
                     actionsRow.remove();
                     sendRumbleChatMessage('Confirm', data.preview);
@@ -2518,11 +2536,39 @@ document.addEventListener('DOMContentLoaded', () => {
             doneBtn.addEventListener('click', async () => {
                 try {
                     const title = card.querySelector('.protocol-info p')?.innerText || id;
-                    optimisticRemovedTasks.add(id);
-                    card.style.transition = 'all 0.3s ease';
-                    card.style.opacity = '0';
-                    card.style.transform = 'translateY(-10px)';
-                    setTimeout(() => card.remove(), 300);
+                    
+                    // Mark as completed immediately in the UI
+                    card.classList.add('completed');
+                    const textP = card.querySelector('.protocol-info p');
+                    if (textP) {
+                        textP.style.textDecoration = 'line-through';
+                        textP.style.opacity = '0.65';
+                    }
+                    const actionsDiv = card.querySelector('.protocol-actions');
+                    if (actionsDiv) {
+                        actionsDiv.innerHTML = `
+                            <span class="badge neon-green" style="margin-right: 4px;">Done</span>
+                            <button class="btn btn-outline btn-sm btn-reinstate" data-id="${id}" data-type="${type || ''}" title="Reopen item">Undo</button>
+                        `;
+                        const undoBtn = actionsDiv.querySelector('.btn-reinstate');
+                        if (undoBtn) {
+                            undoBtn.addEventListener('click', () => {
+                                if (id) {
+                                    fetch(API_AGENDA, {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ id, action: 'update_status', status: 'pending' })
+                                    }).then(() => loadAgenda()).catch(() => {});
+                                }
+                            });
+                        }
+                    }
+
+                    // Move card to the bottom of agenda stream
+                    const stream = document.getElementById("agendaStream");
+                    if (stream) {
+                        stream.appendChild(card);
+                    }
                     showToast(`Completed: ${title}`, 'success');
 
                     if (id) {
@@ -2582,14 +2628,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (dismissConfirmModal) {
                     dismissConfirmModal.classList.remove('hidden');
                 } else {
-                    if (id) {
-                        fetch(API_AGENDA, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ id, action: 'update_status', status: 'dismissed', title, item_type: type || 'task' })
-                        }).then(() => { loadAgenda(); }).catch(() => {});
-                    } else {
+                    if (confirm(`Are you sure you want to dismiss "${title || 'this item'}"?`)) {
+                        optimisticRemovedTasks.add(id);
                         card.remove();
+                        if (id) {
+                            fetch(API_AGENDA, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ id, action: 'update_status', status: 'dismissed', title, item_type: type || 'task' })
+                            }).then(() => { loadAgenda(); }).catch(() => {});
+                        }
                     }
                 }
             });

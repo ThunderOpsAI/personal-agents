@@ -542,3 +542,97 @@ export async function fetchLiveGmailAttachment(
   }
 }
 
+/**
+ * Send an email using live Gmail API.
+ */
+export async function sendLiveGmailMessage(options: {
+  to: string;
+  subject: string;
+  body: string;
+  inReplyTo?: string;
+  threadId?: string;
+}): Promise<{
+  status: "success" | "auth_required" | "error";
+  messageId?: string;
+  threadId?: string;
+  authUrl?: string;
+  message?: string;
+}> {
+  const auth = await getGoogleAccessToken();
+  if (!auth.authenticated || !auth.accessToken) {
+    return {
+      status: "auth_required",
+      authUrl: auth.authUrl || getGoogleAuthUrl(),
+      message: auth.error || "Gmail authorization required to send emails",
+    };
+  }
+
+  try {
+    const utf8Subject = `=?utf-8?B?${Buffer.from(options.subject).toString("base64")}?=`;
+    const messageParts = [
+      `To: ${options.to}`,
+      `Subject: ${utf8Subject}`,
+      "MIME-Version: 1.0",
+      "Content-Type: text/plain; charset=utf-8",
+      "Content-Transfer-Encoding: 7bit",
+    ];
+
+    if (options.inReplyTo) {
+      messageParts.push(`In-Reply-To: ${options.inReplyTo}`);
+      messageParts.push(`References: ${options.inReplyTo}`);
+    }
+
+    messageParts.push("");
+    messageParts.push(options.body);
+
+    const message = messageParts.join("\r\n");
+    const encodedMessage = Buffer.from(message)
+      .toString("base64")
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=+$/, "");
+
+    const payload: any = { raw: encodedMessage };
+    if (options.threadId) {
+      payload.threadId = options.threadId;
+    }
+
+    const res = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${auth.accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (res.status === 401 || res.status === 403) {
+      return {
+        status: "auth_required",
+        authUrl: getGoogleAuthUrl(),
+        message: "Gmail send access token expired or missing scope",
+      };
+    }
+
+    if (!res.ok) {
+      const errJson = await res.json().catch(() => ({}));
+      return {
+        status: "error",
+        message: errJson.error?.message || `Gmail API send error: ${res.statusText}`,
+      };
+    }
+
+    const data = await res.json();
+    return {
+      status: "success",
+      messageId: data.id,
+      threadId: data.threadId,
+    };
+  } catch (err: any) {
+    return {
+      status: "error",
+      message: err.message || "Failed to send email via Gmail API",
+    };
+  }
+}
+

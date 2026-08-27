@@ -599,12 +599,12 @@ ${weatherText}
    - Group items cleanly by day (e.g. **Tonight**, **Tomorrow**, **Friday**, **Weekend**).
    - Clearly separate **Fixed Appointments / Calendar Events** from **Flexible Routine Tasks / To-Dos**.
    - Proactively suggest rescheduling opportunities (e.g. matching washing with 0% rain days).
-5. "DRAFTING MODE" FOR OUTBOUND COMMUNICATIONS:
-   - If asked to draft an email or communication, switch into "Drafting Mode".
+5. "DRAFTING MODE" & OUTBOUND EMAIL SENDS:
+   - If asked to draft an email or send an email, switch into "Drafting Mode".
    - Generate a highly professional, context-aware draft utilizing known variables (e.g., Aldi lower back injury timeline: 4 Feb 2016, Cervical surgery June 2026, WorkCover context).
-   - Present the email in a clean block with \`To:\`, \`Subject:\`, and \`Body:\`.
-   - Maintain an authentic voice for James Jones. 
-   - Clarify the critical distinction if relevant: current treating physician (Dr. Reno - care must not be compromised) vs negligent physician (Dr. Rugara).
+   - ALWAYS output the full email draft directly in the \`reply\` markdown, formatted clearly with \`**To:**\`, \`**Subject:**\`, and \`**Body:**\` in a clean quote or code block so the user can read the complete draft.
+   - Maintain an authentic voice for James Jones.
+   - Whenever drafting an email or preparing to send, ALWAYS attach a \`send_email\` action with \`email_to\`, \`email_subject\`, and \`email_body\` so the user can click 'Confirm' to dispatch it.
 6. RECEIPTS, EXPENSES & OCR TRACKING:
    - If the user uploads an image of a receipt, invoice, or medical bill, use your vision capabilities to perform OCR.
    - Parse the total amount, description, and category.
@@ -613,10 +613,8 @@ ${weatherText}
 7. EMAIL EXTRACTION, SEARCH & ATTACHMENT SUMMARIES:
    - Extract exact details from live emails: Deakin, Medibank, Court Coordinator / Wangaratta.
    - Shine Lawyers Case Summary from attachments MUST follow the 3-bullet max rule.
-8. INTENT TUNING & SILENT ACTIONS (NO AFFIRMATIONS):
-   - If the user gives a direct command (e.g. "save this", "log pain", "add to budget"), suppress your conversational chat response entirely (leave \`reply\` empty or extremely brief, e.g. "Prepared for confirmation.").
-   - DO NOT repeat back the instructions ("I have saved the note..."). The UI will handle the success state.
-   - If you populate the \`actions\` array, let the payload do the talking. Do NOT append raw bracketed text about clicking confirm.`;
+8. INTENT TUNING:
+   - If the user gives a direct write command (e.g. "log pain", "add to budget"), keep conversational chatter concise, but for email drafts ALWAYS include the full draft in the reply text.`;
 
   const responseSchema = {
     type: "OBJECT",
@@ -624,16 +622,20 @@ ${weatherText}
       reply: { type: "STRING", description: "The conversational response to the user." },
       actions: {
         type: "ARRAY",
-        description: "A list of actions to perform (e.g., writes). Leave empty if just answering a question or providing drafts.",
+        description: "A list of actions to perform (e.g., writes). Leave empty if just answering a question.",
         items: {
           type: "OBJECT",
           properties: {
-            type: { type: "STRING", description: "One of: 'task', 'pain_log', 'note', 'calendar_event', 'budget_item', 'agent_report'" },
+            type: { type: "STRING", description: "One of: 'task', 'pain_log', 'note', 'calendar_event', 'budget_item', 'agent_report', 'send_email'" },
             task_title: { type: "STRING" },
             task_scheduled_time: { type: "STRING", description: "Must be a valid ISO 8601 string in Australia/Melbourne timezone" },
             calendar_summary: { type: "STRING" },
             calendar_start_datetime: { type: "STRING", description: "Must be a valid ISO 8601 string in Australia/Melbourne timezone" },
             calendar_end_datetime: { type: "STRING", description: "Must be a valid ISO 8601 string in Australia/Melbourne timezone" },
+            email_to: { type: "STRING" },
+            email_subject: { type: "STRING" },
+            email_body: { type: "STRING" },
+            email_thread_id: { type: "STRING" },
             pain_score: { type: "INTEGER" },
             pain_locations: { type: "ARRAY", items: { type: "OBJECT", properties: { area: { type: "STRING" }, percentage: { type: "INTEGER" } } } },
             pain_mood: { type: "STRING" },
@@ -697,6 +699,7 @@ ${weatherText}
         if (a.type === "note") data = { content: a.note_content, author: 'rumble' };
         if (a.type === "agent_report") data = { title: a.agent_report_title, content: a.agent_report_content };
         if (a.type === "budget_item") data = { description: a.budget_description, amount: a.budget_amount, category: a.budget_category, type: a.budget_type };
+        if (a.type === "send_email") data = { to: a.email_to, subject: a.email_subject, body: a.email_body, threadId: a.email_thread_id };
         return { type: a.type, data };
       });
 
@@ -784,7 +787,7 @@ export async function executeConfirmedAction(action: ActionPreview | { type: str
 
     return {
       success: true,
-      message: `Pain log (${score}/10) saved.`,
+      message: `Confirmed and saved pain log (${score}/10).`,
       result: savedRecord,
     };
   }
@@ -835,6 +838,38 @@ export async function executeConfirmedAction(action: ActionPreview | { type: str
     };
   }
 
+  if (action.type === "send_email") {
+    const { to, subject, body, threadId } = action.data;
+    try {
+      const { sendLiveGmailMessage } = await import('../google-auth');
+      const res = await sendLiveGmailMessage({ to, subject, body, threadId });
+      if (res.status === "success") {
+        return {
+          success: true,
+          message: `Rumble: Confirmed and sent email to ${to} with subject "${subject}". (Message ID: ${res.messageId})`,
+          result: res,
+        };
+      } else if (res.status === "auth_required") {
+        return {
+          success: false,
+          message: `Gmail authorization required to send emails. Please connect your Google account: ${res.authUrl || "/api/v1/auth/google"}`,
+          result: res,
+        };
+      } else {
+        return {
+          success: false,
+          message: `Failed to send email: ${res.message || "Unknown error"}`,
+          result: res,
+        };
+      }
+    } catch (err: any) {
+      return {
+        success: false,
+        message: `Failed to send email: ${err.message}`,
+      };
+    }
+  }
+
   if (action.type === "multi_action") {
     const results = [];
     for (const subAction of action.data.actions) {
@@ -847,7 +882,7 @@ export async function executeConfirmedAction(action: ActionPreview | { type: str
     }
     return {
       success: true,
-      message: `Actions executed successfully.`,
+      message: `Rumble: Executed actions: Actions executed successfully.`,
       result: results,
     };
   }
