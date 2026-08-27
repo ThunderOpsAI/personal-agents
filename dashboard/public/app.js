@@ -336,7 +336,14 @@ document.addEventListener('DOMContentLoaded', () => {
             showAgendaSkeleton();
         }
         try {
-            const res = await fetch(API_AGENDA);
+            const res = await fetch(API_AGENDA, { 
+                cache: 'no-store',
+                headers: {
+                    'Cache-Control': 'no-cache, no-store, must-revalidate',
+                    'Pragma': 'no-cache',
+                    'Expires': '0'
+                }
+            });
             removeAgendaSkeletons();
             if (res.ok) {
                 const data = await res.json();
@@ -392,6 +399,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    const optimisticRemovedTasks = new Set();
+
     function renderTodayAgenda(data) {
         const today = new Date();
         const dayStr = today.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' });
@@ -416,7 +425,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (window.btnYesterdayAgenda) window.btnYesterdayAgenda.style.display = 'flex';
         if (window.btnTomorrowAgenda) window.btnTomorrowAgenda.style.display = 'flex';
 
-        const dailyItems = (data.daily || []).filter(item => item.status !== 'completed');
+        const dailyItems = (data.daily || []).filter(item => 
+            item.status !== 'completed' && !optimisticRemovedTasks.has(item.id)
+        );
         const countBadge = document.getElementById('agendaCount');
         if (countBadge) countBadge.textContent = `${dailyItems.length} Items`;
         
@@ -899,6 +910,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btnConfirmDismiss.addEventListener('click', async () => {
             if (itemToDismiss) {
                 try {
+                    optimisticRemovedTasks.add(itemToDismiss);
                     await fetch(API_AGENDA, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -2506,6 +2518,7 @@ document.addEventListener('DOMContentLoaded', () => {
             doneBtn.addEventListener('click', async () => {
                 try {
                     const title = card.querySelector('.protocol-info p')?.innerText || id;
+                    optimisticRemovedTasks.add(id);
                     card.style.transition = 'all 0.3s ease';
                     card.style.opacity = '0';
                     card.style.transform = 'translateY(-10px)';

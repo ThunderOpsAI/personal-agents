@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from "next/server";
 import { createAgendaItem, getAgendaItems, getDbStatus, updateAgendaItemStatus, rescheduleAgendaItem } from "../../../../lib/db";
 import { AgendaItemStatus } from "../../../../lib/schema";
