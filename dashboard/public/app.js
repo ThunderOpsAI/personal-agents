@@ -98,6 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const API_AGENDA = `${API_BASE}/api/v1/agenda`;
     const API_HEALTHZ = `${API_BASE}/healthz`;
     const API_BUDGET = `${API_BASE}/api/v1/budget`;
+    const API_CALENDAR_EVENTS = `${API_BASE}/api/v1/calendar/events`;
     const API_BUDGET_SUMMARY = `${API_BASE}/api/v1/budget/summary`;
     const API_BUDGET_REPORTS = `${API_BASE}/api/v1/budget/reports`;
     const API_BUDGET_RESET = `${API_BASE}/api/v1/budget/reset`;
