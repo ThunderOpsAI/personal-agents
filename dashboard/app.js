@@ -428,10 +428,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (window.btnTomorrowAgenda) window.btnTomorrowAgenda.style.display = 'flex';
 
         const dailyItems = (data.daily || []).filter(item => 
-            item.status !== 'dismissed' && !optimisticRemovedTasks.has(item.id)
+            !optimisticRemovedTasks.has(item.id)
         );
         const countBadge = document.getElementById('agendaCount');
-        const remainingCount = dailyItems.filter(i => i.status !== 'completed').length;
+        const remainingCount = dailyItems.filter(i => i.status === 'pending').length;
         if (countBadge) countBadge.textContent = `${remainingCount} Remaining`;
         
         document.querySelectorAll('.protocol-card:not(#protocol-learn):not(#executive-briefing):not(.agenda-skeleton-card):not(.agenda-error-card)').forEach(c => c.remove());
@@ -440,16 +440,17 @@ document.addEventListener('DOMContentLoaded', () => {
             dailyItems.forEach(item => {
                 if (item.item_type === 'learning' || item.id === 'protocol-learn') return;
                 const isCompleted = item.status === 'completed';
+                const isDismissed = item.status === 'dismissed';
 
                 const card = document.createElement('div');
-                card.className = `protocol-card glass-panel${isCompleted ? ' completed' : ''}`;
+                card.className = `protocol-card glass-panel${isCompleted ? ' completed' : ''}${isDismissed ? ' dismissed' : ''}`;
                 card.id = `protocol-${item.id}`;
                 
                 if (isCompleted) {
                     card.innerHTML = `
                         <div class="protocol-info">
                             <h3>${item.time}</h3>
-                            <p style="text-decoration: line-through; opacity: 0.65;">${item.title}</p>
+                            <p style="text-decoration: line-through; opacity: 0.65;">${escapeHtml(item.title)}</p>
                             <small class="form-hint" style="color: var(--neon-green);">Completed</small>
                         </div>
                         <div class="protocol-actions">
@@ -457,11 +458,24 @@ document.addEventListener('DOMContentLoaded', () => {
                             <button class="btn btn-outline btn-sm btn-reinstate" data-id="${item.id}" data-type="${item.item_type || ''}" title="Reopen item">Undo</button>
                         </div>
                     `;
+                } else if (isDismissed) {
+                    card.style.opacity = '0.5';
+                    card.innerHTML = `
+                        <div class="protocol-info">
+                            <h3>${item.time}</h3>
+                            <p style="text-decoration: line-through; opacity: 0.5;">${escapeHtml(item.title)}</p>
+                            <small class="form-hint" style="color: var(--text-muted);">Dismissed</small>
+                        </div>
+                        <div class="protocol-actions">
+                            <span class="badge" style="background: rgba(255,255,255,0.1); color: var(--text-muted); margin-right: 4px;">Dismissed</span>
+                            <button class="btn btn-outline btn-sm btn-reinstate" data-id="${item.id}" data-type="${item.item_type || ''}" title="Reinstate item">Reinstate</button>
+                        </div>
+                    `;
                 } else {
                     card.innerHTML = `
                         <div class="protocol-info">
                             <h3>${item.time}</h3>
-                            <p>${item.title}</p>
+                            <p>${escapeHtml(item.title)}</p>
                             ${item.choices ? `<small class="form-hint">Choices: ${item.choices.join(' · ')}</small>` : ''}
                         </div>
                         <div class="protocol-actions">
@@ -479,10 +493,10 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const cards = Array.from(document.getElementById("agendaStream").querySelectorAll('.protocol-card:not(.agenda-skeleton-card):not(.agenda-error-card)'));
         cards.sort((a, b) => {
-            const isCompletedA = a.classList.contains('completed');
-            const isCompletedB = b.classList.contains('completed');
-            if (isCompletedA !== isCompletedB) {
-                return isCompletedA ? 1 : -1;
+            const isDoneA = a.classList.contains('completed') || a.classList.contains('dismissed');
+            const isDoneB = b.classList.contains('completed') || b.classList.contains('dismissed');
+            if (isDoneA !== isDoneB) {
+                return isDoneA ? 1 : -1;
             }
             const h3A = a.querySelector('h3');
             const h3B = b.querySelector('h3');
@@ -915,29 +929,46 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (btnConfirmDismiss) {
         btnConfirmDismiss.addEventListener('click', async () => {
+            if (dismissConfirmModal) dismissConfirmModal.classList.add('hidden');
             if (itemToDismiss) {
                 try {
-                    optimisticRemovedTasks.add(itemToDismiss);
+                    const currentCard = cardToDismiss || document.getElementById(`protocol-${itemToDismiss}`);
+                    if (currentCard) {
+                        currentCard.classList.add('dismissed');
+                        const textP = currentCard.querySelector('.protocol-info p');
+                        if (textP) {
+                            textP.style.textDecoration = 'line-through';
+                            textP.style.opacity = '0.5';
+                        }
+                        const actionsDiv = currentCard.querySelector('.protocol-actions');
+                        if (actionsDiv) {
+                            actionsDiv.innerHTML = `
+                                <span class="badge" style="background: rgba(255,255,255,0.1); color: var(--text-muted); margin-right: 4px;">Dismissed</span>
+                                <button class="btn btn-outline btn-sm btn-reinstate" data-id="${itemToDismiss}" data-type="${activeDismissItemType || ''}">Reinstate</button>
+                            `;
+                            actionsDiv.querySelector('.btn-reinstate')?.addEventListener('click', () => {
+                                fetch(API_AGENDA, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ id: itemToDismiss, action: 'update_status', status: 'pending' })
+                                }).then(() => loadAgenda()).catch(() => {});
+                            });
+                        }
+                        const stream = document.getElementById("agendaStream");
+                        if (stream) stream.appendChild(currentCard);
+                    }
+                    showToast('Item dismissed from agenda', 'info');
+
                     await fetch(API_AGENDA, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ id: itemToDismiss, action: 'update_status', status: 'dismissed' })
                     });
-                    if (cardToDismiss) {
-                        cardToDismiss.style.transition = 'all 0.25s ease';
-                        cardToDismiss.style.opacity = '0';
-                        setTimeout(() => cardToDismiss.remove(), 250);
-                    }
-                    if (dismissConfirmModal) dismissConfirmModal.classList.add('hidden');
-                    showToast('Item dismissed from agenda', 'info');
                     loadAgenda();
                 } catch (err) {
                     console.error('Failed to dismiss:', err);
                     showToast('Failed to dismiss item');
                 }
-            } else if (cardToDismiss) {
-                cardToDismiss.remove();
-                if (dismissConfirmModal) dismissConfirmModal.classList.add('hidden');
             }
         });
     }
@@ -2615,27 +2646,51 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (dismissBtn) {
             dismissBtn.addEventListener('click', () => {
-                const title = card.querySelector('.protocol-info p')?.innerText || '';
+                const rawTitle = card.querySelector('.protocol-info p')?.innerText || '';
+                const shortTitle = rawTitle.length > 80 ? rawTitle.substring(0, 80) + '...' : rawTitle;
                 itemToDismiss = id;
                 cardToDismiss = card;
-                activeDismissItemTitle = title;
+                activeDismissItemTitle = rawTitle;
                 activeDismissItemType = type || 'task';
                 if (dismissConfirmItemTitle) {
-                    dismissConfirmItemTitle.textContent = title
-                        ? `Are you sure you want to dismiss "${title}" from today's agenda?`
+                    dismissConfirmItemTitle.textContent = shortTitle
+                        ? `Are you sure you want to dismiss "${shortTitle}" from today's agenda?`
                         : 'Are you sure you want to dismiss this item from today\'s agenda?';
                 }
                 if (dismissConfirmModal) {
                     dismissConfirmModal.classList.remove('hidden');
                 } else {
-                    if (confirm(`Are you sure you want to dismiss "${title || 'this item'}"?`)) {
-                        optimisticRemovedTasks.add(id);
-                        card.remove();
+                    if (confirm(`Are you sure you want to dismiss "${shortTitle || 'this item'}"?`)) {
+                        card.classList.add('dismissed');
+                        const textP = card.querySelector('.protocol-info p');
+                        if (textP) {
+                            textP.style.textDecoration = 'line-through';
+                            textP.style.opacity = '0.5';
+                        }
+                        const actionsDiv = card.querySelector('.protocol-actions');
+                        if (actionsDiv) {
+                            actionsDiv.innerHTML = `
+                                <span class="badge" style="background: rgba(255,255,255,0.1); color: var(--text-muted); margin-right: 4px;">Dismissed</span>
+                                <button class="btn btn-outline btn-sm btn-reinstate" data-id="${id}" data-type="${type || ''}" title="Reinstate item">Reinstate</button>
+                            `;
+                            actionsDiv.querySelector('.btn-reinstate')?.addEventListener('click', () => {
+                                if (id) {
+                                    fetch(API_AGENDA, {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ id, action: 'update_status', status: 'pending' })
+                                    }).then(() => loadAgenda()).catch(() => {});
+                                }
+                            });
+                        }
+                        const stream = document.getElementById("agendaStream");
+                        if (stream) stream.appendChild(card);
+                        
                         if (id) {
                             fetch(API_AGENDA, {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ id, action: 'update_status', status: 'dismissed', title, item_type: type || 'task' })
+                                body: JSON.stringify({ id, action: 'update_status', status: 'dismissed', title: rawTitle, item_type: type || 'task' })
                             }).then(() => { loadAgenda(); }).catch(() => {});
                         }
                     }

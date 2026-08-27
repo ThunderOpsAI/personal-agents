@@ -52,14 +52,34 @@ export async function GET(request: Request) {
       authUrl = getGoogleAuthUrl();
     }
 
-    const standingProcessed = ensureStandingTasks(ensureDailyStandingProtocols(rawItems, now), now);
-    standingProcessed.sort((a, b) => {
+    let targetDate = now;
+    if (view === "tomorrow") {
+      targetDate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    } else if (view === "yesterday") {
+      targetDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    }
+    const targetDatePrefix = targetDate.toLocaleDateString("en-CA", { timeZone: "Australia/Melbourne" });
+
+    const standingProcessed = ensureStandingTasks(ensureDailyStandingProtocols(rawItems, targetDate), targetDate);
+    
+    // Filter items to strictly include those scheduled for the target date
+    const dailyItemsForDate = standingProcessed.filter((item) => {
+      try {
+        const itemDate = new Date(item.scheduled_time);
+        const itemDatePrefix = itemDate.toLocaleDateString("en-CA", { timeZone: "Australia/Melbourne" });
+        return itemDatePrefix === targetDatePrefix;
+      } catch {
+        return false;
+      }
+    });
+
+    dailyItemsForDate.sort((a, b) => {
       const timeA = new Date(a.scheduled_time).getTime();
       const timeB = new Date(b.scheduled_time).getTime();
       return (isNaN(timeA) ? 0 : timeA) - (isNaN(timeB) ? 0 : timeB);
     });
 
-    const daily = standingProcessed.map((item) => {
+    const daily = dailyItemsForDate.map((item) => {
       const d = new Date(item.scheduled_time);
       const timeStr = isNaN(d.getTime())
         ? "09:00 AM"
@@ -73,6 +93,7 @@ export async function GET(request: Request) {
         time: timeStr,
         item_type: item.item_type,
         status: item.status,
+        scheduled_time: item.scheduled_time,
         choices,
       };
     });
