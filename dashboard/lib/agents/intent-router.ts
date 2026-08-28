@@ -303,7 +303,7 @@ export function parseTaskDirective(message: string): { title: string; scheduled_
 /**
  * Call Gemini model with live grounding data and optional multimodal attachments.
  */
-async function callGemini(
+export async function callGemini(
   systemPrompt: string,
   userMessage: string,
   responseSchema?: any,

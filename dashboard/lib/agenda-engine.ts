@@ -268,16 +268,22 @@ export function ensureDailyStandingProtocols(
       time: `${datePrefix}T07:30:00+10:00`,
     },
     {
-      id: `yoga_${datePrefix}`,
+      id: `yoga_am_${datePrefix}`,
       item_type: 'yoga' as const,
-      title: 'Daily Adaptive Yoga Routine',
+      title: 'Morning Adaptive Yoga Routine',
       time: `${datePrefix}T09:00:00+10:00`,
+    },
+    {
+      id: `yoga_pm_${datePrefix}`,
+      item_type: 'yoga' as const,
+      title: 'Evening Adaptive Yoga Routine',
+      time: `${datePrefix}T21:00:00+10:00`,
     },
     {
       id: `meditation_night_${datePrefix}`,
       item_type: 'meditation' as const,
       title: 'Night Meditation Protocol',
-      time: `${datePrefix}T21:00:00+10:00`,
+      time: `${datePrefix}T21:30:00+10:00`,
     },
     {
       id: `meditation_midnight_${datePrefix}`,
@@ -297,10 +303,7 @@ export function ensureDailyStandingProtocols(
 
   for (const protocol of requiredProtocols) {
     const exists = currentItems.some(
-      (item) =>
-        item.id === protocol.id ||
-        (item.item_type === protocol.item_type &&
-          item.scheduled_time.startsWith(datePrefix))
+      (item) => item.id === protocol.id
     );
 
     if (!exists) {

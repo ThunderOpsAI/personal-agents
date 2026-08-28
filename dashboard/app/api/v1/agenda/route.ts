@@ -231,6 +231,23 @@ export async function GET(request: Request) {
     monthly.forEach(m => { if (!monthlyMap.has(m.id)) monthlyMap.set(m.id, m); });
     const uniqueMonthly = Array.from(monthlyMap.values());
 
+    // Trigger Weekly Insight Aggregation (Cron-less)
+    const isSunday = now.getDay() === 0;
+    if (isSunday) {
+      const startOfWeek = new Date(now);
+      startOfWeek.setDate(now.getDate() - now.getDay());
+      const weekPrefix = startOfWeek.toISOString().split('T')[0];
+      const weeklyInsightId = `weekly_insight_${weekPrefix}`;
+      
+      const hasWeeklyInsight = rawItems.some(i => i.id === weeklyInsightId);
+      if (!hasWeeklyInsight) {
+        // Fire-and-forget
+        import("../../../../../lib/agents/insight-engine").then(m => {
+          m.generateWeeklyInsights(weeklyInsightId);
+        }).catch(console.error);
+      }
+    }
+
     return NextResponse.json({
       status: "success",
       view,
@@ -303,6 +320,13 @@ export async function POST(request: Request) {
       if (!updated) {
         return NextResponse.json({ status: "error", error: "Agenda item not found" }, { status: 404 });
       }
+
+      if (status === 'completed') {
+        import("../../../../../lib/agents/insight-engine").then(m => {
+          m.evaluateForInsights('protocol', updated);
+        }).catch(console.error);
+      }
+
       return NextResponse.json({ status: "success", item: updated });
     } catch (error) {
       return NextResponse.json({ status: "error", error: "Failed to update agenda item status" }, { status: 500 });

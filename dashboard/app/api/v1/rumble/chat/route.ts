@@ -45,6 +45,11 @@ export async function POST(request: Request) {
         await createChatLog('rumble', chat.reply);
     }
 
+    // Fire and forget insight evaluation
+    import("../../../../../lib/agents/insight-engine").then(m => {
+        m.evaluateForInsights('chat', { input: input.message, reply: chat.reply, intent: chat.intent });
+    }).catch(console.error);
+
     const disclaimer = "Medical output is decision support, not diagnosis. Preserve clinician restrictions; recommend clinician review for worsening or concerning symptoms.";
     return NextResponse.json({
       status: "success",
