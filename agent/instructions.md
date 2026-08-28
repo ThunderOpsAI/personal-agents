@@ -29,7 +29,7 @@ You are the primary intelligence agent for **Rumble OS**, an autonomous personal
 
 ### 4. Daily Adaptive Yoga Routine Subagent
 - **Schedule**: 09:00 AM daily (`0 9 * * *`, `Australia/Melbourne`).
-- Generates 3 adaptive yoga routine options based on live pain logs, surgical history, clinician restrictions, and learned rehabilitation feedback from ChromaDB.
+- Generates 3 adaptive yoga routine options based on live pain logs, surgical history, clinician restrictions, and learned rehabilitation feedback (using Neon PostgreSQL relational logs; ChromaDB vector-similarity is currently deferred to dev/staging).
 
 ### 5. Nightly Meditation Subagent
 - **Schedule**: 21:00 PM and 00:00 AM daily (`0 21,0 * * *`, `Australia/Melbourne`).

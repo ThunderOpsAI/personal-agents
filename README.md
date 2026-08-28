@@ -1,51 +1,23 @@
-# Personal Agents
+# Rumble OS
 
-> Rumble OS is a proactive, self-learning personal life manager, evolved from a medical advisory system and powered by [Agno](https://github.com/agno-agi/agno).
+> Rumble OS is a proactive, self-learning personal life manager and physical recovery platform built on the Vercel Eve architecture.
 
 ## Key Features
 
 - **Automated Scraping**: Automated 6am/2pm email and calendar scraping.
 - **Universal Intent Capture UI**: Every button delegates to Rumble Chat.
-- **Adaptive Yoga Routines**: Daily 9am Yoga routines adapted to your active pain logs.
-- **Weather-optimized Washing Schedules**: Smart scheduling using an options model.
+- **Adaptive Yoga Routines**: Daily 9am Yoga routines adapted to your active pain logs (using Neon PostgreSQL).
+- **Weather-optimized Washing Schedules**: Smart scheduling using an options model (selecting exactly 2 optimal washing days per week based on live Wangaratta forecasts).
 - **Daily Learning Modules**: Curated daily learning content.
 - **`SOUL.md` Architecture**: Persistent agent memory and persona management.
 
-## Architecture
+## Architecture & Tech Stack
 
-```
-┌──────────────────────────────────────────────────────┐
-│                   CMO Orchestrator                   │
-│  (Chief Medical Officer — Lead Agent)                │
-│                                                      │
-│  System Prompt: Expert Medical Research Analyst      │
-│  Output Schema: PersonalAdvisorBrief (Pydantic v2)   │
-│                                                      │
-│  ┌────────────────────────────────────────────────┐  │
-│  │           PersonalAdvisorBrief                 │  │
-│  │  ├── primary_synthesis                        │  │
-│  │  ├── direct_recommendations[]                 │  │
-│  │  │   └── RankedRecommendation                 │  │
-│  │  │       ├── name                             │  │
-│  │  │       ├── recommendation_level (enum)      │  │
-│  │  │       ├── rationale                        │  │
-│  │  │       ├── pros[]                           │  │
-│  │  │       └── cons[]                           │  │
-│  │  ├── contraindications_and_risks[]            │  │
-│  │  │   └── ContraindicationFlag                 │  │
-│  │  │       ├── title                            │  │
-│  │  │       ├── severity (enum)                  │  │
-│  │  │       ├── description                      │  │
-│  │  │       └── affected_items[]                 │  │
-│  │  ├── questions_for_doctor[]?                  │  │
-│  │  │   └── DoctorQuestion                       │  │
-│  │  │       ├── question                         │  │
-│  │  │       ├── context                          │  │
-│  │  │       └── priority                         │  │
-│  │  └── disclaimer                               │  │
-│  └────────────────────────────────────────────────┘  │
-└──────────────────────────────────────────────────────┘
-```
+- **Framework**: Next.js App Router (TypeScript).
+- **Agent Framework**: Vercel Eve, running on Vercel's Edge Network for automatic serverless scaling.
+- **Database (Production)**: Neon PostgreSQL.
+- **Vector Database (Dev/Staging)**: ChromaDB is currently designated for local-disk dev/staging only, with vector-similarity ranking explicitly deferred as a deliberate architectural decision (relational logging in Neon is the production path for now).
+- **No Legacy Python**: The legacy FastAPI backend, Agno integrations, and `uvicorn` entrypoints have been entirely removed.
 
 ## Quick Start
 
@@ -54,60 +26,24 @@
 git clone https://github.com/ThunderOpsAI/personal-agents.git
 cd personal-agents
 
-# 2. Create a virtual environment
-python -m venv .venv
-source .venv/bin/activate
+# 2. Install dependencies (workspace root delegates to dashboard)
+npm install
+npm install --prefix dashboard
 
-# 3. Install dependencies
-pip install -r requirements.txt
-
-# 4. Configure your API key
+# 3. Configure environment variables
 cp .env.example .env
-# Edit .env and add your GEMINI_API_KEY
+# Edit .env to add your API keys and NEON_DATABASE_URL
 
-# 5a. Dry-run test (no API key needed — validates schema round-trip)
-python scripts/test_cmo_harness.py --dry-run
-
-# 5b. Live test (requires GEMINI_API_KEY in .env)
-python scripts/test_cmo_harness.py
-
-# 5c. Custom query
-python scripts/test_cmo_harness.py --query "What supplements help with sleep quality?"
+# 4. Run the development server
+npm run dev
 ```
 
-## Project Structure
+## Documentation Source of Truth
 
-```
-personal-agents/
-├── pyproject.toml              # Project metadata & dependencies
-├── requirements.txt            # Flat pip requirements
-├── .env.example                # Environment variable template
-├── .gitignore
-├── README.md
-├── src/
-│   ├── __init__.py
-│   ├── config.py               # .env loading & validation
-│   ├── agents/
-│   │   ├── __init__.py
-│   │   ├── cmo.py              # CMO agent factory (create_cmo_agent)
-│   │   └── prompts.py          # CMO system prompt definition
-│   └── schemas/
-│       ├── __init__.py
-│       └── medical.py          # PersonalAdvisorBrief & supporting models
-└── scripts/
-    └── test_cmo_harness.py     # CLI test script (--dry-run / --live)
-```
-
-## Schema Reference
-
-| Model | Purpose |
-|---|---|
-| `PersonalAdvisorBrief` | Root output — every CMO response is serialised into this |
-| `RankedRecommendation` | A single ranked intervention with pros/cons |
-| `ContraindicationFlag` | Drug/supplement/condition interaction warning |
-| `DoctorQuestion` | Appointment-prep question with context |
-| `RecommendationLevel` | Enum: Highly Recommended · Consider with Caution · Experimental |
-| `RiskSeverity` | Enum: Low · Moderate · High · Critical |
+- `CONTEXT.md`: System architecture, deployment state, and data invariants.
+- `AGENTS.md`: Agent rules, integrations, and instructions.
+- `SOUL.md`: Dynamic memory and persona.
+- `agent/instructions.md`: The primary intelligence agent instructions.
 
 ## License
 

@@ -1,19 +1,21 @@
 # Rumble OS Product Context
 
+> **MVP Milestone Passed:** This commit represents the Minimum Viable Product (MVP). All future work must be done on branched environments and tested fully before merging back to main.
+
 ## Purpose and source of truth
 
-Rumble OS is a personal operations and recovery dashboard. The production source of truth is the static frontend in `dashboard/`, Vercel Eve serverless workflows, Neon PostgreSQL, ChromaDB, and live external integrations.
+Rumble OS is a personal operations and recovery dashboard. The production source of truth is the static frontend in `dashboard/`, Vercel Eve serverless workflows, Neon PostgreSQL, and live external integrations.
 
 
 
 ## Architecture and deployment
 
 * Frontend: `dashboard/`, deployed to Vercel. The UI implements 'Universal Intent Capture' where unassigned buttons default to opening Rumble Chat.
-* Agent Framework: Vercel Eve, running on Vercel's Edge Network for automatic serverless scaling. The legacy FastAPI backend and `uvicorn` entrypoints have been removed.
+* Agent Framework: Vercel Eve, running on Vercel's Edge Network for automatic serverless scaling. The legacy FastAPI backend, `uvicorn` entrypoints, and Render deployment have been permanently decommissioned and removed.
 * Local development: use the Eve CLI via the `eve dev` command.
 * Health endpoint: `/healthz`.
 * API routes: `/api/...` and `/api/v1/...`.
-* Persistence: Neon PostgreSQL through `NEON_DATABASE_URL` is the production persistence layer. SQLite is permitted only as a local-development fallback when `NEON_DATABASE_URL` is unavailable; it must never be used in production and must never silently mask a missing production database connection. ChromaDB through `RUMBLE_CHROMA_PATH` stores learned rehabilitation preferences.
+* Persistence: Neon PostgreSQL through `NEON_DATABASE_URL` is the sole production persistence layer. No local-disk SQLite fallbacks are permitted in production. ChromaDB is currently designated for local-disk dev/staging only, with vector-similarity ranking explicitly deferred as a deliberate architectural decision (relational pain/agenda logging in Neon is the production path for now).
 * Workspace reads: live Gmail and Google Calendar OAuth integrations (built as Eve Tools using `defineTool`).
 * Weather: direct Open-Meteo HTTP API, no LLM weather inference.
 * Timezone: all scheduled behavior (yoga, meditation, retrieval, washing-day selection) uses Australia/Melbourne, not UTC or server-local time.
@@ -39,7 +41,7 @@ Rumble OS is a personal operations and recovery dashboard. The production source
 * Pain entries accept a 1–10 pain score, multiple anatomical locations, side, and relative percentage weights that must total 100%.
 * Pain entries also accept the mood selector and notes.
 * Exercise suggestions return 3–5 preference-aware ad-hoc routines from `RehabCoach` and `VectorPreferenceStore`.
-* Completing a routine prompts for a new 1–10 pain score and stores the before/after relief delta in ChromaDB.
+* Completing a routine prompts for a new 1–10 pain score and stores the before/after relief delta in Neon PostgreSQL.
 * Dismissing a routine records a rejection reason such as `Too tired` or `Hurts`.
 * Sunday morning briefing presents learned rules for explicit approval or rejection.
 * Medical and rehabilitation guidance is decision support, not diagnosis, and must include clinician-review guidance where appropriate.
@@ -49,12 +51,12 @@ Rumble OS is a personal operations and recovery dashboard. The production source
 * All weather displayed in Rumble OS must be live.
 * Location is fixed to Wangaratta, Victoria, Australia: latitude `-36.3536`, longitude `146.3225`.
 * Open-Meteo supplies current temperature, current precipitation, current precipitation probability, and a seven-day forecast.
-* Rumble proposes 3 optimal washing days per week selected from the lowest forecast precipitation probabilities. The user only needs to complete 2 (using Done/Dismiss on the agenda). The selected dates and forecast percentages are displayed.
+* Rumble selects exactly 2 optimal washing days per week from the lowest forecast precipitation probabilities. The selected dates and forecast percentages are displayed.
 * If weather is unavailable, show an explicit unavailable state; never guess conditions.
 
 ### Agenda and calendar
 
-* The agenda data model supports 'Options' (like 3 suggested washing days, only 2 required) alongside fixed events.
+* The agenda data model supports 'Options' alongside fixed events.
 * Daily agenda includes live pending action items, daily yoga, nightly meditation, hydrotherapy, and relevant user tasks such as "Call Deakin to unlock MFA."
 * Weekly and monthly panels pull live Google Calendar events.
 * Calendar reads may occur with available OAuth credentials. Calendar creation, modification, or deletion requires the `needsApproval` helper to durably pause execution for explicit user confirmation and must return the provider Event ID.
@@ -69,7 +71,7 @@ Rumble OS is a personal operations and recovery dashboard. The production source
 
 ## Data, safety, and privacy invariants
 
-* Production data must come only from Neon PostgreSQL, ChromaDB, or live external APIs. No mock, dummy, demo, seeded, or hard-coded user data is permitted in production UI or API paths.
+* Production data must come only from Neon PostgreSQL or live external APIs. No mock, dummy, demo, seeded, or hard-coded user data is permitted in production UI or API paths.
 * Empty states and integration failures must be explicit and visible.
 * Never expose secrets, OAuth tokens, database URLs, or service credentials.
 * Medical reports are persisted under `agent_reports/` with dates, versions, clean structure, and the existing disclaimer.

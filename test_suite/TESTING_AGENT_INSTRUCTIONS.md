@@ -1,42 +1,91 @@
-# End-to-End Testing Agent Instructions
+# Rumble OS - E2E Testing Specification
 
-You are the QA End-to-End Testing Agent for Rumble OS. Your primary goal is to ensure the reliability of the system by writing, executing, and maintaining robust Playwright tests.
+This document serves as the absolute source of truth for the QA Engineering Agent responsible for writing Playwright E2E tests for Rumble OS. 
 
-## Environment Details
-- The testing framework is **Playwright**, installed in the `dashboard/` directory.
-- End-to-end tests should be created in the `dashboard/tests/e2e/` folder.
-- Ensure the Next.js development server is running locally (e.g., `npm run dev` in `dashboard`) on `localhost:3000` before running tests, or configure Playwright's `webServer` option to start it automatically.
+**DO NOT execute tests. Your job is ONLY to read this spec and write the `.spec.ts` files in `dashboard/tests/e2e/`.**
 
-## Core Scenarios to Automate
+## Environment Setup
+- **Framework:** Playwright (Node.js)
+- **Directory:** `dashboard/tests/e2e/`
+- **Target:** `http://localhost:3000`
 
-1. **Agenda Engine (Daily/Weekly/Monthly)**
-   - Verify that the `GET /api/v1/agenda` route returns items successfully.
-   - Test UI rendering of the Agenda Stream.
-   - Check that standing tasks (e.g., Yoga, Meditation) appear at their correct scheduled times.
+---
 
-2. **User Interactions on Agenda Cards**
-   - Test completing a task: Clicking the "Done" button on a standard card should mark it completed.
-   - Test rescheduling a task: Clicking "Delay" and selecting tomorrow.
+## Exhaustive Test Scenarios
 
-3. **Rumble Insight Approval Flow**
-   - Inject a mock `[Rumble Insight]` item into the agenda stream.
-   - Verify that it renders with **Approve** and **Reject** buttons.
-   - Test clicking **Approve** (should call `update_status` to 'completed').
+### 1. Pain Logging System (Crucial)
+Rumble OS heavily relies on accurate pain tracking. The tests must exhaustively verify the pain logging flow.
+- **Triggering:** Verify pain logs can be triggered via the agenda card ("Log Pain") AND via natural language in Rumble Chat (e.g., "My lower back hurts at a 6/10 today").
+- **UI Validation:** Ensure the modal correctly renders:
+  - **Score Selector:** Sliders or buttons for 1-10 pain score.
+  - **Location Multi-Select:** Ability to log multiple anatomical locations (e.g., lumbar, cervical) and assign them percentage weights totaling 100%.
+  - **Modifiers:** Mood selector and notes text area.
+- **Submission:** Verify that submitting the pain log fires the correct API call (`POST /api/v1/pain/log` or equivalent).
+- **Persistence Validation:** Reload the page and ensure the new pain log appears in the "Recent Pain" section or agenda history.
 
-4. **Rumble Chat & Context Awareness**
-   - Open the Rumble Chat modal.
-   - Send a message and wait for the response.
-   - Close the modal, reopen it, and assert that the chat history persisted (12-hour context awareness).
+### 2. Agenda & Task Management
+- **Rendering:** Assert that Daily, Weekly, and Monthly streams populate correctly via `GET /api/v1/agenda`.
+- **Standing Protocols:** Verify that `Morning Adaptive Yoga Routine` (9:00 AM), `Evening Adaptive Yoga Routine` (9:00 PM), and `Night Meditation Protocol` (9:30 PM) render at their strict designated times.
+- **Task Lifecycle:** 
+  - **Done:** Clicking the "Done" button strikes through the text, moves it to the bottom, and triggers `update_status: 'completed'`.
+  - **Reschedule:** Clicking "Delay" or "Postpone", picking a new date/time, and verifying the item moves to the future date.
 
-## Running Tests
-Run the following from the `dashboard/` directory:
-\`\`\`bash
-# Run all tests headlessly
-npx playwright test
+### 3. Rehab & Exercise Protocols
+- **Explore Exercises:** Open an exercise or Yoga card.
+  - Assert that the UI allows the user to dynamically swap or change yoga poses (testing the fallback/alternative exercise logic).
+- **Meditation & Insight Loop:** 
+  - Complete a "Night Meditation Protocol".
+  - Assert that completing this triggers the backend Insight Engine. 
+  - Verify that a `[Rumble Insight]` item eventually spawns in the agenda stream as a result of the completed meditation.
 
-# Run tests with the UI runner (if debugging)
-npx playwright test --ui
-\`\`\`
+### 4. Rumble Insight Approval Flow
+- **Rendering:** Ensure `item_type: 'insight'` cards (both episodic and weekly) render distinctly with **Approve** and **Reject** (or Dismiss/Done) buttons.
+- **Actioning:** 
+  - Click **Approve** and assert the card resolves to completed.
+  - Verify this triggers the backend to commit the learning to ChromaDB/SOUL.md.
+  - Click **Reject** and assert the card is dismissed.
 
-## Agent Workflows
-If you encounter a bug during testing, do not just stop. Attempt to diagnose the root cause by exploring the codebase (using `explore-codebase`), checking the `dashboard/app/api` routes or `dashboard/app.js`, and applying a fix before re-running the tests.
+### 5. Notes System
+- **CRUD Operations:** 
+  - Create a new note from the UI.
+  - Edit the content of an existing note.
+  - Delete a note and ensure it disappears from the DOM.
+- **Pinning:** 
+  - Pin a note and verify it visually moves to the top or gains a pinned CSS class.
+  - Refresh the page and assert the pin state persists.
+- **Agent Generation:** 
+  - Open Rumble Chat and ask "Take a note that I need to buy more resistance bands."
+  - Assert that Rumble effectively and accurately generates the note in the Notes panel without manual user entry.
+
+### 6. Email Integration & Safeguards
+- **Intent Extraction:** Open Rumble Chat and ask "Send an email to james.jones2086@gmail.com about my physical therapy."
+- **Safety Check:** Assert that Rumble **does not** send the email immediately, but instead surfaces an explicit authorization/confirmation state (as per `needsApproval` architecture rules).
+- **Execution:**
+  - Click the confirmation/approval button.
+  - **CRITICAL ASSERTION:** The test MUST ensure the dispatched email's Subject line begins with `RUMBLE TEST` so the user knows it was automated.
+  - Assert the UI reflects a successful dispatch.
+
+### 7. Encyclopedia & Continuous Learning
+- **Progression Flow:** 
+  - Open the Encyclopedia / Learning module.
+  - Read/navigate all the way through a specific chapter.
+  - Assert that finishing the chapter fires a completion event.
+  - **Assertion:** Verify the system automatically unlocks or generates the subsequent chapter in the sequence.
+- **API Tests:** Test `GET /api/v1/learn/topic` and `GET /api/v1/learn/rotate` endpoints to ensure topic rotation (e.g. 3 suggestions) works as intended.
+
+### 8. Rumble Chat & Context Awareness
+- **Context Persistence:** 
+  - Open Rumble Chat modal.
+  - Send: "Remember that my right shoulder is feeling stiff."
+  - Wait for the LLM response.
+  - Close the modal entirely.
+  - Reopen the modal and assert the history is still visible in the DOM (verifying the 12-hour DB persistence).
+- **Universal Intent Capture:** Verify that interacting with unassigned/fallback buttons opens Rumble Chat with the correct context pre-loaded.
+
+---
+
+## Agent Handoff Instructions
+
+**Agent 1 (Test Writer):** Read this spec carefully. Create highly modular Playwright tests under `dashboard/tests/e2e/`. Use Page Object Models where appropriate. Ensure all assertions are strict and resilient to network delays (use Playwright's auto-waiting `expect`). 
+
+**Agent 2 (Test Runner):** Execute `test_suite/run_tests.sh`. If tests fail, diagnose whether it is a flaky test or an application bug. If it is an application bug, fix the source code in `dashboard/` and re-run until all tests go green. Finally, output a summary report.

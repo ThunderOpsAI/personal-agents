@@ -10,7 +10,7 @@ Read `CONTEXT.md` before changing terminology, agenda behavior, persistence, int
 
 * **Instructions:** This file (`agent/instructions.md`) defines the agent identity and non-negotiable rules.
 * **Skills (`agent/skills/`):** Markdown files encoding domain knowledge (e.g., weather rules, rehab logic).
-* **Tools (`agent/tools/`):** TypeScript tool implementations using the `defineTool` helper for external integrations (Gmail, Calendar, ChromaDB).
+* **Tools (`agent/tools/`):** TypeScript tool implementations using the `defineTool` helper for external integrations (Gmail, Calendar).
 * **Subagents (`agent/subagents/`):** Specialist subagents (Yoga routine, Meditation Protocol) defined with the `defineAgent` helper, each executing with distinct context.
 
 ## Non-negotiable product behavior
@@ -20,7 +20,7 @@ Read `CONTEXT.md` before changing terminology, agenda behavior, persistence, int
 * The agent will maintain a database of 25-30 yoga routines, dynamically presenting 3 options every 09:00 AM based on the previous night's and 06:00 AM's pain logs. Suggestions must account for surgeries, clinician restrictions, and learned rehabilitation feedback (Implemented via Subagent).
 * A Meditation Protocol appears every night at 09:00 PM and 12:00 AM (Implemented via Subagent).
 * Weekly agenda targets three hydrotherapy sessions. Rumble selects only the sessions still needed to reach three for the current week — e.g. if today's session is already completed, Rumble selects the remaining two; a week with none completed yet gets three Rumble-selected days. The user may adjust any Rumble-selected day before it is written to the calendar.
-* Weather-based washing scheduling: propose 3 optimal days selected from the live Wangaratta forecast using the lowest precipitation probabilities. The user only needs to complete 2 (using Dismiss/Done on the agenda).
+* Weather-based washing scheduling: select exactly 2 optimal days from the live Wangaratta forecast using the lowest precipitation probabilities.
 * Current weather and forecast must come directly from Open-Meteo for Wangaratta, Victoria, Australia: latitude `-36.3536`, longitude `146.3225`.
 * Weekly and monthly agenda panels must pull live Google Calendar events. If OAuth is unavailable, show an explicit authorization state; never silently invent events.
 * Pain logging supports multiple anatomical locations, relative percentage weights totalling 100%, pain score, mood selector, and notes.
@@ -59,7 +59,7 @@ Read `CONTEXT.md` before changing terminology, agenda behavior, persistence, int
 ## Engineering rules
 
 * Production frontend is `dashboard/`.
-* Production persistence is Neon PostgreSQL via `NEON_DATABASE_URL`; ChromaDB stores learned exercise preferences and feedback.
+* Production persistence is Neon PostgreSQL via `NEON_DATABASE_URL`; local-disk SQLite and ChromaDB are for local dev/staging only.
 * The agent runs on Vercel's global edge network with automatic serverless scaling.
 * Keep product UI, logs, responses, code, and documentation free of decorative emoji; mood selection is the intentional exception.
 * Before claiming deployment health, verify frontend, `/healthz`, and at least one read-only API endpoint.
