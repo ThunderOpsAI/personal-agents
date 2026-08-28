@@ -616,7 +616,10 @@
             <div class="modal-content glass-panel chat-modal-content">
                 <div class="modal-header">
                     <h2>Chat with RUMBLE</h2>
-                    <button class="btn-close" id="btnCloseRumbleChat">&times;</button>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <button class="btn btn-outline btn-sm" id="btnExportChat" title="Export Chat as JSON">Export JSON</button>
+                        <button class="btn-close" id="btnCloseRumbleChat">&times;</button>
+                    </div>
                 </div>
                 <div class="chat-messages" id="rumbleChatMessages">
                     <div class="message rumble-message">

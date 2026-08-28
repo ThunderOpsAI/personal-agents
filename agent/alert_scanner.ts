@@ -76,9 +76,10 @@ export async function scanRetrievalForAlerts(
       const alertId = `alert_msg_${msg.id}`;
       const { timeSlot } = extractTimeSlot(textToScan);
       const scheduledTime = `${dateStr}T${timeSlot}:00+10:00`;
-      const title = msg.subject.startsWith("Action Required:")
+      const baseTitle = msg.subject.startsWith("Action Required:")
         ? msg.subject
         : `Action Required: ${msg.subject}`;
+      const title = `[Rumble: Email Alert] ${baseTitle}`;
 
       if (existingMap.has(alertId)) {
         injectedItems.push(existingMap.get(alertId)!);
@@ -117,9 +118,10 @@ export async function scanRetrievalForAlerts(
         const { timeSlot } = extractTimeSlot(textToScan);
         scheduledTime = `${dateStr}T${timeSlot}:00+10:00`;
       }
-      const title = evt.summary.startsWith("Agenda Alert:")
+      const baseTitle = evt.summary.startsWith("Agenda Alert:")
         ? evt.summary
         : `Agenda Alert: ${evt.summary}`;
+      const title = `[Rumble: Calendar Alert] ${baseTitle}`;
 
       if (existingMap.has(alertId)) {
         injectedItems.push(existingMap.get(alertId)!);

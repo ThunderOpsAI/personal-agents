@@ -238,6 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // RUMBLE Chat Modal Elements
     const rumbleChatModal = document.getElementById('rumbleChatModal');
     const btnCloseRumbleChat = document.getElementById('btnCloseRumbleChat');
+    const btnExportChat = document.getElementById('btnExportChat');
     const rumbleChatMessages = document.getElementById('rumbleChatMessages');
     const rumbleChatInput = document.getElementById('rumbleChatInput');
     const btnSendRumbleChat = document.getElementById('btnSendRumbleChat');
@@ -479,10 +480,15 @@ document.addEventListener('DOMContentLoaded', () => {
                             ${item.choices ? `<small class="form-hint">Choices: ${item.choices.join(' · ')}</small>` : ''}
                         </div>
                         <div class="protocol-actions">
-                            <button class="btn btn-neon-purple btn-sm btn-show-me" data-id="${item.id}" data-type="${item.item_type || ''}">View</button>
-                            <button class="btn btn-neon-green btn-sm btn-done" data-id="${item.id}" data-type="${item.item_type || ''}">Done</button>
-                            <button class="btn btn-outline btn-sm btn-postpone" data-id="${item.id}" data-type="${item.item_type || ''}">Delay</button>
-                            <button class="btn btn-outline btn-sm btn-dismiss" data-id="${item.id}" data-type="${item.item_type || ''}">Dismiss</button>
+                            ${item.item_type === 'insight' ? `
+                                <button class="btn btn-neon-blue btn-sm btn-done" data-id="${item.id}" data-type="insight">Approve</button>
+                                <button class="btn btn-outline btn-sm btn-dismiss" data-id="${item.id}" data-type="insight">Reject</button>
+                            ` : `
+                                <button class="btn btn-neon-purple btn-sm btn-show-me" data-id="${item.id}" data-type="${item.item_type || ''}">View</button>
+                                <button class="btn btn-neon-green btn-sm btn-done" data-id="${item.id}" data-type="${item.item_type || ''}">Done</button>
+                                <button class="btn btn-outline btn-sm btn-postpone" data-id="${item.id}" data-type="${item.item_type || ''}">Delay</button>
+                                <button class="btn btn-outline btn-sm btn-dismiss" data-id="${item.id}" data-type="${item.item_type || ''}">Dismiss</button>
+                            `}
                         </div>
                     `;
                 }
@@ -1316,6 +1322,21 @@ document.addEventListener('DOMContentLoaded', () => {
         rumbleChatModal.classList.add('hidden');
     });
 
+    if (btnExportChat) {
+        btnExportChat.addEventListener('click', () => {
+            const msgs = Array.from(rumbleChatMessages.querySelectorAll('.message')).map(m => {
+                const isUser = m.classList.contains('user-message');
+                return { role: isUser ? 'user' : 'rumble', text: m.innerText };
+            });
+            navigator.clipboard.writeText(JSON.stringify(msgs, null, 2)).then(() => {
+                showToast('Chat exported to clipboard', 'success');
+            }).catch(e => {
+                showToast('Failed to export chat', 'error');
+                console.error(e);
+            });
+        });
+    }
+
     let pendingChatAction = null;
 
 
@@ -1463,9 +1484,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const actionToCommit = explicitAction || (isConfirmation ? pendingChatAction : null);
 
         try {
+            const msgsNodes = Array.from(rumbleChatMessages.querySelectorAll('.message'));
+            const previousMsgs = msgsNodes.slice(0, -1).slice(-20); // Keep last 20 messages for context
+            const history = previousMsgs.map(m => {
+                const isUser = m.classList.contains('user-message');
+                let text = m.innerText || '';
+                if (isUser && text.startsWith('You:')) text = text.substring(4).trim();
+                else if (!isUser && text.startsWith('RUMBLE:')) text = text.substring(7).trim();
+                return { role: isUser ? 'user' : 'rumble', text };
+            });
+
             const payload = {
                 message: msg || 'Please analyze this attached photo/document and extract relevant appointments, instructions, or notes.',
                 proposal_context: currentProposalText,
+                history: history,
                 ...(attached ? { attachment: attached } : {}),
                 ...(actionToCommit ? { confirm_action: actionToCommit } : {})
             };
