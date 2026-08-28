@@ -316,3 +316,19 @@ CREATE TABLE IF NOT EXISTS learning_progress (
 );
 `;
 
+export interface ChatLogRecord {
+  id: string;
+  role: 'user' | 'rumble';
+  text: string;
+  created_at: string;
+}
+
+export const CREATE_CHAT_LOGS_TABLE_SQL = `
+CREATE TABLE IF NOT EXISTS chat_logs (
+    id TEXT PRIMARY KEY,
+    role TEXT NOT NULL,
+    text TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+`;
+

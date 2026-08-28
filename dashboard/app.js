@@ -1314,8 +1314,34 @@ document.addEventListener('DOMContentLoaded', () => {
     
     /* CRO EVENTS REMOVED */
 
-    btnOpenRumbleChat.addEventListener('click', () => {
+    btnOpenRumbleChat.addEventListener('click', async () => {
         rumbleChatModal.classList.remove('hidden');
+        try {
+            const res = await fetch('/api/v1/rumble/chat/history');
+            const data = await res.json();
+            if (data.status === 'success' && data.history && data.history.length > 0) {
+                // Clear initial placeholder or old messages
+                const defaultMsg = rumbleChatMessages.querySelector('.message');
+                if (defaultMsg && defaultMsg.innerText.includes('Type or use the voice button')) {
+                    rumbleChatMessages.innerHTML = '';
+                } else if (rumbleChatMessages.children.length === 0) {
+                    // Safe to clear
+                    rumbleChatMessages.innerHTML = '';
+                } else {
+                    rumbleChatMessages.innerHTML = '';
+                }
+
+                data.history.forEach(msg => {
+                    const div = document.createElement('div');
+                    div.className = `message ${msg.role === 'user' ? 'user-message' : 'rumble-message'}`;
+                    div.innerHTML = `<strong>${msg.role === 'user' ? 'You:' : 'RUMBLE:'}</strong> ${msg.role === 'rumble' ? formatRumbleMarkdown(msg.text) : escapeHtml(msg.text)}`;
+                    rumbleChatMessages.appendChild(div);
+                });
+                rumbleChatMessages.scrollTop = rumbleChatMessages.scrollHeight;
+            }
+        } catch (e) {
+            console.error("Failed to load chat history", e);
+        }
     });
 
     btnCloseRumbleChat.addEventListener('click', () => {

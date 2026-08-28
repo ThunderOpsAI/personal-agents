@@ -31,7 +31,9 @@ import {
   CreateMedicalReceiptInput,
   CREATE_MEDICAL_RECEIPTS_TABLE_SQL,
   EncyclopediaProgress,
-  CREATE_LEARNING_PROGRESS_TABLE_SQL
+  CREATE_LEARNING_PROGRESS_TABLE_SQL,
+  ChatLogRecord,
+  CREATE_CHAT_LOGS_TABLE_SQL
 } from './schema';
 
 let pgPool: Pool | null = null;
@@ -92,6 +94,7 @@ export function initDb(overrideDbPath?: string): void {
         maintenance_records: [],
         medical_receipts: [],
         learning_progress: [],
+        chat_logs: [],
       };
 
       sqliteDb = {
@@ -179,6 +182,7 @@ export async function ensureTableExists(): Promise<void> {
       await pgPool.query(CREATE_MAINTENANCE_RECORDS_TABLE_SQL);
       await pgPool.query(CREATE_MEDICAL_RECEIPTS_TABLE_SQL);
       await pgPool.query(CREATE_LEARNING_PROGRESS_TABLE_SQL);
+      await pgPool.query(CREATE_CHAT_LOGS_TABLE_SQL);
     }
   } else {
     if (!sqliteDb) {
@@ -195,6 +199,7 @@ export async function ensureTableExists(): Promise<void> {
       sqliteDb.exec(CREATE_MAINTENANCE_RECORDS_TABLE_SQL);
       sqliteDb.exec(CREATE_MEDICAL_RECEIPTS_TABLE_SQL);
       sqliteDb.exec(CREATE_LEARNING_PROGRESS_TABLE_SQL);
+      sqliteDb.exec(CREATE_CHAT_LOGS_TABLE_SQL);
     }
   }
 }
@@ -1389,3 +1394,32 @@ export async function saveLearningProgress(
   return record;
 }
 
+export async function createChatLog(role: 'user' | 'rumble', text: string): Promise<ChatLogRecord> {
+  await ensureTableExists();
+  const id = `chat_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  const created_at = new Date().toISOString();
+  
+  const status = getDbStatus();
+  if (status.provider === 'neon' && pgPool) {
+    await pgPool.query('INSERT INTO chat_logs(id, role, text, created_at) VALUES($1, $2, $3, $4)', [id, role, text, created_at]);
+  } else if (sqliteDb) {
+    sqliteDb.prepare('INSERT INTO chat_logs (id, role, text, created_at) VALUES (?, ?, ?, ?)').run(id, role, text, created_at);
+  }
+  
+  return { id, role, text, created_at };
+}
+
+export async function getChatLogs(hours: number = 12): Promise<ChatLogRecord[]> {
+  await ensureTableExists();
+  const cutoff = new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
+  const status = getDbStatus();
+  
+  if (status.provider === 'neon' && pgPool) {
+    const res = await pgPool.query('SELECT id, role, text, created_at FROM chat_logs WHERE created_at >= $1 ORDER BY created_at ASC', [cutoff]);
+    return res.rows;
+  } else if (sqliteDb) {
+    const rows = sqliteDb.prepare('SELECT id, role, text, created_at FROM chat_logs WHERE created_at >= ? ORDER BY created_at ASC').all(cutoff);
+    return rows;
+  }
+  return [];
+}
