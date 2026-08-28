@@ -1,7 +1,7 @@
 # Weekly Budget Report (2026-W35)
 
 * **Period:** Mon, 24 Aug 2026 to Sun, 30 Aug 2026
-* **Generated At:** 2026-08-28T14:47:09.062Z
+* **Generated At:** 2026-08-28T16:39:25.254Z
 * **Total Spent:** $265.50
 * **Total Income:** $0.00
 * **Net Balance:** $265.50
@@ -22,8 +22,8 @@
 
 | Date & Time | Description | Category | Type | Amount |
 | :--- | :--- | :--- | :--- | :--- |
-| 29 Aug, 12:47 am | Specialist Consultation | Medical | EXPENSE | $180.00 |
-| 29 Aug, 12:47 am | Target Organic Groceries | Groceries | EXPENSE | $85.50 |
+| 29 Aug, 02:39 am | Specialist Consultation | Medical | EXPENSE | $180.00 |
+| 29 Aug, 02:39 am | Target Organic Groceries | Groceries | EXPENSE | $85.50 |
 
 ---
 

@@ -640,7 +640,7 @@ export async function updateAgendaItemStatus(
       inferredTitle = 'Weather-Optimized Washing';
       inferredType = 'task';
     } else if (id.startsWith('task_deakin') || id.includes('deakin')) {
-      inferredTitle = 'Set up Deakin password & MFA';
+      inferredTitle = 'Call Deakin to unlock MFA';
       inferredType = 'task';
     }
 
@@ -1065,7 +1065,7 @@ export async function rescheduleAgendaItem(
       inferredTitle = 'Log Pain Level';
       inferredType = 'task';
     } else if (id.startsWith('task_deakin')) {
-      inferredTitle = 'Set up Deakin password & MFA';
+      inferredTitle = 'Call Deakin to unlock MFA';
       inferredType = 'task';
     }
 

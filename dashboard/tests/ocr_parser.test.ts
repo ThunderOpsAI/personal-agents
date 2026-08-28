@@ -1,4 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
+
+process.env.GEMINI_API_KEY = "test-key";
+
 import { parseOCR } from "../lib/agents/ocr-parser";
 
 describe("OCR Parser (Gemini 3.7 Vision Extraction)", () => {

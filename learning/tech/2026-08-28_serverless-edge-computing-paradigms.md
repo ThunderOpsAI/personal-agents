@@ -4,7 +4,7 @@ category: TECH
 chapter_id: tech-ch1
 title: "Serverless & Edge Computing Paradigms"
 date: 2026-08-28
-timestamp: 2026-08-28T14:47:14.771Z
+timestamp: 2026-08-28T16:39:29.862Z
 ---
 
 # Serverless & Edge Computing Paradigms
@@ -15,9 +15,6 @@ timestamp: 2026-08-28T14:47:14.771Z
 Edge runtimes deploy lightweight JavaScript isolates across globally distributed CDN nodes.
 
 ## Key Takeaways
-- Zero cold starts with V8 isolates
-- Sub-millisecond execution
+- Zero cold starts with V8 isolates\n- Sub-millisecond execution
 
-## Personal Notes & Synthesis
-Excellent overview of modern edge architectures.
-
+## Personal Notes & Synthesis\nExcellent overview of modern edge architectures.\n

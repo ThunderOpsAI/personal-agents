@@ -17,22 +17,25 @@ export async function POST(request: Request) {
     const today = new Date().toISOString().split("T")[0];
     const timestamp = new Date().toISOString();
 
-    const learningBaseDir = path.resolve(process.cwd(), "..", "learning", encyclopediaId);
-    await fs.mkdir(learningBaseDir, { recursive: true });
+    let fullPath = "";
+    let filename = "";
 
-    // Also ensure local dashboard fallback if running from dashboard cwd
-    const dashboardLearningDir = path.resolve(process.cwd(), "learning", encyclopediaId);
-    await fs.mkdir(dashboardLearningDir, { recursive: true }).catch(() => {});
+    try {
+      const learningBaseDir = path.resolve(process.cwd(), "..", "learning", encyclopediaId);
+      await fs.mkdir(learningBaseDir, { recursive: true });
 
-    const safeTitle = (chapterTitle || chapterId || "topic").toLowerCase().replace(/[^a-z0-9]+/g, "-");
-    const filename = `${today}_${safeTitle}.md`;
-    const fullPath = path.join(learningBaseDir, filename);
+      const dashboardLearningDir = path.resolve(process.cwd(), "learning", encyclopediaId);
+      await fs.mkdir(dashboardLearningDir, { recursive: true }).catch(() => {});
 
-    const takeawaysFormatted = Array.isArray(keyTakeaways)
-      ? keyTakeaways.map((t: string) => `- ${t}`).join("\n")
-      : "";
+      const safeTitle = (chapterTitle || chapterId || "topic").toLowerCase().replace(/[^a-z0-9]+/g, "-");
+      filename = `${today}_${safeTitle}.md`;
+      fullPath = path.join(learningBaseDir, filename);
 
-    const fileContent = `---
+      const takeawaysFormatted = Array.isArray(keyTakeaways)
+        ? keyTakeaways.map((t: string) => `- ${t}`).join("\\n")
+        : "";
+
+      const fileContent = `---
 encyclopedia: ${enc.title}
 category: ${encyclopediaId.toUpperCase()}
 chapter_id: ${chapterId}
@@ -51,10 +54,13 @@ ${summary || "No summary provided."}
 ## Key Takeaways
 ${takeawaysFormatted || "- General knowledge acquired."}
 
-${notes ? `## Personal Notes & Synthesis\n${notes}\n` : ""}
+${notes ? `## Personal Notes & Synthesis\\n${notes}\\n` : ""}
 `;
 
-    await fs.writeFile(fullPath, fileContent, "utf-8");
+      await fs.writeFile(fullPath, fileContent, "utf-8");
+    } catch (fsError) {
+      console.warn("Failed to write summary to disk (likely on Vercel read-only FS):", fsError);
+    }
 
     // Also update completed chapters in DB
     const chapterIdx = enc.chapters.findIndex((c) => c.id === chapterId);

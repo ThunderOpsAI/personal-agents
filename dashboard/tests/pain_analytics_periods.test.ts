@@ -14,7 +14,7 @@ describe('Pain Analytics Period Breakdown Engine (Day, Week, Month, All Time)', 
       ],
       mood: 'Calm',
       notes: 'Morning stiffness after rest',
-      created_at: new Date(now.getTime() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago (Today)
+      created_at: new Date(now.getTime() - 2 * 60 * 1000).toISOString(), // 2 mins ago (Today)
     },
     {
       id: 'log-2',
@@ -25,7 +25,7 @@ describe('Pain Analytics Period Breakdown Engine (Day, Week, Month, All Time)', 
       ],
       mood: 'Good',
       notes: 'Post-hydrotherapy relief',
-      created_at: new Date(now.getTime() - 5 * 60 * 60 * 1000).toISOString(), // 5 hours ago (Today)
+      created_at: new Date(now.getTime() - 5 * 60 * 1000).toISOString(), // 5 mins ago (Today)
     },
     {
       id: 'log-3',

@@ -1,4 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
+
+process.env.GEMINI_API_KEY = "test-key";
+
 import { ensureDailyStandingProtocols, ensureStandingTasks, selectWashingDays } from "../lib/agenda-engine";
 import { generateBriefing } from "../lib/agents/briefing-engine";
 import { parseOCR } from "../lib/agents/ocr-parser";

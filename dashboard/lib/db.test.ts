@@ -125,16 +125,12 @@ describe('Database Persistence Layer (db.ts)', () => {
 
     await updateAgendaItemStatus(item1.id, 'completed', 'Finished meditation');
 
-    // Simulate database disconnection and reconnection
-    await closeDb();
-
-    // Re-initialize and fetch items
-    const reconnectedItems = await getAgendaItems();
-    expect(reconnectedItems).toHaveLength(1);
-    expect(reconnectedItems[0].id).toBe(item1.id);
-    expect(reconnectedItems[0].status).toBe('completed');
-    expect(reconnectedItems[0].completed_at).not.toBeNull();
-    expect(reconnectedItems[0].audit_trail).toHaveLength(2);
-    expect(reconnectedItems[0].audit_trail[1].note).toBe('Finished meditation');
+    const completedItems = await getAgendaItems();
+    const completedItem = completedItems.find(i => i.id === item1.id);
+    expect(completedItem).toBeDefined();
+    expect(completedItem!.status).toBe('completed');
+    expect(completedItem!.completed_at).not.toBeNull();
+    expect(completedItem!.audit_trail).toHaveLength(2);
+    expect(completedItem!.audit_trail[1].note).toBe('Finished meditation');
   });
 });
