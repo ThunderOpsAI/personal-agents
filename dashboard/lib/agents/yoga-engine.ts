@@ -1,25 +1,10 @@
 import { getPainLogsFromDb, createAgendaItem } from '../db';
 import { MEDICAL_GUARDRAIL } from './intent-router';
+import { EXERCISE_DATABASE, ExerciseItem } from '../exercise-db';
 
-export interface YogaRoutine {
-  id: string;
-  title: string;
-  duration_minutes: number;
-  focus_areas: string[];
-  contraindications: string[]; // Avoid if pain in these areas
-  description: string;
-}
+export type YogaRoutine = ExerciseItem;
 
-// A starter database of adaptive routines. 
-// In a full implementation, this could expand to 30 items or live in Postgres.
-export const YOGA_ROUTINE_DB: YogaRoutine[] = [
-  { id: "y1", title: "Gentle Lumbar Release", duration_minutes: 15, focus_areas: ["lumbar", "lower back"], contraindications: ["acute disc herniation"], description: "Slow pelvic tilts and child's pose to decompress the lower back." },
-  { id: "y2", title: "Cervical Mobility Flow", duration_minutes: 10, focus_areas: ["cervical", "neck"], contraindications: ["whiplash"], description: "Seated neck stretches and gentle rotations." },
-  { id: "y3", title: "Full Body Restorative", duration_minutes: 25, focus_areas: ["full body", "stress"], contraindications: [], description: "Deep resting poses supported by props." },
-  { id: "y4", title: "Shoulder & Thoracic Opener", duration_minutes: 20, focus_areas: ["shoulder", "thoracic", "upper back"], contraindications: ["rotator cuff tear"], description: "Thread the needle and puppy pose variations." },
-  { id: "y5", title: "Hip Flexor & Psoas Stretch", duration_minutes: 15, focus_areas: ["hip", "pelvis", "psoas"], contraindications: ["hip replacement"], description: "Low lunges and pigeon pose adjustments for tight hips." },
-  { id: "y6", title: "Morning Morning Activation", duration_minutes: 20, focus_areas: ["spine", "core"], contraindications: ["acute back spasm"], description: "Cat-cow and gentle twists to wake up the spine." }
-];
+export const YOGA_ROUTINE_DB: YogaRoutine[] = EXERCISE_DATABASE;
 
 export async function getSuggestedYogaRoutines(): Promise<YogaRoutine[]> {
   const logs = await getPainLogsFromDb();
@@ -34,8 +19,18 @@ export async function getSuggestedYogaRoutines(): Promise<YogaRoutine[]> {
     }).join('\n');
   }
 
+  const routineSummary = YOGA_ROUTINE_DB.map(r => ({
+    id: r.id,
+    title: r.title,
+    category: r.category,
+    duration_minutes: r.duration_minutes,
+    focus_areas: r.focus_areas,
+    contraindications: r.contraindications,
+    description: r.description
+  }));
+
   const systemPrompt = `You are the Rumble OS Yoga & Rehab Engine.
-Your task is to select the 3 safest and most optimal yoga routines for the user's morning agenda based on their recent pain logs.
+Your task is to select the 3 safest and most optimal routines (from Yoga, Pilates, Stretches, Rehab, or Hydrotherapy) for the user's morning agenda based on their recent pain logs.
 
 ${MEDICAL_GUARDRAIL}
 
@@ -43,7 +38,7 @@ ${MEDICAL_GUARDRAIL}
 ${painContext}
 
 === AVAILABLE ROUTINES ===
-${JSON.stringify(YOGA_ROUTINE_DB, null, 2)}
+${JSON.stringify(routineSummary, null, 2)}
 
 Select exactly 3 routines that avoid exacerbating the reported pain areas (contraindications) and target the areas of stiffness or pain.
 Return a JSON array of the 3 selected routine IDs.`;

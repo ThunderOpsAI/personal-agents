@@ -948,26 +948,94 @@ input[type="datetime-local"].glass-input {
     resize: vertical;
 }
 .weight-invalid { color: var(--neon-red); }
+.exercise-widget {
+    max-width: 680px !important;
+    width: 95%;
+}
+.btn-filter-chip {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    color: var(--text-secondary);
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.btn-filter-chip:hover {
+    background: rgba(0, 240, 255, 0.1);
+    color: var(--neon-blue);
+    border-color: var(--neon-blue);
+}
+.btn-filter-chip.active {
+    background: var(--neon-purple);
+    color: #ffffff;
+    border-color: var(--neon-purple);
+    font-weight: 600;
+}
+.btn-area-chip {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-muted);
+    border-radius: 12px;
+    padding: 3px 9px;
+    font-size: 0.72rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.btn-area-chip:hover {
+    color: var(--text-primary);
+    border-color: var(--neon-blue);
+}
+.btn-area-chip.active {
+    background: rgba(0, 240, 255, 0.15);
+    border-color: var(--neon-blue);
+    color: var(--neon-blue);
+    font-weight: 600;
+}
 .exercise-list {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    margin-top: 12px;
+    margin-top: 8px;
 }
 .exercise-card {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    padding: 10px;
+    padding: 11px 14px;
     border: 1px solid var(--glass-border);
-    border-radius: 10px;
-    background: rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    background: rgba(18, 22, 36, 0.6);
+    transition: all 0.2s ease;
 }
-.exercise-card h3 { color: var(--neon-blue); font-size: 0.95rem; }
+.exercise-card:hover {
+    border-color: rgba(0, 240, 255, 0.4);
+    background: rgba(18, 22, 36, 0.85);
+}
+.exercise-card-recom {
+    border-left: 3px solid #3b82f6 !important;
+    background: rgba(59, 130, 246, 0.08);
+}
+.exercise-tag {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.exercise-tag.yoga { background: rgba(168, 85, 247, 0.2); color: #c084fc; }
+.exercise-tag.pilates { background: rgba(236, 72, 153, 0.2); color: #f472b6; }
+.exercise-tag.stretches { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
+.exercise-tag.rehab { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+.exercise-tag.hydrotherapy { background: rgba(6, 182, 212, 0.2); color: #22d3ee; }
+.exercise-card h3 { color: var(--neon-blue); font-size: 0.95rem; display: flex; align-items: center; gap: 8px; }
 .exercise-card p { color: var(--text-secondary); font-size: 0.8rem; margin: 3px 0; }
-.exercise-card small { color: var(--text-secondary); font-size: 0.7rem; }
-.exercise-actions { display: flex; flex-direction: column; gap: 5px; }
+.exercise-card small { color: var(--text-secondary); font-size: 0.72rem; }
+.exercise-actions { display: flex; flex-direction: column; gap: 5px; min-width: 80px; }
 .reject-reasons { display: flex; flex-direction: column; gap: 4px; }
 .modal-content {
     width: 100%;
