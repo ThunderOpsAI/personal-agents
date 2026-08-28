@@ -242,7 +242,7 @@ export async function GET(request: Request) {
       const hasWeeklyInsight = rawItems.some(i => i.id === weeklyInsightId);
       if (!hasWeeklyInsight) {
         // Fire-and-forget
-        import("../../../../../lib/agents/insight-engine").then(m => {
+        import("../../../../lib/agents/insight-engine").then(m => {
           m.generateWeeklyInsights(weeklyInsightId);
         }).catch(console.error);
       }
@@ -322,7 +322,7 @@ export async function POST(request: Request) {
       }
 
       if (status === 'completed') {
-        import("../../../../../lib/agents/insight-engine").then(m => {
+        import("../../../../lib/agents/insight-engine").then(m => {
           m.evaluateForInsights('protocol', updated);
         }).catch(console.error);
       }

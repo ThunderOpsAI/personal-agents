@@ -45,7 +45,7 @@ ${JSON.stringify(data, null, 2)}`;
 
 export async function generateWeeklyInsights(weeklyInsightId: string) {
   try {
-    const { getPainLogsFromDb } = await import("../../db");
+    const { getPainLogsFromDb } = await import("../db");
     const logs = await getPainLogsFromDb();
     
     // Only get logs from the last 7 days
