@@ -41,17 +41,25 @@ export async function GET(request: Request) {
 
     let activeSummary = weekBreakdown.categories;
     let activeTotal = weekBreakdown.totalExpense;
+    let activeIncome = weekBreakdown.totalIncome;
+    let activeNet = weekBreakdown.netSpent;
 
     if (period === "monthly") {
       activeSummary = monthBreakdown.categories;
       activeTotal = monthBreakdown.totalExpense;
+      activeIncome = monthBreakdown.totalIncome;
+      activeNet = monthBreakdown.netSpent;
     } else if (period === "all") {
       activeSummary = allBreakdown.categories;
       activeTotal = allBreakdown.totalExpense;
+      activeIncome = allBreakdown.totalIncome;
+      activeNet = allBreakdown.netSpent;
     }
 
     const summaryObj: Record<string, number> = {
       Total: activeTotal,
+      Income: activeIncome,
+      Net: activeNet,
       ...activeSummary,
     };
 

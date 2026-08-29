@@ -5447,16 +5447,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     let summaryHtml = '';
                     if (data.summary) {
                         for (const [cat, val] of Object.entries(data.summary)) {
-                            if (cat !== 'Total') {
+                            if (cat !== 'Total' && cat !== 'Income' && cat !== 'Net') {
                                 summaryHtml += `<span class="badge neon-blue">${cat}: $${Number(val).toFixed(2)}</span>`;
                             }
                         }
                     }
-                    if (budgetSummaryContainer) budgetSummaryContainer.innerHTML = summaryHtml || '<span style="font-size:0.8rem; color:var(--text-secondary);">No expenses in this period</span>';
+                    if (budgetSummaryContainer) budgetSummaryContainer.innerHTML = summaryHtml || '<span style="font-size:0.8rem; color:var(--text-secondary);">No entries in this period</span>';
                     
                     const spentVal = Number(data.summary?.Total || 0).toFixed(2);
+                    const incomeVal = Number(data.summary?.Income || 0).toFixed(2);
                     const periodLabel = currentBudgetPeriod === 'weekly' ? `Week (${data.weekly?.label || ''})` : `Month (${data.monthly?.label || ''})`;
-                    if (budgetTotalSpent) budgetTotalSpent.innerText = `Spent: $${spentVal}`;
+                    if (budgetTotalSpent) {
+                        if (Number(incomeVal) > 0) {
+                            budgetTotalSpent.innerText = `Spent: $${spentVal} | In: $${incomeVal}`;
+                        } else {
+                            budgetTotalSpent.innerText = `Spent: $${spentVal}`;
+                        }
+                    }
                     if (budgetPeriodBadge) budgetPeriodBadge.innerText = periodLabel;
                 }
             }
@@ -5472,6 +5479,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const amount = parseFloat(document.getElementById('budgetAmount').value);
             const category = document.getElementById('budgetCategory').value;
             const notes = document.getElementById('budgetNotes').value;
+            const type = document.getElementById('budgetType') ? document.getElementById('budgetType').value : 'expense';
 
             if (!description || isNaN(amount) || amount <= 0) {
                 showToast('Description and positive amount required');
@@ -5482,16 +5490,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 const res = await fetch(API_BUDGET, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ description, amount, category, notes, type: 'expense' })
+                    body: JSON.stringify({ description, amount, category, notes, type })
                 });
                 if (res.ok) {
-                    showToast('Expense added successfully', 'success');
+                    showToast('Entry added successfully', 'success');
                     document.getElementById('budgetDesc').value = '';
                     document.getElementById('budgetAmount').value = '';
                     document.getElementById('budgetNotes').value = '';
                     loadBudget();
                 } else {
-                    showToast('Failed to add expense');
+                    showToast('Failed to add entry');
                 }
             } catch (e) {
                 showToast('Failed to add expense');

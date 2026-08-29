@@ -64,18 +64,20 @@
                 <div class="budget-form hidden" id="budgetForm" style="display: flex; gap: 8px; flex-wrap: wrap;">
                     <input type="text" id="budgetDesc" class="glass-input" placeholder="Description" style="flex: 1; min-width: 150px; padding: 8px;">
                     <input type="number" id="budgetAmount" class="glass-input" placeholder="Amount" style="width: 100px; padding: 8px;">
+                    <select id="budgetType" class="glass-select" style="padding: 8px;">
+                        <option value="expense">Expense</option>
+                        <option value="income">Income</option>
+                    </select>
                     <select id="budgetCategory" class="glass-select" style="padding: 8px;">
                         <option value="Groceries">Groceries</option>
                         <option value="Medical">Medical</option>
                         <option value="Transport">Transport</option>
                         <option value="Entertainment">Entertainment</option>
-                        <option value="Casino">Casino</option>
-                        <option value="Sportsbet">Sportsbet</option>
-                        <option value="Ladbrokes">Ladbrokes</option>
+                        <option value="Salary">Salary</option>
                         <option value="Other">Other</option>
                     </select>
                     <input type="text" id="budgetNotes" class="glass-input" placeholder="Notes" style="flex: 1; min-width: 150px; padding: 8px;">
-                    <button class="btn btn-neon-green" id="btnLogBudget">Add Expense</button>
+                    <button class="btn btn-neon-green" id="btnLogBudget">Add</button>
                 </div>
             </section>
 
