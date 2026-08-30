@@ -179,6 +179,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const notesSectionTitle = document.getElementById('notesSectionTitle');
     const unpinnedNotesSectionTitle = document.getElementById('unpinnedNotesSectionTitle');
     const btnToggleArchiveView = document.getElementById('btnToggleArchiveView');
+    const btnToggleFollowUpView = document.getElementById('btnToggleFollowUpView');
+    const followUpWorkspace = document.getElementById('followUpWorkspace');
+    const standardNotesWorkspace = document.getElementById('standardNotesWorkspace');
+    const followUpTextarea = document.getElementById('followUpTextarea');
+    const btnSaveFollowUp = document.getElementById('btnSaveFollowUp');
+    const followUpSaveStatus = document.getElementById('followUpSaveStatus');
+    const inlineNoteEditorContainer = document.getElementById('inlineNoteEditorContainer');
+    let followUpNoteId = null;
     
     // Inline Note Editor
     const noteEditorCollapsed = document.getElementById('noteEditorCollapsed');
@@ -2245,6 +2253,17 @@ document.addEventListener('DOMContentLoaded', () => {
     let editingNoteId = null;
 
     function renderNotesGrid() {
+        if (currentNotesTab === 'followup') {
+            if (standardNotesWorkspace) standardNotesWorkspace.classList.add('hidden');
+            if (inlineNoteEditorContainer) inlineNoteEditorContainer.classList.add('hidden');
+            if (followUpWorkspace) followUpWorkspace.classList.remove('hidden');
+            return;
+        } else {
+            if (standardNotesWorkspace) standardNotesWorkspace.classList.remove('hidden');
+            if (inlineNoteEditorContainer) inlineNoteEditorContainer.classList.remove('hidden');
+            if (followUpWorkspace) followUpWorkspace.classList.add('hidden');
+        }
+
         if (!notesGrid || !pinnedNotesGrid) return;
         notesGrid.innerHTML = '';
         pinnedNotesGrid.innerHTML = '';
@@ -2341,6 +2360,21 @@ document.addEventListener('DOMContentLoaded', () => {
             if (res.ok) {
                 const data = await res.json();
                 currentNotes = data.notes || [];
+                
+                // Extract Follow Up Note
+                const followUpNote = currentNotes.find(n => n.author === 'system_followup');
+                if (followUpNote) {
+                    followUpNoteId = followUpNote.id;
+                    if (followUpTextarea && document.activeElement !== followUpTextarea) {
+                        followUpTextarea.value = followUpNote.content;
+                    }
+                } else if (followUpTextarea && document.activeElement !== followUpTextarea) {
+                    followUpTextarea.value = '';
+                }
+                
+                // Filter out system notes from regular display
+                currentNotes = currentNotes.filter(n => n.author !== 'system_followup');
+                
                 renderNotesGrid();
             }
         } catch (e) {
@@ -2455,8 +2489,57 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     if (btnToggleArchiveView) {
-        btnToggleArchiveView.addEventListener('click', () => {
+        
+    if (btnToggleFollowUpView) {
+        btnToggleFollowUpView.addEventListener('click', () => {
+            if (currentNotesTab === 'followup') {
+                currentNotesTab = 'active';
+                btnToggleFollowUpView.style.color = 'rgba(255,255,255,0.7)';
+            } else {
+                currentNotesTab = 'followup';
+                btnToggleFollowUpView.style.color = '#ff3c3c';
+                if (btnToggleArchiveView) btnToggleArchiveView.style.color = 'rgba(255,255,255,0.7)';
+            }
+            renderNotesGrid();
+        });
+    }
+
+    if (btnSaveFollowUp) {
+        btnSaveFollowUp.addEventListener('click', async () => {
+            btnSaveFollowUp.disabled = true;
+            btnSaveFollowUp.innerText = 'Saving...';
+            try {
+                if (followUpNoteId) {
+                    await fetch(`${API_NOTES}/${followUpNoteId}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ content: followUpTextarea.value })
+                    });
+                } else {
+                    await fetch(API_NOTES, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ content: followUpTextarea.value, author: 'system_followup', pinned: true })
+                    });
+                }
+                if (followUpSaveStatus) {
+                    followUpSaveStatus.innerText = 'Saved!';
+                    setTimeout(() => followUpSaveStatus.innerText = '', 2000);
+                }
+                loadNotes();
+            } catch (e) {
+                console.error('Failed to save follow up list', e);
+                if (followUpSaveStatus) followUpSaveStatus.innerText = 'Error saving';
+            } finally {
+                btnSaveFollowUp.disabled = false;
+                btnSaveFollowUp.innerText = 'Save Follow Up List';
+            }
+        });
+    }
+
+    btnToggleArchiveView.addEventListener('click', () => {
             currentNotesTab = currentNotesTab === 'archive' ? 'active' : 'archive';
+            if (btnToggleFollowUpView) btnToggleFollowUpView.style.color = 'rgba(255,255,255,0.7)';
             btnToggleArchiveView.style.color = currentNotesTab === 'archive' ? '#2196f3' : 'rgba(255,255,255,0.7)';
             renderNotesGrid();
         });
