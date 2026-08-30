@@ -106,10 +106,10 @@ export function calculateBudgetBreakdown(items: BudgetItem[]): BudgetBreakdown {
     const cat = item.category || 'General';
     if (item.type === 'expense') {
       totalExpense += amt;
-      categories[cat] = (categories[cat] || 0) + amt;
+      categories[cat] = (categories[cat] || 0) - amt;
     } else if (item.type === 'income') {
       totalIncome += amt;
-      categories[cat] = (categories[cat] || 0) - amt;
+      categories[cat] = (categories[cat] || 0) + amt;
     }
   }
 

@@ -18,7 +18,7 @@ Read `CONTEXT.md` before changing terminology, agenda behavior, persistence, int
 * Rumble OS is live-data-only in production. Never add mock, dummy, seeded, guessed, or hard-coded user data to production paths.
 * The general Learning card rotates through three suggestions and lets the user choose a topic.
 * The agent will maintain a database of 25-30 yoga routines, dynamically presenting 3 options every 09:00 AM based on the previous night's and 06:00 AM's pain logs. Suggestions must account for surgeries, clinician restrictions, and learned rehabilitation feedback (Implemented via Subagent).
-* A Meditation Protocol appears every night at 09:00 PM and 12:00 AM (Implemented via Subagent).
+* A Meditation Protocol appears every night at 09:00 PM (Implemented via Subagent).
 * Weekly agenda targets three hydrotherapy sessions. Rumble selects only the sessions still needed to reach three for the current week — e.g. if today's session is already completed, Rumble selects the remaining two; a week with none completed yet gets three Rumble-selected days. The user may adjust any Rumble-selected day before it is written to the calendar.
 * Weather-based washing scheduling: select exactly 2 optimal days from the live Wangaratta forecast using the lowest precipitation probabilities.
 * Current weather and forecast must come directly from Open-Meteo for Wangaratta, Victoria, Australia: latitude `-36.3536`, longitude `146.3225`.

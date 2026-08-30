@@ -282,14 +282,8 @@ export function ensureDailyStandingProtocols(
     {
       id: `meditation_night_${datePrefix}`,
       item_type: 'meditation' as const,
-      title: 'Night Meditation Protocol',
-      time: `${datePrefix}T21:30:00+10:00`,
-    },
-    {
-      id: `meditation_midnight_${datePrefix}`,
-      item_type: 'meditation' as const,
-      title: 'Sleep & Relaxation Meditation',
-      time: `${datePrefix}T23:59:00+10:00`,
+      title: 'Sleep Meditation',
+      time: `${datePrefix}T21:00:00+10:00`,
     },
     ...['06:00:00', '09:00:00', '12:00:00', '15:00:00', '18:00:00', '21:00:00', '23:59:00'].map((timeStr) => ({
       id: `pain_log_reminder_${timeStr.replace(/:/g, '')}_${datePrefix}`,

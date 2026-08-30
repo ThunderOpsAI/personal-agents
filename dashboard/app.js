@@ -635,7 +635,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const yesterdayProtocols = [
             { id: 'yest_retrieval_0600', time: '06:00 AM', title: 'Automated Retrieval: Scrape Gmail & Calendar', item_type: 'retrieval', status: 'completed' },
             { id: 'yest_yoga_0900', time: '09:00 AM', title: 'Adaptive Morning Yoga Routine', item_type: 'yoga', status: 'completed' },
-            { id: 'yest_med_2100', time: '09:00 PM', title: 'Evening Meditation Protocol', item_type: 'meditation', status: 'completed' }
+            { id: 'yest_med_2100', time: '09:00 PM', title: 'Sleep Meditation', item_type: 'meditation', status: 'completed' }
         ];
 
         const countBadge = document.getElementById('agendaCount');
@@ -685,8 +685,8 @@ document.addEventListener('DOMContentLoaded', () => {
             { id: 'tom_hydro_1030', time: '10:30 AM', title: 'Hydrotherapy Session (Rumble Target: 3/week)', item_type: 'hydrotherapy', status: 'pending' },
             { id: 'tom_wash_1300', time: '01:00 PM', title: 'Weather-Optimized Washing (Lowest Precip Window)', item_type: 'washing', status: 'pending' },
             { id: 'tom_email_1400', time: '02:00 PM', title: 'Automated Afternoon Email & Calendar Scrape', item_type: 'retrieval', status: 'pending' },
-            { id: 'tom_med_2100', time: '09:00 PM', title: 'Evening Meditation Protocol & Somatic Unwind', item_type: 'meditation', status: 'pending' },
-            { id: 'tom_rest_0000', time: '12:00 AM', title: 'Midnight Restorative Decompression', item_type: 'meditation', status: 'pending' }
+            { id: 'tom_yoga_1700', time: '05:00 PM', title: 'Shoulder & Neck Decompression', item_type: 'yoga', status: 'pending' },
+            { id: 'tom_med_2100', time: '09:00 PM', title: 'Sleep Meditation', item_type: 'meditation', status: 'pending' }
         ];
 
         // Also append any tomorrow calendar events
@@ -4847,9 +4847,13 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     function startRunnerModal(id) {
-        runnerModal.classList.remove('hidden');
-        
         const rawId = (id || '').toLowerCase().trim();
+        if (rawId.includes('meditation')) {
+            window.open('https://insighttimer.com', '_blank');
+            return;
+        }
+
+        runnerModal.classList.remove('hidden');
         const runnerTitleEl = document.getElementById('runnerTitle');
         
         if (YOGA_ROUTINES[rawId]) {
@@ -5438,6 +5442,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const btnViewBudgetEntries = document.getElementById('btnViewBudgetEntries');
+    const budgetEntriesList = document.getElementById('budgetEntriesList');
+    if (btnViewBudgetEntries && budgetEntriesList) {
+        btnViewBudgetEntries.addEventListener('click', (e) => {
+            e.stopPropagation();
+            budgetEntriesList.classList.toggle('hidden');
+        });
+    }
+
     async function loadBudget() {
         try {
             const res = await fetch(`${API_BUDGET}?period=${currentBudgetPeriod}`);
@@ -5456,15 +5469,35 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     const spentVal = Number(data.summary?.Total || 0).toFixed(2);
                     const incomeVal = Number(data.summary?.Income || 0).toFixed(2);
+                    const totalVal = (Number(incomeVal) - Number(spentVal)).toFixed(2);
                     const periodLabel = currentBudgetPeriod === 'weekly' ? `Week (${data.weekly?.label || ''})` : `Month (${data.monthly?.label || ''})`;
                     if (budgetTotalSpent) {
-                        if (Number(incomeVal) > 0) {
-                            budgetTotalSpent.innerText = `Spent: $${spentVal} | In: $${incomeVal}`;
-                        } else {
-                            budgetTotalSpent.innerText = `Spent: $${spentVal}`;
-                        }
+                        budgetTotalSpent.innerText = `IN: ${incomeVal} | OUT: ${spentVal} | TOTAL: ${totalVal}`;
                     }
                     if (budgetPeriodBadge) budgetPeriodBadge.innerText = periodLabel;
+                    
+                    const entriesList = document.getElementById('budgetEntriesList');
+                    if (entriesList) {
+                        const items = currentBudgetPeriod === 'weekly' ? data.weekly?.items : data.monthly?.items;
+                        if (items && items.length > 0) {
+                            let tableHtml = `<table style="width: 100%; border-collapse: collapse;">`;
+                            tableHtml += `<tr><th style="text-align: left; padding: 4px; border-bottom: 1px solid var(--glass-border);">Date</th><th style="text-align: left; padding: 4px; border-bottom: 1px solid var(--glass-border);">Desc</th><th style="text-align: left; padding: 4px; border-bottom: 1px solid var(--glass-border);">Cat</th><th style="text-align: right; padding: 4px; border-bottom: 1px solid var(--glass-border);">Amount</th></tr>`;
+                            items.forEach(item => {
+                                const d = new Date(item.created_at).toLocaleDateString('en-AU', {day: '2-digit', month: 'short'});
+                                const amtColor = item.type === 'income' ? 'var(--neon-green)' : 'var(--text-primary)';
+                                tableHtml += `<tr>
+                                    <td style="padding: 4px; border-bottom: 1px solid rgba(255,255,255,0.05);">${d}</td>
+                                    <td style="padding: 4px; border-bottom: 1px solid rgba(255,255,255,0.05);">${item.description.replace(/</g, "&lt;")}</td>
+                                    <td style="padding: 4px; border-bottom: 1px solid rgba(255,255,255,0.05);">${item.category.replace(/</g, "&lt;")}</td>
+                                    <td style="padding: 4px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: right; color: ${amtColor};">${Number(item.amount).toFixed(2)}</td>
+                                </tr>`;
+                            });
+                            tableHtml += `</table>`;
+                            entriesList.innerHTML = tableHtml;
+                        } else {
+                            entriesList.innerHTML = '<div style="color: var(--text-secondary);">No entries logged.</div>';
+                        }
+                    }
                 }
             }
         } catch (e) {

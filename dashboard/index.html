@@ -55,11 +55,17 @@
                     </div>
                     <div style="display: flex; align-items: center; gap: 6px;">
                         <button class="btn btn-sm btn-outline" id="btnToggleBudgetPeriod" style="padding: 2px 8px; font-size: 0.74rem;">Show Month</button>
-                        <span class="badge neon-green" id="budgetTotalSpent">Spent: $0.00</span>
+                        <span class="badge neon-green" id="budgetTotalSpent">IN: $0.00 | OUT: $0.00 | TOTAL: $0.00</span>
                     </div>
                 </div>
                 <div class="budget-body" id="budgetSummary" style="margin-bottom: 14px; display: flex; flex-wrap: wrap; gap: 8px;">
                     <!-- Dynamic Summary -->
+                </div>
+                <div style="margin-bottom: 8px;">
+                    <button class="btn btn-sm btn-outline" id="btnViewBudgetEntries" style="padding: 2px 8px; font-size: 0.74rem;">Toggle Entries</button>
+                </div>
+                <div id="budgetEntriesList" class="hidden" style="margin-bottom: 14px; font-size: 0.85rem; max-height: 200px; overflow-y: auto; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 6px;">
+                     <!-- Individual entries go here -->
                 </div>
                 <div class="budget-form hidden" id="budgetForm" style="display: flex; gap: 8px; flex-wrap: wrap;">
                     <input type="text" id="budgetDesc" class="glass-input" placeholder="Description" style="flex: 1; min-width: 150px; padding: 8px;">
