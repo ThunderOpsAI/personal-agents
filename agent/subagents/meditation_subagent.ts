@@ -19,6 +19,19 @@ export const meditationSubagent = defineAgent({
   handler: async (context?: { timeSlot?: "21:00" | "00:00" }) => {
     const slot = context?.timeSlot ?? "21:00";
 
+    const insightTracks = [
+      "https://insig.ht/WNXkIEmD35b",
+      "https://insig.ht/iOHiTPpD35b",
+      "https://insig.ht/0aQuRDrD35b",
+      "https://insig.ht/9XyOUPsD35b"
+    ];
+    
+    // Rotate based on day of year, shifted by slot to give different tracks for 21:00 vs 00:00
+    const now = new Date();
+    const dayOfYear = Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / 1000 / 60 / 60 / 24);
+    const slotOffset = slot === "21:00" ? 0 : 1;
+    const trackLink = insightTracks[(dayOfYear + slotOffset) % 4];
+
     const protocol: MeditationProtocol =
       slot === "21:00"
         ? {
@@ -27,7 +40,7 @@ export const meditationSubagent = defineAgent({
             title: "Evening Somatic Relaxation & Parasympathetic Wind-Down",
             durationMinutes: 15,
             focus: "Progressive muscle relaxation and parasympathetic breathing (4-7-8)",
-            audioPrompt: "Focus on releasing tension in lower back, hips, and shoulders before sleep.",
+            audioPrompt: `Focus on releasing tension in lower back, hips, and shoulders before sleep. \nInsight Timer Track: ${trackLink}`,
           }
         : {
             id: "med_midnight_0000",
@@ -35,11 +48,11 @@ export const meditationSubagent = defineAgent({
             title: "Midnight Sleep Restoration & Pain Distraction Protocol",
             durationMinutes: 20,
             focus: "Body scan meditation and deep restorative sleep induction",
-            audioPrompt: "Slow rhythmic breathing focusing on physical ease and nervous system calm.",
+            audioPrompt: `Slow rhythmic breathing focusing on physical ease and nervous system calm. \nInsight Timer Track: ${trackLink}`,
           };
 
     return {
-      timestamp: new Date().toISOString(),
+      timestamp: now.toISOString(),
       timezone: "Australia/Melbourne",
       timeSlot: slot,
       protocol,
