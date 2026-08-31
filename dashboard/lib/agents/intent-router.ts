@@ -614,7 +614,10 @@ ${weatherText}
    - Extract exact details from live emails: Deakin, Medibank, Court Coordinator / Wangaratta.
    - Shine Lawyers Case Summary from attachments MUST follow the 3-bullet max rule.
 8. INTENT TUNING:
-   - If the user gives a direct write command (e.g. "log pain", "add to budget"), keep conversational chatter concise, but for email drafts ALWAYS include the full draft in the reply text.`;
+   - If the user gives a direct write command (e.g. "log pain", "add to budget"), keep conversational chatter concise, but for email drafts ALWAYS include the full draft in the reply text.
+9. DATETIME PARSING:
+   - For any action requiring a scheduled time (like 'task' or 'calendar_event'), you MUST calculate the exact ISO 8601 string based on the 'Current Time' provided above.
+   - NEVER output relative words like 'tomorrow' or 'next week' in the action data fields. ALWAYS output a valid ISO 8601 datetime (e.g., '2026-09-01T09:00:00+10:00').`;
 
   const responseSchema = {
     type: "OBJECT",
