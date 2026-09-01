@@ -1,7 +1,7 @@
 # Weekly Budget Report (2026-W35)
 
 * **Period:** Mon, 24 Aug 2026 to Sun, 30 Aug 2026
-* **Generated At:** 2026-09-01T00:09:01.915Z
+* **Generated At:** 2026-09-01T02:13:23.524Z
 * **Total Spent:** $0.00
 * **Total Income:** $0.00
 * **Net Balance:** $0.00
