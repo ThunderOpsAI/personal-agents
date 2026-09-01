@@ -1,11 +1,11 @@
 # Weekly Budget Report (2026-W35)
 
 * **Period:** Mon, 24 Aug 2026 to Sun, 30 Aug 2026
-* **Generated At:** 2026-08-28T16:39:25.254Z
-* **Total Spent:** $265.50
+* **Generated At:** 2026-09-01T00:09:01.915Z
+* **Total Spent:** $0.00
 * **Total Income:** $0.00
-* **Net Balance:** $265.50
-* **Transaction Count:** 2
+* **Net Balance:** $0.00
+* **Transaction Count:** 0
 
 ---
 
@@ -13,8 +13,7 @@
 
 | Category | Amount | Percentage |
 | :--- | :--- | :--- |
-| **Medical** | $180.00 | 67.8% |
-| **Groceries** | $85.50 | 32.2% |
+| *No expenses logged* | $0.00 | 0.0% |
 
 ---
 
@@ -22,13 +21,12 @@
 
 | Date & Time | Description | Category | Type | Amount |
 | :--- | :--- | :--- | :--- | :--- |
-| 29 Aug, 02:39 am | Specialist Consultation | Medical | EXPENSE | $180.00 |
-| 29 Aug, 02:39 am | Target Organic Groceries | Groceries | EXPENSE | $85.50 |
+| - | *No items recorded in this period* | - | - | $0.00 |
 
 ---
 
 ## Periodic Health Summary
 
-* **Period Total:** $265.50 across 2 transactions.
-* **Top Expense Category:** Medical ($180.00)
+* **Period Total:** $0.00 across 0 transactions.
+* **Top Expense Category:** None ($0.00)
 * **Status:** Archived & Synthesized for historical review.

@@ -3,15 +3,15 @@ import { CreatePainLogInput } from './lib/schema';
 import dotenv from 'dotenv';
 dotenv.config();
 
-const locations = [
-  { area: 'Lumbar', side: 'unspecified', weight: 78 },
-  { area: 'Knee', side: 'left', weight: 2 },
-  { area: 'Ankle', side: 'right', weight: 2 },
-  { area: 'Thoracic', side: 'unspecified', weight: 2 },
-  { area: 'Cervical', side: 'unspecified', weight: 2 },
-  { area: 'Sciatica', side: 'unspecified', weight: 8 },
-  { area: 'Neck', side: 'unspecified', weight: 3 },
-  { area: 'Shoulder', side: 'right', weight: 3 },
+const locations: Array<{ area: string; side?: 'left' | 'right' | 'unspecified'; percentage: number; weight?: number }> = [
+  { area: 'Lumbar', side: 'unspecified', percentage: 78, weight: 78 },
+  { area: 'Knee', side: 'left', percentage: 2, weight: 2 },
+  { area: 'Ankle', side: 'right', percentage: 2, weight: 2 },
+  { area: 'Thoracic', side: 'unspecified', percentage: 2, weight: 2 },
+  { area: 'Cervical', side: 'unspecified', percentage: 2, weight: 2 },
+  { area: 'Sciatica', side: 'unspecified', percentage: 8, weight: 8 },
+  { area: 'Neck', side: 'unspecified', percentage: 3, weight: 3 },
+  { area: 'Shoulder', side: 'right', percentage: 3, weight: 3 },
 ];
 
 async function seed() {

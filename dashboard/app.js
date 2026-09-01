@@ -196,6 +196,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnSaveNoteEdit = document.getElementById('btnSaveNoteEdit');
     const btnCancelNoteEdit = document.getElementById('btnCancelNoteEdit');
     const btnPinNote = document.getElementById('btnPinNote');
+    const noteFileInput = document.getElementById('noteFileInput');
+    const btnNoteAttachCollapsed = document.getElementById('btnNoteAttachCollapsed');
+    const btnNoteAttachExpanded = document.getElementById('btnNoteAttachExpanded');
+    const noteAttachmentPreview = document.getElementById('noteAttachmentPreview');
+    const noteAttachmentImg = document.getElementById('noteAttachmentImg');
+    const noteAttachmentFileIcon = document.getElementById('noteAttachmentFileIcon');
+    const noteAttachmentName = document.getElementById('noteAttachmentName');
+    const noteAttachmentSize = document.getElementById('noteAttachmentSize');
+    const noteOcrStatus = document.getElementById('noteOcrStatus');
+    const btnRemoveNoteAttachment = document.getElementById('btnRemoveNoteAttachment');
+    let currentNoteAttachment = null;
     
     // Logger Elements
     const painValDisplay = document.getElementById('painValDisplay');
@@ -2478,13 +2489,122 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function clearNoteAttachment() {
+        currentNoteAttachment = null;
+        if (noteFileInput) noteFileInput.value = '';
+        if (noteAttachmentPreview) noteAttachmentPreview.classList.add('hidden');
+        if (noteAttachmentImg) {
+            noteAttachmentImg.src = '';
+            noteAttachmentImg.style.display = 'none';
+        }
+        if (noteOcrStatus) noteOcrStatus.innerText = '';
+    }
+
+    if (btnRemoveNoteAttachment) {
+        btnRemoveNoteAttachment.addEventListener('click', (e) => {
+            e.stopPropagation();
+            clearNoteAttachment();
+        });
+    }
+
+    if (btnNoteAttachCollapsed) {
+        btnNoteAttachCollapsed.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openNoteEditor();
+            if (noteFileInput) noteFileInput.click();
+        });
+    }
+
+    if (btnNoteAttachExpanded) {
+        btnNoteAttachExpanded.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (noteFileInput) noteFileInput.click();
+        });
+    }
+
+    if (noteFileInput) {
+        noteFileInput.addEventListener('change', async (e) => {
+            if (!e.target.files || e.target.files.length === 0) return;
+            const file = e.target.files[0];
+            openNoteEditor();
+
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                const dataUrl = event.target.result;
+                currentNoteAttachment = {
+                    data: dataUrl,
+                    mimeType: file.type || 'application/octet-stream',
+                    filename: file.name
+                };
+
+                if (noteAttachmentName) noteAttachmentName.innerText = file.name;
+                if (noteAttachmentSize) noteAttachmentSize.innerText = `${Math.round(file.size / 1024)} KB`;
+                if (file.type.startsWith('image/')) {
+                    if (noteAttachmentImg) {
+                        noteAttachmentImg.src = dataUrl;
+                        noteAttachmentImg.style.display = 'block';
+                    }
+                    if (noteAttachmentFileIcon) noteAttachmentFileIcon.style.display = 'none';
+                } else {
+                    if (noteAttachmentImg) noteAttachmentImg.style.display = 'none';
+                    if (noteAttachmentFileIcon) noteAttachmentFileIcon.style.display = 'block';
+                }
+                if (noteAttachmentPreview) noteAttachmentPreview.classList.remove('hidden');
+
+                // If image or PDF, trigger OCR text extraction
+                if (file.type.startsWith('image/') || file.type === 'application/pdf') {
+                    if (noteOcrStatus) noteOcrStatus.innerText = 'Scanning text...';
+                    try {
+                        const formData = new FormData();
+                        formData.append('image', file);
+                        formData.append('mode', 'document');
+
+                        const res = await fetch('/api/v1/capture/ocr', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        if (res.ok) {
+                            const ocrData = await res.json();
+                            if (ocrData.success && ocrData.text) {
+                                if (noteOcrStatus) noteOcrStatus.innerText = 'Text extracted!';
+                                const existingBody = editNoteBody.value.trim();
+                                if (!existingBody) {
+                                    editNoteBody.value = ocrData.text;
+                                } else {
+                                    editNoteBody.value = existingBody + '\n\n--- Extracted Text ---\n' + ocrData.text;
+                                }
+                                if (!editNoteTitle.value.trim()) {
+                                    const firstLine = ocrData.text.split('\n')[0].replace(/^#+\s*/, '').trim();
+                                    editNoteTitle.value = firstLine.length > 50 ? firstLine.substring(0, 50) + '...' : firstLine || `Document (${file.name})`;
+                                }
+                                showToast('Document text transcribed into note', 'success');
+                            } else {
+                                if (noteOcrStatus) noteOcrStatus.innerText = 'Attached';
+                            }
+                        } else {
+                            if (noteOcrStatus) noteOcrStatus.innerText = 'Attached';
+                        }
+                    } catch (ocrErr) {
+                        console.error('OCR Error:', ocrErr);
+                        if (noteOcrStatus) noteOcrStatus.innerText = 'Attached';
+                    }
+                } else {
+                    if (noteOcrStatus) noteOcrStatus.innerText = 'Attached';
+                }
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
     function openNoteEditor(note = null) {
+        clearNoteAttachment();
         if (note) {
             editingNoteId = note.id;
-            const lines = note.content.split('\\n');
+            const lines = note.content.split('\n');
             if (lines.length > 0 && lines[0].startsWith('# ')) {
                 editNoteTitle.value = lines[0].replace('# ', '');
-                editNoteBody.value = lines.slice(1).join('\\n');
+                editNoteBody.value = lines.slice(1).join('\n');
             } else {
                 editNoteTitle.value = '';
                 editNoteBody.value = note.content;
@@ -2505,19 +2625,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    noteEditorCollapsed.addEventListener('click', () => openNoteEditor());
+    noteEditorCollapsed.addEventListener('click', (e) => {
+        if (e.target !== btnNoteAttachCollapsed && !btnNoteAttachCollapsed?.contains(e.target)) {
+            openNoteEditor();
+        }
+    });
     
     function closeAndSaveNote() {
         const title = editNoteTitle.value.trim();
         const body = editNoteBody.value.trim();
-        if (title || body) {
-            const content = title ? `# ${title}\n${body}` : body;
+        if (title || body || currentNoteAttachment) {
+            let content = title ? `# ${title}\n${body}` : body;
+            if (currentNoteAttachment && !content.includes(currentNoteAttachment.filename)) {
+                content += `\n\n[Attachment: ${currentNoteAttachment.filename}]`;
+            }
             const pinned = btnPinNote.dataset.pinned === "true";
             saveNote({ content, pinned });
+            clearNoteAttachment();
         } else {
             noteEditorExpanded.classList.add('hidden');
             noteEditorCollapsed.classList.remove('hidden');
             editingNoteId = null;
+            clearNoteAttachment();
         }
     }
 

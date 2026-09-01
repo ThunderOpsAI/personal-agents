@@ -315,13 +315,13 @@ export async function callGemini(
     return `Rumble: I received your message: "${userMessage}". Let me know if you would like to log pain, create a note, or check your agenda.`;
   }
 
-  const preferredModel = process.env.GEMINI_MODEL || "gemini-flash-latest";
+  const preferredModel = process.env.GEMINI_MODEL || "gemini-2.5-flash";
   const modelPool = [
     preferredModel,
+    "gemini-2.5-flash",
     "gemini-flash-latest",
     "gemini-2.5-flash-lite",
-    "gemini-3-flash-preview",
-    "gemini-2.5-flash"
+    "gemini-3.7-flash"
   ].filter((v, i, a) => a.indexOf(v) === i);
 
   const userParts: any[] = [

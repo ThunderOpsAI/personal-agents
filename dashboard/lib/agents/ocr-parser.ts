@@ -35,9 +35,17 @@ export async function parseOCR(
     } else if (input.startsWith("http://") || input.startsWith("https://")) {
       const fetchRes = await fetch(input);
       if (!fetchRes.ok) throw new Error(`Failed to fetch image from URL: ${fetchRes.statusText}`);
-      const arrayBuf = await fetchRes.arrayBuffer();
+      let arrayBuf: ArrayBuffer;
+      if (typeof fetchRes.arrayBuffer === "function") {
+        arrayBuf = await fetchRes.arrayBuffer();
+      } else if (typeof (fetchRes as any).buffer === "function") {
+        arrayBuf = (await (fetchRes as any).buffer()).buffer;
+      } else {
+        const text = await fetchRes.text();
+        arrayBuf = Buffer.from(text).buffer;
+      }
       base64Data = Buffer.from(arrayBuf).toString("base64");
-      const fetchedType = fetchRes.headers.get("content-type");
+      const fetchedType = fetchRes.headers && typeof fetchRes.headers.get === "function" ? fetchRes.headers.get("content-type") : null;
       if (fetchedType) mimeType = fetchedType;
     } else {
       base64Data = input;
