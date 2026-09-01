@@ -197,8 +197,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnCancelNoteEdit = document.getElementById('btnCancelNoteEdit');
     const btnPinNote = document.getElementById('btnPinNote');
     const noteFileInput = document.getElementById('noteFileInput');
+    const noteCameraInput = document.getElementById('noteCameraInput');
     const btnNoteAttachCollapsed = document.getElementById('btnNoteAttachCollapsed');
+    const btnNoteCameraCollapsed = document.getElementById('btnNoteCameraCollapsed');
     const btnNoteAttachExpanded = document.getElementById('btnNoteAttachExpanded');
+    const btnNoteCameraExpanded = document.getElementById('btnNoteCameraExpanded');
     const noteAttachmentPreview = document.getElementById('noteAttachmentPreview');
     const noteAttachmentImg = document.getElementById('noteAttachmentImg');
     const noteAttachmentFileIcon = document.getElementById('noteAttachmentFileIcon');
@@ -207,6 +210,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const noteOcrStatus = document.getElementById('noteOcrStatus');
     const btnRemoveNoteAttachment = document.getElementById('btnRemoveNoteAttachment');
     let currentNoteAttachment = null;
+    
+    // Lightbox Elements
+    const imageLightboxModal = document.getElementById('imageLightboxModal');
+    const btnCloseImageLightbox = document.getElementById('btnCloseImageLightbox');
+    const lightboxImg = document.getElementById('lightboxImg');
+    const lightboxCaption = document.getElementById('lightboxCaption');
     
     // Logger Elements
     const painValDisplay = document.getElementById('painValDisplay');
@@ -2339,9 +2348,45 @@ document.addEventListener('DOMContentLoaded', () => {
         unpinnedNotesSectionTitle.style.display = showSections && unpinnedNotes.length > 0 ? 'block' : 'none';
         
         const renderCard = (note, container) => {
-            const lines = note.content.split('\n');
-            const title = lines.length > 0 && lines[0].trim().startsWith('# ') ? lines[0].replace('# ', '') : (lines[0].length > 30 ? lines[0].substring(0, 30) + '...' : lines[0]);
-            const body = lines.slice(1).join('<br>').substring(0, 150) || lines.join('<br>').substring(0, 150);
+            let rawContent = note.content || '';
+            
+            // Check for image markdown
+            const imgMatch = rawContent.match(/!\[(.*?)\]\(([\s\S]*?)\)/);
+            let cardImageHtml = '';
+            let imgSrcForCard = '';
+            let imgAltForCard = '';
+            if (imgMatch) {
+                imgSrcForCard = imgMatch[2].trim();
+                imgAltForCard = escapeHtml(imgMatch[1] || 'Note photo');
+                cardImageHtml = `
+                    <div class="note-card-img-wrap" style="margin-bottom: 10px; border-radius: 6px; overflow: hidden; max-height: 200px; background: rgba(0,0,0,0.3); position: relative; cursor: zoom-in;">
+                        <img src="${imgSrcForCard}" alt="${imgAltForCard}" style="width: 100%; max-height: 200px; object-fit: cover; display: block;">
+                        <span style="position: absolute; bottom: 6px; right: 6px; background: rgba(0,0,0,0.7); color: #fff; font-size: 0.72rem; padding: 2px 6px; border-radius: 4px; pointer-events: none;">🔍 View Photo</span>
+                    </div>
+                `;
+                rawContent = rawContent.replace(imgMatch[0], '').trim();
+            }
+
+            // Check for attachment link/tag
+            const attachMatch = rawContent.match(/\[Attachment:\s*([^\]]+)\]/);
+            let cardAttachmentHtml = '';
+            if (attachMatch) {
+                cardAttachmentHtml = `<div style="margin-top: 6px; font-size: 0.8rem; color: var(--neon-blue); display: flex; align-items: center; gap: 4px;">📎 ${escapeHtml(attachMatch[1])}</div>`;
+                rawContent = rawContent.replace(attachMatch[0], '').trim();
+            }
+
+            const lines = rawContent.split('\n');
+            let title = '';
+            let body = '';
+            if (lines.length > 0 && lines[0].trim().startsWith('# ')) {
+                title = lines[0].replace(/^#\s*/, '').trim();
+                body = lines.slice(1).join('<br>').substring(0, 150);
+            } else if (lines.length > 0 && lines[0].trim()) {
+                title = lines[0].length > 30 ? lines[0].substring(0, 30) + '...' : lines[0];
+                body = lines.slice(1).join('<br>').substring(0, 150) || lines.join('<br>').substring(0, 150);
+            } else if (imgMatch) {
+                title = imgMatch[1] || 'Photo Note';
+            }
 
             const card = document.createElement('div');
             card.className = 'keep-note glass-panel';
@@ -2352,11 +2397,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 padding: 16px; border-radius: 8px; 
                 position: relative; cursor: pointer; 
                 display: flex; flex-direction: column; 
-                min-height: 120px; transition: box-shadow 0.2s, background 0.2s;
+                min-height: 120px; transition: box-shadow 0.2s, background 0.2s, border-color 0.2s;
             `;
             
-            card.addEventListener('mouseenter', () => card.style.boxShadow = '0 2px 5px rgba(0,0,0,0.5)');
-            card.addEventListener('mouseleave', () => card.style.boxShadow = 'none');
+            card.addEventListener('mouseenter', () => {
+                card.style.boxShadow = '0 4px 12px rgba(0,0,0,0.6)';
+                card.style.borderColor = 'rgba(255,255,255,0.4)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.boxShadow = 'none';
+                card.style.borderColor = 'rgba(255,255,255,0.2)';
+            });
 
             const pinIcon = `<svg width="20" height="20" viewBox="0 0 24 24" fill="${note.pinned ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"></line><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.68V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3v4.68a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path></svg>`;
             const archiveIcon = note.isArchived 
@@ -2364,14 +2415,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>`;
 
             card.innerHTML = `
+                ${cardImageHtml}
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-                    <h4 style="margin: 0; font-size: 1.1em; font-weight: 500; color: var(--text-primary);">${title}</h4>
+                    <h4 style="margin: 0; font-size: 1.1em; font-weight: 500; color: var(--text-primary);">${escapeHtml(title)}</h4>
                     <button class="btn-icon btn-pin-toggle" data-id="${note.id}" style="background: none; border: none; color: ${note.pinned ? '#ffeb3b' : 'rgba(255,255,255,0.5)'}; cursor: pointer; padding: 4px;" title="${note.pinned ? 'Unpin' : 'Pin'}">
                         ${pinIcon}
                     </button>
                 </div>
                 <div style="flex-grow: 1;">
                     <p style="margin: 0; font-size: 0.95em; color: rgba(255,255,255,0.85); overflow-wrap: anywhere; line-height: 1.4;">${body}</p>
+                    ${cardAttachmentHtml}
                 </div>
                 <div style="margin-top: 16px; display: flex; justify-content: space-between; align-items: center; opacity: 0.7;">
                     <div style="font-size: 0.75em; color: rgba(255,255,255,0.5);">${new Date(note.created_at).toLocaleDateString()}</div>
@@ -2380,6 +2433,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     </button>
                 </div>
             `;
+
+            const imgWrap = card.querySelector('.note-card-img-wrap');
+            if (imgWrap && imgSrcForCard) {
+                imgWrap.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openImageLightbox(imgSrcForCard, imgAltForCard || title);
+                });
+            }
             
             card.addEventListener('click', (e) => {
                 if (e.target.closest('button')) return;
@@ -2492,11 +2553,13 @@ document.addEventListener('DOMContentLoaded', () => {
     function clearNoteAttachment() {
         currentNoteAttachment = null;
         if (noteFileInput) noteFileInput.value = '';
+        if (noteCameraInput) noteCameraInput.value = '';
         if (noteAttachmentPreview) noteAttachmentPreview.classList.add('hidden');
         if (noteAttachmentImg) {
             noteAttachmentImg.src = '';
             noteAttachmentImg.style.display = 'none';
         }
+        if (noteAttachmentFileIcon) noteAttachmentFileIcon.style.display = 'none';
         if (noteOcrStatus) noteOcrStatus.innerText = '';
     }
 
@@ -2507,78 +2570,111 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    if (noteFileInput) {
-        noteFileInput.addEventListener('change', async (e) => {
-            if (!e.target.files || e.target.files.length === 0) return;
-            const file = e.target.files[0];
-            openNoteEditor(null, false);
+    async function handleNoteFileSelection(file) {
+        if (!file) return;
+        openNoteEditor(null, false);
 
-            const reader = new FileReader();
-            reader.onload = async (event) => {
-                const dataUrl = event.target.result;
-                currentNoteAttachment = {
-                    data: dataUrl,
-                    mimeType: file.type || 'application/octet-stream',
-                    filename: file.name
-                };
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+            const dataUrl = event.target.result;
+            currentNoteAttachment = {
+                data: dataUrl,
+                mimeType: file.type || 'image/jpeg',
+                filename: file.name || 'photo.jpg'
+            };
 
-                if (noteAttachmentName) noteAttachmentName.innerText = file.name;
-                if (noteAttachmentSize) noteAttachmentSize.innerText = `${Math.round(file.size / 1024)} KB`;
-                if (file.type.startsWith('image/')) {
-                    if (noteAttachmentImg) {
-                        noteAttachmentImg.src = dataUrl;
-                        noteAttachmentImg.style.display = 'block';
-                    }
-                    if (noteAttachmentFileIcon) noteAttachmentFileIcon.style.display = 'none';
-                } else {
-                    if (noteAttachmentImg) noteAttachmentImg.style.display = 'none';
-                    if (noteAttachmentFileIcon) noteAttachmentFileIcon.style.display = 'block';
+            if (noteAttachmentName) noteAttachmentName.innerText = file.name || 'photo.jpg';
+            if (noteAttachmentSize) noteAttachmentSize.innerText = `${Math.round((file.size || (dataUrl.length * 0.75)) / 1024)} KB`;
+            if (file.type.startsWith('image/') || (!file.type && dataUrl.startsWith('data:image/'))) {
+                if (noteAttachmentImg) {
+                    noteAttachmentImg.src = dataUrl;
+                    noteAttachmentImg.style.display = 'block';
                 }
-                if (noteAttachmentPreview) noteAttachmentPreview.classList.remove('hidden');
+                if (noteAttachmentFileIcon) noteAttachmentFileIcon.style.display = 'none';
+            } else {
+                if (noteAttachmentImg) noteAttachmentImg.style.display = 'none';
+                if (noteAttachmentFileIcon) noteAttachmentFileIcon.style.display = 'block';
+            }
+            if (noteAttachmentPreview) noteAttachmentPreview.classList.remove('hidden');
 
-                // If image or PDF, trigger OCR text extraction
-                if (file.type.startsWith('image/') || file.type === 'application/pdf') {
-                    if (noteOcrStatus) noteOcrStatus.innerText = 'Scanning text...';
-                    try {
-                        const formData = new FormData();
-                        formData.append('image', file);
-                        formData.append('mode', 'document');
+            // If image or PDF, trigger OCR text extraction
+            if (file.type.startsWith('image/') || file.type === 'application/pdf' || dataUrl.startsWith('data:image/')) {
+                if (noteOcrStatus) noteOcrStatus.innerText = 'Scanning text...';
+                try {
+                    const formData = new FormData();
+                    formData.append('image', file);
+                    formData.append('mode', 'document');
 
-                        const res = await fetch('/api/v1/capture/ocr', {
-                            method: 'POST',
-                            body: formData
-                        });
+                    const res = await fetch('/api/v1/capture/ocr', {
+                        method: 'POST',
+                        body: formData
+                    });
 
-                        if (res.ok) {
-                            const ocrData = await res.json();
-                            if (ocrData.success && ocrData.text) {
-                                if (noteOcrStatus) noteOcrStatus.innerText = 'Text extracted!';
-                                const existingBody = editNoteBody.value.trim();
-                                if (!existingBody) {
-                                    editNoteBody.value = ocrData.text;
-                                } else {
-                                    editNoteBody.value = existingBody + '\n\n--- Extracted Text ---\n' + ocrData.text;
-                                }
-                                if (!editNoteTitle.value.trim()) {
-                                    const firstLine = ocrData.text.split('\n')[0].replace(/^#+\s*/, '').trim();
-                                    editNoteTitle.value = firstLine.length > 50 ? firstLine.substring(0, 50) + '...' : firstLine || `Document (${file.name})`;
-                                }
-                                showToast('Document text transcribed into note', 'success');
+                    if (res.ok) {
+                        const ocrData = await res.json();
+                        if (ocrData.success && ocrData.text) {
+                            if (noteOcrStatus) noteOcrStatus.innerText = 'Text extracted!';
+                            const existingBody = editNoteBody.value.trim();
+                            if (!existingBody) {
+                                editNoteBody.value = ocrData.text;
                             } else {
-                                if (noteOcrStatus) noteOcrStatus.innerText = 'Attached';
+                                editNoteBody.value = existingBody + '\n\n--- Extracted Text ---\n' + ocrData.text;
                             }
+                            if (!editNoteTitle.value.trim()) {
+                                const firstLine = ocrData.text.split('\n')[0].replace(/^#+\s*/, '').trim();
+                                editNoteTitle.value = firstLine.length > 50 ? firstLine.substring(0, 50) + '...' : firstLine || `Document (${file.name || 'Photo'})`;
+                            }
+                            showToast('Document text transcribed into note', 'success');
                         } else {
                             if (noteOcrStatus) noteOcrStatus.innerText = 'Attached';
                         }
-                    } catch (ocrErr) {
-                        console.error('OCR Error:', ocrErr);
+                    } else {
                         if (noteOcrStatus) noteOcrStatus.innerText = 'Attached';
                     }
-                } else {
+                } catch (ocrErr) {
+                    console.error('OCR Error:', ocrErr);
                     if (noteOcrStatus) noteOcrStatus.innerText = 'Attached';
                 }
-            };
-            reader.readAsDataURL(file);
+            } else {
+                if (noteOcrStatus) noteOcrStatus.innerText = 'Attached';
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+
+    if (noteFileInput) {
+        noteFileInput.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files.length > 0) {
+                handleNoteFileSelection(e.target.files[0]);
+            }
+        });
+    }
+
+    if (noteCameraInput) {
+        noteCameraInput.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files.length > 0) {
+                handleNoteFileSelection(e.target.files[0]);
+            }
+        });
+    }
+
+    function openImageLightbox(src, caption = '') {
+        if (!imageLightboxModal || !lightboxImg) return;
+        lightboxImg.src = src;
+        if (lightboxCaption) lightboxCaption.innerText = caption;
+        imageLightboxModal.classList.remove('hidden');
+    }
+
+    if (btnCloseImageLightbox) {
+        btnCloseImageLightbox.addEventListener('click', () => {
+            if (imageLightboxModal) imageLightboxModal.classList.add('hidden');
+        });
+    }
+    if (imageLightboxModal) {
+        imageLightboxModal.addEventListener('click', (e) => {
+            if (e.target === imageLightboxModal) {
+                imageLightboxModal.classList.add('hidden');
+            }
         });
     }
 
@@ -2588,43 +2684,119 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (note) {
             editingNoteId = note.id;
-            const lines = note.content.split('\n');
+            let content = note.content || '';
+
+            // Extract any attached image markdown ![alt](src)
+            const imgMatch = content.match(/!\[(.*?)\]\(([\s\S]*?)\)/);
+            if (imgMatch) {
+                const alt = imgMatch[1] || 'Photo';
+                const src = imgMatch[2].trim();
+                currentNoteAttachment = {
+                    data: src,
+                    mimeType: src.startsWith('data:image/') ? src.split(';')[0].replace('data:', '') : 'image/jpeg',
+                    filename: alt
+                };
+                if (noteAttachmentName) noteAttachmentName.innerText = alt;
+                if (noteAttachmentSize) {
+                    const estimatedKb = Math.round((src.length * 0.75) / 1024);
+                    noteAttachmentSize.innerText = estimatedKb > 0 ? `${estimatedKb} KB` : 'Attached';
+                }
+                if (noteAttachmentImg) {
+                    noteAttachmentImg.src = src;
+                    noteAttachmentImg.style.display = 'block';
+                    noteAttachmentImg.style.cursor = 'pointer';
+                    noteAttachmentImg.title = 'Click to enlarge';
+                    noteAttachmentImg.onclick = (e) => {
+                        e.stopPropagation();
+                        openImageLightbox(src, alt);
+                    };
+                }
+                if (noteAttachmentFileIcon) noteAttachmentFileIcon.style.display = 'none';
+                if (noteAttachmentPreview) noteAttachmentPreview.classList.remove('hidden');
+
+                // Remove image markdown from text body so editor doesn't show huge base64
+                content = content.replace(imgMatch[0], '').trim();
+            }
+
+            // Extract attachment placeholder if any [Attachment: name]
+            const attachMatch = content.match(/\[Attachment:\s*([^\]]+)\]/);
+            if (attachMatch && !currentNoteAttachment) {
+                const filename = attachMatch[1];
+                currentNoteAttachment = {
+                    data: '',
+                    mimeType: 'application/octet-stream',
+                    filename: filename
+                };
+                if (noteAttachmentName) noteAttachmentName.innerText = filename;
+                if (noteAttachmentFileIcon) noteAttachmentFileIcon.style.display = 'block';
+                if (noteAttachmentImg) noteAttachmentImg.style.display = 'none';
+                if (noteAttachmentPreview) noteAttachmentPreview.classList.remove('hidden');
+                content = content.replace(attachMatch[0], '').trim();
+            }
+
+            const lines = content.split('\n');
             if (lines.length > 0 && lines[0].startsWith('# ')) {
                 editNoteTitle.value = lines[0].replace('# ', '');
-                editNoteBody.value = lines.slice(1).join('\n');
+                editNoteBody.value = lines.slice(1).join('\n').trim();
             } else {
                 editNoteTitle.value = '';
-                editNoteBody.value = note.content;
+                editNoteBody.value = content;
             }
             btnPinNote.classList.toggle('btn-neon-blue', note.pinned);
             btnPinNote.dataset.pinned = note.pinned ? "true" : "false";
+            btnPinNote.style.color = note.pinned ? '#ffeb3b' : 'rgba(255,255,255,0.5)';
+            btnPinNote.querySelector('svg')?.setAttribute('fill', note.pinned ? 'currentColor' : 'none');
+
+            if (inlineNoteEditorContainer) {
+                inlineNoteEditorContainer.style.borderColor = 'var(--neon-blue)';
+                inlineNoteEditorContainer.style.boxShadow = '0 0 16px rgba(0, 229, 255, 0.35)';
+                inlineNoteEditorContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
         } else if (clearAttachment) {
             editingNoteId = null;
             editNoteTitle.value = '';
             editNoteBody.value = '';
             btnPinNote.classList.remove('btn-neon-blue');
             btnPinNote.dataset.pinned = "false";
+            btnPinNote.style.color = 'rgba(255,255,255,0.5)';
+            btnPinNote.querySelector('svg')?.setAttribute('fill', 'none');
+            if (inlineNoteEditorContainer) {
+                inlineNoteEditorContainer.style.borderColor = 'rgba(255,255,255,0.2)';
+                inlineNoteEditorContainer.style.boxShadow = 'none';
+            }
         }
         noteEditorCollapsed.classList.add('hidden');
         noteEditorExpanded.classList.remove('hidden');
         if (!note && clearAttachment) {
             editNoteTitle.focus();
+        } else if (note) {
+            editNoteBody.focus();
         }
     }
 
     noteEditorCollapsed.addEventListener('click', (e) => {
-        if (e.target !== btnNoteAttachCollapsed && !btnNoteAttachCollapsed?.contains(e.target)) {
+        if (e.target !== btnNoteAttachCollapsed && !btnNoteAttachCollapsed?.contains(e.target) &&
+            e.target !== btnNoteCameraCollapsed && !btnNoteCameraCollapsed?.contains(e.target)) {
             openNoteEditor();
         }
     });
     
     function closeAndSaveNote() {
         const title = editNoteTitle.value.trim();
-        const body = editNoteBody.value.trim();
+        let body = editNoteBody.value.trim();
         if (title || body || currentNoteAttachment) {
             let content = title ? `# ${title}\n${body}` : body;
-            if (currentNoteAttachment && !content.includes(currentNoteAttachment.filename)) {
-                content += `\n\n[Attachment: ${currentNoteAttachment.filename}]`;
+            if (currentNoteAttachment) {
+                const isImage = currentNoteAttachment.mimeType?.startsWith('image/') || currentNoteAttachment.data?.startsWith('data:image/');
+                if (isImage && currentNoteAttachment.data) {
+                    if (!content.includes(currentNoteAttachment.data)) {
+                        content += `\n\n![${currentNoteAttachment.filename || 'Photo'}](${currentNoteAttachment.data})`;
+                    }
+                } else if (currentNoteAttachment.filename) {
+                    if (!content.includes(currentNoteAttachment.filename)) {
+                        content += `\n\n[Attachment: ${currentNoteAttachment.filename}]`;
+                    }
+                }
             }
             const pinned = btnPinNote.dataset.pinned === "true";
             saveNote({ content, pinned });
@@ -2634,6 +2806,10 @@ document.addEventListener('DOMContentLoaded', () => {
             noteEditorCollapsed.classList.remove('hidden');
             editingNoteId = null;
             clearNoteAttachment();
+        }
+        if (inlineNoteEditorContainer) {
+            inlineNoteEditorContainer.style.borderColor = 'rgba(255,255,255,0.2)';
+            inlineNoteEditorContainer.style.boxShadow = 'none';
         }
     }
 

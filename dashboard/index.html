@@ -595,9 +595,13 @@
                     <!-- Inline Note Editor -->
                     <div id="inlineNoteEditorContainer" class="glass-panel" style="max-width: 600px; margin: 0 auto 30px auto; padding: 15px; background: rgba(30,30,40,0.6); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; transition: all 0.3s ease;">
                         <input type="file" id="noteFileInput" accept="image/*,application/pdf,.doc,.docx,.txt" style="display: none;">
+                        <input type="file" id="noteCameraInput" accept="image/*" capture="environment" style="display: none;">
                         <div id="noteEditorCollapsed" style="cursor: text; display: flex; justify-content: space-between; align-items: center;">
                             <input type="text" class="glass-input" placeholder="Take a note..." style="width: 100%; border: none; background: transparent; font-size: 1em; padding: 5px; outline: none; pointer-events: none;">
-                            <label for="noteFileInput" class="btn-icon" id="btnNoteAttachCollapsed" title="Attach file or photo" style="background: none; border: none; color: rgba(255,255,255,0.7); cursor: pointer; padding: 4px; font-size: 1.1rem; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;">📎</label>
+                            <div style="display: flex; gap: 4px; align-items: center;">
+                                <label for="noteCameraInput" class="btn-icon" id="btnNoteCameraCollapsed" title="Take photo with camera" style="background: none; border: none; color: rgba(255,255,255,0.7); cursor: pointer; padding: 4px; font-size: 1.1rem; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;">📷</label>
+                                <label for="noteFileInput" class="btn-icon" id="btnNoteAttachCollapsed" title="Attach file or photo" style="background: none; border: none; color: rgba(255,255,255,0.7); cursor: pointer; padding: 4px; font-size: 1.1rem; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;">📎</label>
+                            </div>
                         </div>
                         <div id="noteEditorExpanded" class="hidden">
                             <input type="text" id="editNoteTitle" class="glass-input" placeholder="Title" style="width: 100%; font-size: 1.1em; font-weight: 500; margin-bottom: 10px; border: none; background: transparent; outline: none;">
@@ -624,6 +628,7 @@
                                     <button class="btn-icon" id="btnPinNote" style="background: none; border: none; color: rgba(255,255,255,0.5); cursor: pointer; padding: 4px;" title="Pin Note">
                                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"></line><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.68V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3v4.68a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path></svg>
                                     </button>
+                                    <label for="noteCameraInput" class="btn-icon" id="btnNoteCameraExpanded" title="Take photo with camera" style="background: none; border: none; color: rgba(255,255,255,0.7); cursor: pointer; padding: 4px; font-size: 1.1rem; display: inline-flex; align-items: center; justify-content: center;">📷</label>
                                     <label for="noteFileInput" class="btn-icon" id="btnNoteAttachExpanded" title="Attach file or photo" style="background: none; border: none; color: rgba(255,255,255,0.7); cursor: pointer; padding: 4px; font-size: 1.1rem; display: inline-flex; align-items: center; justify-content: center;">📎</label>
                                 </div>
                                 <div style="display: flex; gap: 10px;">
@@ -656,6 +661,15 @@
                     </div>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Image Lightbox Modal -->
+        <div class="modal-overlay hidden" id="imageLightboxModal" style="z-index: 1200; background: rgba(0,0,0,0.88); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center;">
+            <div style="position: relative; max-width: 90vw; max-height: 90vh; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                <button class="btn-close" id="btnCloseImageLightbox" style="position: absolute; top: -36px; right: 0; font-size: 2rem; color: #fff; background: none; border: none; cursor: pointer; line-height: 1;">&times;</button>
+                <img id="lightboxImg" src="" alt="Full view" style="max-width: 90vw; max-height: 82vh; object-fit: contain; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
+                <div id="lightboxCaption" style="margin-top: 10px; color: rgba(255,255,255,0.8); font-size: 0.9rem; text-align: center;"></div>
             </div>
         </div>
 
