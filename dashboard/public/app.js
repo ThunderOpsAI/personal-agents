@@ -2465,26 +2465,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    if (btnNoteAttachCollapsed) {
-        btnNoteAttachCollapsed.addEventListener('click', (e) => {
-            e.stopPropagation();
-            openNoteEditor();
-            if (noteFileInput) noteFileInput.click();
-        });
-    }
-
-    if (btnNoteAttachExpanded) {
-        btnNoteAttachExpanded.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (noteFileInput) noteFileInput.click();
-        });
-    }
-
     if (noteFileInput) {
         noteFileInput.addEventListener('change', async (e) => {
             if (!e.target.files || e.target.files.length === 0) return;
             const file = e.target.files[0];
-            openNoteEditor();
+            openNoteEditor(null, false);
 
             const reader = new FileReader();
             reader.onload = async (event) => {
@@ -2555,8 +2540,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function openNoteEditor(note = null) {
-        clearNoteAttachment();
+    function openNoteEditor(note = null, clearAttachment = true) {
+        if (clearAttachment) {
+            clearNoteAttachment();
+        }
         if (note) {
             editingNoteId = note.id;
             const lines = note.content.split('\n');
@@ -2569,7 +2556,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             btnPinNote.classList.toggle('btn-neon-blue', note.pinned);
             btnPinNote.dataset.pinned = note.pinned ? "true" : "false";
-        } else {
+        } else if (clearAttachment) {
             editingNoteId = null;
             editNoteTitle.value = '';
             editNoteBody.value = '';
@@ -2578,7 +2565,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         noteEditorCollapsed.classList.add('hidden');
         noteEditorExpanded.classList.remove('hidden');
-        if (!note) {
+        if (!note && clearAttachment) {
             editNoteTitle.focus();
         }
     }

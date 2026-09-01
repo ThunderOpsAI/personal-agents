@@ -597,7 +597,7 @@
                         <input type="file" id="noteFileInput" accept="image/*,application/pdf,.doc,.docx,.txt" style="display: none;">
                         <div id="noteEditorCollapsed" style="cursor: text; display: flex; justify-content: space-between; align-items: center;">
                             <input type="text" class="glass-input" placeholder="Take a note..." style="width: 100%; border: none; background: transparent; font-size: 1em; padding: 5px; outline: none; pointer-events: none;">
-                            <button class="btn-icon" id="btnNoteAttachCollapsed" title="Attach file or photo" style="background: none; border: none; color: rgba(255,255,255,0.7); cursor: pointer; padding: 4px; font-size: 1.1rem; flex-shrink: 0;">📎</button>
+                            <label for="noteFileInput" class="btn-icon" id="btnNoteAttachCollapsed" title="Attach file or photo" style="background: none; border: none; color: rgba(255,255,255,0.7); cursor: pointer; padding: 4px; font-size: 1.1rem; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;">📎</label>
                         </div>
                         <div id="noteEditorExpanded" class="hidden">
                             <input type="text" id="editNoteTitle" class="glass-input" placeholder="Title" style="width: 100%; font-size: 1.1em; font-weight: 500; margin-bottom: 10px; border: none; background: transparent; outline: none;">
@@ -624,7 +624,7 @@
                                     <button class="btn-icon" id="btnPinNote" style="background: none; border: none; color: rgba(255,255,255,0.5); cursor: pointer; padding: 4px;" title="Pin Note">
                                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"></line><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.68V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3v4.68a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path></svg>
                                     </button>
-                                    <button class="btn-icon" id="btnNoteAttachExpanded" title="Attach file or photo" style="background: none; border: none; color: rgba(255,255,255,0.7); cursor: pointer; padding: 4px; font-size: 1.1rem;">📎</button>
+                                    <label for="noteFileInput" class="btn-icon" id="btnNoteAttachExpanded" title="Attach file or photo" style="background: none; border: none; color: rgba(255,255,255,0.7); cursor: pointer; padding: 4px; font-size: 1.1rem; display: inline-flex; align-items: center; justify-content: center;">📎</label>
                                 </div>
                                 <div style="display: flex; gap: 10px;">
                                     <button class="btn btn-sm btn-outline" id="btnCancelNoteEdit">Close</button>
