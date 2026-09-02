@@ -2982,12 +2982,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.getElementById('painLogModal').classList.remove('hidden');
                 } else if (isExercise()) {
                     const cleanId = id ? id.toLowerCase().trim() : '';
-                    if (cleanId && (cleanId.startsWith('y') || cleanId.includes('meditation') || cleanId.includes('rehab'))) {
+                    if (cleanId.includes('meditation') || cleanId.startsWith('med_')) {
+                        window.open('https://insighttimer.com', '_blank');
+                    } else if (YOGA_ROUTINES[cleanId] || cleanId.match(/^(y|p|s|r|h)\d+$/i)) {
                         startRunnerModal(cleanId);
-                    } else if (cleanId.includes('yoga')) {
-                        loadExerciseSuggestions();
                     } else {
-                        startRunnerModal(cleanId || 'y1');
+                        loadExerciseSuggestions();
                     }
                 } else {
                     rumbleChatModal.classList.remove('hidden');
@@ -5221,46 +5221,45 @@ document.addEventListener('DOMContentLoaded', () => {
         { title: "Shoulder & Scapular Rehab", duration: 45, frames: ["/shoulder_rehab_routine.jpg", "/exercises/childs_pose_1.jpg"] }
     ];
 
+    let currentRoutineRunning = null;
+    let isRunnerPaused = false;
+
     function startRunnerModal(id) {
         const rawId = (id || '').toLowerCase().trim();
-        if (rawId.includes('meditation')) {
+        if (rawId.includes('meditation') || rawId.startsWith('med_')) {
             window.open('https://insighttimer.com', '_blank');
             return;
         }
 
         runnerModal.classList.remove('hidden');
         const runnerTitleEl = document.getElementById('runnerTitle');
+        isRunnerPaused = false;
+        const btnTogglePause = document.getElementById('btnTogglePauseRunner');
+        if (btnTogglePause) btnTogglePause.innerText = 'Pause';
         
-        if (YOGA_ROUTINES[rawId]) {
-            const routine = YOGA_ROUTINES[rawId];
-            if (runnerTitleEl) runnerTitleEl.innerText = routine.title;
-            currentProtocolSteps = routine.steps.map(s => ({ ...s }));
-        } else if (rawId.startsWith('y') || rawId.includes('yoga') || rawId.includes('rehab') || rawId.includes('stretch') || rawId.includes('exercise')) {
-            if (runnerTitleEl) runnerTitleEl.innerText = "Yoga & Rehab Protocol";
-            currentProtocolSteps = [
-                { title: "Cat-Cow Spine Awakening", duration: 45, frames: ["/exercises/cat_cow_1.jpg", "/exercises/cat_cow_2.jpg"] },
-                { title: "Child's Pose & Restorative Hold", duration: 60, frames: ["/exercises/childs_pose_1.jpg", "/exercises/childs_pose_2.jpg"] },
-                { title: "Lumbar Core Decompression", duration: 45, frames: ["/lumbar_core_routine.jpg", "/exercises/cat_cow_2.jpg"] },
-                { title: "Restorative Release", duration: 60, frames: ["/exercises/childs_pose_2.jpg"] }
-            ];
-        } else if (rawId.includes('meditation')) {
-            if (runnerTitleEl) runnerTitleEl.innerText = "Meditation Protocol";
-            currentProtocolSteps = [
-                { title: "Find a Comfortable Position", duration: 30, frames: ["/exercises/childs_pose_1.jpg"] },
-                { title: "Box Breathing", duration: 120, frames: ["/exercises/childs_pose_1.jpg"] },
-                { title: "Body Scan", duration: 180, frames: ["/exercises/childs_pose_2.jpg"] },
-                { title: "Gentle Return", duration: 30, frames: ["/exercises/childs_pose_1.jpg"] }
-            ];
+        let foundRoutine = YOGA_ROUTINES[rawId];
+        if (!foundRoutine) {
+            const matchingKey = Object.keys(YOGA_ROUTINES).find(k => k === rawId || rawId.includes(k) || (YOGA_ROUTINES[k].title || '').toLowerCase().includes(rawId));
+            if (matchingKey) foundRoutine = YOGA_ROUTINES[matchingKey];
+        }
+
+        if (foundRoutine) {
+            currentRoutineRunning = foundRoutine;
+            if (runnerTitleEl) runnerTitleEl.innerText = foundRoutine.title || foundRoutine.name;
+            currentProtocolSteps = (foundRoutine.steps || []).map(s => ({ ...s }));
         } else {
-            if (runnerTitleEl) runnerTitleEl.innerText = "Protocol Runner";
+            currentRoutineRunning = { id: rawId || 'y1', title: "Adaptive Restorative Yoga Protocol" };
+            if (runnerTitleEl) runnerTitleEl.innerText = "Adaptive Restorative Yoga Protocol";
             currentProtocolSteps = [
-                { title: "Alignment & Position", duration: 30, frames: ["/exercises/cat_cow_1.jpg"] },
-                { title: "Restorative Flow", duration: 60, frames: ["/exercises/childs_pose_2.jpg"] }
+                { title: "Supine Pelvic Tilts & Decompression", duration: 45, cue: "Flatten lower back against the mat on exhale, gentle arch on inhale.", frames: ["/exercises/cat_cow_1.jpg", "/exercises/cat_cow_2.jpg"] },
+                { title: "Supported Child's Pose", duration: 60, cue: "Widen knees, rest torso forward on bolster, lengthen spine.", frames: ["/exercises/childs_pose_1.jpg", "/exercises/childs_pose_2.jpg"] },
+                { title: "Lumbar Core Decompression", duration: 45, cue: "Gently hug knees to chest, relaxing sacrum and pelvic floor.", frames: ["/lumbar_core_routine.jpg", "/exercises/cat_cow_2.jpg"] },
+                { title: "Restorative Savasana Release", duration: 60, cue: "Complete still surrender into mat with diaphragmatic breathing.", frames: ["/exercises/childs_pose_2.jpg", "/exercises/cat_cow_1.jpg"] }
             ];
         }
         
         currentStepIndex = 0;
-        timeLeft = currentProtocolSteps[currentStepIndex].duration;
+        timeLeft = (currentProtocolSteps[currentStepIndex] && currentProtocolSteps[currentStepIndex].duration) || 45;
         updateStepUI();
         startRunnerTimer();
     }
@@ -5274,9 +5273,14 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateStepUI() {
         if (currentStepIndex >= currentProtocolSteps.length) return;
         const step = currentProtocolSteps[currentStepIndex];
-        runnerStep.innerText = `Step ${currentStepIndex + 1}: ${step.title}`;
-        runnerTimer.innerText = formatTime(timeLeft);
+        if (runnerStep) runnerStep.innerText = `Step ${currentStepIndex + 1} of ${currentProtocolSteps.length}: ${step.title}`;
+        if (runnerTimer) runnerTimer.innerText = formatTime(timeLeft);
         
+        const runnerCueEl = document.getElementById('runnerCue');
+        if (runnerCueEl) {
+            runnerCueEl.innerText = step.cue || step.instruction || 'Follow gentle diaphragmatic breath rhythm.';
+        }
+
         const videoEl = document.getElementById('runnerVideo');
         const imgEl = document.getElementById('runnerImg');
         const placeholderEl = document.getElementById('runnerPlaceholder');
@@ -5293,8 +5297,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 imgEl.style.display = 'block';
                 let fIdx = 0;
                 imgEl.src = step.frames[0];
+                imgEl.onerror = () => {
+                    imgEl.style.display = 'none';
+                    if (placeholderEl) {
+                        placeholderEl.style.display = 'flex';
+                        placeholderEl.innerHTML = `
+                            <div style="text-align: center; padding: 15px;">
+                                <div style="font-size: 2.2rem; margin-bottom: 6px;">🧘</div>
+                                <div style="font-size: 1rem; color: var(--neon-blue); font-weight: 600;">${escapeHtml(step.title)}</div>
+                                <div style="font-size: 0.82rem; color: var(--text-secondary); margin-top: 4px;">${escapeHtml(step.cue || 'Maintain steady rhythm')}</div>
+                            </div>
+                        `;
+                    }
+                };
                 if (step.frames.length > 1) {
                     frameInterval = setInterval(() => {
+                        if (isRunnerPaused) return;
                         fIdx = (fIdx + 1) % step.frames.length;
                         imgEl.style.opacity = '0.7';
                         setTimeout(() => {
@@ -5330,21 +5348,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 videoEl.style.display = 'none';
             }
             if (placeholderEl) {
-                placeholderEl.style.display = 'block';
-                placeholderEl.innerText = step.title.substring(0, 8).toUpperCase();
+                placeholderEl.style.display = 'flex';
+                placeholderEl.innerHTML = `
+                    <div style="text-align: center; padding: 15px;">
+                        <div style="font-size: 2.2rem; margin-bottom: 6px;">🧘</div>
+                        <div style="font-size: 1rem; color: var(--neon-blue); font-weight: 600;">${escapeHtml(step.title)}</div>
+                        <div style="font-size: 0.82rem; color: var(--text-secondary); margin-top: 4px;">${escapeHtml(step.cue || 'Maintain steady rhythm')}</div>
+                    </div>
+                `;
             }
         }
         
         const btnPrev = document.getElementById('btnPrevStep');
         const btnNext = document.getElementById('btnNextStep');
         if (btnPrev) btnPrev.disabled = currentStepIndex === 0;
-        if (btnNext) btnNext.innerText = currentStepIndex === currentProtocolSteps.length - 1 ? 'Finish' : 'Next Step';
+        if (btnNext) btnNext.innerText = currentStepIndex === currentProtocolSteps.length - 1 ? 'Finish Routine' : 'Next Step';
     }
     
     function closeRunnerModal() {
         runnerModal.classList.add('hidden');
         clearInterval(runnerInterval);
         clearInterval(frameInterval);
+        isRunnerPaused = false;
         const videoEl = document.getElementById('runnerVideo');
         if (videoEl) {
             videoEl.pause();
@@ -5353,40 +5378,131 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function togglePauseRunner() {
+        isRunnerPaused = !isRunnerPaused;
+        const btnTogglePause = document.getElementById('btnTogglePauseRunner');
+        if (btnTogglePause) {
+            btnTogglePause.innerText = isRunnerPaused ? 'Resume' : 'Pause';
+        }
+    }
+
     function startRunnerTimer() {
         clearInterval(runnerInterval);
         runnerInterval = setInterval(() => {
+            if (isRunnerPaused) return;
             timeLeft--;
             if (timeLeft < 0) {
                 currentStepIndex++;
                 if (currentStepIndex >= currentProtocolSteps.length) {
                     clearInterval(runnerInterval);
-                    runnerStep.innerText = "Routine Complete!";
-                    runnerTimer.innerText = "00:00";
+                    clearInterval(frameInterval);
+                    if (runnerStep) runnerStep.innerText = "Routine Complete!";
+                    if (runnerTimer) runnerTimer.innerText = "00:00";
                     setTimeout(() => {
                         closeRunnerModal();
-                    }, 1500);
+                        // Seamlessly prompt to log relief delta
+                        const routineName = currentRoutineRunning?.title || "Yoga Routine";
+                        if (reliefExerciseName) reliefExerciseName.innerText = routineName;
+                        if (afterPainScore) afterPainScore.value = currentPainLevel || 5;
+                        pendingProtocol = { id: currentRoutineRunning?.id || 'y1', name: routineName, beforePain: currentPainLevel || 5 };
+                        if (reliefModal) reliefModal.classList.remove('hidden');
+                    }, 1200);
                 } else {
-                    timeLeft = currentProtocolSteps[currentStepIndex].duration;
+                    timeLeft = (currentProtocolSteps[currentStepIndex] && currentProtocolSteps[currentStepIndex].duration) || 45;
                     updateStepUI();
                 }
             } else {
-                runnerTimer.innerText = formatTime(timeLeft);
+                if (runnerTimer) runnerTimer.innerText = formatTime(timeLeft);
             }
         }, 1000);
     }
 
-    btnCancelRunner.addEventListener('click', closeRunnerModal);
+    if (btnCancelRunner) btnCancelRunner.addEventListener('click', closeRunnerModal);
 
-    btnNextStep.addEventListener('click', () => {
-        currentStepIndex++;
-        if (currentStepIndex >= currentProtocolSteps.length) {
-            closeRunnerModal();
-        } else {
-            timeLeft = currentProtocolSteps[currentStepIndex].duration;
-            updateStepUI();
-        }
-    });
+    const btnPrevStep = document.getElementById('btnPrevStep');
+    if (btnPrevStep) {
+        btnPrevStep.addEventListener('click', () => {
+            if (currentStepIndex > 0) {
+                currentStepIndex--;
+                timeLeft = (currentProtocolSteps[currentStepIndex] && currentProtocolSteps[currentStepIndex].duration) || 45;
+                updateStepUI();
+            }
+        });
+    }
+
+    if (btnNextStep) {
+        btnNextStep.addEventListener('click', () => {
+            currentStepIndex++;
+            if (currentStepIndex >= currentProtocolSteps.length) {
+                closeRunnerModal();
+                const routineName = currentRoutineRunning?.title || "Yoga Routine";
+                if (reliefExerciseName) reliefExerciseName.innerText = routineName;
+                if (afterPainScore) afterPainScore.value = currentPainLevel || 5;
+                pendingProtocol = { id: currentRoutineRunning?.id || 'y1', name: routineName, beforePain: currentPainLevel || 5 };
+                if (reliefModal) reliefModal.classList.remove('hidden');
+            } else {
+                timeLeft = (currentProtocolSteps[currentStepIndex] && currentProtocolSteps[currentStepIndex].duration) || 45;
+                updateStepUI();
+            }
+        });
+    }
+
+    const btnTogglePauseRunner = document.getElementById('btnTogglePauseRunner');
+    if (btnTogglePauseRunner) {
+        btnTogglePauseRunner.addEventListener('click', togglePauseRunner);
+    }
+    if (runnerTimer) {
+        runnerTimer.addEventListener('click', togglePauseRunner);
+    }
+
+    // Swap Exercise Modal Logic
+    const btnSwapExercise = document.getElementById('btnSwapExercise');
+    const swapModal = document.getElementById('swapModal');
+    const btnCloseSwap = document.getElementById('btnCloseSwap');
+    const swapList = document.getElementById('swapList');
+
+    if (btnSwapExercise) {
+        btnSwapExercise.addEventListener('click', () => {
+            isRunnerPaused = true;
+            if (btnTogglePauseRunner) btnTogglePauseRunner.innerText = 'Resume';
+            
+            if (swapList) {
+                swapList.innerHTML = '';
+                const allRoutines = Object.values(YOGA_ROUTINES);
+                allRoutines.forEach(ex => {
+                    const item = document.createElement('div');
+                    item.className = 'glass-panel';
+                    item.style.cssText = 'padding: 10px 14px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-radius: 8px; transition: background 0.2s;';
+                    item.innerHTML = `
+                        <div style="flex: 1; min-width: 0; padding-right: 8px;">
+                            <div style="display: flex; gap: 6px; align-items: center;">
+                                <span class="exercise-tag ${(ex.category || 'yoga').toLowerCase()}">${(ex.category || 'YOGA').toUpperCase()}</span>
+                                <strong style="color: var(--text-primary); font-size: 0.92rem;">${escapeHtml(ex.title || ex.name)}</strong>
+                            </div>
+                            <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 3px;">${ex.duration_minutes || 15} min · ${ex.intensity || 'Adaptive'}</div>
+                        </div>
+                        <button class="btn btn-outline btn-sm" style="white-space: nowrap;">Swap Here</button>
+                    `;
+                    item.addEventListener('mouseenter', () => item.style.background = 'rgba(255,255,255,0.08)');
+                    item.addEventListener('mouseleave', () => item.style.background = 'rgba(255,255,255,0.02)');
+                    item.addEventListener('click', () => {
+                        if (swapModal) swapModal.classList.add('hidden');
+                        startRunnerModal(ex.id);
+                    });
+                    swapList.appendChild(item);
+                });
+            }
+            if (swapModal) swapModal.classList.remove('hidden');
+        });
+    }
+
+    if (btnCloseSwap) {
+        btnCloseSwap.addEventListener('click', () => {
+            if (swapModal) swapModal.classList.add('hidden');
+            isRunnerPaused = false;
+            if (btnTogglePauseRunner) btnTogglePauseRunner.innerText = 'Pause';
+        });
+    }
 
     // --- 5. Dual 0-10 Scales (Pain & Mood) ---
     painNumButtons.forEach(btn => {

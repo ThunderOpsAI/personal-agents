@@ -775,14 +775,18 @@
                     <video id="runnerVideo" playsinline autoplay muted loop style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; display: none;"></video>
                     <div class="visual-placeholder" id="runnerPlaceholder" style="z-index: 1;">START</div>
                 </div>
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
-                    <div>
-                        <h3 id="runnerStep">Step 1: Alignment & Position</h3>
-                        <div class="timer" id="runnerTimer">00:30</div>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                    <div style="flex: 1; min-width: 0; padding-right: 8px;">
+                        <h3 id="runnerStep" style="margin-bottom: 2px;">Step 1: Alignment & Position</h3>
+                        <p id="runnerCue" style="margin: 3px 0 6px 0; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.35;"></p>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div class="timer" id="runnerTimer" style="cursor: pointer; margin: 0;" title="Click to Pause/Resume">00:30</div>
+                            <button class="btn btn-outline btn-sm" id="btnTogglePauseRunner">Pause</button>
+                        </div>
                     </div>
-                    <button class="btn btn-outline btn-sm" id="btnSwapExercise">Swap Exercise</button>
+                    <button class="btn btn-outline btn-sm" id="btnSwapExercise" style="white-space: nowrap;">Swap Exercise</button>
                 </div>
-                <div class="runner-actions" style="display: flex; justify-content: space-between;">
+                <div class="runner-actions" style="display: flex; justify-content: space-between; margin-top: 10px;">
                     <button class="btn btn-outline" id="btnPrevStep">Prev</button>
                     <button class="btn btn-neon-purple" id="btnNextStep">Next Step</button>
                 </div>

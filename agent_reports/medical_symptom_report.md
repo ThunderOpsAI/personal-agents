@@ -361,3 +361,10 @@
 | 01/09/2026 | 12:13:25 pm | **9/10** | right lumbar | 85% | right lumbar (85%), neck (10%), right ankle (2.5%), left ankle (2.5%) | Notes: Logged via Telegram (Severe Lumbar Flare preset). Mood: stressed. |
 | 01/09/2026 | 12:13:25 pm | **6.5/10** | neck | 60% | neck (60%), right lumbar (30%), right ankle (5%), left ankle (5%) | Notes: Logged via Telegram (Neck Tension preset). Mood: neutral. |
 | 01/09/2026 | 12:13:25 pm | **7.5/10** | right lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: API log test. Mood: neutral. |
+| 02/09/2026 | 9:43:53 am | **6/10** | lumbar | 80% | lumbar (80%), neck (20%) | Notes: felt stiff after sitting.. Mood: 7. |
+| 02/09/2026 | 9:43:53 am | **6/10** | lumbar | 80% | lumbar (80%), neck (20%) | Notes: Stiff after long drive. Mood: 7. |
+| 02/09/2026 | 9:43:53 am | **6/10** | lumbar | 70% | lumbar (70%), right right_hip (30%) | Notes: Pain after prolonged walking. Mood: frustrated. |
+| 02/09/2026 | 9:43:53 am | **5.5/10** | right lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Logged via Telegram preset (Mild - Baseline distribution). Mood: neutral. |
+| 02/09/2026 | 9:43:56 am | **9/10** | right lumbar | 85% | right lumbar (85%), neck (10%), right ankle (2.5%), left ankle (2.5%) | Notes: Logged via Telegram (Severe Lumbar Flare preset). Mood: stressed. |
+| 02/09/2026 | 9:43:56 am | **6.5/10** | neck | 60% | neck (60%), right lumbar (30%), right ankle (5%), left ankle (5%) | Notes: Logged via Telegram (Neck Tension preset). Mood: neutral. |
+| 02/09/2026 | 9:43:56 am | **7.5/10** | right lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: API log test. Mood: neutral. |
