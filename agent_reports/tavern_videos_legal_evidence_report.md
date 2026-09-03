@@ -977,7 +977,7 @@ The video shows a bartender serving a customer at a bar. The bartender takes an 
 ### `Sports Bar Till_2025_11_14_6PM_53_14.avi` (58s, 44.1 MB)
 **Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
 
-No description generated.
+In this clip, a bartender is seen pouring drinks from a tap and placing them on the counter. Another person is observed interacting with the bartender at the counter, possibly as a customer. The bartender also appears to be taking items from a refrigerator under the counter, suggesting they are restocking or retrieving supplies. All of the observed actions appear to be routine workplace operations within a bar or pub environment.
 
 ---
 
