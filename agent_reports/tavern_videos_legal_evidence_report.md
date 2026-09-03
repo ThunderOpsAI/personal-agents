@@ -1,9 +1,9 @@
 # Tavern CCTV Footage Evidence & Analysis Report
 
 **Date of Generation:** 2026-09-03
-**Total Videos Evaluated:** 10
-* **Fully Analyzed (≤ 100s):** 9
-  * **No Suspicious Activity (Clean / Routine):** 5
+**Total Videos Evaluated:** 11
+* **Fully Analyzed (≤ 100s):** 10
+  * **No Suspicious Activity (Clean / Routine):** 6
   * **Flagged Ambiguous / Potentially Questionable (Requires Review):** 4
 * **Too Large (> 100s - Flagged for Manual Review):** 0
 * **Errors during Processing:** 1
@@ -631,6 +631,13 @@ Specifically:
 ---
 
 ### `Sports Bar Till_2025_11_22_2PM_51_18.avi` (54s, 41 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+No description generated.
+
+---
+
+### `Drive Thru Main_2025_11_21_3PM_40_59.avi` (30s, 14.9 MB)
 **Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
 
 No description generated.
