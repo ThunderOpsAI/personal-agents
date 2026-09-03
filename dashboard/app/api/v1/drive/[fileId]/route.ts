@@ -9,11 +9,10 @@ export const dynamic = "force-dynamic";
 
 export async function GET(
   request: Request,
-  context: { params: Promise<{ fileId: string }> | { fileId: string } }
+  props: { params: Promise<{ fileId: string }> }
 ) {
   try {
-    const params = await Promise.resolve(context.params);
-    const { fileId } = params;
+    const { fileId } = await props.params;
 
     if (!fileId) {
       return NextResponse.json(
@@ -55,11 +54,10 @@ export async function GET(
 
 export async function PATCH(
   request: Request,
-  context: { params: Promise<{ fileId: string }> | { fileId: string } }
+  props: { params: Promise<{ fileId: string }> }
 ) {
   try {
-    const params = await Promise.resolve(context.params);
-    const { fileId } = params;
+    const { fileId } = await props.params;
 
     if (!fileId) {
       return NextResponse.json(
@@ -129,11 +127,10 @@ export async function PATCH(
 
 export async function DELETE(
   request: Request,
-  context: { params: Promise<{ fileId: string }> | { fileId: string } }
+  props: { params: Promise<{ fileId: string }> }
 ) {
   try {
-    const params = await Promise.resolve(context.params);
-    const { fileId } = params;
+    const { fileId } = await props.params;
 
     if (!fileId) {
       return NextResponse.json(

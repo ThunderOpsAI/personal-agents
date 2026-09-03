@@ -99,7 +99,7 @@ describe("Drive API Routes: /api/v1/drive", () => {
       });
 
       const req = new Request("https://rumble.test/api/v1/drive/f1");
-      const res = await getFileContent(req, { params: { fileId: "f1" } });
+      const res = await getFileContent(req, { params: Promise.resolve({ fileId: "f1" }) });
       expect(res.status).toBe(200);
       const arrayBuffer = await res.arrayBuffer();
       expect(Buffer.from(arrayBuffer).toString()).toBe("File binary content");
@@ -116,7 +116,7 @@ describe("Drive API Routes: /api/v1/drive", () => {
         }),
       });
 
-      const res = await updateFile(req, { params: { fileId: "f1" } });
+      const res = await updateFile(req, { params: Promise.resolve({ fileId: "f1" }) });
       expect(res.status).toBe(200);
       const data = await res.json();
       expect(data.status).toBe("pending_approval");
@@ -138,7 +138,7 @@ describe("Drive API Routes: /api/v1/drive", () => {
         }),
       });
 
-      const res = await updateFile(req, { params: { fileId: "f1" } });
+      const res = await updateFile(req, { params: Promise.resolve({ fileId: "f1" }) });
       expect(res.status).toBe(200);
       const data = await res.json();
       expect(data.status).toBe("success");
@@ -154,7 +154,7 @@ describe("Drive API Routes: /api/v1/drive", () => {
         body: JSON.stringify({}),
       });
 
-      const res = await deleteFile(req, { params: { fileId: "f1" } });
+      const res = await deleteFile(req, { params: Promise.resolve({ fileId: "f1" }) });
       expect(res.status).toBe(200);
       const data = await res.json();
       expect(data.status).toBe("pending_approval");
@@ -172,7 +172,7 @@ describe("Drive API Routes: /api/v1/drive", () => {
         body: JSON.stringify({ approved: true }),
       });
 
-      const res = await deleteFile(req, { params: { fileId: "f1" } });
+      const res = await deleteFile(req, { params: Promise.resolve({ fileId: "f1" }) });
       expect(res.status).toBe(200);
       const data = await res.json();
       expect(data.status).toBe("success");
