@@ -1,0 +1,639 @@
+# Tavern CCTV Footage Evidence & Analysis Report
+
+**Date of Generation:** 2026-09-03
+**Total Videos Evaluated:** 10
+* **Fully Analyzed (≤ 100s):** 9
+  * **No Suspicious Activity (Clean / Routine):** 5
+  * **Flagged Ambiguous / Potentially Questionable (Requires Review):** 4
+* **Too Large (> 100s - Flagged for Manual Review):** 0
+* **Errors during Processing:** 1
+
+---
+
+## 2. Videos with Flagged / Ambiguous Actions (For Defense Scrutiny)
+
+> [!WARNING]
+> The following videos contain actions that an employer or prosecution might attempt to question or misinterpret (e.g., adjusting pants/waistband, touching pockets, handling cleaning paper towels, or momentary obscured hand position). Review these timestamps specifically to prepare counter-evidence.
+
+### `Bottle Shop Till_2025_11_22_4PM_33_18.avi` (36s, 17.3 MB)
+**Evaluation:** ⚠️ **Flagged for Potential Scrutiny / Ambiguity**
+
+Here is the detailed forensic analysis of the provided video clip:
+
+---
+
+**1. CHRONOLOGICAL BREAKDOWN**
+
+*   **00:00 - 00:01**: An employee, wearing a black and green "THIRSTY CAMEL" polo shirt, is positioned at the till counter. Two cans are on the counter to his right. His left hand is engaged near the till system's display or a compartment.
+*   **00:01 - 00:02**: The employee's left hand moves within the till area. His right hand briefly moves to touch his upper right thigh/pocket region. He then turns his body and walks out of frame to the right, away from the counter.
+*   **00:02 - 00:06**: The employee is out of frame. The till counter, display, and cans remain visible.
+*   **00:06 - 00:07**: The employee re-enters the frame from the right, walking back towards the counter. He is holding a white, circular object in his right hand.
+*   **00:07 - 00:08**: The employee places the white circular object onto the counter. He then reaches his left hand into an open compartment within the till display unit.
+*   **00:08 - 00:09**: The employee's left hand is manipulating items inside the till compartment. His right hand briefly rests near the white object on the counter.
+*   **00:09 - 00:10**: While the employee continues to sort items with his left hand in the till compartment, a customer's hand (entering from the lower left of the frame) places a small, white, flat object (possibly a card or another coaster) onto the counter, near the two cans.
+*   **00:10 - 00:12**: The employee's left hand remains active, organizing items in the till compartment. The customer's hand picks up one of the cans from the counter and moves out of frame.
+*   **00:12 - 00:15**: The employee continues to handle and arrange various small items within the till compartment, appearing to manage stock or display items.
+*   **00:15 - 00:17**: The employee's left hand is still in the compartment. A customer's hand (from the lower left) places the previously seen white circular object back onto the counter. The employee takes this object with his right hand and places it on the counter next to the first white object.
+*   **00:17 - 00:18**: The employee closes the till compartment with his left hand.
+*   **00:18 - 00:19**: The employee's left hand rests on the counter. His right hand briefly touches the white circular object on the counter.
+*   **00:19 - 00:20**: The employee picks up a small, rectangular yellow object from the counter with his right hand.
+*   **00:20 - 00:21**: The employee turns away from the counter, holding the yellow object in his right hand, and walks out of frame to the right.
+*   **00:21 - 00:35**: The employee remains out of frame.
+
+---
+
+**2. HAND & ITEM AUDIT**
+
+*   **00:00 - 00:01**: Left hand is positioned near the till's screen/display, not clearly handling cash. Right hand is at his side.
+*   **00:01 - 00:02**: Left hand moves within the open till compartment. Right hand moves from his side to briefly make contact with his right upper thigh/pocket area. No item is visibly transferred to or from the pocket.
+*   **00:06 - 00:07**: Right hand is holding a white, circular object (e.g., a coaster).
+*   **00:07 - 00:08**: Right hand places the white, circular object onto the counter. Left hand reaches into an open compartment of the till display.
+*   **00:08 - 00:09**: Left hand is inside the till compartment, manipulating small items. Right hand is resting near the white object on the counter.
+*   **00:09 - 00:10**: Left hand continues to sort items in the compartment. A customer's hand places a small, white, flat object (possibly a card or similar item) onto the counter.
+*   **00:10 - 00:12**: Left hand is still engaged with items in the till compartment. A customer's hand picks up one of the cans from the counter.
+*   **00:12 - 00:15**: Left hand picks up and places a small, dark object, and continues to arrange other small items within the till compartment.
+*   **00:15 - 00:17**: Left hand continues to organize items. Right hand receives the white, circular object from a customer's hand and places it on the counter next to another similar object.
+*   **00:17 - 00:18**: Left hand closes the till compartment.
+*   **00:18 - 00:19**: Left hand rests on the counter. Right hand briefly touches the white circular object on the counter.
+*   **00:19 - 00:20**: Right hand picks up a small, rectangular yellow object from the counter.
+*   **00:20 - 00:21**: Right hand is holding the yellow object as the employee turns and moves out of frame.
+*   **No cash notes or coins are observed being handled by the employee throughout the clip.** The till drawer (cash register drawer) is not explicitly opened, and all visible hand movements are related to a display compartment and counter items.
+
+---
+
+**3. CLOTHING, POCKETS & WAISTBAND**
+
+*   **00:01 - 00:02**: The employee's right hand moves from his side to briefly touch his upper right thigh/pocket area. This contact is momentary. There is no observed pulling up of pants, waistband adjustment, belt touching, or visible placement/removal of any item into or from a pocket.
+
+---
+
+**4. SUSPICION EVALUATION**
+
+*   **EVALUATION: FLAGGED (POTENTIALLY QUESTIONABLE / AMBIGUOUS)**
+
+*   **Timestamp: 00:01 - 00:02**: The employee's right hand briefly touches his right upper thigh/pocket area just before he walks away from the till. While the video does not show any visible transfer of an item into or out of the pocket, or any prolonged contact, this fleeting gesture near a pocket *could* be singled out for scrutiny by an employer. In an investigation concerning potential misconduct or theft, any contact with a pocket, even a casual or seemingly innocent adjustment, might be questioned as a potentially ambiguous action. Based *solely* on the visual evidence, it is a brief, undefined movement, and no item is clearly seen being handled or concealed. All other observed actions in the video are consistent with routine workplace tasks such as organizing till displays or handling customer items.
+
+---
+
+### `Sports Bar Till_2025_11_22_4PM_26_37.avi` (52s, 39.6 MB)
+**Evaluation:** ⚠️ **Flagged for Potential Scrutiny / Ambiguity**
+
+Here is a structured analysis of the provided video clip:
+
+---
+
+**1. CHRONOLOGICAL BREAKDOWN**
+
+*   **00:00-00:01**: The employee walks towards the under-counter fridge/cooler from the right side of the frame. A customer is visible at the bar.
+*   **00:01-00:03**: The employee opens the under-counter fridge door.
+*   **00:03-00:04**: The employee retrieves a glass bottle from the fridge and closes the door.
+*   **00:04-00:05**: The employee places the bottle in a holder on the counter and moves to operate a beer tap.
+*   **00:05-00:11**: The employee pours a beer into a glass.
+*   **00:11-00:14**: The employee briefly holds the filled glass, checks it, and then places it on the bar counter in front of the waiting customer.
+*   **00:14-00:16**: The employee picks up a small white cloth from a dispenser near the taps.
+*   **00:16-00:19**: The employee wipes the area around the beer taps with the cloth and then returns the cloth to the dispenser.
+*   **00:19-00:21**: The employee pours a second beer into another glass.
+*   **00:21-00:22**: The employee places the second beer on the bar counter in front of the customer.
+*   **00:22-00:23**: The employee turns to the till screen and gestures towards the customer.
+*   **00:23-00:26**: The employee interacts with the till's touchscreen, appearing to input the order.
+*   **00:26-00:28**: The employee presses a button, and the cash drawer opens.
+*   **00:28-00:33**: The employee handles money within the open cash drawer.
+*   **00:33-00:35**: The employee hands money (change) to the customer.
+*   **00:35-00:36**: The employee pushes the cash drawer closed.
+*   **00:36-00:39**: The employee moves away from the till area towards the right side of the bar, picking up a larger cloth. The customer picks up their drinks.
+*   **00:39-00:44**: The employee wipes the bar counter area with the cloth.
+*   **00:44-00:45**: The employee places the cloth down.
+*   **00:45-00:50**: The employee walks out of the frame to the right.
+
+---
+
+**2. HAND & ITEM AUDIT**
+
+*   **00:00-00:01**: Right hand briefly touches the right side of the employee's shorts/hip area, then moves towards the fridge. Left hand reaches for the fridge handle.
+*   **00:02-00:03**: Both hands are used to open the under-counter fridge. Left hand reaches inside to retrieve a glass bottle.
+*   **00:03-00:04**: Left hand removes the bottle from the fridge. Both hands close the fridge door.
+*   **00:04-00:05**: Left hand places the bottle into a holder on the counter. Right hand moves towards the beer tap.
+*   **00:05-00:11**: Left hand holds a glass under the tap. Right hand operates the beer tap, pouring beer into the glass.
+*   **00:11-00:12**: Both hands hold the glass to visually inspect the beer level.
+*   **00:13-00:14**: Right hand places the filled beer glass on the bar counter for the customer.
+*   **00:14-00:15**: Right hand picks up a small white cloth/napkin from a dispenser on the counter.
+*   **00:16-00:18**: Right hand uses the cloth to wipe the metal surface around the beer taps.
+*   **00:18-00:19**: Right hand returns the cloth to the dispenser.
+*   **00:19-00:21**: Left hand holds another glass under the tap. Right hand operates the tap, pouring a second beer.
+*   **00:21-00:22**: Right hand places the second beer glass on the bar counter for the customer.
+*   **00:22-00:23**: Right hand points towards the till screen, then makes a general gesture towards the customer.
+*   **00:23-00:26**: Right index finger interacts with the till's touchscreen to process the order.
+*   **00:26-00:27**: Right hand presses a button on the till, causing the cash drawer to open.
+*   **00:28-00:33**: Right hand reaches into the open cash drawer, selects and retrieves coins and/or notes.
+*   **00:33-00:35**: Right hand extends and gives the retrieved money (change) directly to the customer.
+*   **00:35-00:36**: Right hand pushes the cash drawer closed.
+*   **00:36-00:37**: Right hand moves along the counter to the right.
+*   **00:37-00:38**: Right hand picks up a larger wiping cloth from the counter.
+*   **00:39-00:44**: Right hand uses the cloth to wipe the bar counter surface.
+*   **00:44-00:45**: Right hand places the cloth back on the counter.
+*   **00:45-00:50**: Both hands swing freely as the employee walks out of frame.
+
+---
+
+**3. CLOTHING, POCKETS & WAISTBAND**
+
+*   **00:00-00:01**: As the employee approaches the counter, their right hand briefly brushes the outer right side of their shorts/hip area. This appears to be a natural arm movement rather than a deliberate adjustment or reaching into a pocket.
+*   At no other point in the video is there any discernible pulling up of pants, waistband adjustments, belt touching, or reaching into pockets or an apron. The employee is wearing a t-shirt and shorts, with no visible apron.
+
+---
+
+**4. SUSPICION EVALUATION**
+
+**EVALUATION: FLAGGED (POTENTIALLY QUESTIONABLE / AMBIGUOUS) - with explanation.**
+
+While the majority of the employee's actions are consistent with normal till operation, serving customers, and workplace tasks, one minor action *could* be subjected to scrutiny by an employer looking for anomalies:
+
+*   **00:00-00:01**: The employee's right hand briefly touches the outer right side of their shorts/hip area as they walk towards the fridge. An overly scrutinizing observer *might* briefly question this as contact near a pocket.
+
+**What actually appears to happen:** This appears to be a casual, natural arm swing or momentary resting position of the hand against the side of the leg as the employee moves. There is no indication of the hand entering a pocket, manipulating an object, or making any clandestine movement. It does not appear to be an action related to concealing or handling money or items inappropriately. The hand is clearly visible and remains on the exterior of the shorts.
+
+All other actions, including the handling of cash in the till (00:28-00:33), are performed openly, and the change is directly given to the customer (00:33-00:35). The use of cloths for cleaning is also a standard workplace task, and they are placed back on the counter rather than being put into a pocket.
+
+---
+
+### `Sports Bar Till_2025_11_22_4PM_22_28.avi` (38s, 29.3 MB)
+**Evaluation:** ⚠️ **Flagged for Potential Scrutiny / Ambiguity**
+
+**FORENSIC CCTV ANALYSIS: BAR/TILL OPERATION**
+
+This analysis objectively details the employee's actions based on the provided video footage.
+
+---
+
+### 1. CHRONOLOGICAL BREAKDOWN
+
+*   **00:00-00:02:** A male employee (wearing a black shirt with green accents) stands at the till, looking at and interacting with the touchscreen display using his right index finger. His left hand holds a small, dark, rectangular device, possibly a card reader or scanner. Another person is visible in the background seated at a table.
+*   **00:03:** The employee continues to tap the touchscreen with his right hand.
+*   **00:04:** The employee lowers his right hand slightly.
+*   **00:05:** The employee shifts his body, looking towards the left side of the counter as a customer's hands (only visible from the left side) approach.
+*   **00:06:** The customer's right hand extends over the counter and hands several paper items (appearing to be cash notes) to the employee's left hand. A second male (coworker, wearing a white shirt) begins to walk past the employee from left to right, behind the bar.
+*   **00:07:** The employee, holding the notes in his left hand, deposits them into the open cash drawer. His right hand is also near the cash drawer area. The coworker continues walking past.
+*   **00:08:** The employee closes the cash drawer with his right hand. His right hand then moves back to the touchscreen.
+*   **00:09:** The employee's right hand interacts with the touchscreen. His left hand is briefly out of frame or obscured but appears to remain near the till area.
+*   **00:10:** The employee's right hand opens the cash drawer again. He looks down into the drawer.
+*   **00:11:** The employee closes the cash drawer with his right hand.
+*   **00:12-00:15:** The employee interacts with the till touchscreen using both hands, appearing to process something. He looks at the screen.
+*   **00:16:** The employee briefly looks up and around.
+*   **00:17:** The employee steps back from the counter and turns.
+*   **00:18-00:19:** The employee walks out of the frame to the left, away from the till area.
+*   **00:20-00:26:** The coworker in the white shirt approaches the till area, briefly looks at something on the counter, and then turns and walks back to the right, away from the till area.
+*   **00:27-00:37:** The till area remains unattended by the primary employee. The coworker continues to move around the general bar area, eventually out of frame to the right.
+
+---
+
+### 2. HAND & ITEM AUDIT
+
+*   **00:00-00:04:** Employee's right index finger repeatedly taps the till touchscreen. Left hand holds a dark, rectangular device (likely a card reader/scanner) near the till.
+*   **00:05-00:06:** Employee's left hand receives several paper items (cash notes) from the customer's right hand.
+*   **00:07:** Employee's left hand places the received cash notes directly into the open cash drawer. His right hand is also positioned above the drawer area, seemingly involved in the deposit or preparation.
+*   **00:08:** Employee's right hand closes the cash drawer. His right hand then moves to touch the till screen.
+*   **00:09:** Employee's right hand interacts with the till screen. Left hand is briefly out of view.
+*   **00:10:** Employee's right hand opens the cash drawer again.
+*   **00:11:** Employee's right hand closes the cash drawer.
+*   **00:12-00:15:** Employee's right hand interacts with the till screen. His left hand is also active near the till area, but no specific items are seen being handled or exchanged with the left hand during this period.
+*   **00:16-00:19:** Both hands are at his side as he steps back and walks away. No items are visibly held or moved.
+
+---
+
+### 3. CLOTHING, POCKETS & WAISTBAND
+
+*   Throughout the entire duration of the video (00:00-00:19, while the employee is present), there are no visible actions of the employee touching or adjusting his pants, waistband, belt, or reaching into any pockets or aprons. His hands remain at the till or by his sides as he walks away. No items, including paper towels or cash, are seen being placed into any clothing.
+
+---
+
+### 4. SUSPICION EVALUATION
+
+**EVALUATION: FLAGGED (POTENTIALLY QUESTIONABLE / AMBIGUOUS)**
+
+While there is no direct visual evidence of cash theft or deliberate misconduct, one specific action might be questioned by an employer:
+
+*   **Timestamp: 00:10-00:11 (Second Till Opening)**
+    *   **What happens:** After receiving cash from the customer (00:06), placing it into the till (00:07), and closing the till (00:08), the employee proceeds to open the cash drawer *again* at 00:10, looks into it, and then closes it at 00:11. The customer's hands are no longer visible after 00:06, and no items (e.g., change) are visibly dispensed from the till or handed back to the customer after this second opening.
+    *   **Why an employer might scrutinize it:** This second opening of the cash drawer without an immediately apparent reason (such as providing change to a customer who is no longer present, or clearly retrieving an item) could be seen as an ambiguous or unnecessary action in a normal transaction sequence.
+    *   **What actually appears to happen:** Based solely on the visuals, the employee opens the drawer, looks inside, and closes it. There is **no visual evidence** of the employee removing any cash from the drawer for personal use, concealing it, or placing it anywhere other than back within the till system. It is possible this action was part of an internal till process, an adjustment, or to retrieve a non-cash item not clearly visible in the footage. However, its purpose is not explicitly demonstrated in the video.
+
+Apart from this specific action, all other movements of the employee are consistent with normal till operation and workplace tasks. There is no visible contact with pockets or waistband that would suggest concealment of items. The cash received from the customer is clearly seen being deposited into the till drawer.
+
+---
+
+### `Bottle Shop Till_2025_11_21_3PM_40_59.avi` (30s, 23 MB)
+**Evaluation:** ⚠️ **Flagged for Potential Scrutiny / Ambiguity**
+
+Here is a forensic analysis of the provided CCTV video clip:
+
+---
+
+### CCTV Forensic Timeline Analysis
+
+**Video Length:** 00:00 - 00:29
+
+**Employee:** Male, dark shirt, visible tattoos on arms.
+
+---
+
+#### 1. CHRONOLOGICAL BREAKDOWN:
+
+*   **00:00 - 00:01**: Employee is standing at the till. He scans a small, packaged item (e.g., a chocolate bar) with his right hand while holding it with his left. He then places the item on the counter to his right.
+*   **00:01 - 00:02**: Employee's right hand moves to and interacts with the till screen.
+*   **00:02 - 00:03**: Employee's left hand moves to briefly scratch or touch his face/nose area.
+*   **00:03 - 00:04**: Employee uses his right hand to open the cash drawer.
+*   **00:04 - 00:08**: Employee's hands (predominantly right, with left hand hovering or briefly touching) are inside the open cash drawer, handling money (notes and/or coins).
+*   **00:08 - 00:09**: Employee uses his right hand to close the cash drawer.
+*   **00:09 - 00:10**: Employee picks up the small packaged item from the counter, appears to scan it again or process it further, and then places it back down on the counter. Immediately after, he picks up a small, dark, rectangular object (consistent with a mobile phone or pager) from the counter near the till.
+*   **00:10 - 00:11**: Employee places the small dark object into his left front trouser pocket. His right hand briefly touches his left thigh/pocket area to assist.
+*   **00:11 - 00:12**: Employee turns and walks away from the till, exiting the frame to the left.
+*   **00:12 - 00:24**: The till area remains unoccupied; the employee is out of frame.
+*   **00:24 - 00:25**: Employee re-enters the frame from the left, approaching the till. He immediately uses his right hand to open the cash drawer.
+*   **00:25 - 00:26**: Employee's hands (predominantly right) are inside the open cash drawer, handling money.
+*   **00:26 - 00:27**: Employee uses his right hand to close the cash drawer. His left hand briefly touches his face/nose area again.
+*   **00:27 - 00:28**: Employee turns and walks away from the till, exiting the frame to the left.
+
+---
+
+#### 2. HAND & ITEM AUDIT:
+
+*   **00:00**: Left hand holds a small, packaged item. Right hand holds a scanner and scans the item. Item is then placed on the counter.
+*   **00:01**: Right hand touches the till screen. Left hand rests on the counter.
+*   **00:03**: Left hand touches the employee's face/nose.
+*   **00:04**: Right hand opens the till drawer.
+*   **00:05 - 00:07**: Both hands (primarily right) are inside the till drawer, handling what appears to be cash notes and coins. The left hand briefly rests on the till edge.
+*   **00:08**: Right hand closes the till drawer.
+*   **00:09**: Right hand picks up the small packaged item from the counter, performs an action (likely scanning or processing), and places it back down. Right hand then picks up a small, dark, rectangular object (consistent with a mobile phone or pager) from the counter near the till.
+*   **00:10**: Right hand moves the dark object towards the left front trouser pocket. Left hand assists in guiding the object into the pocket.
+*   **00:11**: Right hand briefly touches the left thigh/pocket area as the item is secured in the pocket.
+*   **00:25**: Right hand opens the till drawer.
+*   **00:26**: Both hands (primarily right) are inside the till drawer, handling what appears to be cash notes and coins. Right hand then closes the till drawer.
+*   **00:27**: Left hand touches the employee's face/nose.
+
+---
+
+#### 3. CLOTHING, POCKETS & WAISTBAND:
+
+*   **00:10 - 00:11**: The employee places a small, dark, rectangular object (appearing to be a personal device like a mobile phone or pager) from the counter into his **left front trouser pocket**. His right hand moves the item, and his left hand assists in guiding it into the pocket. His right hand briefly touches his left thigh/pocket area after the item is inserted.
+*   There are no other observable actions involving pulling up pants, waistband adjustments, belt touching, or the placement of paper towels or other items into pockets.
+
+---
+
+#### 4. SUSPICION EVALUATION:
+
+**EVALUATION: FLAGGED (POTENTIALLY QUESTIONABLE / AMBIGUOUS)**
+
+While many actions appear consistent with routine till operation, certain sequences and specific movements could be questioned or misinterpreted in a misconduct investigation.
+
+*   **00:09 - 00:11 (Placement of item into pocket)**:
+    *   **What happens**: The employee picks up a small, dark, rectangular object (appearing to be a personal device like a mobile phone or pager) *from the counter* and places it into his left front trouser pocket.
+    *   **Why it might be scrutinized**: The act of placing *any item* into a pocket while at a cash till, especially when immediately following cash handling or while the till drawer has just been closed (and is about to be reopened later for another cash transaction), is often flagged in forensic reviews. Although the object clearly originates from the counter and appears to be a personal device rather than cash, the movement itself (reaching into a pocket) can raise questions about what is being put away or if anything else is being concealed. An observer might question the timing of this action in relation to the cash transactions.
+
+*   **00:24 - 00:26 (Second, unprompted till opening)**:
+    *   **What happens**: After completing an initial transaction, closing the till, placing an item in his pocket, and leaving the till area for over 10 seconds, the employee returns to the till, immediately opens the cash drawer, handles cash, and then closes it again. No new customer is visible, nor is any new item being scanned or presented at the counter.
+    *   **Why it might be scrutinized**: This second, distinct opening and handling of cash in the till, without a visible customer or explicit transaction (like scanning a new item), creates ambiguity. While it could be for legitimate reasons (e.g., correcting an error, making change for a float adjustment, retrieving an item, or completing an unfinished previous transaction for an out-of-frame customer), its isolated nature after a period away from the till, and without clear context, is atypical and could be questioned by an employer seeking to understand the purpose of every till access.
+
+*   **00:03 & 00:27 (Touching face/nose)**:
+    *   **What happens**: The employee briefly touches his face/nose with his left hand.
+    *   **Why it might be scrutinized**: This is a natural human action, and often entirely innocuous. However, in a detailed forensic analysis of hand movements during cash handling, any action that momentarily obscures the hands or deviates from direct work tasks is noted. It is generally not suspicious in itself, but it can be highlighted as a moment where hands are not explicitly visible or engaged in a clear till-related activity.
+
+The primary flagged events are the pocketing of the personal item (though it originates from the counter, not the till) and the second, seemingly unprompted till opening, due to the lack of visible context (customer or item) for this specific cash handling.
+
+---
+
+## 3. Clear / Routine Videos (No Suspicious Activity)
+
+### `Sports Bar Till_2025_11_22_4PM_18_52.avi` (84s, 63.9 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+Here's a forensic timeline analysis of the provided video clip:
+
+---
+
+**1. CHRONOLOGICAL BREAKDOWN**
+
+*   **00:00 - 00:08**: The employee is standing at the far end of the bar, right of the frame, facing away from the main till area. A customer is partially visible on the left side, approaching the bar counter.
+*   **00:08 - 00:23**: The employee remains at the far end of the bar. The customer continues to wait at the left side of the main till area.
+*   **00:23 - 00:24**: The employee quickly walks from the far end towards the main till area. The customer places two empty glasses on the counter in front of them.
+*   **00:25 - 00:26**: The employee takes the two empty glasses from the counter.
+*   **00:26 - 00:27**: The employee turns and walks towards the sink/trough area behind the beer taps, placing the empty glasses into it.
+*   **00:28 - 00:36**: The employee positions themselves at the beer taps and proceeds to pour two glasses of beer.
+*   **00:36 - 00:37**: The employee picks up the two freshly poured beers.
+*   **00:37 - 00:39**: The employee walks back towards the customer at the main till. They place one beer on the counter. The customer extends their hand, appearing to hold a cash note.
+*   **00:39 - 00:40**: The employee takes the cash note from the customer with their right hand. The second beer is still in the employee's left hand.
+*   **00:40 - 00:41**: The employee places the second beer on the counter. The right hand, holding the cash, moves towards the POS (Point of Sale) system.
+*   **00:41 - 00:47**: The employee interacts with the POS screen using their right hand, still holding the cash note. The left hand briefly moves from resting on the counter.
+*   **00:47 - 00:48**: The employee's right hand, still holding the cash, opens the cash drawer.
+*   **00:49 - 00:50**: The employee's right hand places the cash note into a compartment within the open cash drawer.
+*   **00:50 - 00:56**: The employee's right hand reaches into the cash drawer and begins to count out change (coins and possibly notes). The left hand rests on the counter.
+*   **00:57 - 01:04**: The employee continues to count and organize the change in their right hand, occasionally looking towards the customer.
+*   **01:04 - 01:08**: The employee hands the counted change to the customer with their right hand.
+*   **01:09 - 01:12**: The employee's right hand closes the cash drawer.
+*   **01:13 - 01:16**: The employee begins to clear the counter, picking up an empty glass.
+*   **01:17 - 01:24**: The employee moves towards the sink/back area with the glass, concluding the interaction at the main till.
+
+---
+
+**2. HAND & ITEM AUDIT**
+
+*   **00:24 - 00:25**: Employee's hands pick up two empty glasses from the counter.
+*   **00:26 - 00:27**: Employee's hands place the empty glasses into the sink/trough behind the bar.
+*   **00:31 - 00:36**: Employee's hands operate the beer taps and hold two glasses to pour beer into them.
+*   **00:36 - 00:37**: Employee's hands pick up the two full glasses of beer.
+*   **00:38 - 00:39**: Employee's right hand places one beer on the counter. The customer presents a bank note to the employee's right hand.
+*   **00:40**: Employee's right hand takes the bank note from the customer. The left hand places the second beer on the counter.
+*   **00:41 - 00:47**: Employee's right hand, holding the bank note, interacts with the POS touchscreen. The bank note is clearly visible in the right hand during this time. The left hand briefly moves from the counter, making a slight downward adjustment (see point 3), then returns to resting on the counter.
+*   **00:48**: Employee's right hand, still holding the bank note, opens the cash drawer.
+*   **00:49**: Employee's right hand places the bank note into a compartment within the open cash drawer.
+*   **00:50 - 00:56**: Employee's right hand retrieves coins and possibly other notes from various compartments of the cash drawer, counting them.
+*   **01:07 - 01:08**: Employee's right hand extends to hand the counted change (coins and possibly notes) to the customer, who receives it.
+*   **01:10 - 01:11**: Employee's right hand pushes the cash drawer closed.
+*   **01:14 - 01:16**: Employee's hands pick up an empty glass from the counter.
+*   **01:17 - 01:20**: Employee's hands carry the empty glass away from the main till area.
+
+---
+
+**3. CLOTHING, POCKETS & WAISTBAND**
+
+*   **00:00 - 00:47**: No visible interaction with clothing, pockets, or waistband.
+*   **00:47 - 00:48**: As the employee's right hand operates the POS and opens the till, the left hand, which was resting on the counter, drops briefly and makes a very slight, momentary contact with the side of the employee's shorts/pants in the upper thigh/waistband area. This motion lasts less than a second. The hand does not enter a pocket, nor is anything seen to be placed into or removed from the area.
+*   **00:48 - 01:24**: No further visible interaction with clothing, pockets, or waistband.
+
+---
+
+**4. SUSPICION EVALUATION**
+
+**EVALUATION: NOT SUSPICIOUS** - All movements are consistent with normal till operation, serving customers, or typical workplace tasks.
+
+The brief, momentary contact of the employee's left hand with their shorts/pants at **00:47-00:48** could potentially be scrutinized by an employer due to its proximity to the body and the timing (just as the till is opened). However, a detailed review shows:
+*   The motion is very brief (less than a second).
+*   The hand does not enter a pocket or waistband.
+*   Nothing is visibly transferred to or from the hand or clothing.
+*   The employee's attention is clearly on the POS screen and the cash drawer.
+*   The left hand then immediately rests back on the counter for the duration of the cash handling.
+*   The cash note from the customer is clearly held in the right hand throughout the interaction with the POS and is clearly seen being placed into the cash drawer at **00:49**. Change is then counted directly from the till and given to the customer.
+
+Therefore, this brief movement appears to be an unconscious or natural adjustment rather than an attempt to conceal or misappropriate anything. The employee's actions are transparent and align with standard transaction procedures.
+
+---
+
+### `Sports Bar Till_2025_11_22_3PM_59_00.avi` (71s, 53.8 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+Here is a forensic analysis of the provided video clip, focusing on the employee operating the left till (Employee 1).
+
+---
+
+### FORENSIC TIMELINE ANALYSIS
+
+**Employee of Focus:** Employee 1 (younger, dark shirt, operating left till).
+
+---
+
+#### 1. CHRONOLOGICAL BREAKDOWN
+
+*   **00:00 - 00:03**: Employee 1 is positioned at the left bar till, actively engaging with the touchscreen interface using his right hand.
+*   **00:03 - 00:06**: Employee 1 continues to operate the till's touchscreen with his right hand.
+*   **00:06 - 00:07**: Employee 1 shifts his right hand from the till screen to interact with the payment terminal situated beside it.
+*   **00:07 - 00:10**: Employee 1 moves his left hand to the glass rack located to his immediate left, briefly touching some glasses.
+*   **00:10 - 00:12**: Employee 1's left hand remains near the glass rack. His right hand returns to the till screen, then quickly moves back to the payment terminal.
+*   **00:12 - 00:16**: Employee 1 interacts with the payment terminal using his right hand, processing a transaction. A customer (Customer 4) is partially visible on the far left, appearing to wait for service.
+*   **00:16 - 00:18**: Employee 1 extends his right hand forward, out of the immediate frame, seemingly handing something (likely a card or receipt) to Customer 4.
+*   **00:18 - 00:20**: Employee 1 retracts his right hand and places the payment terminal back into its designated cradle on the counter.
+*   **00:20 - 00:22**: Employee 1 reaches his left hand directly into the open cash drawer of the till.
+*   **00:22 - 00:23**: Employee 1 withdraws several cash notes from the cash drawer with his left hand, then closes the cash drawer with the same hand while still holding the notes.
+*   **00:23 - 00:24**: Employee 1 places the cash notes directly onto the stainless steel counter surface, adjacent to the till screen.
+*   **00:24 - 00:26**: Employee 1's hands are free, then his right hand moves to the till screen.
+*   **00:26 - 00:28**: Employee 1 continues interacting with the till screen using his right hand.
+*   **00:28 - 00:30**: Employee 1 opens a small refrigerator door located beneath the counter with his left hand, looks inside, and then closes it.
+*   **00:30 - 00:33**: Employee 1's right hand operates the till screen again.
+*   **00:33 - 00:35**: Employee 1 steps away from the till area, walks to the right, and exits the camera's view, heading towards the back of the establishment.
+
+---
+
+#### 2. HAND & ITEM AUDIT (Employee 1)
+
+*   **00:00 - 00:07**: Right hand operates till touchscreen and payment terminal.
+*   **00:07 - 00:10**: Left hand touches glasses on the glass rack.
+*   **00:11 - 00:12**: Right hand on till screen, then payment terminal.
+*   **00:12 - 00:16**: Right hand operates payment terminal.
+*   **00:16 - 00:18**: Right hand extends forward to a customer (Customer 4), appearing to hand over a card or receipt. **No cash exchange is observed at this point.**
+*   **00:20 - 00:22**: Right hand places the payment terminal back into its cradle.
+*   **00:21 - 00:22**: Left hand reaches into the **open cash drawer**.
+*   **00:22 - 00:23**: Left hand removes **cash notes** from the drawer. The cash drawer is closed with the left hand (while still holding the notes).
+*   **00:23 - 00:24**: Left hand places the **cash notes directly onto the stainless steel counter** next to the till screen. The notes remain visible on the counter.
+*   **00:24 - 00:26**: Hands are free.
+*   **00:26 - 00:28**: Right hand on till screen.
+*   **00:28 - 00:30**: Left hand opens and closes a small refrigerator door under the counter.
+
+---
+
+#### 3. CLOTHING, POCKETS & WAISTBAND (Employee 1)
+
+Throughout the recorded segment:
+*   There are no observable instances of Employee 1 pulling up pants, making waistband adjustments, touching his belt, or reaching near any pockets or aprons.
+*   The cash notes retrieved from the till at 00:22-00:23 are explicitly placed onto the counter surface at 00:23-00:24 and are not seen to be placed into any article of clothing or concealed from view.
+
+---
+
+#### 4. SUSPICION EVALUATION
+
+**EVALUATION: NOT SUSPICIOUS** - All movements observed for Employee 1 are consistent with normal bar operation, serving customers, and standard workplace tasks.
+
+The actions involving the till and cash are routine:
+*   Employee 1 operates the point-of-sale system and payment terminal to process a transaction.
+*   The retrieval of cash notes from the till at **00:22 - 00:23** and their placement directly onto the counter at **00:23 - 00:24** is a visible and open action, consistent with procedures such as organizing change, preparing cash for a till drop, or handling a specific payment. There is no indication of concealment, misdirection, or any attempt to divert funds. The cash remains openly on the counter.
+*   Other actions, such as handling glasses or opening a refrigerator, are typical duties in a bar environment.
+*   Crucially, there are no movements near pockets, waistbands, or other clothing areas that could suggest an attempt to hide or remove money from the till for personal gain.
+
+---
+
+### `Sports Bar Till_2025_11_22_3PM_34_36.avi` (52s, 38.9 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+Here is a detailed forensic timeline and analysis of the video clip:
+
+---
+
+**1. CHRONOLOGICAL BREAKDOWN:**
+
+*   **00:00-00:02:** The staff member walks into the main bar area from the right, moving behind the bar counter. A customer is already seated at the bar, attentive.
+*   **00:02-00:05:** The staff member pauses behind the counter, opens an under-counter refrigeration unit, retrieves a clear glass, and then closes the unit.
+*   **00:05-00:10:** The staff member approaches the beer taps, positions the retrieved glass under a tap, and pulls the tap handle downwards to dispense beer into the glass.
+*   **00:10-00:16:** After dispensing, the staff member removes the glass from the tap and briefly inspects the beer, making a slight adjustment to the foam.
+*   **00:16-00:18:** The staff member extends the filled beer glass across the bar counter to the customer, who takes it.
+*   **00:18-00:20:** The staff member turns towards the point-of-sale (POS) system touchscreen while the customer simultaneously places cash notes onto the bar counter.
+*   **00:20-00:25:** The staff member briefly looks at the customer, then reaches forward and picks up the cash notes from the counter.
+*   **00:25-00:29:** The staff member moves closer to the POS system, places the notes on the counter beside the screen, smooths them out with both hands, picks them up again, and begins interacting with the touchscreen.
+*   **00:29-00:32:** The staff member opens the cash drawer and places the customer's cash notes into one of the designated slots within it.
+*   **00:32-00:34:** The staff member reaches into the open cash drawer with both hands, gathers coins, and then closes the drawer.
+*   **00:34-00:36:** Holding the collected coins (change), the staff member extends them across the bar to the customer, who accepts them.
+*   **00:36-00:42:** The staff member briefly interacts with the POS system again, then steps back from the counter and walks towards the right side of the frame, away from the service area.
+
+---
+
+**2. HAND & ITEM AUDIT:**
+
+*   **00:02-00:03:** The staff member's **right hand** opens an under-counter fridge door and reaches inside.
+*   **00:03-00:04:** The staff member's **right hand** retrieves a clear glass, then closes the fridge door with the same hand.
+*   **00:05-00:06:** The **left hand** holds the glass, while the **right hand** positions it under the beer tap.
+*   **00:06-00:08:** The **right hand** pulls the beer tap handle down, dispensing beer into the glass.
+*   **00:09-00:10:** The **right hand** pushes the beer tap handle back up to stop the flow.
+*   **00:10-00:11:** The **right hand** removes the glass from the tap.
+*   **00:11-00:12:** The **left hand** takes the glass from the right hand and places it on the drip tray.
+*   **00:12-00:13:** The **left hand** holds the glass, inspecting the beer.
+*   **00:13-00:14:** The **right hand** briefly touches the top of the beer (presumably adjusting foam).
+*   **00:15-00:16:** The **right hand** takes the beer glass from the left hand.
+*   **00:16-00:17:** The **right hand** hands the beer glass to the customer across the bar. The customer's **right hand** receives the glass.
+*   **00:19-00:20:** The staff member's **left hand** touches the POS touchscreen.
+*   **00:20-00:21:** The customer's **left hand** places cash notes (appearing to be two notes) on the bar counter.
+*   **00:24-00:25:** The staff member's **right hand** picks up the cash notes from the bar counter.
+*   **00:26-00:27:** The **right hand** places the cash notes on the counter next to the POS screen.
+*   **00:27-00:28:** **Both hands** briefly smooth the cash notes on the counter. The **right hand** then picks up the notes.
+*   **00:28-00:30:** The **left hand** operates the POS touchscreen, while the **right hand** holds the cash notes.
+*   **00:30-00:31:** The **right hand** makes an action that causes the cash drawer to open.
+*   **00:31-00:32:** The **right hand** places the customer's cash notes into a section of the open cash drawer.
+*   **00:32-00:33:** **Both hands** reach into the cash drawer, with the **left hand** collecting coins for change, and the **right hand** also appearing to handle coins briefly.
+*   **00:33-00:34:** The **right hand** closes the cash drawer.
+*   **00:34-00:35:** The **left hand** holds the collected coins (change).
+*   **00:35-00:36:** The **left hand** hands the coins (change) to the customer across the bar. The customer's **right hand** receives the change.
+*   **00:37-00:38:** The **right hand** briefly touches the POS touchscreen.
+
+---
+
+**3. CLOTHING, POCKETS & WAISTBAND:**
+
+*   There are no observed actions involving the staff member pulling up pants, making waistband adjustments, touching a belt, or reaching near pockets or aprons throughout the entire video clip. All hand movements are clearly visible and related to the tasks at hand.
+
+---
+
+**4. SUSPICION EVALUATION:**
+
+**EVALUATION: NOT SUSPICIOUS** - All movements of the staff member are consistent with normal bar operations, including serving a drink, operating the till, handling customer payment, and dispensing change. The staff member's hands are clearly visible throughout the entire transaction, and there are no instances of obscured hand movements, contact with pockets, or any other action that could be construed as suspicious or indicative of misconduct or cash theft.
+
+---
+
+### `Sports Bar Till_2025_11_22_3PM_16_00.avi` (82s, 62.2 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+Here's an objective forensic timeline analysis of the provided video clip:
+
+---
+
+**1. CHRONOLOGICAL BREAKDOWN**
+
+*   **00:00 - 00:01**: A male bartender (BT1) wearing a black shirt with green accents is at the till, holding cash notes. A female customer is at the bar.
+*   **00:02 - 00:03**: BT1 places notes into the open cash drawer, then retrieves coins. The customer waits.
+*   **00:04 - 00:05**: BT1 hands the coins to the customer. The customer receives the coins and picks up her drink. BT1 closes the till drawer.
+*   **00:06 - 00:07**: The customer walks away from the bar. BT1 walks to the right, along the back counter.
+*   **00:08 - 00:09**: BT1 moves behind the counter, appearing to organize items or clean along the shelving on the right side of the bar.
+*   **00:10 - 00:11**: BT1 walks back towards the till area. He then reaches down into a compartment to the right of the till.
+*   **00:12 - 00:13**: BT1 opens a small door/drawer below the counter to the right of the till and retrieves a small glass.
+*   **00:14 - 00:15**: BT1 holds the glass and then places it into the refrigerated cabinet on the left side of the till area.
+*   **00:16 - 00:18**: BT1 walks back to the right, briefly out of the main view behind the counter.
+*   **00:19 - 00:20**: BT1 returns to the till area and looks towards the right.
+*   **00:21 - 00:22**: A second male bartender (BT2) wearing a blue shirt enters from the right and walks towards BT1. They both look at the till screen.
+*   **00:23 - 00:24**: BT1 gestures and points at the till screen. BT2 moves towards the back of the bar.
+*   **00:25 - 00:26**: BT1 interacts with the till screen, then opens the cash drawer. BT2 walks back towards BT1.
+*   **00:27 - 00:28**: BT1's right hand is in the open till drawer, handling money. BT2 observes.
+*   **00:29 - 00:30**: BT1 removes a bundle of cash notes from the till drawer with his right hand. BT2 extends his hand.
+*   **00:31 - 00:32**: BT1 directly hands the bundle of notes to BT2. BT2 takes the notes and turns to walk away to the right.
+*   **00:33 - 00:34**: BT1 closes the till drawer and then walks to the left, exiting the view. BT2 continues walking right, out of view.
+*   **00:35 - 00:42**: The bar area is empty of staff.
+*   **00:43 - 00:46**: BT2 returns from the right, walks along the counter, and approaches the till area.
+*   **00:47 - 00:49**: BT2 stands at the till, looking at the screen and then down towards the refrigerated cabinet.
+*   **00:50 - 00:51**: BT2 opens the small door/drawer to the right of the till, looks inside, then closes it. He then opens the refrigerated cabinet on the left of the till.
+*   **00:52 - 00:54**: BT2 takes out a small glass from the left cabinet, closes the door, then opens the right lower compartment and places the glass inside.
+*   **00:55 - 00:56**: BT2 closes the right compartment, then re-opens the left refrigerated cabinet and removes a tray of glasses.
+*   **00:57 - 01:00**: BT2 places the tray down and bends over, reaching deeper into the refrigerated cabinet to handle more glasses.
+*   **01:01 - 01:03**: BT2 stands up with a tray of glasses, then places it back into the cabinet, continuing to arrange glasses. BT1 enters from the left and walks towards the till.
+*   **01:04 - 01:05**: BT1 is at the till, interacting with the screen. BT2 stands up, holding a glass.
+*   **01:06 - 01:07**: BT2 places a glass on the counter. BT1 turns to face BT2, and they appear to exchange words. BT2 walks towards the right.
+*   **01:08 - 01:09**: BT1 is at the till, touches the screen, then opens the cash drawer. BT2 walks back towards BT1.
+*   **01:10 - 01:11**: BT1's right hand is in the till drawer, handling money. BT2 briefly looks into the till before bending down to the refrigerated cabinet.
+*   **01:12 - 01:13**: BT1 continues to handle money in the till. BT2 is bent down, reaching for glasses in the cabinet. BT1 closes the till drawer.
+*   **01:14 - 01:16**: BT1 looks at the screen. BT2 retrieves a tray of glasses, stands up, and walks towards the left.
+*   **01:17 - 01:21**: BT2 places the tray of glasses into the refrigerated cabinet on the left, then bends down to retrieve another tray, and places it back into the cabinet. BT1 observes briefly, then turns and walks to the right, out of view.
+
+---
+
+**2. HAND & ITEM AUDIT**
+
+*   **00:00**: BT1's hands are in the till drawer, holding cash notes.
+*   **00:01**: BT1's hands handle notes and coins within the till drawer.
+*   **00:02**: BT1 places notes into the till, then picks up coins with his right hand.
+*   **00:03**: BT1 holds coins in his right hand.
+*   **00:04**: BT1 hands coins to the customer. BT1's left hand closes the till drawer.
+*   **00:05**: BT1's hands are free. Customer's right hand picks up a beer glass from the counter.
+*   **00:08 - 00:09**: BT1's right hand touches items on the back counter shelving, appearing to arrange or clean.
+*   **00:11**: BT1's right hand reaches down to open a compartment below the counter.
+*   **00:12**: BT1 opens a small door/drawer to the right of the till.
+*   **00:13**: BT1's right hand retrieves a small glass from the compartment.
+*   **00:14**: BT1 holds the glass in his right hand.
+*   **00:15**: BT1 places the small glass into the refrigerated cabinet on the left.
+*   **00:22**: BT1 gestures towards the till screen with his right hand.
+*   **00:23**: BT1 points at the till screen with his right hand.
+*   **00:24**: BT1 touches the till screen with his right hand.
+*   **00:25**: BT1 touches the till screen again with his right hand.
+*   **00:26**: BT1 opens the till drawer with his right hand.
+*   **00:27 - 00:28**: BT1's right hand is inside the till drawer, handling notes.
+*   **00:29**: BT1 takes a bundle of cash notes from the till drawer with his right hand.
+*   **00:30**: BT1 holds the notes in his right hand. BT2 extends his left hand.
+*   **00:31**: BT1 hands the bundle of notes directly to BT2. BT2 grasps the notes.
+*   **00:32**: BT2 holds the notes in his hand as he walks away.
+*   **00:33**: BT1 closes the till drawer with his left hand.
+*   **00:48**: BT2 touches the till screen with his right hand.
+*   **00:50**: BT2 opens the small door/drawer to the right of the till with his right hand, then closes it.
+*   **00:51**: BT2 opens the refrigerated cabinet on the left of the till with his right hand.
+*   **00:52**: BT2 takes a small glass from the left cabinet with his right hand, then closes the door.
+*   **00:53**: BT2 opens the right lower compartment with his right hand.
+*   **00:54**: BT2 places the glass into the right lower compartment with his right hand.
+*   **00:55**: BT2 closes the right compartment, then opens the left refrigerated cabinet.
+*   **00:56**: BT2 removes a tray of glasses from the left cabinet.
+*   **00:57**: BT2 places the tray down, then reaches into the left cabinet with both hands.
+*   **00:58 - 01:00**: BT2's hands are handling glasses inside the left cabinet (hands partially obscured by the cabinet opening).
+*   **01:01**: BT2 stands up holding a tray of glasses.
+*   **01:02**: BT2 places the tray of glasses back into the left cabinet.
+*   **01:04**: BT1 touches the till screen with his right hand.
+*   **01:05**: BT1 touches the screen again. BT2 stands up holding a glass.
+*   **01:06**: BT2 places a glass on the counter.
+*   **01:08**: BT1 touches the till screen with his right hand.
+*   **01:09**: BT1 opens the till drawer with his right hand.
+*   **01:10**: BT1's right hand is in the till drawer.
+*   **01:11 - 01:12**: BT1 handles money in the till drawer with his right hand. BT2 bends down to the left refrigerated cabinet with both hands.
+*   **01:13**: BT1 closes the till drawer with his left hand. BT2 continues to handle glasses in the cabinet.
+*   **01:14**: BT2 retrieves a tray of glasses from the cabinet.
+*   **01:15**: BT2 stands up, holding a tray of glasses.
+*   **01:17**: BT2 places the tray of glasses into the left refrigerated cabinet.
+*   **01:18 - 01:19**: BT2 bends down, reaches into the cabinet, and retrieves another tray of glasses.
+*   **01:20**: BT2 places the tray back into the left cabinet.
+
+---
+
+**3. CLOTHING, POCKETS & WAISTBAND**
+
+*   No instances of pulling up pants, waistband adjustments, belt touching, or reaching near pockets/aprons are observed for either BT1 or BT2 throughout the video. Any money handled is clearly observed to be transferred between the till and another staff member, or between the till and the customer.
+
+---
+
+**4. SUSPICION EVALUATION**
+
+**EVALUATION: NOT SUSPICIOUS**
+
+All movements observed are consistent with normal till operation, serving customers, and workplace tasks such as handling cash and organizing glassware.
+
+Specifically:
+*   The initial cash transaction with the customer (00:00-00:04) is a routine exchange of notes and coins.
+*   The transfer of a bundle of notes from BT1 to BT2 (00:29-00:31) appears to be a legitimate internal cash float transfer or shift handover. The money is handed directly and openly between the two employees, with no attempt to conceal it or place it into pockets.
+*   The subsequent interaction where BT1 opens the till again (01:09) while BT2 is organizing glasses could be for reconciliation, restocking, or another legitimate till-related task, as BT2 is present and briefly observes.
+*   There are no instances where hands are obscured in a suspicious manner, nor are there any movements near pockets or waistbands during money handling that would suggest misconduct or theft. All actions involving items, especially money, are transparent and align with standard bar operations.
+
+---
+
+### `Sports Bar Till_2025_11_22_2PM_51_18.avi` (54s, 41 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+No description generated.
+
+---
+
