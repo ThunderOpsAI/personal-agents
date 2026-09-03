@@ -285,7 +285,7 @@ export function ensureDailyStandingProtocols(
       title: 'Sleep Meditation',
       time: `${datePrefix}T21:00:00+10:00`,
     },
-    ...['06:00:00', '09:00:00', '12:00:00', '15:00:00', '18:00:00', '21:00:00', '23:59:00'].map((timeStr) => ({
+    ...['00:00:00', '08:00:00', '12:00:00', '16:00:00', '20:00:00'].map((timeStr) => ({
       id: `pain_log_reminder_${timeStr.replace(/:/g, '')}_${datePrefix}`,
       item_type: 'task' as const,
       title: 'Log Pain Level',

@@ -7,6 +7,26 @@
     {
       "path": "/api/v1/retrieval/scan?cron=true",
       "schedule": "0 4 * * *"
+    },
+    {
+      "path": "/api/v1/pain/notify",
+      "schedule": "0 14 * * *"
+    },
+    {
+      "path": "/api/v1/pain/notify",
+      "schedule": "0 22 * * *"
+    },
+    {
+      "path": "/api/v1/pain/notify",
+      "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/v1/pain/notify",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/v1/pain/notify",
+      "schedule": "0 10 * * *"
     }
   ],
   "headers": [
