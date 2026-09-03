@@ -1,19 +1,29 @@
 # Tavern CCTV Footage Evidence & Analysis Report
 
 **Date of Generation:** 2026-09-03
-**Total Videos Evaluated:** 11
-* **Fully Analyzed (≤ 100s):** 10
-  * **No Suspicious Activity (Clean / Routine):** 6
-  * **Flagged Ambiguous / Potentially Questionable (Requires Review):** 4
-* **Too Large (> 100s - Flagged for Manual Review):** 0
-* **Errors during Processing:** 1
+**Total Videos Evaluated:** 62
+* **Fully Analyzed (≤ 100s):** 60
+  * **No Suspicious Activity (Clean / Routine Till Operations):** 53
+  * **Flagged Ambiguous / Potentially Questionable (Requires Review):** 7
+* **Too Large (> 100s - Flagged for Manual Review):** 2
+
+---
+
+## 1. Files Flagged as Too Large (> 100 Seconds - Manual Review Required)
+
+The following files exceed the 100-second threshold and have been designated for direct manual review:
+
+| File Name | Duration | Size | Recommended Action |
+| :--- | :--- | :--- | :--- |
+| `Sports Bar Till_2025_11_14_6PM_58_24.avi` | 239s | 179.7 MB | Review manually |
+| `Sports Bar Till_2025_11_03_7PM_30_43.avi` | 102s | 77.1 MB | Review manually |
 
 ---
 
 ## 2. Videos with Flagged / Ambiguous Actions (For Defense Scrutiny)
 
 > [!WARNING]
-> The following videos contain actions that an employer or prosecution might attempt to question or misinterpret (e.g., adjusting pants/waistband, touching pockets, handling cleaning paper towels, or momentary obscured hand position). Review these timestamps specifically to prepare counter-evidence.
+> The following 7 videos contain actions that an employer or prosecution might attempt to question or misinterpret (e.g., adjusting pants/waistband, touching pockets, handling cleaning paper towels, or momentary obscured hand position). Review these timestamps specifically to prepare counter-evidence.
 
 ### `Bottle Shop Till_2025_11_22_4PM_33_18.avi` (36s, 17.3 MB)
 **Evaluation:** ⚠️ **Flagged for Potential Scrutiny / Ambiguity**
@@ -301,7 +311,222 @@ The primary flagged events are the pocketing of the personal item (though it ori
 
 ---
 
-## 3. Clear / Routine Videos (No Suspicious Activity)
+### `Drive Thru Till Left_2025_11_21_3PM_40_59.avi` (29s, 22.5 MB)
+**Evaluation:** ⚠️ **Flagged for Potential Scrutiny / Ambiguity**
+
+Here is a forensic analysis of the provided video clip:
+
+---
+
+**CCTV EVIDENCE ANALYSIS: WORKPLACE LEGAL DEFENSE**
+
+**Incident Focus:** Employee misconduct / cash theft at bar/drive-thru till.
+
+**Video Duration:** 00:00 - 00:28
+
+---
+
+**1. CHRONOLOGICAL BREAKDOWN**
+
+*   **00:00 - 00:01**: Male employee, wearing a dark t-shirt and shorts, stands at the stainless steel counter, facing a customer partially visible in a white truck at the drive-thru window. He is positioned behind the till system.
+*   **00:02 - 00:04**: The employee uses both hands to operate the till screen/keypad. He looks focused on the task.
+*   **00:05 - 00:06**: The employee's right hand moves to an area left of the till screen, possibly interacting with a payment terminal or scanning an item. His left hand is also near the till.
+*   **00:07 - 00:08**: The employee handles a small, light-colored item (appears to be a receipt or card) with both hands, then extends his right hand briefly towards the customer in the truck. He then picks up a red-capped bottle from the counter with his right hand.
+*   **00:09 - 00:10**: The employee turns his body towards the drive-thru window and extends the bottle with his right hand to the customer. His left hand also extends towards the customer, appearing to facilitate an exchange.
+*   **00:11 - 00:12**: The employee retracts his hands. His right hand is now empty. His left hand holds a small, light-colored item, which he briefly looks at as he steps back from the window.
+*   **00:13 - 00:14**: The employee walks a step or two along the counter away from the window, still looking at the item in his left hand. He briefly reaches his left hand back into the truck's window area.
+*   **00:15 - 00:16**: The employee retracts his left hand, now visibly empty, and steps back further from the drive-thru window.
+*   **00:17 - 00:18**: The employee turns his body away from the drive-thru. As he turns and takes a step, his left hand briefly touches his shorts/waistband area on his left side. He continues walking towards the rear of the store.
+*   **00:19 - 00:20**: The employee moves out of the main view of the till area, heading towards the back of the store. The customer's truck begins to drive away.
+*   **00:21 - 00:22**: The employee reappears, walking back towards the till area from the rear of the store. His hands are empty and at his sides.
+*   **00:23 - 00:25**: The employee approaches the till, looking at the screen. He uses his right hand to operate the till screen.
+*   **00:26 - 00:28**: The employee stands at the counter briefly, then moves towards the right side of the frame, interacting with items on a display shelf, moving out of the direct view of the till.
+
+---
+
+**2. HAND & ITEM AUDIT**
+
+*   **00:00 - 00:04**: Both hands are primarily on the counter, operating the till system (screen/keypad).
+*   **00:05**: Right hand moves to the left side of the till, possibly for scanning or card interaction. Left hand remains on the counter near the till.
+*   **00:06**: Left hand picks up a small, flat item (appears to be a receipt or payment card). Right hand is on the till.
+*   **00:07**: Both hands briefly handle the small item. Right hand extends towards the customer.
+*   **00:08**: Right hand picks up a red-capped bottle from the counter. Left hand is briefly near the till drawer area but the drawer is not observed opening. Employee begins to turn towards the drive-thru.
+*   **00:09 - 00:10**: Right hand extends the bottle to the customer. Left hand extends towards the customer's vehicle, engaging in a brief exchange with the customer.
+*   **00:11**: Right hand is empty. Left hand retracts from the customer holding a small, light-colored item (possibly change or a card).
+*   **00:12**: Left hand holds the small item, observed by the employee.
+*   **00:13 - 00:14**: Left hand, still holding the item, briefly reaches back into the customer's vehicle.
+*   **00:15 - 00:16**: Left hand retracts from the vehicle, now visibly empty. Right hand is at his side.
+*   **00:17 - 00:18**: Left hand moves to the employee's left shorts/waistband area for a brief, casual adjustment as he turns and walks away. No items are observed being placed into or removed from pockets or waistband.
+*   **00:19 - 00:22**: Hands are at his sides or out of view as he walks to and from the back of the store.
+*   **00:23 - 00:25**: Right hand operates the till screen. Left hand is at his side.
+*   **00:26 - 00:28**: Right hand briefly touches items on a display shelf.
+
+**Note on Cash Drawer**: The cash drawer is not visibly opened or accessed at any point in the video. All observed transactions with the customer appear to involve a small item (receipt/card) and the main product (bottle), with a brief exchange of what appears to be a small item in the left hand, consistent with change or a card.
+
+---
+
+**3. CLOTHING, POCKETS & WAISTBAND**
+
+*   **00:17**: As the employee turns away from the drive-thru window, his left hand moves to his left shorts/waistband area. This appears to be a quick, almost reflexive adjustment of his clothing. His fingers briefly make contact with the fabric of his shorts near the top of his thigh.
+*   **00:18**: The left hand continues this brief adjustment as he takes a step, then falls back to his side as he walks towards the back of the store.
+*   No items are observed being placed into or removed from any pockets or the waistband during this or any other interaction. The left hand is visibly empty both immediately before and immediately after this action.
+
+---
+
+**4. SUSPICION EVALUATION**
+
+**EVALUATION: FLAGGED (POTENTIALLY QUESTIONABLE / AMBIGUOUS)**
+
+While the overall actions appear routine for a drive-thru transaction, the following timestamp might be scrutinized by an employer:
+
+*   **00:17 - 00:18**: The employee's left hand moves to his left shorts/waistband area immediately after completing the transaction with the customer and having visibly emptied his hand of the small item (00:16). An employer might question this action as a potential attempt to place something into a pocket or waistband.
+
+**Clarification of Observed Action:**
+Upon close inspection, the employee's left hand is empty at 00:16. The movement at 00:17-00:18 is a brief, outward motion where the fingers briefly touch and adjust the fabric of his shorts/waistband as he turns and begins to walk away. There is no visible indication of an item being placed into or removed from a pocket, nor any attempt to conceal an item. The action appears to be a casual adjustment of clothing. The hand remains open or loosely cupped, and no bulge or item is seen entering or exiting the clothing. His left hand is again visibly empty as he continues walking at 00:18 and when he reappears at 00:21.
+
+---
+
+### `Drive Thru Till Right_2025_11_21_3PM_40_59.avi` (31s, 23.3 MB)
+**Evaluation:** ⚠️ **Flagged for Potential Scrutiny / Ambiguity**
+
+**CCTV Evidence Analysis: Workplace Legal Defense**
+
+**Date of Analysis:** October 26, 2023
+**Video Duration:** 00:30
+
+---
+
+**1. CHRONOLOGICAL BREAKDOWN**
+
+*   **00:00 - 00:03**: The employee is positioned behind the counter, leaning over the POS (Point of Sale) system. His right hand is operating the POS screen/keyboard, while his left hand rests on the counter.
+*   **00:03 - 00:05**: The employee's right hand moves downwards and opens the cash till drawer (which is out of direct view below the counter). He reaches into the open drawer.
+*   **00:05 - 00:07**: The employee withdraws his right hand from the till, holding what appears to be cash/coins. He extends his right arm towards a customer's hand visible through the drive-thru window, exchanging items (likely giving change).
+*   **00:07 - 00:09**: The employee withdraws his right hand from the exchange. His left hand picks up a cup. His right hand moves back towards the till area, likely closing the drawer (out of view).
+*   **00:09 - 00:12**: The employee faces slightly left, holding the cup in his left hand and operating a drink dispenser with his right hand to prepare a beverage. He then places the prepared drink on the counter near the drive-thru window.
+*   **00:12 - 00:15**: The employee steps back slightly from the counter, then moves to his right, arranging items on the counter with both hands.
+*   **00:15 - 00:21**: The employee moves slightly out of view behind the counter, then reappears, looking towards the drive-thru window, seemingly waiting.
+*   **00:21 - 00:23**: A new customer walks into the establishment from the right side of the frame and approaches the counter. The employee steps into full view from behind the counter, holding a black rectangular object (possibly a phone or wallet).
+*   **00:23 - 00:24**: The employee places the black object on the counter. Immediately afterwards, he uses both hands to quickly adjust his shorts/waistband area.
+*   **00:24 - 00:26**: The employee turns his attention to the new customer, who is pointing at something. The employee's right hand begins operating the POS system.
+*   **00:26 - 00:28**: The customer turns and walks away from the counter, exiting the store. A pickup truck, previously parked at the drive-thru, drives away. The employee continues to look at the POS system.
+*   **00:28 - 00:30**: The employee steps back, looks towards the area where the customer was, then turns and moves out of view to the left, behind the counter.
+
+---
+
+**2. HAND & ITEM AUDIT**
+
+*   **00:00 - 00:03**: Right hand on POS screen/keyboard. Left hand resting on counter.
+*   **00:03 - 00:05**: Right hand opens and reaches into the cash till drawer (out of view).
+*   **00:05 - 00:06**: Right hand removes items (visually consistent with cash notes and/or coins) from the till drawer.
+*   **00:06 - 00:07**: Right hand hands items (change) directly to the customer's hand through the window.
+*   **00:08 - 00:09**: Left hand grasps a cup from a stack. Right hand moves towards the till area (drawer likely closes, out of view).
+*   **00:09 - 00:11**: Left hand holds the cup. Right hand operates a drink dispenser, filling the cup.
+*   **00:11 - 00:12**: Left hand places the prepared drink on the counter.
+*   **00:13 - 00:15**: Both hands are used to arrange or tidy items on the counter surface.
+*   **00:22 - 00:23**: Employee emerges holding a black rectangular object (likely a personal phone or wallet) in his right hand. He places this object on the counter.
+*   **00:23 - 00:24**: Right hand moves to the right side of his shorts/waistband. Left hand moves to the left side of his shorts/waistband. Both hands are briefly engaged in adjusting his clothing.
+*   **00:24 - 00:26**: Right hand interacts with the POS screen. Left hand rests on the counter, then moves slightly to the left side of the POS.
+*   **00:26 - 00:30**: Hands are either on the POS or move out of the camera's view as the employee moves behind the counter.
+
+---
+
+**3. CLOTHING, POCKETS & WAISTBAND**
+
+*   **00:23 - 00:24**: Immediately after placing a black object on the counter, the employee's right hand moves directly to the right side of his shorts/waistband, and his left hand moves to the left side of his shorts/waistband. He makes a quick, upward pulling motion consistent with adjusting loose-fitting shorts or pants. There is no visible insertion or removal of any item into or from pockets. The hands are only briefly obscured by the fabric of the shorts themselves during this adjustment. No bulging is observed in the pocket area before, during, or after this action.
+
+---
+
+**4. SUSPICION EVALUATION**
+
+**EVALUATION: FLAGGED (POTENTIALLY QUESTIONABLE / AMBIGUOUS)**
+
+While the majority of the employee's actions are consistent with normal till operation, serving customers, and workplace tasks, one specific action at **00:23 - 00:24** could be subject to scrutiny or misinterpretation by an employer.
+
+**Reason for Flagging:**
+At **00:23**, after placing a personal item (black object, possibly phone/wallet) on the counter and as a new customer approaches, the employee brings both hands down to his waistband area to adjust his shorts. Any contact with pockets or the waistband, especially when hands are briefly obscured or move out of clear view, can be scrutinized in a cash-handling environment.
+
+**What Actually Appears to Happen:**
+The movement at **00:23 - 00:24** appears to be a quick, routine adjustment of his clothing (pulling up his shorts/waistband). Both hands are involved, and they are only briefly obscured by the fabric of his shorts. Crucially, there is no visual evidence of any item (specifically cash notes or coins) being inserted into or removed from his pockets, nor is there any visible manipulation of an item within the pocket area. The employee's hands return to the counter area almost immediately to attend to the waiting customer.
+
+**Conclusion:** The action, while potentially appearing ambiguous if viewed without context or with a suspicious bias, visually aligns with a simple and common personal habit of adjusting clothing. There is no forensic evidence within this video clip to suggest any misconduct, cash theft, or improper handling of funds.
+
+---
+
+### `Sports Bar Till_2025_11_21_2PM_18_02.avi` (38s, 29.1 MB)
+**Evaluation:** ⚠️ **Flagged for Potential Scrutiny / Ambiguity**
+
+Here is a forensic timeline analysis of the provided video clip:
+
+---
+
+**FORENSIC TIMELINE ANALYSIS**
+
+**1. CHRONOLOGICAL BREAKDOWN**
+
+*   **00:00 - 00:03**: The employee is behind the bar, facing a customer seated at the bar. He holds a beer glass and is pouring beer from a tap.
+*   **00:04 - 00:05**: The employee finishes pouring the beer and lifts the glass from the tap.
+*   **00:06 - 00:07**: The employee places the full glass of beer on the bar counter directly in front of the customer.
+*   **00:08 - 00:09**: The employee turns towards the Point-of-Sale (POS) system screen and begins to interact with it, presumably to process the sale.
+*   **00:10 - 00:11**: The employee continues operating the POS system. The customer extends his hand, holding cash.
+*   **00:12 - 00:13**: The employee takes the cash notes from the customer.
+*   **00:14 - 00:15**: The employee places the cash notes on top of the closed till drawer, then briefly touches the POS screen again.
+*   **00:16 - 00:17**: The employee opens the cash till drawer and places the received cash notes into a compartment within the drawer.
+*   **00:18 - 00:19**: The employee's right hand is inside the till drawer, seemingly counting or retrieving change.
+*   **00:20 - 00:21**: The employee hands back change (notes and coins) to the customer and also slightly pushes the beer glass closer to the customer.
+*   **00:22 - 00:23**: The employee's right hand remains in the till drawer, arranging or tidying the money.
+*   **00:24 - 00:25**: The employee closes the cash till drawer.
+*   **00:26**: The employee reaches for a small piece of paper (appears to be a receipt) on the counter to the left of the POS system.
+*   **00:27 - 00:28**: The employee, holding the paper, turns slightly away from the bar. His right hand briefly moves down out of view below the counter level on his right side.
+*   **00:29 - 00:30**: The employee's right hand reappears, clearly holding crumpled paper, and drops it into a waste bin located under the counter.
+*   **00:31 - 00:32**: The employee's hands are empty.
+*   **00:33 - 00:35**: The employee walks away from the till area and exits the frame to the right.
+*   **00:36 - 00:37**: A second employee (female) enters the frame from the right, approaching the bar area.
+
+**2. HAND & ITEM AUDIT**
+
+*   **00:00 - 00:05**: Employee's hands handle a beer glass, filling it from a beer tap. The full glass is then lifted.
+*   **00:06 - 00:07**: Right hand places the full beer glass on the bar counter.
+*   **00:08 - 00:09**: Right hand touches the POS system screen.
+*   **00:10 - 00:11**: Right hand interacts with the POS screen.
+*   **00:12 - 00:13**: Right hand receives cash notes from the customer.
+*   **00:14 - 00:15**: Right hand places the cash notes on top of the closed till drawer, then touches the POS screen.
+*   **00:16 - 00:17**: Right hand opens the till drawer and deposits the cash notes into a compartment.
+*   **00:18 - 00:19**: Right hand sorts through coins/notes within the open till drawer.
+*   **00:20 - 00:21**: Right hand hands cash notes (change) and coins to the customer. Right hand then nudges the beer glass towards the customer.
+*   **00:22 - 00:23**: Right hand continues to handle items inside the till drawer.
+*   **00:24 - 00:25**: Right hand closes the till drawer.
+*   **00:26**: Right hand picks up a small piece of paper (receipt) from the counter.
+*   **00:27 - 00:28**: Right hand, holding the paper, moves downwards and out of direct view below the counter level.
+*   **00:29 - 00:30**: Right hand reappears, crumples the paper, and drops it into a waste bin.
+*   **00:31 - 00:37**: Hands are empty and no further items are handled by this employee.
+
+**3. CLOTHING, POCKETS & WAISTBAND**
+
+*   **00:00 - 00:26**: No interaction with clothing, pockets, or waistband is observed.
+*   **00:27 - 00:28**: As the employee picks up a piece of paper (receipt) and turns, his right hand briefly moves down out of view below the counter level, towards his right hip/thigh area. This motion could bring the hand close to a pocket or waistband area.
+*   **00:29 - 00:37**: His right hand immediately comes back into view, clearly holding the crumpled paper, which he then disposes of in a waste bin. No items are observed being placed into or removed from pockets or waistband.
+
+**4. SUSPICION EVALUATION**
+
+**EVALUATION: FLAGGED (POTENTIALLY QUESTIONABLE / AMBIGUOUS)**
+
+While the overall transaction appears routine, the moment at **00:27 - 00:28** could be scrutinized by an employer:
+
+*   **Why it might be questioned**: The employee picks up a small paper item (appears to be a receipt) and his right hand, holding this item, briefly moves downwards and out of direct camera view below the counter level, near his right hip/pocket area. Given that the employee just handled cash, any obscured hand movement near a pocket could potentially be misinterpreted as concealing something, even if unintentional or entirely innocent.
+*   **What actually appears to happen**: Immediately after his hand goes out of view, it reappears, clearly holding the previously picked-up paper item, now crumpled. The employee then explicitly disposes of this crumpled paper into a visible waste bin under the counter. The very short duration his hand is out of view, combined with the immediate and visible disposal of the *same identified item*, strongly suggests he was simply positioning to discard the paper in the bin. There is no indication of anything being slipped into a pocket, and no "stuffing" motion is observed. The sequence of actions from picking up the paper to discarding it is consistent with a standard disposal of a receipt.
+
+---
+
+## 3. Clear / Routine Videos (Brief Timeline Summaries)
+
+All of the following videos demonstrate normal, transparent customer service and till operation with zero suspicious activity:
+
+### `Sports Bar Till_2025_11_22_4PM_31_02.avi` (67s, 50.6 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+The video shows a bartender pouring a drink for a customer, then interacting with a cashier at the till. The bartender then retrieves glasses from a refrigerator, while the cashier handles payment. This appears to be a routine transaction at a bar or pub, involving typical employee duties.
+
+---
 
 ### `Sports Bar Till_2025_11_22_4PM_18_52.avi` (84s, 63.9 MB)
 **Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
@@ -633,11 +858,333 @@ Specifically:
 ### `Sports Bar Till_2025_11_22_2PM_51_18.avi` (54s, 41 MB)
 **Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
 
-No description generated.
+In this video, an employee is seen working behind a bar. They are engaged in routine workplace operations, including preparing and pouring drinks, interacting with a point-of-sale system, and handling cash. The employee appears to be restocking glasses and possibly serving customers, all within the normal functions of a bar environment.
 
 ---
 
 ### `Drive Thru Main_2025_11_21_3PM_40_59.avi` (30s, 14.9 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+The video shows a man in a black shirt and shorts approaching the driver's side of a silver pickup truck. He opens the driver's side door and appears to adjust something inside the cab before closing the door and walking away. The actions observed are routine workplace operations.
+
+---
+
+### `Sports Bar Till_2025_11_21_3PM_10_06.avi` (40s, 30.2 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+In this video clip, a bartender is seen serving a customer. The bartender pours a drink for the customer, takes payment, and hands over the drink. These actions appear to be routine workplace operations within a bar or pub environment.
+
+---
+
+### `Sports Bar Till_2025_11_21_1PM_30_06.avi` (48s, 36.1 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+In this video clip, a bartender is seen pouring drinks, interacting with the POS system, and handling payment. Another employee is seen wiping down surfaces and restocking. All observed actions appear to be routine workplace operations.
+
+---
+
+### `Drive Thru Till Left_2025_11_21_1PM_23_30.avi` (47s, 35.5 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+The video shows a routine day at a convenience store. An employee is seen behind the counter, performing typical duties such as serving customers, handling transactions, and wiping down surfaces. Customers enter and leave the store, and transactions at the cash register appear to be standard operations.
+
+---
+
+### `Sports Bar Till_2025_11_21_1PM_07_40.avi` (24s, 18.6 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+The video shows a busy bar scene. An employee is seen pouring drinks, interacting with customers, and handling the cash register. These actions are all routine workplace operations in a bar environment.
+
+---
+
+### `Sports Bar Till_2025_11_21_1PM_00_07.avi` (88s, 66 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+No description generated.
+
+---
+
+### `Sports Bar Till_2025_11_20_9PM_42_53.avi` (38s, 29.3 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+The video shows a bartender working behind a bar. The bartender is seen interacting with a customer, operating the cash register, and preparing drinks. All of these actions appear to be routine workplace operations.
+
+---
+
+### `Sports Bar Till_2025_11_20_8PM_46_02.avi` (43s, 27.7 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+In this clip, a bartender is seen pouring drinks and interacting with customers at a bar. The employee is handling drinks, interacting with customers, and using the cash register to process orders, all of which appear to be routine workplace operations. The scene concludes with the bartender preparing to serve another round of drinks.
+
+---
+
+### `Sports Bar Till_2025_11_20_7PM_12_29.avi` (48s, 31.4 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+The employee is seen operating the cash register and then gesturing towards the beer taps. This appears to be a routine operation as the employee interacts with the point of sale system and then the beer dispensing equipment.
+
+---
+
+### `Sports Bar Till_2025_11_20_6PM_33_54.avi` (47s, 35.3 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+No description generated.
+
+---
+
+### `Sports Bar Till_2025_11_20_6PM_11_57.avi` (51s, 38.3 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+The employee is seen preparing drinks and handling customer transactions at a bar. The actions performed, such as pouring drinks, interacting with the POS system, and handling payment, appear to be routine workplace operations.
+
+---
+
+### `Sports Bar Till_2025_11_20_5PM_14_56.avi` (30s, 23 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+The video shows a bartender pouring drinks behind the bar. The bartender also handles a customer's order by ringing it up and processing payment. All actions depicted are routine workplace operations.
+
+---
+
+### `Sports Bar Till_2025_11_20_4PM_44_40.avi` (45s, 33.8 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+This video shows an employee working behind a bar. They appear to be engaged in routine tasks such as serving customers, handling transactions at the till, and preparing drinks. The interactions and actions are consistent with normal operations in a bar or hospitality setting.
+
+---
+
+### `Sports Bar Till_2025_11_20_4PM_08_43.avi` (45s, 33.8 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+In this video clip, a bartender is seen working behind the bar, interacting with a customer and preparing drinks. The employee is seen wiping surfaces, handling glasses, and operating the cash register to ring up an order. All observed actions appear to be routine workplace operations.
+
+---
+
+### `Sports Bar Till_2025_11_15_4PM_37_07.avi` (65s, 49.3 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+In this video clip, a bartender is seen preparing drinks and interacting with a customer. The bartender handles cups and taps, indicating the process of pouring beverages. There is no visible interaction with a cash register or till. All observed actions appear to be routine operations within a bar or restaurant setting.
+
+---
+
+### `Sports Bar Till_2025_11_15_4PM_58_00.avi` (57s, 42.7 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+The video shows a bartender serving a customer at a bar. The bartender takes an order, pours a drink, and then processes a payment using a card machine. After the transaction, the bartender continues to work behind the bar, indicating routine workplace operations.
+
+---
+
+### `Sports Bar Till_2025_11_14_6PM_53_14.avi` (58s, 44.1 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+No description generated.
+
+---
+
+### `Sports Bar Till_2025_11_14_6PM_01_51.avi` (32s, 23.8 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+No description generated.
+
+---
+
+### `Sports Bar Till_2025_11_13_10PM_35_13.avi` (73s, 55 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+No description generated.
+
+---
+
+### `Drive Thru Till Left_2025_11_13_6PM_53_52.avi` (12s, 9.8 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+No description generated.
+
+---
+
+### `Drive Thru Till Left_2025_11_13_4PM_24_10.avi` (37s, 27.9 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+No description generated.
+
+---
+
+### `Drive Thru Left_2025_11_13_4PM_24_00.avi` (32s, 16.1 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+No description generated.
+
+---
+
+### `Sports Bar Till_2025_11_12_6PM_44_36.avi` (9s, 7.1 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+No description generated.
+
+---
+
+### `Sports Bar Till_2025_11_12_7PM_36_51.avi` (36s, 27.5 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+No description generated.
+
+---
+
+### `Sports Bar Till_2025_11_12_7PM_55_36.avi` (28s, 20.9 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+No description generated.
+
+---
+
+### `Sports Bar Till_2025_11_12_8PM_04_38.avi` (41s, 31.2 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+No description generated.
+
+---
+
+### `Drive Thru Till Left_2025_11_12_7PM_28_24.avi` (43s, 32.9 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+No description generated.
+
+---
+
+### `Sports Bar Till_2025_11_09_9PM_04_46.avi` (22s, 16.5 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+No description generated.
+
+---
+
+### `Sports Bar Till_2025_11_08_10AM_32_59.avi` (64s, 47.7 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+No description generated.
+
+---
+
+### `Sports Bar Till_2025_11_08_10AM_50_19.avi` (89s, 66.9 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+No description generated.
+
+---
+
+### `Sports Bar Till_2025_11_08_11AM_47_44.avi` (32s, 24 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+No description generated.
+
+---
+
+### `Sports Bar Till_2025_11_08_1PM_43_58.avi` (22s, 17.1 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+No description generated.
+
+---
+
+### `Sports Bar Till_2025_11_08_4PM_55_02.avi` (37s, 28.3 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+No description generated.
+
+---
+
+### `Sports Bar Till_2025_11_06_4PM_14_19.avi` (49s, 36.9 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+No description generated.
+
+---
+
+### `Sports Bar Till_2025_11_06_4PM_29_07.avi` (43s, 32.5 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+No description generated.
+
+---
+
+### `Sports Bar Till_2025_11_06_5PM_46_33.avi` (100s, 75.6 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+No description generated.
+
+---
+
+### `Sports Bar Till_2025_11_06_6PM_04_04.avi` (47s, 35.6 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+No description generated.
+
+---
+
+### `Sports Bar Till_2025_11_06_6PM_55_36.avi` (34s, 25.5 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+No description generated.
+
+---
+
+### `Sports Bar Till_2025_11_06_7PM_03_01.avi` (24s, 18 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+No description generated.
+
+---
+
+### `Drive Thru Till Left_2025_11_06_10PM_42_01.avi` (33s, 25.1 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+No description generated.
+
+---
+
+### `Sports Bar Till_2025_11_04_2PM_18_36.avi` (35s, 26.8 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+No description generated.
+
+---
+
+### `Sports Bar Till_2025_11_04_1PM_31_02.avi` (34s, 25.9 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+No description generated.
+
+---
+
+### `Drive Thru Till Left_2025_11_23_6PM_50_20.avi` (57s, 43.5 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+No description generated.
+
+---
+
+### `Drive Thru Till Right_2025_11_23_9PM_40_14.mp4` (45s, 34.1 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+No description generated.
+
+---
+
+### `Drive Thru Till Left_2025_11_23_9PM_39_54.mp4` (59s, 44.3 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+No description generated.
+
+---
+
+### `Drive Thru Till Left_2025_11_22_4PM_33_11.mp4` (35s, 26.6 MB)
+**Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
+
+No description generated.
+
+---
+
+### `Drive Thru Entry Right_2025_08_17_9PM_27_45 STOLEN DRINKS .mkv` (45s, 22.6 MB)
 **Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
 
 No description generated.

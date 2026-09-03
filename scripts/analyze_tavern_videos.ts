@@ -65,11 +65,11 @@ function generateMarkdownReport(results: AnalysisResult[]) {
   const errors = results.filter(r => r.status === 'ERROR');
 
   md += `* **Fully Analyzed (≤ 100s):** ${analyzed.length}\n`;
-  md += `  * **No Suspicious Activity (Clean / Routine):** ${benign.length}\n`;
+  md += `  * **No Suspicious Activity (Clean / Routine Till Operations):** ${benign.length}\n`;
   md += `  * **Flagged Ambiguous / Potentially Questionable (Requires Review):** ${flagged.length}\n`;
   md += `* **Too Large (> 100s - Flagged for Manual Review):** ${tooLarge.length}\n`;
   if (errors.length > 0) {
-    md += `* **Errors during Processing:** ${errors.length}\n`;
+    md += `* **Errors Pending Retry:** ${errors.length}\n`;
   }
   md += `\n---\n\n`;
 
@@ -110,10 +110,29 @@ function generateMarkdownReport(results: AnalysisResult[]) {
   fs.writeFileSync(REPORT_PATH, md, 'utf8');
 }
 
+async function fetchWithRetry(url: string, options: any, retries = 3): Promise<Response> {
+  let lastError: any;
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(url, options);
+      if (!res.ok && res.status >= 500) {
+        throw new Error(`Server error ${res.status}: ${res.statusText}`);
+      }
+      return res;
+    } catch (err: any) {
+      lastError = err;
+      console.warn(`    Fetch attempt ${attempt}/${retries} failed: ${err.message}. Retrying in ${attempt * 3}s...`);
+      if (attempt < retries) {
+        await new Promise(r => setTimeout(r, attempt * 3000));
+      }
+    }
+  }
+  throw lastError;
+}
+
 async function analyzeSingleVideo(
   item: VideoItem,
-  apiKey: string,
-  accessToken: string
+  apiKey: string
 ): Promise<AnalysisResult> {
   console.log(`\n========================================`);
   console.log(`Processing [${item.name}] (${item.durationSec}s, ${item.sizeMb} MB)...`);
@@ -134,9 +153,15 @@ async function analyzeSingleVideo(
 
   let uploadFileName: string | null = null;
   try {
+    console.log(`  Getting fresh Google access token...`);
+    const tokenRes = await getGoogleAccessToken();
+    if (!tokenRes.authenticated || !tokenRes.accessToken) {
+      throw new Error(`Google OAuth token unavailable: ${tokenRes.error || 'not authenticated'}`);
+    }
+
     console.log(`  Downloading from Google Drive...`);
-    const driveRes = await fetch(`https://www.googleapis.com/drive/v3/files/${item.id}?alt=media`, {
-      headers: { Authorization: `Bearer ${accessToken}` },
+    const driveRes = await fetchWithRetry(`https://www.googleapis.com/drive/v3/files/${item.id}?alt=media`, {
+      headers: { Authorization: `Bearer ${tokenRes.accessToken}` },
     });
     if (!driveRes.ok) {
       throw new Error(`Drive download failed: ${driveRes.statusText} (${driveRes.status})`);
@@ -144,7 +169,7 @@ async function analyzeSingleVideo(
     const videoBuffer = Buffer.from(await driveRes.arrayBuffer());
 
     console.log(`  Uploading ${(videoBuffer.length / (1024 * 1024)).toFixed(1)} MB to Gemini File API...`);
-    const initRes = await fetch(`https://generativelanguage.googleapis.com/upload/v1beta/files?key=${apiKey}`, {
+    const initRes = await fetchWithRetry(`https://generativelanguage.googleapis.com/upload/v1beta/files?key=${apiKey}`, {
       method: 'POST',
       headers: {
         'X-Goog-Upload-Protocol': 'resumable',
@@ -161,7 +186,7 @@ async function analyzeSingleVideo(
       throw new Error(`Failed to obtain Gemini resumable upload URL: ${await initRes.text()}`);
     }
 
-    const uploadRes = await fetch(uploadUrl, {
+    const uploadRes = await fetchWithRetry(uploadUrl, {
       method: 'POST',
       headers: {
         'Content-Length': String(videoBuffer.length),
@@ -178,7 +203,7 @@ async function analyzeSingleVideo(
 
     console.log(`  Gemini File uploaded: ${uploadFileName}. State: ${state}`);
     while (state === 'PROCESSING') {
-      await new Promise((r) => setTimeout(r, 2000));
+      await new Promise((r) => setTimeout(r, 2500));
       const checkRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/${uploadFileName}?key=${apiKey}`);
       const checkData = await checkRes.json();
       state = checkData.state;
@@ -199,7 +224,7 @@ Analyze this video clip thoroughly and produce a structured analysis:
    - If completely clean/routine: State clearly "**EVALUATION: NOT SUSPICIOUS** - All movements are consistent with normal till operation, serving customers, or workplace tasks."
    - If there is ANY action that an employer might question, scrutinize, or misunderstand (such as pulling up pants, waistband adjustment, pocket contact, obscured hand, or handling receipts/towels): State clearly "**EVALUATION: FLAGGED (POTENTIALLY QUESTIONABLE / AMBIGUOUS)**" and clearly explain the exact timestamp and why someone might scrutinize it, along with what actually appears to happen.`;
 
-    const genRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+    const genRes = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -221,7 +246,7 @@ Analyze this video clip thoroughly and produce a structured analysis:
       text.includes('FLAGGED') ||
       text.includes('POTENTIALLY QUESTIONABLE') ||
       text.includes('AMBIGUOUS') ||
-      /suspicio/i.test(text) && !text.includes('NOT SUSPICIOUS');
+      (/suspicio/i.test(text) && !text.includes('NOT SUSPICIOUS'));
 
     return {
       id: item.id,
@@ -261,31 +286,27 @@ async function main() {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error('GEMINI_API_KEY is not configured');
 
-  const tokenRes = await getGoogleAccessToken();
-  if (!tokenRes.authenticated || !tokenRes.accessToken) {
-    throw new Error('Google OAuth access token unavailable');
-  }
-
   const inventory: VideoItem[] = JSON.parse(
     fs.readFileSync(path.resolve(__dirname, '../tavern_videos_inventory.json'), 'utf8')
   );
 
   const existingMap = loadResults();
-  const allResults: AnalysisResult[] = [];
 
   for (let i = 0; i < inventory.length; i++) {
     const item = inventory[i];
     console.log(`\n[${i + 1}/${inventory.length}] Checking ${item.name}...`);
 
-    if (existingMap[item.id] && existingMap[item.id].status === 'ANALYZED') {
-      console.log(`  Already analyzed. Skipping.`);
-      allResults.push(existingMap[item.id]);
+    // Skip if already successfully analyzed or confirmed too large
+    if (
+      existingMap[item.id] &&
+      (existingMap[item.id].status === 'ANALYZED' || existingMap[item.id].status === 'TOO_LARGE')
+    ) {
+      console.log(`  Already completed (${existingMap[item.id].status}). Skipping.`);
       continue;
     }
 
-    const res = await analyzeSingleVideo(item, apiKey, tokenRes.accessToken);
+    const res = await analyzeSingleVideo(item, apiKey);
     existingMap[item.id] = res;
-    allResults.push(res);
     saveResults(Object.values(existingMap));
 
     // Pause briefly to respect rate limits
