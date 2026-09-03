@@ -332,3 +332,29 @@ CREATE TABLE IF NOT EXISTS chat_logs (
 );
 `;
 
+export interface SmsMessage {
+  id: string;
+  sender: string;
+  body: string;
+  received_at: string;
+  read: boolean;
+  created_at: string;
+}
+
+export interface CreateSmsMessageInput {
+  sender: string;
+  body: string;
+  received_at?: string;
+}
+
+export const CREATE_SMS_MESSAGES_TABLE_SQL = `
+CREATE TABLE IF NOT EXISTS sms_messages (
+    id TEXT PRIMARY KEY,
+    sender TEXT NOT NULL,
+    body TEXT NOT NULL,
+    received_at TEXT NOT NULL,
+    read BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TEXT NOT NULL
+);
+`;
+

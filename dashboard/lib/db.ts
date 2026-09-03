@@ -33,7 +33,10 @@ import {
   EncyclopediaProgress,
   CREATE_LEARNING_PROGRESS_TABLE_SQL,
   ChatLogRecord,
-  CREATE_CHAT_LOGS_TABLE_SQL
+  CREATE_CHAT_LOGS_TABLE_SQL,
+  SmsMessage,
+  CreateSmsMessageInput,
+  CREATE_SMS_MESSAGES_TABLE_SQL
 } from './schema';
 
 let pgPool: Pool | null = null;
@@ -95,6 +98,7 @@ export function initDb(overrideDbPath?: string): void {
         medical_receipts: [],
         learning_progress: [],
         chat_logs: [],
+        sms_messages: [],
       };
 
       sqliteDb = {
@@ -114,6 +118,22 @@ export function initDb(overrideDbPath?: string): void {
                 });
                 if (!inMemoryTables[table]) inMemoryTables[table] = [];
                 inMemoryTables[table].unshift(row);
+                return { changes: 1 };
+              }
+              const updateMatch = q.match(/UPDATE\s+([a-zA-Z0-9_]+)\s+SET\s+(.+?)\s+WHERE\s+(.+)/i);
+              if (updateMatch) {
+                const table = updateMatch[1].toLowerCase();
+                const setClause = updateMatch[2].trim();
+                const rows = inMemoryTables[table] || [];
+                const targetId = params[params.length - 1];
+                const row = rows.find((r: any) => r.id === targetId);
+                if (row) {
+                  if (setClause.includes('read =') || setClause.includes('read=')) {
+                    row.read = true;
+                  }
+                  return { changes: 1 };
+                }
+                return { changes: 0 };
               }
               return { changes: 1 };
             },
@@ -122,6 +142,20 @@ export function initDb(overrideDbPath?: string): void {
               if (selectMatch) {
                 const table = selectMatch[1].toLowerCase();
                 const rows = inMemoryTables[table] || [];
+                if (table === 'sms_messages') {
+                  let filtered = [...rows];
+                  if (q.includes('read = false') || q.includes('read = FALSE')) {
+                    filtered = filtered.filter((r) => !r.read);
+                  }
+                  filtered.sort((a, b) => new Date(b.received_at || b.created_at).getTime() - new Date(a.received_at || a.created_at).getTime());
+                  const limitMatch = q.match(/LIMIT\s+(\d+)/i);
+                  if (limitMatch) {
+                    filtered = filtered.slice(0, parseInt(limitMatch[1], 10));
+                  } else if (params.length === 1 && typeof params[0] === 'number') {
+                    filtered = filtered.slice(0, params[0]);
+                  }
+                  return filtered;
+                }
                 if (params.length === 2 && q.includes('created_at >=') && q.includes('created_at <=')) {
                   return rows.filter((r) => r.created_at >= params[0] && r.created_at <= params[1]);
                 }
@@ -183,6 +217,7 @@ export async function ensureTableExists(): Promise<void> {
       await pgPool.query(CREATE_MEDICAL_RECEIPTS_TABLE_SQL);
       await pgPool.query(CREATE_LEARNING_PROGRESS_TABLE_SQL);
       await pgPool.query(CREATE_CHAT_LOGS_TABLE_SQL);
+      await pgPool.query(CREATE_SMS_MESSAGES_TABLE_SQL);
     }
   } else {
     if (!sqliteDb) {
@@ -200,6 +235,7 @@ export async function ensureTableExists(): Promise<void> {
       sqliteDb.exec(CREATE_MEDICAL_RECEIPTS_TABLE_SQL);
       sqliteDb.exec(CREATE_LEARNING_PROGRESS_TABLE_SQL);
       sqliteDb.exec(CREATE_CHAT_LOGS_TABLE_SQL);
+      sqliteDb.exec(CREATE_SMS_MESSAGES_TABLE_SQL);
     }
   }
 }
@@ -1422,4 +1458,95 @@ export async function getChatLogs(hours: number = 12): Promise<ChatLogRecord[]> 
     return rows;
   }
   return [];
+}
+
+export async function createSmsMessage(input: CreateSmsMessageInput): Promise<SmsMessage> {
+  await ensureTableExists();
+  const id = `sms_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  const now = new Date().toISOString();
+  const received_at = input.received_at || now;
+
+  const newMessage: SmsMessage = {
+    id,
+    sender: input.sender,
+    body: input.body,
+    received_at,
+    read: false,
+    created_at: now,
+  };
+
+  const status = getDbStatus();
+  if (status.provider === 'neon' && pgPool) {
+    const text = 'INSERT INTO sms_messages(id, sender, body, received_at, read, created_at) VALUES($1, $2, $3, $4, $5, $6)';
+    const values = [newMessage.id, newMessage.sender, newMessage.body, newMessage.received_at, newMessage.read, newMessage.created_at];
+    await pgPool.query(text, values);
+  } else if (status.provider === 'sqlite' && sqliteDb) {
+    const stmt = sqliteDb.prepare(
+      'INSERT INTO sms_messages (id, sender, body, received_at, read, created_at) VALUES (?, ?, ?, ?, ?, ?)'
+    );
+    stmt.run(newMessage.id, newMessage.sender, newMessage.body, newMessage.received_at, newMessage.read, newMessage.created_at);
+  } else {
+    throw new Error('Database not initialized');
+  }
+
+  return newMessage;
+}
+
+export async function getSmsMessages(options?: { limit?: number; unreadOnly?: boolean }): Promise<SmsMessage[]> {
+  await ensureTableExists();
+  const status = getDbStatus();
+
+  const unreadOnly = options?.unreadOnly || false;
+  const limit = options?.limit;
+
+  if (status.provider === 'neon' && pgPool) {
+    let query = 'SELECT * FROM sms_messages';
+    const params: any[] = [];
+    if (unreadOnly) {
+      query += ' WHERE read = FALSE';
+    }
+    query += ' ORDER BY received_at DESC';
+    if (limit && limit > 0) {
+      params.push(limit);
+      query += ` LIMIT $${params.length}`;
+    }
+    const res = await pgPool.query(query, params);
+    return res.rows.map((r: any) => ({
+      ...r,
+      read: Boolean(r.read),
+    }));
+  } else if (status.provider === 'sqlite' && sqliteDb) {
+    let query = 'SELECT * FROM sms_messages';
+    if (unreadOnly) {
+      query += ' WHERE read = false';
+    }
+    query += ' ORDER BY received_at DESC';
+    if (limit && limit > 0) {
+      query += ` LIMIT ${limit}`;
+    }
+    const stmt = sqliteDb.prepare(query);
+    const rows = stmt.all();
+    return rows.map((r: any) => ({
+      ...r,
+      read: Boolean(r.read),
+    }));
+  } else {
+    throw new Error('Database not initialized');
+  }
+}
+
+export async function markSmsRead(id: string): Promise<boolean> {
+  await ensureTableExists();
+  const status = getDbStatus();
+
+  if (status.provider === 'neon' && pgPool) {
+    const res = await pgPool.query('UPDATE sms_messages SET read = TRUE WHERE id = $1', [id]);
+    return (res.rowCount ?? 0) > 0;
+  } else if (status.provider === 'sqlite' && sqliteDb) {
+    const stmt = sqliteDb.prepare('UPDATE sms_messages SET read = TRUE WHERE id = ?');
+    const result = stmt.run(id);
+    return (result.changes ?? 0) > 0;
+  } else {
+    throw new Error('Database not initialized');
+  }
 }

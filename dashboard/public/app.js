@@ -210,6 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const noteOcrStatus = document.getElementById('noteOcrStatus');
     const btnRemoveNoteAttachment = document.getElementById('btnRemoveNoteAttachment');
     let currentNoteAttachment = null;
+    let currentNoteAttachmentUploadPromise = null;
     
     // Lightbox Elements
     const imageLightboxModal = document.getElementById('imageLightboxModal');
@@ -2510,6 +2511,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function clearNoteAttachment() {
         currentNoteAttachment = null;
+        currentNoteAttachmentUploadPromise = null;
         if (noteFileInput) noteFileInput.value = '';
         if (noteCameraInput) noteCameraInput.value = '';
         if (noteAttachmentPreview) noteAttachmentPreview.classList.add('hidden');
@@ -2554,6 +2556,37 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (noteAttachmentFileIcon) noteAttachmentFileIcon.style.display = 'block';
             }
             if (noteAttachmentPreview) noteAttachmentPreview.classList.remove('hidden');
+
+            // Upload image to Vercel Blob
+            if (file.type.startsWith('image/') || (!file.type && dataUrl.startsWith('data:image/'))) {
+                if (noteOcrStatus) noteOcrStatus.innerText = 'Uploading to cloud...';
+                const uploadFormData = new FormData();
+                uploadFormData.append('image', file);
+                currentNoteAttachmentUploadPromise = fetch('/api/v1/notes/upload', {
+                    method: 'POST',
+                    body: uploadFormData
+                }).then(async (res) => {
+                    if (res.ok) {
+                        const uploadData = await res.json();
+                        if (uploadData.url && currentNoteAttachment) {
+                            currentNoteAttachment.data = uploadData.url;
+                            if (noteOcrStatus && (noteOcrStatus.innerText === 'Uploading to cloud...' || !noteOcrStatus.innerText)) {
+                                noteOcrStatus.innerText = 'Cloud Uploaded';
+                            }
+                        }
+                    } else {
+                        console.error('Blob upload failed');
+                        if (noteOcrStatus && noteOcrStatus.innerText === 'Uploading to cloud...') {
+                            noteOcrStatus.innerText = 'Upload failed';
+                        }
+                    }
+                }).catch((uploadErr) => {
+                    console.error('Blob upload error:', uploadErr);
+                    if (noteOcrStatus && noteOcrStatus.innerText === 'Uploading to cloud...') {
+                        noteOcrStatus.innerText = 'Upload failed';
+                    }
+                });
+            }
 
             // If image or PDF, trigger OCR text extraction
             if (file.type.startsWith('image/') || file.type === 'application/pdf' || dataUrl.startsWith('data:image/')) {
@@ -2657,7 +2690,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (noteAttachmentName) noteAttachmentName.innerText = alt;
                 if (noteAttachmentSize) {
                     const estimatedKb = Math.round((src.length * 0.75) / 1024);
-                    noteAttachmentSize.innerText = estimatedKb > 0 ? `${estimatedKb} KB` : 'Attached';
+                    noteAttachmentSize.innerText = src.startsWith('http') ? 'Cloud Image' : (estimatedKb > 0 ? `${estimatedKb} KB` : 'Attached');
                 }
                 if (noteAttachmentImg) {
                     noteAttachmentImg.src = src;
@@ -2672,7 +2705,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (noteAttachmentFileIcon) noteAttachmentFileIcon.style.display = 'none';
                 if (noteAttachmentPreview) noteAttachmentPreview.classList.remove('hidden');
 
-                // Remove image markdown from text body so editor doesn't show huge base64
+                // Remove image markdown from text body so editor doesn't show huge base64 or URL
                 content = content.replace(imgMatch[0], '').trim();
             }
 
@@ -2739,13 +2772,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    function closeAndSaveNote() {
+    async function closeAndSaveNote() {
+        if (currentNoteAttachmentUploadPromise) {
+            try {
+                await currentNoteAttachmentUploadPromise;
+            } catch (e) {
+                console.error('Wait for upload error:', e);
+            }
+        }
         const title = editNoteTitle.value.trim();
         let body = editNoteBody.value.trim();
         if (title || body || currentNoteAttachment) {
             let content = title ? `# ${title}\n${body}` : body;
             if (currentNoteAttachment) {
-                const isImage = currentNoteAttachment.mimeType?.startsWith('image/') || currentNoteAttachment.data?.startsWith('data:image/');
+                const isImage = currentNoteAttachment.mimeType?.startsWith('image/') || currentNoteAttachment.data?.startsWith('data:image/') || currentNoteAttachment.data?.startsWith('http');
                 if (isImage && currentNoteAttachment.data) {
                     if (!content.includes(currentNoteAttachment.data)) {
                         content += `\n\n![${currentNoteAttachment.filename || 'Photo'}](${currentNoteAttachment.data})`;
