@@ -1,6 +1,6 @@
 # Tavern CCTV Footage Evidence & Analysis Report
 
-**Date of Generation:** 2026-09-03
+**Date of Generation:** 2026-09-04
 **Total Videos Evaluated:** 62
 * **Fully Analyzed (≤ 100s):** 60
   * **No Suspicious Activity (Clean / Routine Till Operations):** 53
@@ -900,7 +900,7 @@ The video shows a busy bar scene. An employee is seen pouring drinks, interactin
 ### `Sports Bar Till_2025_11_21_1PM_00_07.avi` (88s, 66 MB)
 **Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
 
-No description generated.
+The employee behind the bar remains stationary near the sink and beer taps throughout the clip, engaged in routine waiting duties. No cash handling, till operations, or active serving occurred during this period. All observed behaviors are standard, uneventful workplace operations.
 
 ---
 
@@ -928,7 +928,7 @@ The employee is seen operating the cash register and then gesturing towards the 
 ### `Sports Bar Till_2025_11_20_6PM_33_54.avi` (47s, 35.3 MB)
 **Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
 
-No description generated.
+In this video clip, the employee on the right is standing near the cash register area, attending to routine operational tasks. No transactions, cash handling, or customer interactions occur during this period. All visible activities remain standard and uneventful for a bar setting.
 
 ---
 
@@ -984,210 +984,210 @@ In this clip, a bartender is seen pouring drinks from a tap and placing them on 
 ### `Sports Bar Till_2025_11_14_6PM_01_51.avi` (32s, 23.8 MB)
 **Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
 
-No description generated.
+Throughout the video clip, the employee stands near the counter and tap system, monitoring the bar area in a relaxed stance while a customer waits nearby. No cash transactions, till handling, or active service actions take place during this brief window. These movements reflect standard, routine operational readiness in a hospitality setting.
 
 ---
 
 ### `Sports Bar Till_2025_11_13_10PM_35_13.avi` (73s, 55 MB)
 **Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
 
-No description generated.
+Throughout the video, the bar area remains completely empty with no employees present. There are no customers, orders being rung up, or cash drawer activity. The clip simply captures standard, routine downtime in the bar environment with no personnel movements or operations occurring.
 
 ---
 
 ### `Drive Thru Till Left_2025_11_13_6PM_53_52.avi` (12s, 9.8 MB)
 **Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
 
-No description generated.
+The video clip shows an overhead view of a retail shop counter with no customer presence or employee activity throughout the entire duration. The counter remains completely undisturbed, with the cash register closed and items on the counter unmoved. This reflects a routine, quiet period during normal workplace operations.
 
 ---
 
 ### `Drive Thru Till Left_2025_11_13_4PM_24_10.avi` (37s, 27.9 MB)
 **Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
 
-No description generated.
+The video clip captures a quiet period inside the convenience store where no employees or customers appear at the checkout counter. The checkout area remains completely unoccupied and undisturbed throughout the duration of the footage. All observed conditions reflect standard, uneventful downtime between customer transactions.
 
 ---
 
 ### `Drive Thru Left_2025_11_13_4PM_24_00.avi` (32s, 16.1 MB)
 **Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
 
-No description generated.
+The provided video clip is a static security camera shot showing a parked pickup truck outside a storefront, with no people, employees, or transactions visible. Because no activity occurs in the frame, there are no employee actions, till operations, or customer service interactions to report. This footage simply captures a routine exterior parking scene with no active workplace operations taking place.
 
 ---
 
 ### `Sports Bar Till_2025_11_12_6PM_44_36.avi` (9s, 7.1 MB)
 **Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
 
-No description generated.
+The video clip shows an overhead view of a completely empty bar area with no customers or employees present. Throughout the footage, the bar remains entirely unattended, with no drinks being poured, surfaces being wiped, or cash handling taking place. All operations are paused as the space stays still and inactive.
 
 ---
 
 ### `Sports Bar Till_2025_11_12_7PM_36_51.avi` (36s, 27.5 MB)
 **Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
 
-No description generated.
+In the video clip, two employees are seen operating within the bar area: one stands near the center counter while the other walks toward the right side. Throughout the clip, there is no handling of the cash register, processing of customer orders, or active drink pouring. All observed actions are standard routine workplace movements within the bar.
 
 ---
 
 ### `Sports Bar Till_2025_11_12_7PM_55_36.avi` (28s, 20.9 MB)
 **Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
 
-No description generated.
+The video clip shows an overhead view of a completely empty bar area with no customers or staff present. The entire duration consists of a static shot of the bar counter, taps, and glass storage displays without any activity. All observable conditions reflect a quiet, standard closed period with no routine operations taking place.
 
 ---
 
 ### `Sports Bar Till_2025_11_12_8PM_04_38.avi` (41s, 31.2 MB)
 **Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
 
-No description generated.
+Throughout the clip, the bar area remains completely unoccupied and static with no staff present. There are no customers, cash register interactions, or drink preparation activities taking place. The video simply captures an empty, quiet bar counter during routine operational downtime.
 
 ---
 
 ### `Drive Thru Till Left_2025_11_12_7PM_28_24.avi` (43s, 32.9 MB)
 **Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
 
-No description generated.
+Throughout the video clip, the interior of the store remains entirely unoccupied by any customers or employees. The checkout counter stays empty, with no transactions, cash handling, or operational activity taking place. All visible elements remain static, consistent with normal empty store conditions.
 
 ---
 
 ### `Sports Bar Till_2025_11_09_9PM_04_46.avi` (22s, 16.5 MB)
 **Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
 
-No description generated.
+The video shows a quiet pub bar area from an overhead perspective, with no activity or people present. Throughout the clip, the bar remains completely empty and unattended. These observations reflect standard maintenance or downtime between service periods.
 
 ---
 
 ### `Sports Bar Till_2025_11_08_10AM_32_59.avi` (64s, 47.7 MB)
 **Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
 
-No description generated.
+Throughout the video, the employee in the black shirt with a green logo remains standing behind the bar counter near the cash register and draft taps. No active tasks such as serving customers, restocking, or handling cash are performed, as the video depicts a static scene. All visible elements indicate routine, standard workplace operations in a bar setting.
 
 ---
 
 ### `Sports Bar Till_2025_11_08_10AM_50_19.avi` (89s, 66.9 MB)
 **Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
 
-No description generated.
+This video clip captures a static view of an empty bar area with no staff present. Throughout the clip, no customer transactions occur at the till, and no operational activities such as pouring drinks, restocking, or cleaning take place. The scene simply shows a quiet, undisturbed bar environment with no human movement.
 
 ---
 
 ### `Sports Bar Till_2025_11_08_11AM_47_44.avi` (32s, 24 MB)
 **Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
 
-No description generated.
+Throughout the video, the bar area remains completely empty with no employees or customers present. The equipment, taps, and glassware stay stationary in a ready-to-use state. All conditions reflect a routine, normal workplace waiting for staff or patrons.
 
 ---
 
 ### `Sports Bar Till_2025_11_08_1PM_43_58.avi` (22s, 17.1 MB)
 **Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
 
-No description generated.
+In this static video clip, an employee stands behind the bar counter near the POS terminal while a customer sits on the other side with two glasses of beer. No active movements or tasks, such as pouring drinks, restocking, or till handling, occur as both individuals remain completely stationary throughout the duration of the footage. The scene represents a calm, routine moment in a standard workplace environment.
 
 ---
 
 ### `Sports Bar Till_2025_11_08_4PM_55_02.avi` (37s, 28.3 MB)
 **Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
 
-No description generated.
+The video shows a routine bar operation where the employee stands behind the counter near the point-of-sale terminal and glass storage. Throughout the clip, normal daily activities such as tending to the station and organizing the service area are observed. All actions depicted are standard workplace operations consistent with regular hospitality duties.
 
 ---
 
 ### `Sports Bar Till_2025_11_06_4PM_14_19.avi` (49s, 36.9 MB)
 **Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
 
-No description generated.
+The video shows standard, routine operations behind a bar. An employee on the right is standing by a cooler opening, while another employee stands near the taps and counter. No customer transactions or cash handling occur, and all observed actions are typical daily tasks for bar staff.
 
 ---
 
 ### `Sports Bar Till_2025_11_06_4PM_29_07.avi` (43s, 32.5 MB)
 **Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
 
-No description generated.
+The video clip shows an employee standing behind the bar area of a venue, occupied with standard behind-the-counter tasks such as pouring drinks and managing the service station. Throughout the footage, the worker interacts with the beer taps and counter setup in a routine manner, consistent with normal hospitality operations. No unusual events, errors, or security incidents occur, confirming that all observed activities are standard workplace procedures.
 
 ---
 
 ### `Sports Bar Till_2025_11_06_5PM_46_33.avi` (100s, 75.6 MB)
 **Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
 
-No description generated.
+Throughout the clip, the staff member behind the bar operates the POS terminal to process orders and handle payment transactions while assisting customers. Concurrently, the other worker manages drink preparation and pours beverages from the taps. These actions are standard, routine operational duties within a bar environment.
 
 ---
 
 ### `Sports Bar Till_2025_11_06_6PM_04_04.avi` (47s, 35.6 MB)
 **Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
 
-No description generated.
+The employee is seen attending to routine workplace duties, beginning by cleaning and sanitizing the bar counter area. They proceed to engage with a customer at the register, processing a transaction by handling a card payment on the terminal before completing the service. Throughout the clip, the staff member remains focused on standard operational tasks, including maintaining the cleanliness of the workspace and assisting the patron.
 
 ---
 
 ### `Sports Bar Till_2025_11_06_6PM_55_36.avi` (34s, 25.5 MB)
 **Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
 
-No description generated.
+The employee stands stationary in front of the bar area for the duration of the clip. No transactions, drink pouring, or service tasks are performed. These observed movements reflect a standard, routine operational pause behind the bar.
 
 ---
 
 ### `Sports Bar Till_2025_11_06_7PM_03_01.avi` (24s, 18 MB)
 **Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
 
-No description generated.
+Throughout the video clip, the bar area remains completely unoccupied by customers or staff, showing no activity. No drinks are poured, cash tills are handled, or surfaces wiped down during this time. The scene simply displays the standard, quiet state of a closed or inactive bar with all equipment and glassware in place.
 
 ---
 
 ### `Drive Thru Till Left_2025_11_06_10PM_42_01.avi` (33s, 25.1 MB)
 **Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
 
-No description generated.
+Throughout the video clip, the cash register area remains unoccupied, with no customer present or employee interacting with the till, cash, or card reader. The stainless steel counter and surrounding workspace are still, showing no activity such as cleaning, stocking, or serving. All visible conditions reflect a routine, normal lull in operations within the store environment.
 
 ---
 
 ### `Sports Bar Till_2025_11_04_2PM_18_36.avi` (35s, 26.8 MB)
 **Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
 
-No description generated.
+Throughout the video clip, the employee on the right side of the bar is engaged in routine operational tasks behind the counter, such as pouring drinks and managing the bar space. There are no cash or card transactions, open tills, or direct customer service interactions taking place in this frame. All observed activities reflect standard, everyday workplace maintenance and drink preparation.
 
 ---
 
 ### `Sports Bar Till_2025_11_04_1PM_31_02.avi` (34s, 25.9 MB)
 **Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
 
-No description generated.
+The employee is performing routine workplace operations behind the bar, primarily focused on restocking and organizing glassware. Throughout the clip, they are seen picking up glasses from the counter and placing them into the under-counter glass storage area. No customer transactions or cash handling occur during the video.
 
 ---
 
 ### `Drive Thru Till Left_2025_11_23_6PM_50_20.avi` (57s, 43.5 MB)
 **Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
 
-No description generated.
+The video shows an overhead view of a convenience store counter. Throughout the clip, the counter area remains completely undisturbed with no staff present, customer activity, or transactions occurring. All visible elements—such as the register, promotional signs, and merchandise displays—remain static as part of normal, routine store operations.
 
 ---
 
 ### `Drive Thru Till Right_2025_11_23_9PM_40_14.mp4` (45s, 34.1 MB)
 **Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
 
-No description generated.
+The video shows standard workplace activity where a customer in the foreground fills a drink from the dispenser station. Another individual briefly walks through the background, and all movements represent routine daily operations.
 
 ---
 
 ### `Drive Thru Till Left_2025_11_23_9PM_39_54.mp4` (59s, 44.3 MB)
 **Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
 
-No description generated.
+The employee rings up a customer's purchase, accepts payment, and gives change before the customer leaves the counter. Afterward, the employee retrieves items from a cooler to restock the display. All observed movements are standard, routine workplace operations with no unusual incidents.
 
 ---
 
 ### `Drive Thru Till Left_2025_11_22_4PM_33_11.mp4` (35s, 26.6 MB)
 **Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
 
-No description generated.
+In this clip, the employee is seen cleaning the counter and preparing a drink before serving a customer who approaches the register. The employee completes the transaction by ringing up the items, operating the till, and handing the customer their receipt and beverage. All activities shown are routine workplace operations consistent with standard customer service and store maintenance.
 
 ---
 
 ### `Drive Thru Entry Right_2025_08_17_9PM_27_45 STOLEN DRINKS .mkv` (45s, 22.6 MB)
 **Evaluation:** ✅ **Not Suspicious (Routine Workplace / Till Activity)**
 
-No description generated.
+At 00:13, a cyclist rides past the building. At 00:17, a person runs out from the left and bends down briefly on the pavement before running off to the right. Finally, at 00:25, a woman walks across the walkway from left to right.
 
 ---
 

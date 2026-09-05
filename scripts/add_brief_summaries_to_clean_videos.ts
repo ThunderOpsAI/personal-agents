@@ -24,6 +24,17 @@ interface AnalysisResult {
   analyzedAt: string;
 }
 
+const POOL_MODELS = [
+  'gemini-3.5-flash-lite',
+  'gemini-3.5-flash',
+  'gemini-flash-lite-latest',
+  'gemini-flash-latest',
+  'gemini-3.1-flash-lite',
+  'gemini-3.6-flash',
+  'gemini-3.7-flash'
+];
+let currentModelIndex = 0;
+
 function generateMarkdownReport(results: AnalysisResult[]) {
   let md = `# Tavern CCTV Footage Evidence & Analysis Report\n\n`;
   md += `**Date of Generation:** ${new Date().toISOString().split('T')[0]}\n`;
@@ -81,33 +92,98 @@ function generateMarkdownReport(results: AnalysisResult[]) {
   } catch {}
 }
 
-async function fetchWithRetry(url: string, options: any, retries = 5): Promise<Response> {
+async function fetchWithRetry(url: string, options: any, retries = 3): Promise<Response> {
   let lastError: any;
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      const res = await fetch(url, options);
-      if (res.status === 429) {
-        const text = await res.text().catch(() => '');
-        let waitSec = 30;
-        const match = text.match(/retry in ([0-9.]+)s/i) || text.match(/"retryDelay":\s*"([0-9]+)s"/);
-        if (match) waitSec = Math.ceil(parseFloat(match[1])) + 2;
-        console.warn(`    [Rate Limit 429] Waiting ${waitSec}s before retry ${attempt}/${retries}...`);
-        await new Promise((r) => setTimeout(r, waitSec * 1000));
-        continue;
-      }
+      const opts = { ...options, signal: AbortSignal.timeout(60000) };
+      const res = await fetch(url, opts);
       if (!res.ok && res.status >= 500) {
         throw new Error(`Server error ${res.status}: ${res.statusText}`);
       }
       return res;
     } catch (err: any) {
       lastError = err;
-      console.warn(`    Fetch attempt ${attempt}/${retries} failed: ${err.message}. Retrying in ${attempt * 3}s...`);
       if (attempt < retries) {
-        await new Promise((r) => setTimeout(r, attempt * 3000));
+        await new Promise((r) => setTimeout(r, attempt * 2000));
       }
     }
   }
-  throw lastError || new Error('fetchWithRetry failed after all attempts');
+  throw lastError || new Error('fetchWithRetry failed');
+}
+
+async function generateSummaryWithModelRotation(
+  fileUri: string,
+  mimeType: string,
+  apiKey: string,
+  prompt: string
+): Promise<string> {
+  for (let attempt = 0; attempt < POOL_MODELS.length; attempt++) {
+    const model = POOL_MODELS[currentModelIndex % POOL_MODELS.length];
+    console.log(`    Trying model [${model}]...`);
+
+    try {
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          signal: AbortSignal.timeout(45000),
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [
+                  { fileData: { mimeType: mimeType || 'video/avi', fileUri } },
+                  { text: prompt },
+                ],
+              },
+            ],
+          }),
+        }
+      );
+
+      if (res.status === 429) {
+        console.warn(`    Model [${model}] quota limit reached (429). Rotating to next model...`);
+        currentModelIndex++;
+        continue;
+      }
+
+      if (!res.ok) {
+        const errText = await res.text().catch(() => '');
+        console.warn(`    Model [${model}] returned status ${res.status}: ${errText}. Rotating...`);
+        currentModelIndex++;
+        continue;
+      }
+
+      const data = await res.json();
+      const parts = data.candidates?.[0]?.content?.parts || [];
+      const text =
+        parts
+          .filter((p: any) => !p.thought)
+          .map((p: any) => p.text)
+          .filter(Boolean)
+          .join('\n')
+          .trim() ||
+        parts
+          .map((p: any) => p.text)
+          .filter(Boolean)
+          .join('\n')
+          .trim();
+
+      if (text && text.length > 20) {
+        console.log(`    Success with model [${model}]! Length: ${text.length} chars.`);
+        return text;
+      } else {
+        console.warn(`    Empty response from [${model}], rotating...`);
+        currentModelIndex++;
+      }
+    } catch (err: any) {
+      console.warn(`    Error calling [${model}]: ${err.message}. Rotating...`);
+      currentModelIndex++;
+    }
+  }
+
+  throw new Error('All pool models exhausted or failed');
 }
 
 async function getBriefSummary(item: AnalysisResult, apiKey: string): Promise<string> {
@@ -121,14 +197,28 @@ async function getBriefSummary(item: AnalysisResult, apiKey: string): Promise<st
       throw new Error(`Google OAuth token unavailable`);
     }
 
-    console.log(`  Downloading from Google Drive...`);
-    const driveRes = await fetchWithRetry(`https://www.googleapis.com/drive/v3/files/${item.id}?alt=media`, {
-      headers: { Authorization: `Bearer ${tokenRes.accessToken}` },
-    });
-    if (!driveRes.ok) {
-      throw new Error(`Drive download failed: ${driveRes.statusText} (${driveRes.status})`);
+    let videoBuffer: Buffer | null = null;
+    for (let dAttempt = 1; dAttempt <= 3; dAttempt++) {
+      try {
+        console.log(`  Downloading from Google Drive (attempt ${dAttempt}/3)...`);
+        const driveRes = await fetch(`https://www.googleapis.com/drive/v3/files/${item.id}?alt=media`, {
+          headers: { Authorization: `Bearer ${tokenRes.accessToken}` },
+          signal: AbortSignal.timeout(60000),
+        });
+        if (!driveRes.ok) throw new Error(`Drive HTTP error ${driveRes.status}: ${driveRes.statusText}`);
+        const ab = await driveRes.arrayBuffer();
+        videoBuffer = Buffer.from(ab);
+        console.log(`  Downloaded ${(videoBuffer.length / (1024 * 1024)).toFixed(1)} MB successfully.`);
+        break;
+      } catch (dErr: any) {
+        console.warn(`    Drive download error: ${dErr.message}. Retrying in ${dAttempt * 2}s...`);
+        await new Promise((r) => setTimeout(r, dAttempt * 2000));
+      }
     }
-    const videoBuffer = Buffer.from(await driveRes.arrayBuffer());
+
+    if (!videoBuffer) {
+      throw new Error(`Failed to download ${item.name} from Google Drive after 3 attempts.`);
+    }
 
     console.log(`  Uploading ${(videoBuffer.length / (1024 * 1024)).toFixed(1)} MB to Gemini File API...`);
     const initRes = await fetchWithRetry(`https://generativelanguage.googleapis.com/upload/v1beta/files?key=${apiKey}`, {
@@ -158,7 +248,14 @@ async function getBriefSummary(item: AnalysisResult, apiKey: string): Promise<st
       body: videoBuffer,
     });
 
-    const fileInfo = await uploadRes.json();
+    const uploadText = await uploadRes.text();
+    let fileInfo: any;
+    try {
+      fileInfo = JSON.parse(uploadText);
+    } catch {
+      throw new Error(`Invalid JSON from Gemini upload: ${uploadText.substring(0, 100)}`);
+    }
+
     uploadFileName = fileInfo.file.name;
     let state = fileInfo.file.state;
     const fileUri = fileInfo.file.uri;
@@ -166,56 +263,18 @@ async function getBriefSummary(item: AnalysisResult, apiKey: string): Promise<st
     console.log(`  Gemini File uploaded: ${uploadFileName}. State: ${state}`);
     while (state === 'PROCESSING') {
       await new Promise((r) => setTimeout(r, 2000));
-      const checkRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/${uploadFileName}?key=${apiKey}`);
+      const checkRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/${uploadFileName}?key=${apiKey}`, {
+        signal: AbortSignal.timeout(15000),
+      });
       const checkData = await checkRes.json();
       state = checkData.state;
       if (state === 'FAILED') throw new Error(`Gemini video processing failed.`);
     }
 
-    console.log(`  Generating concise timeline summary via gemini-2.5-flash-lite...`);
     const prompt = `Provide a concise 2-3 sentence timeline summary describing what occurs in this video clip. Detail what the employee is doing (e.g. pouring drinks, restocking, wiping surfaces, or serving customer), cash/card till handling (e.g. ringing up order, open till, change to customer), and confirm that all movements are routine workplace operations.`;
 
-    const genRes = await fetchWithRetry(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                { fileData: { mimeType: item.mimeType || 'video/avi', fileUri } },
-                { text: prompt },
-              ],
-            },
-          ],
-        }),
-      }
-    );
-
-    const genData = await genRes.json();
-    if (genData.error) {
-      throw new Error(`Gemini API error: ${genData.error.message}`);
-    }
-
-    const candidate = genData.candidates?.[0];
-    const parts = candidate?.content?.parts || [];
-    const text =
-      parts
-        .filter((p: any) => !p.thought)
-        .map((p: any) => p.text)
-        .filter(Boolean)
-        .join('\n')
-        .trim() ||
-      parts
-        .map((p: any) => p.text)
-        .filter(Boolean)
-        .join('\n')
-        .trim();
-
-    if (!text) throw new Error('Empty text returned from Gemini candidate');
-    console.log(`  Summary generated successfully (${text.length} chars).`);
-    return text;
+    const summary = await generateSummaryWithModelRotation(fileUri, item.mimeType, apiKey, prompt);
+    return summary;
   } finally {
     if (uploadFileName) {
       fetch(`https://generativelanguage.googleapis.com/v1beta/${uploadFileName}?key=${apiKey}`, {
@@ -254,8 +313,8 @@ async function main() {
       console.error(`  Failed to summarize ${item.name}:`, err?.message || err);
     }
 
-    // Pacing delay between videos
-    await new Promise((r) => setTimeout(r, 2500));
+    // Small delay between requests
+    await new Promise((r) => setTimeout(r, 1500));
   }
 
   console.log(`\n🎉 All brief summaries populated!`);
