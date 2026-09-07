@@ -548,6 +548,7 @@ export async function fetchLiveGmailAttachment(
  */
 export async function sendLiveGmailMessage(options: {
   to: string;
+  cc?: string;
   subject: string;
   body: string;
   inReplyTo?: string;
@@ -572,11 +573,16 @@ export async function sendLiveGmailMessage(options: {
     const utf8Subject = `=?utf-8?B?${Buffer.from(options.subject).toString("base64")}?=`;
     const messageParts = [
       `To: ${options.to}`,
+    ];
+    if (options.cc) {
+      messageParts.push(`Cc: ${options.cc}`);
+    }
+    messageParts.push(
       `Subject: ${utf8Subject}`,
       "MIME-Version: 1.0",
       "Content-Type: text/plain; charset=utf-8",
-      "Content-Transfer-Encoding: 7bit",
-    ];
+      "Content-Transfer-Encoding: 7bit"
+    );
 
     if (options.inReplyTo) {
       messageParts.push(`In-Reply-To: ${options.inReplyTo}`);
