@@ -1343,33 +1343,105 @@ document.addEventListener('DOMContentLoaded', () => {
     
     /* CRO EVENTS REMOVED */
 
+    let pendingChatAction = null;
+    let cachedChatHistory = [];
+
+    function renderPendingActionButtons(preview, actionId, targetContainer) {
+        if (!preview) return;
+        pendingChatAction = preview;
+        if (actionId) {
+            pendingChatAction.id = actionId;
+        }
+
+        const actionsRow = document.createElement('div');
+        actionsRow.className = 'pending-action-buttons-row';
+        actionsRow.style.cssText = 'margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;';
+        
+        let confirmLabel = 'Confirm';
+        const hasSendEmail = preview.type === 'send_email' || (preview.data?.actions && preview.data.actions.some(a => a.type === 'send_email'));
+        if (hasSendEmail) {
+            confirmLabel = 'Confirm & Send Email';
+        } else if (preview.type === 'pain_log') {
+            confirmLabel = 'Confirm Pain Log';
+        }
+
+        const btnConfirm = document.createElement('button');
+        btnConfirm.className = 'btn btn-neon-green btn-sm';
+        btnConfirm.innerText = confirmLabel;
+        btnConfirm.onclick = () => {
+            actionsRow.remove();
+            sendRumbleChatMessage('Confirm', preview);
+        };
+
+        const btnCancel = document.createElement('button');
+        btnCancel.className = 'btn btn-outline btn-sm';
+        btnCancel.innerText = 'Cancel';
+        btnCancel.onclick = () => {
+            const cancelActionId = actionId || (pendingChatAction && pendingChatAction.id);
+            pendingChatAction = null;
+            actionsRow.remove();
+            const cancelNote = document.createElement('small');
+            cancelNote.style.color = 'var(--text-muted)';
+            cancelNote.innerText = 'Action cancelled.';
+            if (targetContainer) {
+                targetContainer.appendChild(cancelNote);
+            }
+            fetch(API_RUMBLE_CHAT, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cancel_action: true, pending_action_id: cancelActionId })
+            }).catch(console.error);
+        };
+
+        actionsRow.appendChild(btnConfirm);
+        actionsRow.appendChild(btnCancel);
+        if (targetContainer) {
+            targetContainer.appendChild(actionsRow);
+        } else {
+            rumbleChatMessages.appendChild(actionsRow);
+        }
+    }
+
     btnOpenRumbleChat.addEventListener('click', async () => {
         rumbleChatModal.classList.remove('hidden');
         try {
             const res = await fetch('/api/v1/rumble/chat/history');
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const data = await res.json();
-            if (data.status === 'success' && data.history && data.history.length > 0) {
-                // Clear initial placeholder or old messages
-                const defaultMsg = rumbleChatMessages.querySelector('.message');
-                if (defaultMsg && defaultMsg.innerText.includes('Type or use the voice button')) {
+            if (data.status === 'success') {
+                if (Array.isArray(data.history)) {
+                    cachedChatHistory = [...data.history];
+                }
+                if (data.history && data.history.length > 0) {
                     rumbleChatMessages.innerHTML = '';
-                } else if (rumbleChatMessages.children.length === 0) {
-                    // Safe to clear
-                    rumbleChatMessages.innerHTML = '';
-                } else {
-                    rumbleChatMessages.innerHTML = '';
+                    data.history.forEach(msg => {
+                        const div = document.createElement('div');
+                        div.className = `message ${msg.role === 'user' ? 'user-message' : 'rumble-message'}`;
+                        div.innerHTML = `<strong>${msg.role === 'user' ? 'You:' : 'RUMBLE:'}</strong> ${msg.role === 'rumble' ? formatRumbleMarkdown(msg.text) : escapeHtml(msg.text)}`;
+                        rumbleChatMessages.appendChild(div);
+                    });
+                    rumbleChatMessages.scrollTop = rumbleChatMessages.scrollHeight;
                 }
 
-                data.history.forEach(msg => {
-                    const div = document.createElement('div');
-                    div.className = `message ${msg.role === 'user' ? 'user-message' : 'rumble-message'}`;
-                    div.innerHTML = `<strong>${msg.role === 'user' ? 'You:' : 'RUMBLE:'}</strong> ${msg.role === 'rumble' ? formatRumbleMarkdown(msg.text) : escapeHtml(msg.text)}`;
-                    rumbleChatMessages.appendChild(div);
-                });
-                rumbleChatMessages.scrollTop = rumbleChatMessages.scrollHeight;
+                // Restore pending confirmation state if exists
+                if (data.pending_action && data.pending_action.action_data) {
+                    const existingRow = rumbleChatMessages.querySelector('.pending-action-buttons-row');
+                    if (existingRow) existingRow.remove();
+
+                    const rumbleMsgs = rumbleChatMessages.querySelectorAll('.rumble-message');
+                    const lastRumbleMsg = rumbleMsgs.length > 0 ? rumbleMsgs[rumbleMsgs.length - 1] : null;
+                    renderPendingActionButtons(data.pending_action.action_data, data.pending_action.id, lastRumbleMsg || rumbleChatMessages);
+                }
             }
         } catch (e) {
             console.error("Failed to load chat history", e);
+            const notice = document.createElement('div');
+            notice.className = 'message rumble-message';
+            notice.style.opacity = '0.7';
+            notice.style.fontStyle = 'italic';
+            notice.innerHTML = `<em>Previous messages unavailable</em>`;
+            rumbleChatMessages.appendChild(notice);
+            rumbleChatMessages.scrollTop = rumbleChatMessages.scrollHeight;
         }
     });
 
@@ -1391,8 +1463,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
-
-    let pendingChatAction = null;
 
 
     function handleChatFileSelection(file) {
@@ -1539,22 +1609,48 @@ document.addEventListener('DOMContentLoaded', () => {
         const actionToCommit = explicitAction || (isConfirmation ? pendingChatAction : null);
 
         try {
+            if (!cachedChatHistory || cachedChatHistory.length === 0) {
+                try {
+                    const hRes = await fetch('/api/v1/rumble/chat/history');
+                    if (hRes.ok) {
+                        const hData = await hRes.json();
+                        if (hData.status === 'success' && Array.isArray(hData.history)) {
+                            cachedChatHistory = [...hData.history];
+                        }
+                    }
+                } catch (hErr) {
+                    console.warn("Could not pre-fetch chat history", hErr);
+                }
+            }
+
             const msgsNodes = Array.from(rumbleChatMessages.querySelectorAll('.message'));
-            const previousMsgs = msgsNodes.slice(0, -1).slice(-20); // Keep last 20 messages for context
-            const history = previousMsgs.map(m => {
+            const previousMsgs = msgsNodes.slice(0, -1); // Exclude the user message just appended
+            const domHistory = previousMsgs.map(m => {
                 const isUser = m.classList.contains('user-message');
                 let text = m.innerText || '';
                 if (isUser && text.startsWith('You:')) text = text.substring(4).trim();
                 else if (!isUser && text.startsWith('RUMBLE:')) text = text.substring(7).trim();
+                text = text.replace(/Confirm.*|Cancel.*|Action cancelled\..*/g, '').trim();
                 return { role: isUser ? 'user' : 'rumble', text };
-            });
+            }).filter(m => m.text && !m.text.includes('Previous messages unavailable'));
+
+            // Merge DB history with any new DOM messages not yet persisted
+            const mergedHistory = [...cachedChatHistory];
+            for (const dm of domHistory) {
+                const exists = mergedHistory.some(h => h.role === dm.role && h.text === dm.text);
+                if (!exists) {
+                    mergedHistory.push(dm);
+                }
+            }
+
+            const history = mergedHistory.slice(-20); // Keep last 20 messages for context
 
             const payload = {
                 message: msg || 'Please analyze this attached photo/document and extract relevant appointments, instructions, or notes.',
                 proposal_context: currentProposalText,
                 history: history,
                 ...(attached ? { attachment: attached } : {}),
-                ...(actionToCommit ? { confirm_action: actionToCommit } : {})
+                ...(actionToCommit ? { confirm_action: actionToCommit, pending_action_id: actionToCommit.id } : {})
             };
 
             const response = await fetch(API_RUMBLE_CHAT, {
@@ -1563,47 +1659,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify(payload)
             });
             const data = await response.json();
+
+            // Update cached history on message send/receive
+            if (msg) {
+                cachedChatHistory.push({ role: 'user', text: msg });
+            }
+            if (data.reply) {
+                cachedChatHistory.push({ role: 'rumble', text: data.reply });
+            }
             
             const rumbleDiv = document.createElement('div');
             rumbleDiv.className = 'message rumble-message';
             rumbleDiv.innerHTML = `<strong>RUMBLE:</strong> ${formatRumbleMarkdown(data.reply)}`;
 
             if (data.requires_confirmation && data.preview) {
-                pendingChatAction = data.preview;
-                const actionsRow = document.createElement('div');
-                actionsRow.style.cssText = 'margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;';
-                
-                let confirmLabel = 'Confirm';
-                const hasSendEmail = data.preview.type === 'send_email' || (data.preview.data?.actions && data.preview.data.actions.some(a => a.type === 'send_email'));
-                if (hasSendEmail) {
-                    confirmLabel = 'Confirm & Send Email';
-                } else if (data.preview.type === 'pain_log') {
-                    confirmLabel = 'Confirm Pain Log';
-                }
-
-                const btnConfirm = document.createElement('button');
-                btnConfirm.className = 'btn btn-neon-green btn-sm';
-                btnConfirm.innerText = confirmLabel;
-                btnConfirm.onclick = () => {
-                    actionsRow.remove();
-                    sendRumbleChatMessage('Confirm', data.preview);
-                };
-
-                const btnCancel = document.createElement('button');
-                btnCancel.className = 'btn btn-outline btn-sm';
-                btnCancel.innerText = 'Cancel';
-                btnCancel.onclick = () => {
-                    pendingChatAction = null;
-                    actionsRow.remove();
-                    const cancelNote = document.createElement('small');
-                    cancelNote.style.color = 'var(--text-muted)';
-                    cancelNote.innerText = 'Action cancelled.';
-                    rumbleDiv.appendChild(cancelNote);
-                };
-
-                actionsRow.appendChild(btnConfirm);
-                actionsRow.appendChild(btnCancel);
-                rumbleDiv.appendChild(actionsRow);
+                renderPendingActionButtons(data.preview, data.pending_action_id, rumbleDiv);
             } else if (actionToCommit && data.status === 'success') {
                 pendingChatAction = null;
             }
@@ -1630,11 +1700,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (typeof loadAgenda === 'function') loadAgenda();
                 if (typeof loadNotes === 'function') loadNotes();
                 if (typeof loadBudget === 'function') loadBudget();
+                if (actionToCommit.type === 'budget_item') {
+                    showToast('Expense added to budget', 'success');
+                }
             }
         } catch (err) {
             const rumbleDiv = document.createElement('div');
             rumbleDiv.className = 'message rumble-message';
             rumbleDiv.innerHTML = `<strong>RUMBLE:</strong> Communication error. Unable to reach backend.`;
+            const btnRetry = document.createElement('button');
+            btnRetry.className = 'btn btn-outline btn-sm';
+            btnRetry.innerText = 'Retry';
+            btnRetry.style.marginTop = '6px';
+            btnRetry.onclick = () => { rumbleDiv.remove(); sendRumbleChatMessage(msg); };
+            rumbleDiv.appendChild(btnRetry);
             rumbleChatMessages.appendChild(rumbleDiv);
             rumbleChatMessages.scrollTop = rumbleChatMessages.scrollHeight;
         }
@@ -6334,6 +6413,188 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     loadBudget();
+
+    // --- Text Messages (SMS) Logic ---
+    const btnComposeSms = document.getElementById('btnComposeSms');
+    const btnCloseComposeSms = document.getElementById('btnCloseComposeSms');
+    const btnCancelComposeSms = document.getElementById('btnCancelComposeSms');
+    const btnSubmitSendSms = document.getElementById('btnSubmitSendSms');
+    const composeSmsModalEl = document.getElementById('composeSmsModal');
+
+    function composeSmsModal(show = true) {
+        if (!composeSmsModalEl) return;
+        if (show) {
+            composeSmsModalEl.classList.remove('hidden');
+            const toInput = document.getElementById('smsToInput');
+            const bodyInput = document.getElementById('smsBodyInput');
+            const errDiv = document.getElementById('smsSendError');
+            if (errDiv) { errDiv.style.display = 'none'; errDiv.innerText = ''; }
+            if (toInput) { toInput.value = ''; toInput.focus(); }
+            if (bodyInput) { bodyInput.value = ''; }
+        } else {
+            composeSmsModalEl.classList.add('hidden');
+        }
+    }
+
+    async function sendSmsMessage(to, body) {
+        const res = await fetch('/api/v1/sms/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ to, body })
+        });
+        const data = await res.json();
+        if (!res.ok || data.status !== 'success') {
+            throw new Error(data.error || 'Failed to send SMS');
+        }
+        return data;
+    }
+
+    async function markSmsRead(id) {
+        try {
+            const res = await fetch('/api/v1/sms', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id })
+            });
+            const data = await res.json();
+            return data.status === 'success';
+        } catch (e) {
+            console.error("Failed to mark SMS as read", e);
+            return false;
+        }
+    }
+
+    async function loadSmsMessages() {
+        const listEl = document.getElementById('smsMessagesList');
+        const badgeEl = document.getElementById('smsUnreadBadge');
+        if (!listEl) return;
+
+        try {
+            const res = await fetch('/api/v1/sms?limit=20');
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data = await res.json();
+            if (data.status === 'success' && Array.isArray(data.messages)) {
+                const messages = data.messages;
+                const unreadCount = messages.filter(m => !m.read).length;
+                if (badgeEl) {
+                    badgeEl.innerText = `${unreadCount} Unread`;
+                    badgeEl.className = unreadCount > 0 ? 'badge neon-blue' : 'badge';
+                }
+
+                if (messages.length === 0) {
+                    listEl.innerHTML = '<div style="color: var(--text-muted); font-size: 0.88rem; text-align: center; padding: 20px;">No text messages found.</div>';
+                    return;
+                }
+
+                listEl.innerHTML = '';
+                messages.forEach(msg => {
+                    const item = document.createElement('div');
+                    item.className = 'sms-message-card';
+                    item.style.cssText = `
+                        background: ${msg.read ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 229, 255, 0.05)'};
+                        border: 1px solid ${msg.read ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 229, 255, 0.3)'};
+                        border-radius: 8px;
+                        padding: 12px;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 8px;
+                    `;
+
+                    const timeStr = msg.received_at ? new Date(msg.received_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' }) : '';
+                    const bodyPreview = escapeHtml(msg.body || '');
+
+                    item.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <strong style="color: var(--text-primary); font-size: 0.95rem;">${escapeHtml(msg.sender || 'Unknown')}</strong>
+                                ${!msg.read ? '<span class="badge neon-blue" style="font-size: 0.7rem; padding: 1px 6px;">New</span>' : ''}
+                            </div>
+                            <span style="color: var(--text-muted); font-size: 0.75rem; white-space: nowrap;">${timeStr}</span>
+                        </div>
+                        <div style="color: var(--text-secondary); font-size: 0.88rem; line-height: 1.4;">${bodyPreview}</div>
+                        <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px;">
+                            ${!msg.read ? '<button class="btn btn-outline btn-sm btn-mark-read" style="font-size: 0.75rem; padding: 2px 8px;">Mark Read</button>' : ''}
+                            <button class="btn btn-neon-blue btn-sm btn-reply-sms" style="font-size: 0.75rem; padding: 2px 8px;">Reply</button>
+                        </div>
+                    `;
+
+                    const btnMarkRead = item.querySelector('.btn-mark-read');
+                    if (btnMarkRead) {
+                        btnMarkRead.onclick = async () => {
+                            btnMarkRead.disabled = true;
+                            const ok = await markSmsRead(msg.id);
+                            if (ok) {
+                                loadSmsMessages();
+                            } else {
+                                btnMarkRead.disabled = false;
+                            }
+                        };
+                    }
+
+                    const btnReply = item.querySelector('.btn-reply-sms');
+                    if (btnReply) {
+                        btnReply.onclick = () => {
+                            if (rumbleChatModal) {
+                                rumbleChatModal.classList.remove('hidden');
+                            }
+                            if (rumbleChatInput) {
+                                const snippet = (msg.body || '').substring(0, 80);
+                                rumbleChatInput.value = `Reply to SMS from ${msg.sender}: ${snippet}`;
+                                rumbleChatInput.focus();
+                            }
+                        };
+                    }
+
+                    listEl.appendChild(item);
+                });
+            }
+        } catch (e) {
+            console.error("Failed to load SMS messages", e);
+            if (listEl) {
+                listEl.innerHTML = '<div style="color: var(--text-muted); font-size: 0.88rem; text-align: center; padding: 20px;">Failed to load text messages.</div>';
+            }
+        }
+    }
+
+    if (btnComposeSms) {
+        btnComposeSms.addEventListener('click', () => composeSmsModal(true));
+    }
+    if (btnCloseComposeSms) {
+        btnCloseComposeSms.addEventListener('click', () => composeSmsModal(false));
+    }
+    if (btnCancelComposeSms) {
+        btnCancelComposeSms.addEventListener('click', () => composeSmsModal(false));
+    }
+    if (btnSubmitSendSms) {
+        btnSubmitSendSms.addEventListener('click', async () => {
+            const to = document.getElementById('smsToInput')?.value.trim();
+            const body = document.getElementById('smsBodyInput')?.value.trim();
+            const errDiv = document.getElementById('smsSendError');
+            if (!to || !body) {
+                if (errDiv) {
+                    errDiv.innerText = 'Phone number and message body are required.';
+                    errDiv.style.display = 'block';
+                }
+                return;
+            }
+            btnSubmitSendSms.disabled = true;
+            try {
+                await sendSmsMessage(to, body);
+                if (typeof showToast === 'function') showToast('SMS message sent', 'success');
+                composeSmsModal(false);
+                loadSmsMessages();
+            } catch (err) {
+                if (errDiv) {
+                    errDiv.innerText = err.message || 'Failed to send message';
+                    errDiv.style.display = 'block';
+                }
+            } finally {
+                btnSubmitSendSms.disabled = false;
+            }
+        });
+    }
+
+    loadSmsMessages();
 
     // --- 12. Pain Analytics & GP Report Logic ---
     const btnOpenPainAnalytics = document.getElementById('btnOpenPainAnalytics');

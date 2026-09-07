@@ -349,7 +349,7 @@ export async function callGemini(
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 25000);
+        const timeoutId = setTimeout(() => controller.abort(), 55000);
 
         const res = await fetch(url, {
           method: "POST",
@@ -360,7 +360,7 @@ export async function callGemini(
               parts: [{ text: systemPrompt }],
             },
             contents: [
-              ...history.map((h: any) => ({ role: h.role === "user" ? "user" : "model", parts: [{ text: h.content }] })),
+              ...history.map((h: any) => ({ role: h.role === "user" ? "user" : "model", parts: [{ text: h.text || h.content || '' }] })),
               { role: "user", parts: userParts }
             ],
             ...(responseSchema ? { generationConfig: { responseMimeType: "application/json", responseSchema } } : {})

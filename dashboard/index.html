@@ -209,6 +209,24 @@
                 </section>
             </div>
 
+            <!-- Text Messages Widget -->
+            <div class="agenda-grid-row" style="display: block; margin-top: 24px;">
+                <section class="widget glass-panel sms-panel" id="smsWidget" style="width: 100%;">
+                    <div class="widget-header" style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <h2 style="margin: 0;">Text Messages</h2>
+                            <span class="badge neon-blue" id="smsUnreadBadge">0 Unread</span>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn btn-neon-blue btn-sm" id="btnComposeSms">Compose SMS</button>
+                        </div>
+                    </div>
+                    <div id="smsMessagesList" style="margin-top: 15px; display: flex; flex-direction: column; gap: 10px; max-height: 400px; overflow-y: auto;">
+                        <div style="color: var(--text-secondary); font-size: 0.88rem; text-align: center; padding: 20px;">Loading messages...</div>
+                    </div>
+                </section>
+            </div>
+
         </main>
 
         <!-- Compact footer -->
@@ -670,6 +688,31 @@
                 <button class="btn-close" id="btnCloseImageLightbox" style="position: absolute; top: -36px; right: 0; font-size: 2rem; color: #fff; background: none; border: none; cursor: pointer; line-height: 1;">&times;</button>
                 <img id="lightboxImg" src="" alt="Full view" style="max-width: 90vw; max-height: 82vh; object-fit: contain; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
                 <div id="lightboxCaption" style="margin-top: 10px; color: rgba(255,255,255,0.8); font-size: 0.9rem; text-align: center;"></div>
+            </div>
+        </div>
+
+        <!-- Compose SMS Modal -->
+        <div class="modal-overlay hidden" id="composeSmsModal">
+            <div class="modal-content glass-panel" style="max-width: 480px; width: 92%;">
+                <div class="modal-header">
+                    <h2>Compose Text Message</h2>
+                    <button class="btn-close" id="btnCloseComposeSms">&times;</button>
+                </div>
+                <div style="padding: 15px 0; display: flex; flex-direction: column; gap: 12px;">
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 6px;">To (Phone Number)</label>
+                        <input type="tel" id="smsToInput" class="glass-input" placeholder="+61400000000" style="width: 100%;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 6px;">Message Body</label>
+                        <textarea id="smsBodyInput" class="glass-input" rows="4" placeholder="Type your text message here..." style="width: 100%; resize: vertical;"></textarea>
+                    </div>
+                    <div id="smsSendError" style="color: var(--neon-red); font-size: 0.85rem; display: none;"></div>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px;">
+                    <button class="btn btn-outline btn-sm" id="btnCancelComposeSms">Cancel</button>
+                    <button class="btn btn-neon-blue btn-sm" id="btnSubmitSendSms">Send Message</button>
+                </div>
             </div>
         </div>
 

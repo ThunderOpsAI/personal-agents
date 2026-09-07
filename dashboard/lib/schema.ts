@@ -358,3 +358,20 @@ CREATE TABLE IF NOT EXISTS sms_messages (
 );
 `;
 
+export interface PendingChatAction {
+  id: string;
+  action_data: any;
+  created_at: string;
+  resolved_at: string | null;
+}
+
+export const CREATE_PENDING_CHAT_ACTIONS_TABLE_SQL = `
+CREATE TABLE IF NOT EXISTS pending_chat_actions (
+    id TEXT PRIMARY KEY,
+    action_data JSONB NOT NULL,
+    created_at TEXT NOT NULL,
+    resolved_at TEXT
+);
+`;
+
+

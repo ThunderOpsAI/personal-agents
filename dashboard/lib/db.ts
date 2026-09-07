@@ -36,7 +36,9 @@ import {
   CREATE_CHAT_LOGS_TABLE_SQL,
   SmsMessage,
   CreateSmsMessageInput,
-  CREATE_SMS_MESSAGES_TABLE_SQL
+  CREATE_SMS_MESSAGES_TABLE_SQL,
+  PendingChatAction,
+  CREATE_PENDING_CHAT_ACTIONS_TABLE_SQL
 } from './schema';
 
 let pgPool: Pool | null = null;
@@ -99,6 +101,7 @@ export function initDb(overrideDbPath?: string): void {
         learning_progress: [],
         chat_logs: [],
         sms_messages: [],
+        pending_chat_actions: [],
       };
 
       sqliteDb = {
@@ -131,7 +134,19 @@ export function initDb(overrideDbPath?: string): void {
                   if (setClause.includes('read =') || setClause.includes('read=')) {
                     row.read = true;
                   }
+                  if (setClause.includes('resolved_at =') || setClause.includes('resolved_at=')) {
+                    row.resolved_at = params[0];
+                  }
                   return { changes: 1 };
+                } else if (table === 'pending_chat_actions' && !q.includes('WHERE id =')) {
+                  let c = 0;
+                  rows.forEach((r: any) => {
+                    if (!r.resolved_at) {
+                      r.resolved_at = params[0];
+                      c++;
+                    }
+                  });
+                  return { changes: c };
                 }
                 return { changes: 0 };
               }
@@ -156,6 +171,12 @@ export function initDb(overrideDbPath?: string): void {
                   }
                   return filtered;
                 }
+                if (table === 'pending_chat_actions') {
+                  if (q.includes('resolved_at IS NULL')) {
+                    return rows.filter((r) => !r.resolved_at);
+                  }
+                  return [...rows];
+                }
                 if (params.length === 2 && q.includes('created_at >=') && q.includes('created_at <=')) {
                   return rows.filter((r) => r.created_at >= params[0] && r.created_at <= params[1]);
                 }
@@ -174,6 +195,9 @@ export function initDb(overrideDbPath?: string): void {
               if (selectMatch) {
                 const table = selectMatch[1].toLowerCase();
                 const rows = inMemoryTables[table] || [];
+                if (table === 'pending_chat_actions') {
+                  return rows.find((r) => !r.resolved_at) || null;
+                }
                 if (params.length > 0) {
                   return rows.find((r) => r.id === params[0] || r.encyclopedia_id === params[0]) || null;
                 }
@@ -218,6 +242,7 @@ export async function ensureTableExists(): Promise<void> {
       await pgPool.query(CREATE_LEARNING_PROGRESS_TABLE_SQL);
       await pgPool.query(CREATE_CHAT_LOGS_TABLE_SQL);
       await pgPool.query(CREATE_SMS_MESSAGES_TABLE_SQL);
+      await pgPool.query(CREATE_PENDING_CHAT_ACTIONS_TABLE_SQL);
     }
   } else {
     if (!sqliteDb) {
@@ -236,6 +261,7 @@ export async function ensureTableExists(): Promise<void> {
       sqliteDb.exec(CREATE_LEARNING_PROGRESS_TABLE_SQL);
       sqliteDb.exec(CREATE_CHAT_LOGS_TABLE_SQL);
       sqliteDb.exec(CREATE_SMS_MESSAGES_TABLE_SQL);
+      sqliteDb.exec(CREATE_PENDING_CHAT_ACTIONS_TABLE_SQL);
     }
   }
 }
@@ -1445,7 +1471,7 @@ export async function createChatLog(role: 'user' | 'rumble', text: string): Prom
   return { id, role, text, created_at };
 }
 
-export async function getChatLogs(hours: number = 12): Promise<ChatLogRecord[]> {
+export async function getChatLogs(hours: number = 24): Promise<ChatLogRecord[]> {
   await ensureTableExists();
   const cutoff = new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
   const status = getDbStatus();
@@ -1550,3 +1576,138 @@ export async function markSmsRead(id: string): Promise<boolean> {
     throw new Error('Database not initialized');
   }
 }
+
+export async function sendSms(to: string, body: string): Promise<{ sid: string }> {
+  const accountSid = process.env.TWILIO_ACCOUNT_SID;
+  const authToken = process.env.TWILIO_AUTH_TOKEN;
+  const fromNumber = process.env.TWILIO_PHONE_NUMBER;
+
+  if (!accountSid || !authToken || !fromNumber) {
+    throw new Error('Twilio credentials missing: TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, or TWILIO_PHONE_NUMBER');
+  }
+
+  const url = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
+  const params = new URLSearchParams();
+  params.append('To', to);
+  params.append('From', fromNumber);
+  params.append('Body', body);
+
+  const authHeader = Buffer.from(`${accountSid}:${authToken}`).toString('base64');
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Basic ${authHeader}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: params.toString(),
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Twilio SMS send failed (${res.status}): ${errText}`);
+  }
+
+  const data = await res.json();
+  await createSmsMessage({
+    sender: 'Rumble OS',
+    body,
+    received_at: new Date().toISOString(),
+  });
+
+  return { sid: data.sid };
+}
+
+export async function savePendingAction(actionData: any): Promise<PendingChatAction> {
+  await ensureTableExists();
+  const id = `action_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  const now = new Date().toISOString();
+  const status = getDbStatus();
+
+  const record: PendingChatAction = {
+    id,
+    action_data: actionData,
+    created_at: now,
+    resolved_at: null,
+  };
+
+  if (status.provider === 'neon' && pgPool) {
+    await pgPool.query(
+      'INSERT INTO pending_chat_actions(id, action_data, created_at, resolved_at) VALUES($1, $2::jsonb, $3, $4)',
+      [id, JSON.stringify(actionData), now, null]
+    );
+  } else if (status.provider === 'sqlite' && sqliteDb) {
+    sqliteDb.prepare(
+      'INSERT INTO pending_chat_actions (id, action_data, created_at, resolved_at) VALUES (?, ?, ?, ?)'
+    ).run(id, JSON.stringify(actionData), now, null);
+  } else {
+    throw new Error('Database not initialized');
+  }
+
+  return record;
+}
+
+export async function getPendingAction(): Promise<PendingChatAction | null> {
+  await ensureTableExists();
+  const status = getDbStatus();
+
+  if (status.provider === 'neon' && pgPool) {
+    const res = await pgPool.query(
+      'SELECT id, action_data, created_at, resolved_at FROM pending_chat_actions WHERE resolved_at IS NULL ORDER BY created_at DESC LIMIT 1'
+    );
+    if (res.rows.length === 0) return null;
+    const r = res.rows[0];
+    return {
+      id: r.id,
+      action_data: typeof r.action_data === 'string' ? JSON.parse(r.action_data) : r.action_data,
+      created_at: r.created_at,
+      resolved_at: r.resolved_at,
+    };
+  } else if (status.provider === 'sqlite' && sqliteDb) {
+    const row: any = sqliteDb.prepare(
+      'SELECT id, action_data, created_at, resolved_at FROM pending_chat_actions WHERE resolved_at IS NULL ORDER BY created_at DESC LIMIT 1'
+    ).get();
+    if (!row) return null;
+    return {
+      id: row.id,
+      action_data: typeof row.action_data === 'string' ? JSON.parse(row.action_data) : row.action_data,
+      created_at: row.created_at,
+      resolved_at: row.resolved_at,
+    };
+  }
+  return null;
+}
+
+export async function resolvePendingAction(id?: string): Promise<boolean> {
+  await ensureTableExists();
+  const status = getDbStatus();
+  const now = new Date().toISOString();
+
+  if (status.provider === 'neon' && pgPool) {
+    if (id) {
+      const res = await pgPool.query(
+        'UPDATE pending_chat_actions SET resolved_at = $1 WHERE id = $2 AND resolved_at IS NULL',
+        [now, id]
+      );
+      return (res.rowCount ?? 0) > 0;
+    } else {
+      const res = await pgPool.query(
+        'UPDATE pending_chat_actions SET resolved_at = $1 WHERE resolved_at IS NULL',
+        [now]
+      );
+      return (res.rowCount ?? 0) > 0;
+    }
+  } else if (status.provider === 'sqlite' && sqliteDb) {
+    if (id) {
+      const stmt = sqliteDb.prepare('UPDATE pending_chat_actions SET resolved_at = ? WHERE id = ? AND resolved_at IS NULL');
+      const result = stmt.run(now, id);
+      return (result.changes ?? 0) > 0;
+    } else {
+      const stmt = sqliteDb.prepare('UPDATE pending_chat_actions SET resolved_at = ? WHERE resolved_at IS NULL');
+      const result = stmt.run(now);
+      return (result.changes ?? 0) > 0;
+    }
+  }
+  return false;
+}
+
+

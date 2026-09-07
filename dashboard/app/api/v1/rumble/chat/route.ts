@@ -9,7 +9,9 @@ export async function POST(request: Request) {
   if (payload && payload.confirm_action && typeof payload.confirm_action === "object") {
     try {
       const { executeConfirmedAction } = await import("../../../../../lib/agents/intent-router");
+      const { resolvePendingAction } = await import("../../../../../lib/db");
       const result = await executeConfirmedAction(payload.confirm_action);
+      await resolvePendingAction(payload.pending_action_id || payload.confirm_action.id);
       return NextResponse.json({
         status: "success",
         reply: result.message,
@@ -18,6 +20,17 @@ export async function POST(request: Request) {
       });
     } catch (error: any) {
       return NextResponse.json({ status: "error", error: error.message || "Failed to execute confirmed action" }, { status: 400 });
+    }
+  }
+
+  // Handle explicit action cancellation
+  if (payload && payload.cancel_action) {
+    try {
+      const { resolvePendingAction } = await import("../../../../../lib/db");
+      await resolvePendingAction(payload.pending_action_id);
+      return NextResponse.json({ status: "success", message: "Action cancelled." });
+    } catch (error: any) {
+      return NextResponse.json({ status: "error", error: error.message }, { status: 400 });
     }
   }
 
@@ -50,6 +63,13 @@ export async function POST(request: Request) {
         m.evaluateForInsights('chat', { input: input.message, reply: chat.reply, intent: chat.intent });
     }).catch(console.error);
 
+    let pendingActionId: string | undefined = undefined;
+    if (chat.requires_confirmation && chat.preview) {
+      const { savePendingAction } = await import("../../../../../lib/db");
+      const saved = await savePendingAction(chat.preview);
+      pendingActionId = saved.id;
+    }
+
     const disclaimer = "Medical output is decision support, not diagnosis. Preserve clinician restrictions; recommend clinician review for worsening or concerning symptoms.";
     return NextResponse.json({
       status: "success",
@@ -59,6 +79,7 @@ export async function POST(request: Request) {
       data: chat.data,
       requires_confirmation: chat.requires_confirmation,
       preview: chat.preview,
+      pending_action_id: pendingActionId,
     });
   } catch (error) {
     if (error instanceof LiveIntegrationUnavailableError) {
