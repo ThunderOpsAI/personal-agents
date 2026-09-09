@@ -38,7 +38,11 @@ import {
   CreateSmsMessageInput,
   CREATE_SMS_MESSAGES_TABLE_SQL,
   PendingChatAction,
-  CREATE_PENDING_CHAT_ACTIONS_TABLE_SQL
+  CREATE_PENDING_CHAT_ACTIONS_TABLE_SQL,
+  TaskRecord,
+  CreateTaskInput,
+  TaskStatus,
+  CREATE_TASKS_TABLE_SQL,
 } from './schema';
 
 let pgPool: Pool | null = null;
@@ -102,6 +106,7 @@ export function initDb(overrideDbPath?: string): void {
         chat_logs: [],
         sms_messages: [],
         pending_chat_actions: [],
+        tasks: [],
       };
 
       sqliteDb = {
@@ -123,6 +128,18 @@ export function initDb(overrideDbPath?: string): void {
                 inMemoryTables[table].unshift(row);
                 return { changes: 1 };
               }
+              const deleteMatch = q.match(/DELETE\s+FROM\s+([a-zA-Z0-9_]+)\s+WHERE\s+(.+)/i);
+              if (deleteMatch) {
+                const table = deleteMatch[1].toLowerCase();
+                const targetId = params[0];
+                const rows = inMemoryTables[table] || [];
+                const idx = rows.findIndex((r: any) => r.id === targetId);
+                if (idx !== -1) {
+                  rows.splice(idx, 1);
+                  return { changes: 1 };
+                }
+                return { changes: 0 };
+              }
               const updateMatch = q.match(/UPDATE\s+([a-zA-Z0-9_]+)\s+SET\s+(.+?)\s+WHERE\s+(.+)/i);
               if (updateMatch) {
                 const table = updateMatch[1].toLowerCase();
@@ -131,6 +148,32 @@ export function initDb(overrideDbPath?: string): void {
                 const targetId = params[params.length - 1];
                 const row = rows.find((r: any) => r.id === targetId);
                 if (row) {
+                  if (table === 'notes') {
+                    row.content = params[0];
+                    row.pinned = Boolean(params[1]);
+                    row.isArchived = Boolean(params[2]);
+                    row.updated_at = params[3];
+                    return { changes: 1 };
+                  }
+                  if (table === 'agenda_items' && setClause.includes('status =')) {
+                    row.status = params[0];
+                    row.completed_at = params[1];
+                    row.dismissed_at = params[2];
+                    row.audit_trail = params[3];
+                    row.updated_at = params[4];
+                    return { changes: 1 };
+                  }
+                  if (table === 'tasks') {
+                    row.title = params[0];
+                    row.notes = params[1];
+                    row.status = params[2];
+                    row.due = params[3];
+                    row.completed_at = params[4];
+                    row.deleted = Boolean(params[5]);
+                    row.google_id = params[6];
+                    row.updated_at = params[7];
+                    return { changes: 1 };
+                  }
                   if (setClause.includes('read =') || setClause.includes('read=')) {
                     row.read = true;
                   }
@@ -243,6 +286,7 @@ export async function ensureTableExists(): Promise<void> {
       await pgPool.query(CREATE_CHAT_LOGS_TABLE_SQL);
       await pgPool.query(CREATE_SMS_MESSAGES_TABLE_SQL);
       await pgPool.query(CREATE_PENDING_CHAT_ACTIONS_TABLE_SQL);
+      await pgPool.query(CREATE_TASKS_TABLE_SQL);
     }
   } else {
     if (!sqliteDb) {
@@ -262,6 +306,7 @@ export async function ensureTableExists(): Promise<void> {
       sqliteDb.exec(CREATE_CHAT_LOGS_TABLE_SQL);
       sqliteDb.exec(CREATE_SMS_MESSAGES_TABLE_SQL);
       sqliteDb.exec(CREATE_PENDING_CHAT_ACTIONS_TABLE_SQL);
+      sqliteDb.exec(CREATE_TASKS_TABLE_SQL);
     }
   }
 }
@@ -1709,5 +1754,214 @@ export async function resolvePendingAction(id?: string): Promise<boolean> {
   }
   return false;
 }
+
+// --- Tasks persistence (Google Tasks 2-Way Sync) ---
+
+export async function getTasksFromDb(options?: {
+  taskListId?: string;
+  includeCompleted?: boolean;
+}): Promise<TaskRecord[]> {
+  await ensureTableExists();
+  const status = getDbStatus();
+  const taskListId = options?.taskListId || '@default';
+  const includeCompleted = options?.includeCompleted ?? true;
+
+  if (status.provider === 'neon' && pgPool) {
+    let query = 'SELECT id, google_id, task_list_id, title, notes, status, due, completed_at, deleted, created_at, updated_at FROM tasks WHERE deleted = FALSE AND task_list_id = $1';
+    const params: any[] = [taskListId];
+    if (!includeCompleted) {
+      query += ' AND status = $2';
+      params.push('needsAction');
+    }
+    query += ' ORDER BY due ASC NULLS LAST, created_at DESC';
+    const res = await pgPool.query(query, params);
+    return res.rows.map((row) => ({
+      id: row.id,
+      google_id: row.google_id || null,
+      task_list_id: row.task_list_id,
+      title: row.title,
+      notes: row.notes || null,
+      status: row.status,
+      due: row.due || null,
+      completed_at: row.completed_at || null,
+      deleted: Boolean(row.deleted),
+      created_at: row.created_at,
+      updated_at: row.updated_at,
+    }));
+  } else if (sqliteDb) {
+    let query = 'SELECT id, google_id, task_list_id, title, notes, status, due, completed_at, deleted, created_at, updated_at FROM tasks WHERE deleted = 0 AND task_list_id = ?';
+    const params: any[] = [taskListId];
+    if (!includeCompleted) {
+      query += ' AND status = ?';
+      params.push('needsAction');
+    }
+    query += ' ORDER BY due ASC, created_at DESC';
+    const stmt = sqliteDb.prepare(query);
+    const rows = (stmt.all ? stmt.all(...params) : []) as any[];
+    return rows.map((row) => ({
+      id: row.id,
+      google_id: row.google_id || null,
+      task_list_id: row.task_list_id,
+      title: row.title,
+      notes: row.notes || null,
+      status: row.status,
+      due: row.due || null,
+      completed_at: row.completed_at || null,
+      deleted: Boolean(row.deleted),
+      created_at: row.created_at,
+      updated_at: row.updated_at,
+    }));
+  }
+
+  return [];
+}
+
+export async function createTaskInDb(input: CreateTaskInput): Promise<TaskRecord> {
+  await ensureTableExists();
+  const status = getDbStatus();
+
+  const id = input.id || crypto.randomUUID();
+  const google_id = input.google_id || null;
+  const task_list_id = input.task_list_id || '@default';
+  const title = input.title;
+  const notes = input.notes || null;
+  const taskStatus: TaskStatus = input.status || 'needsAction';
+  const due = input.due || null;
+  const completed_at = input.completed_at || (taskStatus === 'completed' ? new Date().toISOString() : null);
+  const deleted = input.deleted || false;
+  const now = new Date().toISOString();
+
+  if (status.provider === 'neon' && pgPool) {
+    await pgPool.query(
+      `INSERT INTO tasks (id, google_id, task_list_id, title, notes, status, due, completed_at, deleted, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+      [id, google_id, task_list_id, title, notes, taskStatus, due, completed_at, deleted, now, now]
+    );
+  } else if (sqliteDb) {
+    const stmt = sqliteDb.prepare(
+      `INSERT INTO tasks (id, google_id, task_list_id, title, notes, status, due, completed_at, deleted, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    );
+    stmt.run(id, google_id, task_list_id, title, notes, taskStatus, due, completed_at, deleted ? 1 : 0, now, now);
+  }
+
+  return {
+    id,
+    google_id,
+    task_list_id,
+    title,
+    notes,
+    status: taskStatus,
+    due,
+    completed_at,
+    deleted,
+    created_at: now,
+    updated_at: now,
+  };
+}
+
+export async function updateTaskInDb(
+  id: string,
+  updates: Partial<CreateTaskInput>
+): Promise<TaskRecord | null> {
+  await ensureTableExists();
+  const status = getDbStatus();
+  const now = new Date().toISOString();
+
+  let existing: TaskRecord | null = null;
+  if (status.provider === 'neon' && pgPool) {
+    const res = await pgPool.query('SELECT * FROM tasks WHERE id = $1', [id]);
+    if (res.rows.length > 0) {
+      const r = res.rows[0];
+      existing = {
+        id: r.id,
+        google_id: r.google_id || null,
+        task_list_id: r.task_list_id,
+        title: r.title,
+        notes: r.notes || null,
+        status: r.status,
+        due: r.due || null,
+        completed_at: r.completed_at || null,
+        deleted: Boolean(r.deleted),
+        created_at: r.created_at,
+        updated_at: r.updated_at,
+      };
+    }
+  } else if (sqliteDb) {
+    const stmt = sqliteDb.prepare('SELECT * FROM tasks WHERE id = ?');
+    const r = stmt.get ? stmt.get(id) : null;
+    if (r) {
+      existing = {
+        id: r.id,
+        google_id: r.google_id || null,
+        task_list_id: r.task_list_id,
+        title: r.title,
+        notes: r.notes || null,
+        status: r.status,
+        due: r.due || null,
+        completed_at: r.completed_at || null,
+        deleted: Boolean(r.deleted),
+        created_at: r.created_at,
+        updated_at: r.updated_at,
+      };
+    }
+  }
+
+  if (!existing) return null;
+
+  const newTitle = updates.title !== undefined ? updates.title : existing.title;
+  const newNotes = updates.notes !== undefined ? updates.notes : existing.notes;
+  const newStatus = updates.status !== undefined ? updates.status : existing.status;
+  const newDue = updates.due !== undefined ? updates.due : existing.due;
+  let newCompletedAt = updates.completed_at !== undefined ? updates.completed_at : existing.completed_at;
+  if (updates.status === 'completed' && !newCompletedAt) {
+    newCompletedAt = now;
+  } else if (updates.status === 'needsAction') {
+    newCompletedAt = null;
+  }
+  const newDeleted = updates.deleted !== undefined ? updates.deleted : existing.deleted;
+  const newGoogleId = updates.google_id !== undefined ? updates.google_id : existing.google_id;
+
+  if (status.provider === 'neon' && pgPool) {
+    await pgPool.query(
+      `UPDATE tasks SET title = $1, notes = $2, status = $3, due = $4, completed_at = $5, deleted = $6, google_id = $7, updated_at = $8 WHERE id = $9`,
+      [newTitle, newNotes, newStatus, newDue, newCompletedAt, newDeleted, newGoogleId, now, id]
+    );
+  } else if (sqliteDb) {
+    const stmt = sqliteDb.prepare(
+      `UPDATE tasks SET title = ?, notes = ?, status = ?, due = ?, completed_at = ?, deleted = ?, google_id = ?, updated_at = ? WHERE id = ?`
+    );
+    stmt.run(newTitle, newNotes, newStatus, newDue, newCompletedAt, newDeleted ? 1 : 0, newGoogleId, now, id);
+  }
+
+  return {
+    ...existing,
+    title: newTitle,
+    notes: newNotes,
+    status: newStatus,
+    due: newDue,
+    completed_at: newCompletedAt,
+    deleted: newDeleted,
+    google_id: newGoogleId,
+    updated_at: now,
+  };
+}
+
+export async function deleteTaskInDb(id: string): Promise<boolean> {
+  await ensureTableExists();
+  const status = getDbStatus();
+
+  if (status.provider === 'neon' && pgPool) {
+    const res = await pgPool.query('DELETE FROM tasks WHERE id = $1', [id]);
+    return (res.rowCount ?? 0) > 0;
+  } else if (sqliteDb) {
+    const stmt = sqliteDb.prepare('DELETE FROM tasks WHERE id = ?');
+    const info = stmt.run(id);
+    return info.changes > 0;
+  }
+
+  return false;
+}
+
 
 

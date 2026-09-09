@@ -39,4 +39,20 @@ CREATE TABLE IF NOT EXISTS exercise_preferences (
     created_at TEXT NOT NULL
 );
 
+-- Tasks table (Google Tasks 2-way sync)
+CREATE TABLE IF NOT EXISTS tasks (
+    id TEXT PRIMARY KEY,
+    google_id TEXT,
+    task_list_id TEXT NOT NULL DEFAULT '@default',
+    title TEXT NOT NULL,
+    notes TEXT,
+    status TEXT NOT NULL DEFAULT 'needsAction' CHECK (status IN ('needsAction', 'completed')),
+    due TEXT,
+    completed_at TEXT,
+    deleted BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+
+
 

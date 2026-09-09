@@ -374,4 +374,49 @@ CREATE TABLE IF NOT EXISTS pending_chat_actions (
 );
 `;
 
+export type TaskStatus = 'needsAction' | 'completed';
+
+export interface TaskRecord {
+  id: string;
+  google_id?: string | null;
+  task_list_id?: string;
+  title: string;
+  notes?: string | null;
+  status: TaskStatus;
+  due?: string | null;
+  completed_at?: string | null;
+  deleted?: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateTaskInput {
+  id?: string;
+  google_id?: string | null;
+  task_list_id?: string;
+  title: string;
+  notes?: string | null;
+  status?: TaskStatus;
+  due?: string | null;
+  completed_at?: string | null;
+  deleted?: boolean;
+}
+
+export const CREATE_TASKS_TABLE_SQL = `
+CREATE TABLE IF NOT EXISTS tasks (
+    id TEXT PRIMARY KEY,
+    google_id TEXT,
+    task_list_id TEXT NOT NULL DEFAULT '@default',
+    title TEXT NOT NULL,
+    notes TEXT,
+    status TEXT NOT NULL DEFAULT 'needsAction' CHECK (status IN ('needsAction', 'completed')),
+    due TEXT,
+    completed_at TEXT,
+    deleted BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+`;
+
+
 

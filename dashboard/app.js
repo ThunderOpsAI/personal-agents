@@ -105,6 +105,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const API_EXERCISE_SUGGEST = `${API_BASE}/api/v1/exercises/suggest`;
     const API_EXERCISE_RELIEF = `${API_BASE}/api/v1/rehab/complete`;
     const API_EXERCISE_REJECT = `${API_BASE}/api/v1/rehab/dismiss`;
+    const API_TASKS = `${API_BASE}/api/v1/tasks`;
+    const API_TASKS_SYNC = `${API_BASE}/api/v1/tasks/sync`;
 
 
     // --- DOM Elements ---
@@ -176,8 +178,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnCloseNotes = document.getElementById('btnCloseNotes');
     const notesGrid = document.getElementById('notesGrid');
     const pinnedNotesGrid = document.getElementById('pinnedNotesGrid');
+    const archivedNotesGrid = document.getElementById('archivedNotesGrid');
     const notesSectionTitle = document.getElementById('notesSectionTitle');
     const unpinnedNotesSectionTitle = document.getElementById('unpinnedNotesSectionTitle');
+    const archivedNotesSectionTitle = document.getElementById('archivedNotesSectionTitle');
     const btnToggleArchiveView = document.getElementById('btnToggleArchiveView');
     const btnToggleFollowUpView = document.getElementById('btnToggleFollowUpView');
     const followUpWorkspace = document.getElementById('followUpWorkspace');
@@ -186,6 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnSaveFollowUp = document.getElementById('btnSaveFollowUp');
     const followUpSaveStatus = document.getElementById('followUpSaveStatus');
     const inlineNoteEditorContainer = document.getElementById('inlineNoteEditorContainer');
+    const btnDeleteNoteEditor = document.getElementById('btnDeleteNoteEditor');
     let followUpNoteId = null;
     
     // Inline Note Editor
@@ -334,8 +339,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     loadWeather();
     loadAgenda();
-    // --- Agenda Auto-Refresh (picks up injected alerts) ---
+    loadTasks();
+    // --- Agenda & Tasks Auto-Refresh (picks up injected alerts and synced tasks) ---
     setInterval(loadAgenda, 60000);
+    setInterval(loadTasks, 120000);
 
     // --- Agenda Loader ---
     function showAgendaSkeleton() {
@@ -1106,6 +1113,396 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (err) {
                 showToast('Network error saving calendar event');
                 console.error(err);
+            }
+        });
+    }
+
+    // --- Google Tasks Tab & Interactive Calendar Engine ---
+    let tasksCalendar = null;
+    let cachedTasks = [];
+    let activeTask = null;
+
+    const tabBtnCalendar = document.getElementById('tabBtnCalendar');
+    const tabBtnTasks = document.getElementById('tabBtnTasks');
+    const calendarSection = document.getElementById('calendarSection');
+    const tasksSection = document.getElementById('tasksSection');
+    const tasksTabBadge = document.getElementById('tasksTabBadge');
+    const tasksActiveCountBadge = document.getElementById('tasksActiveCountBadge');
+    const tasksCompletedCountBadge = document.getElementById('tasksCompletedCountBadge');
+    const btnSyncTasks = document.getElementById('btnSyncTasks');
+    const btnAddTask = document.getElementById('btnAddTask');
+
+    // Task View Modal elements
+    const taskViewModal = document.getElementById('taskViewModal');
+    const viewTaskTitle = document.getElementById('viewTaskTitle');
+    const btnCloseTaskView = document.getElementById('btnCloseTaskView');
+    const viewTaskBadge = document.getElementById('viewTaskBadge');
+    const viewTaskSourceBadge = document.getElementById('viewTaskSourceBadge');
+    const viewTaskDue = document.getElementById('viewTaskDue');
+    const viewTaskNotes = document.getElementById('viewTaskNotes');
+    const btnDeleteTask = document.getElementById('btnDeleteTask');
+    const btnToggleTaskComplete = document.getElementById('btnToggleTaskComplete');
+    const btnEditTask = document.getElementById('btnEditTask');
+    const btnDoneTaskView = document.getElementById('btnDoneTaskView');
+
+    // Task Edit Modal elements
+    const taskEditModal = document.getElementById('taskEditModal');
+    const editTaskModalTitle = document.getElementById('editTaskModalTitle');
+    const btnCloseTaskEdit = document.getElementById('btnCloseTaskEdit');
+    const btnCancelTaskEdit = document.getElementById('btnCancelTaskEdit');
+    const taskForm = document.getElementById('taskForm');
+    const taskId = document.getElementById('taskId');
+    const taskInputTitle = document.getElementById('taskInputTitle');
+    const taskInputDate = document.getElementById('taskInputDate');
+    const taskInputTime = document.getElementById('taskInputTime');
+    const taskInputStatus = document.getElementById('taskInputStatus');
+    const taskInputNotes = document.getElementById('taskInputNotes');
+    const btnSaveTask = document.getElementById('btnSaveTask');
+
+    function switchScheduleTab(activeTab) {
+        if (activeTab === 'tasks') {
+            if (tabBtnTasks) {
+                tabBtnTasks.classList.add('btn-neon-blue', 'active');
+                tabBtnTasks.classList.remove('btn-outline');
+                tabBtnTasks.setAttribute('aria-selected', 'true');
+            }
+            if (tabBtnCalendar) {
+                tabBtnCalendar.classList.remove('btn-neon-blue', 'active');
+                tabBtnCalendar.classList.add('btn-outline');
+                tabBtnCalendar.setAttribute('aria-selected', 'false');
+            }
+            if (tasksSection) tasksSection.classList.remove('hidden');
+            if (calendarSection) calendarSection.classList.add('hidden');
+
+            if (tasksCalendar) {
+                setTimeout(() => tasksCalendar.updateSize(), 50);
+            } else {
+                renderTasksCalendar(cachedTasks);
+            }
+        } else {
+            if (tabBtnCalendar) {
+                tabBtnCalendar.classList.add('btn-neon-blue', 'active');
+                tabBtnCalendar.classList.remove('btn-outline');
+                tabBtnCalendar.setAttribute('aria-selected', 'true');
+            }
+            if (tabBtnTasks) {
+                tabBtnTasks.classList.remove('btn-neon-blue', 'active');
+                tabBtnTasks.classList.add('btn-outline');
+                tabBtnTasks.setAttribute('aria-selected', 'false');
+            }
+            if (calendarSection) calendarSection.classList.remove('hidden');
+            if (tasksSection) tasksSection.classList.add('hidden');
+
+            if (interactiveCalendar) {
+                setTimeout(() => interactiveCalendar.updateSize(), 50);
+            }
+        }
+    }
+
+    if (tabBtnCalendar) tabBtnCalendar.addEventListener('click', () => switchScheduleTab('calendar'));
+    if (tabBtnTasks) tabBtnTasks.addEventListener('click', () => switchScheduleTab('tasks'));
+
+    async function loadTasks(sync = false) {
+        try {
+            const url = sync ? `${API_TASKS}?sync=true` : API_TASKS;
+            const res = await fetch(url);
+            if (!res.ok) return;
+            const data = await res.json();
+            cachedTasks = data.tasks || [];
+            updateTaskBadges(cachedTasks);
+            renderTasksCalendar(cachedTasks);
+        } catch (err) {
+            console.error('Failed to load tasks:', err);
+        }
+    }
+
+    function updateTaskBadges(tasks) {
+        const pendingCount = tasks.filter(t => t.status !== 'completed').length;
+        const doneCount = tasks.filter(t => t.status === 'completed').length;
+
+        if (tasksTabBadge) tasksTabBadge.textContent = pendingCount.toString();
+        if (tasksActiveCountBadge) tasksActiveCountBadge.textContent = `${pendingCount} Pending`;
+        if (tasksCompletedCountBadge) {
+            tasksCompletedCountBadge.textContent = `${doneCount} Done`;
+            tasksCompletedCountBadge.style.display = doneCount > 0 ? 'inline-block' : 'none';
+        }
+    }
+
+    function renderTasksCalendar(tasks) {
+        const tasksCalendarEl = document.getElementById('tasksCalendar');
+        if (!tasksCalendarEl || typeof FullCalendar === 'undefined') return;
+
+        if (!tasksCalendar) {
+            tasksCalendar = new FullCalendar.Calendar(tasksCalendarEl, {
+                initialView: 'dayGridMonth',
+                weekends: false,
+                firstDay: 1,
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                height: 'auto',
+                selectable: true,
+                dateClick: function(info) {
+                    let datePart = info.dateStr;
+                    let timePart = '09:00';
+                    if (info.dateStr.includes('T')) {
+                        const parts = info.dateStr.split('T');
+                        datePart = parts[0];
+                        timePart = parts[1].substring(0, 5);
+                    }
+                    openTaskEdit({ rawDate: datePart, startTime: timePart });
+                },
+                eventClick: function(info) {
+                    if (info.event.extendedProps.task) {
+                        openTaskView(info.event.extendedProps.task);
+                    }
+                }
+            });
+            tasksCalendar.render();
+        }
+
+        const events = [];
+        (tasks || []).forEach(t => {
+            const isDone = t.status === 'completed';
+            let start = t.due ? t.due.slice(0, 19) : (t.created_at ? t.created_at.slice(0, 10) : new Date().toISOString().slice(0, 10));
+            const hasTime = t.due && t.due.includes('T') && !t.due.endsWith('T00:00:00.000Z');
+
+            events.push({
+                id: t.id,
+                title: `${isDone ? '✓ ' : '○ '}${t.title}`,
+                start: start,
+                allDay: !hasTime,
+                backgroundColor: isDone ? 'rgba(0, 255, 102, 0.15)' : 'rgba(0, 240, 255, 0.15)',
+                borderColor: isDone ? 'var(--neon-green)' : 'var(--neon-blue)',
+                textColor: isDone ? 'rgba(255, 255, 255, 0.6)' : '#ffffff',
+                extendedProps: { task: t }
+            });
+        });
+
+        tasksCalendar.getEvents().forEach(e => e.remove());
+        tasksCalendar.addEventSource(events);
+    }
+
+    function openTaskView(task) {
+        activeTask = task;
+        if (!taskViewModal) return;
+
+        if (viewTaskTitle) viewTaskTitle.innerText = task.title || 'Task Details';
+        const isDone = task.status === 'completed';
+        if (viewTaskBadge) {
+            viewTaskBadge.innerText = isDone ? 'Completed' : 'Pending';
+            viewTaskBadge.className = isDone ? 'badge neon-green' : 'badge neon-blue';
+        }
+        if (viewTaskSourceBadge) {
+            viewTaskSourceBadge.innerText = task.google_task_id ? 'Google Tasks Synced' : 'Local Task';
+        }
+
+        let dueDisplay = 'No due date';
+        if (task.due) {
+            const d = new Date(task.due);
+            if (!isNaN(d.getTime())) {
+                const dateStr = d.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+                const timeStr = task.due.includes('T') && !task.due.endsWith('T00:00:00.000Z')
+                    ? ' • ' + d.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' })
+                    : '';
+                dueDisplay = `${dateStr}${timeStr}`;
+            }
+        }
+        if (viewTaskDue) viewTaskDue.innerText = dueDisplay;
+
+        if (viewTaskNotes) {
+            viewTaskNotes.innerText = task.notes || 'No additional notes provided.';
+        }
+
+        if (btnToggleTaskComplete) {
+            btnToggleTaskComplete.innerText = isDone ? 'Mark Incomplete' : '✓ Mark Complete';
+        }
+
+        taskViewModal.classList.remove('hidden');
+    }
+
+    function openTaskEdit(taskOrPrefill) {
+        if (!taskEditModal) return;
+
+        const isEditing = Boolean(taskOrPrefill && taskOrPrefill.id);
+        const todayStr = new Date().toISOString().split('T')[0];
+
+        if (taskId) taskId.value = isEditing ? taskOrPrefill.id : '';
+        if (taskInputTitle) taskInputTitle.value = isEditing ? taskOrPrefill.title : '';
+        
+        let dateVal = '';
+        let timeVal = '09:00';
+        if (isEditing && taskOrPrefill.due) {
+            const d = new Date(taskOrPrefill.due);
+            if (!isNaN(d.getTime())) {
+                dateVal = d.toISOString().split('T')[0];
+                if (taskOrPrefill.due.includes('T') && !taskOrPrefill.due.endsWith('T00:00:00.000Z')) {
+                    timeVal = d.toISOString().split('T')[1].substring(0, 5);
+                }
+            }
+        } else if (taskOrPrefill && taskOrPrefill.rawDate) {
+            dateVal = taskOrPrefill.rawDate;
+            timeVal = taskOrPrefill.startTime || '09:00';
+        } else {
+            dateVal = todayStr;
+        }
+
+        if (taskInputDate) taskInputDate.value = dateVal;
+        if (taskInputTime) taskInputTime.value = timeVal;
+        if (taskInputStatus) taskInputStatus.value = isEditing ? (taskOrPrefill.status || 'needsAction') : 'needsAction';
+        if (taskInputNotes) taskInputNotes.value = isEditing ? (taskOrPrefill.notes || '') : '';
+
+        if (editTaskModalTitle) {
+            editTaskModalTitle.innerText = isEditing ? 'Edit Task' : 'Add Task';
+        }
+
+        if (taskViewModal) taskViewModal.classList.add('hidden');
+        taskEditModal.classList.remove('hidden');
+    }
+
+    if (btnCloseTaskView) btnCloseTaskView.addEventListener('click', () => taskViewModal && taskViewModal.classList.add('hidden'));
+    if (btnDoneTaskView) btnDoneTaskView.addEventListener('click', () => taskViewModal && taskViewModal.classList.add('hidden'));
+
+    if (btnCloseTaskEdit) btnCloseTaskEdit.addEventListener('click', () => taskEditModal && taskEditModal.classList.add('hidden'));
+    if (btnCancelTaskEdit) btnCancelTaskEdit.addEventListener('click', () => taskEditModal && taskEditModal.classList.add('hidden'));
+
+    if (btnAddTask) {
+        btnAddTask.addEventListener('click', () => openTaskEdit(null));
+    }
+
+    if (btnEditTask) {
+        btnEditTask.addEventListener('click', () => {
+            if (activeTask) openTaskEdit(activeTask);
+        });
+    }
+
+    if (btnToggleTaskComplete) {
+        btnToggleTaskComplete.addEventListener('click', async () => {
+            if (!activeTask) return;
+            const newStatus = activeTask.status === 'completed' ? 'needsAction' : 'completed';
+            try {
+                const res = await fetch(`${API_TASKS}/${encodeURIComponent(activeTask.id)}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: newStatus })
+                });
+                if (res.ok) {
+                    const updated = await res.json();
+                    activeTask = updated;
+                    showToast(newStatus === 'completed' ? 'Task marked complete!' : 'Task marked pending!', 'info');
+                    openTaskView(activeTask);
+                    await loadTasks();
+                } else {
+                    showToast('Failed to update task status');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Network error updating task status');
+            }
+        });
+    }
+
+    if (btnDeleteTask) {
+        btnDeleteTask.addEventListener('click', async () => {
+            if (!activeTask) return;
+            const confirmDelete = confirm(`Are you sure you want to delete the task: "${activeTask.title}"?`);
+            if (!confirmDelete) return;
+
+            try {
+                const res = await fetch(`${API_TASKS}/${encodeURIComponent(activeTask.id)}`, {
+                    method: 'DELETE'
+                });
+                if (res.ok) {
+                    showToast('Task deleted successfully', 'info');
+                    if (taskViewModal) taskViewModal.classList.add('hidden');
+                    activeTask = null;
+                    await loadTasks();
+                } else {
+                    showToast('Failed to delete task');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Network error deleting task');
+            }
+        });
+    }
+
+    if (btnSyncTasks) {
+        btnSyncTasks.addEventListener('click', async () => {
+            btnSyncTasks.disabled = true;
+            btnSyncTasks.innerHTML = '🔄 Syncing...';
+            try {
+                const res = await fetch(API_TASKS_SYNC, { method: 'POST' });
+                const result = await res.json();
+                if (res.ok && result.success) {
+                    showToast(`Synced with Google Tasks (${result.pulled} pulled, ${result.pushed} pushed)`, 'info');
+                    await loadTasks();
+                } else {
+                    showToast(result.error || 'Sync with Google Tasks failed');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Network error syncing tasks');
+            } finally {
+                btnSyncTasks.disabled = false;
+                btnSyncTasks.innerHTML = '🔄 Sync Tasks';
+            }
+        });
+    }
+
+    if (taskForm) {
+        taskForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = taskId ? taskId.value.trim() : '';
+            const title = taskInputTitle ? taskInputTitle.value.trim() : '';
+            const date = taskInputDate ? taskInputDate.value : '';
+            const time = taskInputTime ? taskInputTime.value : '';
+            const status = taskInputStatus ? taskInputStatus.value : 'needsAction';
+            const notes = taskInputNotes ? taskInputNotes.value.trim() : '';
+
+            if (!title) {
+                showToast('Please enter a task title');
+                return;
+            }
+
+            let dueIso = null;
+            if (date) {
+                if (time) {
+                    dueIso = `${date}T${time}:00+10:00`;
+                } else {
+                    dueIso = `${date}T09:00:00+10:00`;
+                }
+            }
+
+            const payload = {
+                title,
+                notes: notes || undefined,
+                due: dueIso || undefined,
+                status
+            };
+
+            try {
+                const url = id ? `${API_TASKS}/${encodeURIComponent(id)}` : API_TASKS;
+                const method = id ? 'PATCH' : 'POST';
+                const res = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    showToast(id ? 'Task updated!' : 'Task created!', 'info');
+                    if (taskEditModal) taskEditModal.classList.add('hidden');
+                    await loadTasks();
+                } else {
+                    const errData = await res.json().catch(() => ({}));
+                    showToast(errData.error || 'Failed to save task');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Network error saving task');
             }
         });
     }
@@ -2409,25 +2806,27 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!notesGrid || !pinnedNotesGrid) return;
         notesGrid.innerHTML = '';
         pinnedNotesGrid.innerHTML = '';
+        if (archivedNotesGrid) archivedNotesGrid.innerHTML = '';
         
-        const isArchiveView = currentNotesTab === 'archive';
-        const filteredNotes = currentNotes.filter(n => isArchiveView ? n.isArchived : !n.isArchived);
+        const activeNotes = currentNotes.filter(n => !n.isArchived);
+        const archivedNotes = currentNotes.filter(n => n.isArchived);
 
-        if (filteredNotes.length === 0) {
-            notesGrid.innerHTML = `<p style="color: var(--text-secondary); width: 100%; text-align: center; margin-top: 20px;">No notes found in ${isArchiveView ? 'Archive' : 'Active'}.</p>`;
+        if (activeNotes.length === 0 && archivedNotes.length === 0) {
+            notesGrid.innerHTML = `<p style="color: var(--text-secondary); width: 100%; text-align: center; margin-top: 20px;">No notes found.</p>`;
             notesSectionTitle.style.display = 'none';
             unpinnedNotesSectionTitle.style.display = 'none';
+            if (archivedNotesSectionTitle) archivedNotesSectionTitle.style.display = 'none';
             return;
         }
 
-        const pinnedNotes = filteredNotes.filter(n => n.pinned);
-        const unpinnedNotes = filteredNotes.filter(n => !n.pinned);
+        const pinnedNotes = activeNotes.filter(n => n.pinned);
+        const unpinnedNotes = activeNotes.filter(n => !n.pinned);
 
-        const showSections = !isArchiveView && pinnedNotes.length > 0;
+        const showSections = pinnedNotes.length > 0;
         notesSectionTitle.style.display = showSections ? 'block' : 'none';
         unpinnedNotesSectionTitle.style.display = showSections && unpinnedNotes.length > 0 ? 'block' : 'none';
         
-        const renderCard = (note, container) => {
+        const renderCard = (note, container, isArchived = false) => {
             let rawContent = note.content || '';
             
             // Check for image markdown
@@ -2470,47 +2869,71 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const card = document.createElement('div');
             card.className = 'keep-note glass-panel';
+            const cardBg = isArchived ? 'rgba(25, 25, 30, 0.5)' : 'rgba(30, 30, 30, 0.6)';
+            const cardBorder = isArchived ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.2)';
+            const cardOpacity = isArchived ? '0.85' : '1';
             card.style.cssText = `
                 break-inside: avoid; margin-bottom: 15px; 
-                background: rgba(30, 30, 30, 0.6); 
-                border: 1px solid rgba(255,255,255,0.2); 
+                background: ${cardBg}; 
+                border: 1px solid ${cardBorder}; 
                 padding: 16px; border-radius: 8px; 
                 position: relative; cursor: pointer; 
                 display: flex; flex-direction: column; 
                 min-height: 120px; transition: box-shadow 0.2s, background 0.2s, border-color 0.2s;
+                opacity: ${cardOpacity};
             `;
             
             card.addEventListener('mouseenter', () => {
                 card.style.boxShadow = '0 4px 12px rgba(0,0,0,0.6)';
                 card.style.borderColor = 'rgba(255,255,255,0.4)';
+                card.style.opacity = '1';
             });
             card.addEventListener('mouseleave', () => {
                 card.style.boxShadow = 'none';
-                card.style.borderColor = 'rgba(255,255,255,0.2)';
+                card.style.borderColor = cardBorder;
+                card.style.opacity = cardOpacity;
             });
 
             const pinIcon = `<svg width="20" height="20" viewBox="0 0 24 24" fill="${note.pinned ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"></line><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.68V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3v4.68a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path></svg>`;
-            const archiveIcon = note.isArchived 
-                ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="12" y1="12" x2="12" y2="16"></line><polyline points="10 14 12 12 14 14"></polyline></svg>` 
-                : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>`;
+            const archiveIcon = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>`;
+            const reinstateIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>`;
+            const trashIcon = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>`;
+
+            const actionButtonsHtml = isArchived ? `
+                <button class="btn-icon btn-reinstate-note" data-id="${note.id}" style="background: none; border: 1px solid rgba(0, 229, 255, 0.4); border-radius: 4px; color: var(--neon-blue); cursor: pointer; padding: 3px 8px; font-size: 0.76rem; display: inline-flex; align-items: center; gap: 4px;" title="Reinstate note to active">
+                    ${reinstateIcon} Reinstate
+                </button>
+                <button class="btn-icon btn-delete-note" data-id="${note.id}" style="background: none; border: none; color: rgba(255,100,100,0.75); cursor: pointer; padding: 4px;" title="Delete note permanently">
+                    ${trashIcon}
+                </button>
+            ` : `
+                <button class="btn-icon btn-archive-toggle" data-id="${note.id}" style="background: none; border: none; color: rgba(255,255,255,0.7); cursor: pointer; padding: 4px;" title="Archive Note">
+                    ${archiveIcon}
+                </button>
+                <button class="btn-icon btn-delete-note" data-id="${note.id}" style="background: none; border: none; color: rgba(255,100,100,0.75); cursor: pointer; padding: 4px;" title="Delete Note">
+                    ${trashIcon}
+                </button>
+            `;
 
             card.innerHTML = `
                 ${cardImageHtml}
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
                     <h4 style="margin: 0; font-size: 1.1em; font-weight: 500; color: var(--text-primary);">${escapeHtml(title)}</h4>
+                    ${!isArchived ? `
                     <button class="btn-icon btn-pin-toggle" data-id="${note.id}" style="background: none; border: none; color: ${note.pinned ? '#ffeb3b' : 'rgba(255,255,255,0.5)'}; cursor: pointer; padding: 4px;" title="${note.pinned ? 'Unpin' : 'Pin'}">
                         ${pinIcon}
                     </button>
+                    ` : ''}
                 </div>
                 <div style="flex-grow: 1;">
                     <p style="margin: 0; font-size: 0.95em; color: rgba(255,255,255,0.85); overflow-wrap: anywhere; line-height: 1.4;">${body}</p>
                     ${cardAttachmentHtml}
                 </div>
-                <div style="margin-top: 16px; display: flex; justify-content: space-between; align-items: center; opacity: 0.7;">
-                    <div style="font-size: 0.75em; color: rgba(255,255,255,0.5);">${new Date(note.created_at).toLocaleDateString()}</div>
-                    <button class="btn-icon btn-archive-toggle" data-id="${note.id}" style="background: none; border: none; color: rgba(255,255,255,0.7); cursor: pointer; padding: 4px;" title="${note.isArchived ? 'Restore' : 'Archive'}">
-                        ${archiveIcon}
-                    </button>
+                <div style="margin-top: 16px; display: flex; justify-content: space-between; align-items: center; opacity: 0.85;">
+                    <div style="font-size: 0.75em; color: rgba(255,255,255,0.5);">${new Date(note.created_at).toLocaleDateString()}${isArchived ? ' (Archived)' : ''}</div>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        ${actionButtonsHtml}
+                    </div>
                 </div>
             `;
 
@@ -2527,24 +2950,49 @@ document.addEventListener('DOMContentLoaded', () => {
                 openNoteEditor(note);
             });
 
-            card.querySelector('.btn-pin-toggle').addEventListener('click', (e) => {
-                e.stopPropagation();
-                toggleNotePin(note);
-            });
+            const pinBtn = card.querySelector('.btn-pin-toggle');
+            if (pinBtn) {
+                pinBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleNotePin(note);
+                });
+            }
 
-            card.querySelector('.btn-archive-toggle').addEventListener('click', (e) => {
-                e.stopPropagation();
-                toggleNoteArchive(note);
-            });
+            const archiveBtn = card.querySelector('.btn-archive-toggle');
+            if (archiveBtn) {
+                archiveBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleNoteArchive(note, true);
+                });
+            }
+
+            const reinstateBtn = card.querySelector('.btn-reinstate-note');
+            if (reinstateBtn) {
+                reinstateBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleNoteArchive(note, false);
+                });
+            }
+
+            const deleteBtn = card.querySelector('.btn-delete-note');
+            if (deleteBtn) {
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deleteNote(note.id);
+                });
+            }
 
             container.appendChild(card);
         };
 
-        if (!isArchiveView) {
-            pinnedNotes.forEach(note => renderCard(note, pinnedNotesGrid));
-            unpinnedNotes.forEach(note => renderCard(note, notesGrid));
-        } else {
-            filteredNotes.forEach(note => renderCard(note, notesGrid));
+        pinnedNotes.forEach(note => renderCard(note, pinnedNotesGrid, false));
+        unpinnedNotes.forEach(note => renderCard(note, notesGrid, false));
+
+        if (archivedNotes.length > 0 && archivedNotesGrid) {
+            if (archivedNotesSectionTitle) archivedNotesSectionTitle.style.display = 'block';
+            archivedNotes.forEach(note => renderCard(note, archivedNotesGrid, true));
+        } else if (archivedNotesSectionTitle) {
+            archivedNotesSectionTitle.style.display = 'none';
         }
     }
 
@@ -2617,16 +3065,46 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    async function toggleNoteArchive(note) {
+    async function toggleNoteArchive(note, forceState) {
+        const targetArchived = forceState !== undefined ? forceState : !note.isArchived;
         try {
-            await fetch(`\${API_NOTES}/\${note.id}`, {
+            const res = await fetch(`${API_NOTES}/${note.id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ isArchived: !note.isArchived })
+                body: JSON.stringify({ isArchived: targetArchived })
             });
-            loadNotes();
+            if (res.ok) {
+                showToast(targetArchived ? 'Note moved to Archive' : 'Note reinstated to active', 'success');
+                loadNotes();
+            } else {
+                showToast('Failed to update note archive status');
+            }
         } catch (e) {
             showToast('Failed to archive note');
+        }
+    }
+
+    async function deleteNote(noteId) {
+        if (!confirm('Are you sure you want to permanently delete this note?')) return;
+        try {
+            const res = await fetch(`${API_NOTES}/${noteId}`, {
+                method: 'DELETE'
+            });
+            if (res.ok) {
+                showToast('Note deleted', 'info');
+                if (editingNoteId === noteId) {
+                    noteEditorExpanded.classList.add('hidden');
+                    noteEditorCollapsed.classList.remove('hidden');
+                    editingNoteId = null;
+                    clearNoteAttachment();
+                }
+                loadNotes();
+            } else {
+                showToast('Failed to delete note');
+            }
+        } catch (e) {
+            showToast('Failed to delete note');
+            console.error(e);
         }
     }
 
@@ -2796,6 +3274,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (note) {
             editingNoteId = note.id;
+            if (btnDeleteNoteEditor) btnDeleteNoteEditor.style.display = 'inline-block';
             let content = note.content || '';
 
             // Extract any attached image markdown ![alt](src)
@@ -2866,6 +3345,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } else if (clearAttachment) {
             editingNoteId = null;
+            if (btnDeleteNoteEditor) btnDeleteNoteEditor.style.display = 'none';
             editNoteTitle.value = '';
             editNoteBody.value = '';
             btnPinNote.classList.remove('btn-neon-blue');
@@ -2924,6 +3404,7 @@ document.addEventListener('DOMContentLoaded', () => {
             noteEditorExpanded.classList.add('hidden');
             noteEditorCollapsed.classList.remove('hidden');
             editingNoteId = null;
+            if (btnDeleteNoteEditor) btnDeleteNoteEditor.style.display = 'none';
             clearNoteAttachment();
         }
         if (inlineNoteEditorContainer) {
@@ -2933,6 +3414,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     btnCancelNoteEdit.addEventListener('click', closeAndSaveNote);
+
+    if (btnDeleteNoteEditor) {
+        btnDeleteNoteEditor.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            if (editingNoteId) {
+                await deleteNote(editingNoteId);
+            }
+        });
+    }
     
     btnPinNote.addEventListener('click', () => {
         const isPinned = btnPinNote.dataset.pinned === "true";
@@ -2941,8 +3431,6 @@ document.addEventListener('DOMContentLoaded', () => {
         btnPinNote.querySelector('svg').setAttribute('fill', !isPinned ? 'currentColor' : 'none');
     });
 
-    if (btnToggleArchiveView) {
-        
     if (btnToggleFollowUpView) {
         btnToggleFollowUpView.addEventListener('click', () => {
             if (currentNotesTab === 'followup') {
@@ -2951,7 +3439,6 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 currentNotesTab = 'followup';
                 btnToggleFollowUpView.style.color = '#ff3c3c';
-                if (btnToggleArchiveView) btnToggleArchiveView.style.color = 'rgba(255,255,255,0.7)';
             }
             renderNotesGrid();
         });
@@ -2990,11 +3477,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    btnToggleArchiveView.addEventListener('click', () => {
-            currentNotesTab = currentNotesTab === 'archive' ? 'active' : 'archive';
-            if (btnToggleFollowUpView) btnToggleFollowUpView.style.color = 'rgba(255,255,255,0.7)';
-            btnToggleArchiveView.style.color = currentNotesTab === 'archive' ? '#2196f3' : 'rgba(255,255,255,0.7)';
-            renderNotesGrid();
+    if (btnToggleArchiveView) {
+        btnToggleArchiveView.addEventListener('click', () => {
+            if (archivedNotesSectionTitle && archivedNotesSectionTitle.style.display !== 'none') {
+                archivedNotesSectionTitle.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else {
+                showToast('No archived notes yet', 'info');
+            }
         });
     }
 
