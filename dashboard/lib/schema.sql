@@ -50,6 +50,7 @@ CREATE TABLE IF NOT EXISTS tasks (
     due TEXT,
     completed_at TEXT,
     deleted BOOLEAN NOT NULL DEFAULT FALSE,
+    isUrgent BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
 );

@@ -1767,7 +1767,7 @@ export async function getTasksFromDb(options?: {
   const includeCompleted = options?.includeCompleted ?? true;
 
   if (status.provider === 'neon' && pgPool) {
-    let query = 'SELECT id, google_id, task_list_id, title, notes, status, due, completed_at, deleted, created_at, updated_at FROM tasks WHERE deleted = FALSE AND task_list_id = $1';
+    let query = 'SELECT id, google_id, task_list_id, title, notes, status, due, completed_at, deleted, isUrgent, created_at, updated_at FROM tasks WHERE deleted = FALSE AND task_list_id = $1';
     const params: any[] = [taskListId];
     if (!includeCompleted) {
       query += ' AND status = $2';
@@ -1829,20 +1829,21 @@ export async function createTaskInDb(input: CreateTaskInput): Promise<TaskRecord
   const due = input.due || null;
   const completed_at = input.completed_at || (taskStatus === 'completed' ? new Date().toISOString() : null);
   const deleted = input.deleted || false;
+  const isUrgent = input.isUrgent || false;
   const now = new Date().toISOString();
 
   if (status.provider === 'neon' && pgPool) {
     await pgPool.query(
-      `INSERT INTO tasks (id, google_id, task_list_id, title, notes, status, due, completed_at, deleted, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
-      [id, google_id, task_list_id, title, notes, taskStatus, due, completed_at, deleted, now, now]
+      `INSERT INTO tasks (id, google_id, task_list_id, title, notes, status, due, completed_at, deleted, isUrgent, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+      [id, google_id, task_list_id, title, notes, taskStatus, due, completed_at, deleted, isUrgent, now, now]
     );
   } else if (sqliteDb) {
     const stmt = sqliteDb.prepare(
-      `INSERT INTO tasks (id, google_id, task_list_id, title, notes, status, due, completed_at, deleted, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO tasks (id, google_id, task_list_id, title, notes, status, due, completed_at, deleted, isUrgent, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     );
-    stmt.run(id, google_id, task_list_id, title, notes, taskStatus, due, completed_at, deleted ? 1 : 0, now, now);
+    stmt.run(id, google_id, task_list_id, title, notes, taskStatus, due, completed_at, deleted ? 1 : 0, isUrgent ? 1 : 0, now, now);
   }
 
   return {
@@ -1855,6 +1856,7 @@ export async function createTaskInDb(input: CreateTaskInput): Promise<TaskRecord
     due,
     completed_at,
     deleted,
+    isUrgent,
     created_at: now,
     updated_at: now,
   };
@@ -1883,6 +1885,7 @@ export async function updateTaskInDb(
         due: r.due || null,
         completed_at: r.completed_at || null,
         deleted: Boolean(r.deleted),
+        isUrgent: Boolean(r.isUrgent),
         created_at: r.created_at,
         updated_at: r.updated_at,
       };
@@ -1901,6 +1904,7 @@ export async function updateTaskInDb(
         due: r.due || null,
         completed_at: r.completed_at || null,
         deleted: Boolean(r.deleted),
+        isUrgent: Boolean(r.isUrgent),
         created_at: r.created_at,
         updated_at: r.updated_at,
       };
@@ -1920,6 +1924,7 @@ export async function updateTaskInDb(
     newCompletedAt = null;
   }
   const newDeleted = updates.deleted !== undefined ? updates.deleted : existing.deleted;
+  const newIsUrgent = updates.isUrgent !== undefined ? updates.isUrgent : existing.isUrgent;
   const newGoogleId = updates.google_id !== undefined ? updates.google_id : existing.google_id;
 
   if (status.provider === 'neon' && pgPool) {

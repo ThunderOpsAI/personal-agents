@@ -38,6 +38,9 @@
             </div>
             
             <!-- Dynamic Alert Banner -->
+            <div class="alert-banner hidden" id="urgentTasksBanner" style="background: rgba(220, 38, 38, 0.2); border-left: 4px solid var(--neon-red); margin-top: 10px; padding: 10px; border-radius: 8px;">
+                <span class="alert-text" id="urgentTasksBannerText" style="color: var(--neon-red); font-weight: bold;"></span>
+            </div>
             <div class="alert-banner hidden" id="alertBanner">
                 <span class="alert-text" id="alertBannerText">High Pain Alert: Lumbar at 8/10.</span>
             </div>
@@ -1028,6 +1031,10 @@
                     </div>
                     <div>
                         <label style="font-size: 0.85rem; color: var(--text-secondary); display: block; margin-bottom: 4px;">Status</label>
+                    <div style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                        <input type="checkbox" id="taskInputUrgent" style="accent-color: var(--neon-red); width: 16px; height: 16px;">
+                        <label for="taskInputUrgent" style="font-size: 0.9rem; color: var(--neon-red); font-weight: bold; cursor: pointer;">Mark as Urgent</label>
+                    </div>
                         <select id="taskInputStatus" class="glass-select" style="width: 100%; padding: 8px 10px;">
                             <option value="needsAction">Pending (Needs Action)</option>
                             <option value="completed">Completed</option>

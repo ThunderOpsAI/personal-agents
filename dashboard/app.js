@@ -1156,6 +1156,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const taskInputDate = document.getElementById('taskInputDate');
     const taskInputTime = document.getElementById('taskInputTime');
     const taskInputStatus = document.getElementById('taskInputStatus');
+    const taskInputUrgent = document.getElementById('taskInputUrgent');
     const taskInputNotes = document.getElementById('taskInputNotes');
     const btnSaveTask = document.getElementById('btnSaveTask');
 
@@ -1221,6 +1222,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const doneCount = tasks.filter(t => t.status === 'completed').length;
 
         if (tasksTabBadge) tasksTabBadge.textContent = pendingCount.toString();
+        
+        const urgentBanner = document.getElementById('urgentTasksBanner');
+        const urgentText = document.getElementById('urgentTasksBannerText');
+        const urgentTasks = tasks.filter(t => t.status !== 'completed' && t.isUrgent);
+        
+        if (urgentBanner && urgentText) {
+            if (urgentTasks.length > 0) {
+                urgentBanner.classList.remove('hidden');
+                const titles = urgentTasks.map(t => t.title).join(', ');
+                urgentText.textContent = `URGENT TASK: ${titles}`;
+            } else {
+                urgentBanner.classList.add('hidden');
+            }
+        }
         if (tasksActiveCountBadge) tasksActiveCountBadge.textContent = `${pendingCount} Pending`;
         if (tasksCompletedCountBadge) {
             tasksCompletedCountBadge.textContent = `${doneCount} Done`;
@@ -1331,6 +1346,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (taskId) taskId.value = isEditing ? taskOrPrefill.id : '';
         if (taskInputTitle) taskInputTitle.value = isEditing ? taskOrPrefill.title : '';
+        if (taskInputUrgent) taskInputUrgent.checked = isEditing ? Boolean(taskOrPrefill.isUrgent) : false;
         
         let dateVal = '';
         let timeVal = '09:00';
@@ -1460,6 +1476,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const date = taskInputDate ? taskInputDate.value : '';
             const time = taskInputTime ? taskInputTime.value : '';
             const status = taskInputStatus ? taskInputStatus.value : 'needsAction';
+            const isUrgent = taskInputUrgent ? taskInputUrgent.checked : false;
             const notes = taskInputNotes ? taskInputNotes.value.trim() : '';
 
             if (!title) {

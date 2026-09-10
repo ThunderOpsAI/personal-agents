@@ -387,6 +387,7 @@ export interface TaskRecord {
   completed_at?: string | null;
   deleted?: boolean;
   created_at: string;
+  isUrgent?: boolean;
   updated_at: string;
 }
 
@@ -400,6 +401,7 @@ export interface CreateTaskInput {
   due?: string | null;
   completed_at?: string | null;
   deleted?: boolean;
+  isUrgent?: boolean;
 }
 
 export const CREATE_TASKS_TABLE_SQL = `
@@ -413,6 +415,7 @@ CREATE TABLE IF NOT EXISTS tasks (
     due TEXT,
     completed_at TEXT,
     deleted BOOLEAN NOT NULL DEFAULT FALSE,
+    isUrgent BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
 );

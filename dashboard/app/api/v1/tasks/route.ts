@@ -68,7 +68,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ status: "error", message: "Payload must be an object" }, { status: 400 });
   }
 
-  const { title, notes, due, status, taskListId } = body;
+  const { title, notes, due, status, taskListId, isUrgent } = body;
 
   if (!title || typeof title !== "string" || !title.trim()) {
     return NextResponse.json(
@@ -83,6 +83,7 @@ export async function POST(request: Request) {
       notes: notes && typeof notes === "string" ? notes.trim() : null,
       due: due || null,
       status: status === "completed" ? "completed" : "needsAction",
+      isUrgent: isUrgent === true,
       task_list_id: taskListId || "@default",
     });
 
@@ -114,7 +115,7 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ status: "error", message: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { id, title, notes, due, status } = body;
+  const { id, title, notes, due, status, isUrgent } = body;
   if (!id) {
     return NextResponse.json({ status: "error", message: "id is required for updating" }, { status: 400 });
   }
@@ -124,6 +125,7 @@ export async function PATCH(request: Request) {
       title,
       notes,
       due,
+      isUrgent: typeof isUrgent === "boolean" ? isUrgent : undefined,
       status,
     });
 
