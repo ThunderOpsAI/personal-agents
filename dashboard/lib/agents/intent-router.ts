@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { getAgendaItems, createAgendaItem, createNote, createPainLog, getNotes, getPainLogsFromDb } from '../db';
+import { getAgendaItems, createAgendaItem, createNote, createPainLog, getNotes, getPainLogsFromDb, getSmsMessages } from '../db';
 import { logPain, PainLocationWeight, validatePainLog } from '../rehab-learning';
 import { selectWashingDays, WashingDay } from '../agenda-engine';
 import { fetchLiveGmailMessages, fetchLiveCalendarEvents } from '../google-auth';
@@ -64,6 +64,7 @@ export type IntentType =
   | "ADD_NOTE"
   | "ADD_TASK"
   | "CHECK_EMAIL"
+  | "CHECK_SMS"
   | "AGENDA_QUERY"
   | "WEATHER_QUERY"
   | "MEDICAL_TRIAGE"
@@ -82,7 +83,7 @@ export interface ParsedPainLog {
 }
 
 export interface ActionPreview {
-  type: "pain_log" | "note" | "task" | "multi_action" | "calendar_event";
+  type: "pain_log" | "note" | "task" | "multi_action" | "calendar_event" | "send_email" | "send_sms";
   data: Record<string, any>;
 }
 
@@ -139,6 +140,11 @@ export function classifyIntent(message: string): IntentType {
   // 5. Emails Query (Read)
   if (/\b(?:check\s+(?:my\s+)?(?:emails?|inbox|gmail)|any\s+(?:new\s+)?emails?|urgent\s+emails?)\b/i.test(lowered)) {
     return "CHECK_EMAIL";
+  }
+
+  // 5b. SMS / Text Messages Query (Read)
+  if (/\b(?:check\s+(?:my\s+)?(?:texts?|sms|text\s+messages?)|any\s+(?:new\s+)?(?:texts?|sms)|read\s+(?:my\s+)?(?:texts?|sms|text\s+messages?)|unread\s+(?:texts?|sms)|did\s+i\s+get\s+any\s+(?:texts?|sms))\b/i.test(lowered)) {
+    return "CHECK_SMS";
   }
 
   // 6. Agenda / Schedule Query (Read)
@@ -564,6 +570,21 @@ export async function routeChatMessage(
     }
   } catch {}
 
+  let smsText = "No text messages received yet.";
+  try {
+    const smsMessages = await getSmsMessages({ limit: 15 });
+    if (smsMessages && smsMessages.length > 0) {
+      smsText = smsMessages
+        .map(
+          (m: any) =>
+            `• From: ${m.sender} | Date: ${m.received_at || m.created_at} | Status: ${m.read ? "Read" : "Unread"}\n  Body: "${m.body}"`
+        )
+        .join("\n\n");
+    }
+  } catch (err) {
+    console.warn("[IntentRouter Warning] Could not fetch SMS messages:", err);
+  }
+
   const systemPrompt = `You are Rumble, the expert personal operations and rehabilitation AI assistant for Rumble OS.
 Current Time in Australia/Melbourne: ${nowMel}.
 Location: Wangaratta, Victoria, Australia.
@@ -584,6 +605,9 @@ ${calendarText}
 
 [LIVE GMAIL INBOX & ARCHIVE]
 ${emailText}
+
+[RECENT SMS / TEXT MESSAGES]
+${smsText}
 
 [WANGARATTA WEATHER & WASHING FORECAST]
 ${weatherText}
@@ -617,7 +641,10 @@ ${weatherText}
    - If the user gives a direct write command (e.g. "log pain", "add to budget"), keep conversational chatter concise, but for email drafts ALWAYS include the full draft in the reply text.
 9. DATETIME PARSING:
    - For any action requiring a scheduled time (like 'task' or 'calendar_event'), you MUST calculate the exact ISO 8601 string based on the 'Current Time' provided above.
-   - NEVER output relative words like 'tomorrow' or 'next week' in the action data fields. ALWAYS output a valid ISO 8601 datetime (e.g., '2026-09-01T09:00:00+10:00').`;
+   - NEVER output relative words like 'tomorrow' or 'next week' in the action data fields. ALWAYS output a valid ISO 8601 datetime (e.g., '2026-09-01T09:00:00+10:00').
+10. TEXT MESSAGES (SMS):
+    - Strictly ground all questions about recent text messages in [RECENT SMS / TEXT MESSAGES] above.
+    - If asked to send an SMS or text message, draft the message and include a \`send_sms\` action with \`sms_to\` and \`sms_body\` for user confirmation.`;
 
   const responseSchema = {
     type: "OBJECT",
@@ -629,7 +656,7 @@ ${weatherText}
         items: {
           type: "OBJECT",
           properties: {
-            type: { type: "STRING", description: "One of: 'task', 'pain_log', 'note', 'calendar_event', 'budget_item', 'agent_report', 'send_email'" },
+            type: { type: "STRING", description: "One of: 'task', 'pain_log', 'note', 'calendar_event', 'budget_item', 'agent_report', 'send_email', 'send_sms'" },
             task_title: { type: "STRING" },
             task_scheduled_time: { type: "STRING", description: "Must be a valid ISO 8601 string in Australia/Melbourne timezone" },
             calendar_summary: { type: "STRING" },
@@ -639,6 +666,8 @@ ${weatherText}
             email_subject: { type: "STRING" },
             email_body: { type: "STRING" },
             email_thread_id: { type: "STRING" },
+            sms_to: { type: "STRING", description: "Recipient phone number for SMS" },
+            sms_body: { type: "STRING", description: "Text message body" },
             pain_score: { type: "INTEGER" },
             pain_locations: { type: "ARRAY", items: { type: "OBJECT", properties: { area: { type: "STRING" }, percentage: { type: "INTEGER" } } } },
             pain_mood: { type: "STRING" },
@@ -703,6 +732,7 @@ ${weatherText}
         if (a.type === "agent_report") data = { title: a.agent_report_title, content: a.agent_report_content };
         if (a.type === "budget_item") data = { description: a.budget_description, amount: a.budget_amount, category: a.budget_category, type: a.budget_type };
         if (a.type === "send_email") data = { to: a.email_to, subject: a.email_subject, body: a.email_body, threadId: a.email_thread_id };
+        if (a.type === "send_sms") data = { to: a.sms_to, body: a.sms_body };
         return { type: a.type, data };
       });
 
@@ -869,6 +899,24 @@ export async function executeConfirmedAction(action: ActionPreview | { type: str
       return {
         success: false,
         message: `Failed to send email: ${err.message}`,
+      };
+    }
+  }
+
+  if (action.type === "send_sms") {
+    const { to, body } = action.data;
+    try {
+      const { sendSms } = await import('../db');
+      const res = await sendSms(to, body);
+      return {
+        success: true,
+        message: `Rumble: Confirmed and sent SMS to ${to}. (SID: ${res.sid})`,
+        result: res,
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        message: `Failed to send SMS: ${err.message}`,
       };
     }
   }

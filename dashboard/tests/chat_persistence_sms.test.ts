@@ -57,4 +57,24 @@ describe('Chat Persistence & SMS Integration', () => {
     const res3 = await sendSmsPost(req3);
     expect(res3.status).toBe(400);
   });
+
+  it('classifies text message queries as CHECK_SMS', async () => {
+    const { classifyIntent } = await import('../lib/agents/intent-router');
+    expect(classifyIntent('check my texts')).toBe('CHECK_SMS');
+    expect(classifyIntent('did I get any texts?')).toBe('CHECK_SMS');
+    expect(classifyIntent('read my sms messages')).toBe('CHECK_SMS');
+    expect(classifyIntent('any new texts')).toBe('CHECK_SMS');
+    expect(classifyIntent('unread sms')).toBe('CHECK_SMS');
+  });
+
+  it('executeConfirmedAction supports send_sms', async () => {
+    const { executeConfirmedAction } = await import('../lib/agents/intent-router');
+    // Without Twilio env credentials set, it should safely catch and return failure message
+    const res = await executeConfirmedAction({
+      type: 'send_sms',
+      data: { to: '+61400000000', body: 'Test message' },
+    });
+    expect(res.success).toBe(false);
+    expect(res.message).toContain('Twilio credentials missing');
+  });
 });
