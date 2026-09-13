@@ -1,7 +1,7 @@
 # Monthly Budget Report (2026-08)
 
 * **Period:** Sat, 1 Aug 2026 to Mon, 31 Aug 2026
-* **Generated At:** 2026-09-13T06:31:23.429Z
+* **Generated At:** 2026-09-13T09:53:45.523Z
 * **Total Spent:** $0.00
 * **Total Income:** $0.00
 * **Net Balance:** $0.00
