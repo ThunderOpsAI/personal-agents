@@ -50,10 +50,21 @@ export async function POST(request: Request) {
     const secretParam = searchParams.get("secret");
     const secretHeader = request.headers.get("x-sms-secret") || request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
 
-    const sender = payload.sender || payload.From || payload.from;
-    const body = payload.body || payload.Body || payload.text;
+    const rawSender = payload.sender || payload.From || payload.from || payload.sms_number || payload.number || payload.phone;
+    const rawBody = payload.body || payload.Body || payload.text || payload.message || payload.sms_message || payload.sms_body || payload.Message;
     const received_at = payload.received_at || payload.DateCreated || payload.date;
     const secret = payload.secret || secretParam || secretHeader;
+
+    const sender = rawSender !== undefined && rawSender !== null ? String(rawSender).trim() : "";
+    let body = rawBody !== undefined && rawBody !== null ? String(rawBody).trim() : "";
+
+    // Detect unresolved MacroDroid magic tags (e.g. {sms_body} instead of [sms_message])
+    if (body === "{sms_body}" || body === "{sms_message}" || body === "[sms_message]") {
+      console.warn(`[SMS Webhook Warning] Received literal tag '${body}'. In MacroDroid HTTP Request, the magic text tag for incoming SMS body is [sms_message] (or {sms_message}), and for sender is [sms_number] (or {sms_number}).`);
+      if (body === "{sms_body}") {
+        body = "{sms_body} [MacroDroid setup note: please configure [sms_message] instead of {sms_body} in your phone HTTP Request body]";
+      }
+    }
 
     // Shared secret validation (trims whitespace, strips accidental quotes, and validates authorized secrets)
     const expectedSecret = process.env.SMS_WEBHOOK_SECRET

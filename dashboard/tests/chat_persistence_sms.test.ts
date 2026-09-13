@@ -62,9 +62,61 @@ describe('Chat Persistence & SMS Integration', () => {
     const { classifyIntent } = await import('../lib/agents/intent-router');
     expect(classifyIntent('check my texts')).toBe('CHECK_SMS');
     expect(classifyIntent('did I get any texts?')).toBe('CHECK_SMS');
+    expect(classifyIntent('did you get any text msgs?')).toBe('CHECK_SMS');
     expect(classifyIntent('read my sms messages')).toBe('CHECK_SMS');
     expect(classifyIntent('any new texts')).toBe('CHECK_SMS');
     expect(classifyIntent('unread sms')).toBe('CHECK_SMS');
+    expect(classifyIntent('who texted me')).toBe('CHECK_SMS');
+    expect(classifyIntent('show my texts')).toBe('CHECK_SMS');
+  });
+
+  it('formats SMS summary and detects unresolved MacroDroid tags', async () => {
+    const { createSmsMessage } = await import('../lib/db');
+    const { formatSmsMessagesSummary } = await import('../lib/agents/intent-router');
+
+    await createSmsMessage({
+      sender: '+61402564325',
+      body: '{sms_body}',
+      received_at: new Date().toISOString(),
+    });
+
+    const summary = await formatSmsMessagesSummary(5);
+    expect(summary).toContain('+61402564325');
+    expect(summary).toContain('MacroDroid phone tag issue');
+    expect(summary).toContain('[sms_message]');
+  });
+
+  it('routeChatMessage returns CHECK_SMS with text message content even with polluted refusal history', async () => {
+    const { routeChatMessage } = await import('../lib/agents/intent-router');
+    const pollutedHistory = [
+      { role: 'user', text: 'Did I get any texts?' },
+      { role: 'rumble', text: 'I do not have access to your text messages. My capabilities are limited to...' },
+      { role: 'user', text: 'Can u read my texts' },
+      { role: 'rumble', text: 'I cannot read the content of these messages directly.' },
+    ];
+
+    const result = await routeChatMessage('Did I get any texts?', pollutedHistory);
+    expect(result.intent).toBe('CHECK_SMS');
+    expect(result.reply).not.toContain('I do not have access to your text messages');
+    expect(result.reply).toContain('+61402564325');
+  });
+
+  it('webhook accepts sms_number and sms_message fields from MacroDroid', async () => {
+    const { POST } = await import('../app/api/v1/sms/webhook/route');
+    const req = new Request('http://localhost/api/v1/sms/webhook', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sms_number: '+61499888777',
+        sms_message: 'Hello from MacroDroid with correct tag',
+        secret: 'macrodroidsecret88',
+      }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(201);
+    const data = await res.json();
+    expect(data.status).toBe('success');
   });
 
   it('executeConfirmedAction supports send_sms', async () => {

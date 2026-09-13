@@ -7008,6 +7008,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     const timeStr = msg.received_at ? new Date(msg.received_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' }) : '';
                     const bodyPreview = escapeHtml(msg.body || '');
+                    const isUnresolvedTag = msg.body && (msg.body === '{sms_body}' || msg.body.includes('{sms_body}'));
+                    const tagWarning = isUnresolvedTag
+                        ? `<div style="margin-top: 6px; padding: 4px 8px; border-radius: 4px; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.35); color: #fca5a5; font-size: 0.76rem;">
+                            ⚠️ <strong>Tag Issue:</strong> Phone sent <code>{sms_body}</code>. In MacroDroid HTTP Request body, change <code>{sms_body}</code> to <code>[sms_message]</code>.
+                           </div>`
+                        : '';
 
                     item.innerHTML = `
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
@@ -7018,6 +7024,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <span style="color: var(--text-muted); font-size: 0.75rem; white-space: nowrap;">${timeStr}</span>
                         </div>
                         <div style="color: var(--text-secondary); font-size: 0.88rem; line-height: 1.4;">${bodyPreview}</div>
+                        ${tagWarning}
                         <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px;">
                             ${!msg.read ? '<button class="btn btn-outline btn-sm btn-mark-read" style="font-size: 0.75rem; padding: 2px 8px;">Mark Read</button>' : ''}
                             <button class="btn btn-neon-blue btn-sm btn-reply-sms" style="font-size: 0.75rem; padding: 2px 8px;">Reply</button>

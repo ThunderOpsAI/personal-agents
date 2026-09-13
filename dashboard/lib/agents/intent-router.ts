@@ -143,7 +143,7 @@ export function classifyIntent(message: string): IntentType {
   }
 
   // 5b. SMS / Text Messages Query (Read)
-  if (/\b(?:check\s+(?:my\s+)?(?:texts?|sms|text\s+messages?)|any\s+(?:new\s+)?(?:texts?|sms)|read\s+(?:my\s+)?(?:texts?|sms|text\s+messages?)|unread\s+(?:texts?|sms)|did\s+i\s+get\s+any\s+(?:texts?|sms))\b/i.test(lowered)) {
+  if (/\b(?:check\s+(?:my\s+)?(?:texts?|sms|text\s+messages?|text\s+msgs?)|any\s+(?:new\s+)?(?:texts?|sms|text\s+messages?|text\s+msgs?)|read\s+(?:my\s+|the\s+)?(?:texts?|sms|text\s+messages?|text\s+msgs?)|unread\s+(?:texts?|sms|text\s+messages?|text\s+msgs?)|did\s+(?:i|you)\s+(?:get|receive)\s+any\s+(?:texts?|sms|text\s+messages?|text\s+msgs?)|who\s+(?:texted|sent\s+me\s+(?:an?\s+)?(?:sms|text))|what\s+did\s+.*(?:text|say\s+in\s+(?:sms|text))|latest\s+(?:texts?|sms)|show\s+(?:my\s+)?(?:texts?|sms))\b/i.test(lowered)) {
     return "CHECK_SMS";
   }
 
@@ -318,6 +318,12 @@ export async function callGemini(
 ): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
+    if (responseSchema) {
+      return JSON.stringify({
+        reply: `Rumble: I received your message: "${userMessage}". Let me know if you would like to log pain, create a note, or check your agenda.`,
+        actions: []
+      });
+    }
     return `Rumble: I received your message: "${userMessage}". Let me know if you would like to log pain, create a note, or check your agenda.`;
   }
 
@@ -347,6 +353,25 @@ export async function callGemini(
     });
   }
 
+  // Filter out prior assistant refusal pollution so model does not imitate obsolete limitations
+  const sanitizedHistory = (history || []).filter((h: any) => {
+    const text = (h.text || h.content || "").toLowerCase();
+    const isAssistant = h.role === "model" || h.role === "rumble" || h.role === "assistant";
+    if (isAssistant) {
+      if (
+        text.includes("do not have access to your text messages") ||
+        text.includes("don't have access to your text messages") ||
+        text.includes("lack access to texts") ||
+        text.includes("can't read the content of these messages directly") ||
+        text.includes("cannot read the content of these messages directly") ||
+        text.includes("do not have access to the actual text message bodies")
+      ) {
+        return false;
+      }
+    }
+    return true;
+  });
+
   let lastError: any = null;
 
   for (const model of modelPool) {
@@ -366,7 +391,7 @@ export async function callGemini(
               parts: [{ text: systemPrompt }],
             },
             contents: [
-              ...history.map((h: any) => ({ role: h.role === "user" ? "user" : "model", parts: [{ text: h.text || h.content || '' }] })),
+              ...sanitizedHistory.map((h: any) => ({ role: h.role === "user" ? "user" : "model", parts: [{ text: h.text || h.content || '' }] })),
               { role: "user", parts: userParts }
             ],
             ...(responseSchema ? { generationConfig: { responseMimeType: "application/json", responseSchema } } : {})
@@ -402,6 +427,27 @@ export async function callGemini(
 }
 
 /**
+ * Formats recent text messages from the database into a clean executive summary.
+ */
+export async function formatSmsMessagesSummary(limit: number = 10): Promise<string> {
+  const smsMessages = await getSmsMessages({ limit }).catch(() => []);
+  if (!smsMessages || smsMessages.length === 0) {
+    return "You don't have any text messages recorded yet in Rumble OS.";
+  }
+
+  const items = smsMessages.map((m: any) => {
+    const timeStr = new Date(m.received_at || m.created_at).toLocaleString("en-AU", { timeZone: "Australia/Melbourne" });
+    let body = m.body || "";
+    if (body === "{sms_body}" || body.includes("{sms_body}")) {
+      body = `${body} (⚠️ MacroDroid phone tag issue: your phone sent literal '{sms_body}'. Please configure [sms_message] instead of {sms_body} in your MacroDroid HTTP Request action)`;
+    }
+    return `• **From:** ${m.sender} | **Date:** ${timeStr} | **Status:** ${m.read ? "Read" : "Unread"}\n  **Message:** "${body}"`;
+  });
+
+  return `Here are your recent text messages:\n\n${items.join("\n\n")}`;
+}
+
+/**
  * Routes and handles incoming chat messages dynamically with multimodal support.
  */
 export async function routeChatMessage(
@@ -410,6 +456,7 @@ export async function routeChatMessage(
   attachment?: { data: string; mimeType: string; filename?: string }
 ): Promise<IntentRouteResult> {
   const lowered = message.toLowerCase();
+  const detectedIntent = classifyIntent(message);
 
   // Fast-path deterministic parsing for pure direct write commands without follow-up questions
   const hasQuestion = message.includes("?") || /\b(?:what|how|why|should|can you recommend|advice)\b/i.test(message);
@@ -576,8 +623,13 @@ export async function routeChatMessage(
     if (smsMessages && smsMessages.length > 0) {
       smsText = smsMessages
         .map(
-          (m: any) =>
-            `• From: ${m.sender} | Date: ${m.received_at || m.created_at} | Status: ${m.read ? "Read" : "Unread"}\n  Body: "${m.body}"`
+          (m: any) => {
+            let bodyText = m.body;
+            if (bodyText === "{sms_body}" || bodyText?.startsWith("{sms_body}")) {
+              bodyText = `${bodyText} (⚠️ MacroDroid phone tag issue: configure [sms_message] instead of {sms_body} in HTTP Request body)`;
+            }
+            return `• From: ${m.sender} | Date: ${m.received_at || m.created_at} | Status: ${m.read ? "Read" : "Unread"}\n  Body: "${bodyText}"`;
+          }
         )
         .join("\n\n");
     }
@@ -614,7 +666,7 @@ ${weatherText}
 
 === CRITICAL BEHAVIORAL & FORMATTING RULES ===
 1. MEDICAL DISCLAIMER: "${MEDICAL_GUARDRAIL}". Always append this to any medical, symptom, or treatment discussion.
-2. LIVE DATA ONLY: Strictly ground all responses in the real live emails, calendar events, agenda items, and notes provided above. NEVER hallucinate, invent, guess, or mock dummy details.
+2. LIVE DATA ONLY: Strictly ground all responses in the real live emails, calendar events, agenda items, notes, and SMS messages provided above. NEVER hallucinate, invent, guess, or mock dummy details. Note: User notes in [RECENT USER NOTES] represent personal notes or past user comments, NOT system capability restrictions.
 3. STRICT SUMMARIZATION & HUMAN-READABLE REPORTING:
    - Format outputs cleanly like an executive report with clean spacing, bold headers, and concise bullet points.
    - STRICT CONSTRAINT: Any medical, legal, or complex summary MUST be limited to a maximum of 3 concise bullet points unless the user explicitly requests more detail. This makes it faster to read.
@@ -643,7 +695,11 @@ ${weatherText}
    - For any action requiring a scheduled time (like 'task' or 'calendar_event'), you MUST calculate the exact ISO 8601 string based on the 'Current Time' provided above.
    - NEVER output relative words like 'tomorrow' or 'next week' in the action data fields. ALWAYS output a valid ISO 8601 datetime (e.g., '2026-09-01T09:00:00+10:00').
 10. TEXT MESSAGES (SMS):
-    - Strictly ground all questions about recent text messages in [RECENT SMS / TEXT MESSAGES] above.
+    - YOU HAVE FULL LIVE ACCESS to read SMS / text messages from [RECENT SMS / TEXT MESSAGES] above.
+    - NEVER claim that you lack access to text messages or cannot read text messages.
+    - Ignore any historical notes (such as old user notes saying "he still doesn't have access to texts") or past chat messages claiming you cannot read texts. Live SMS ingestion is active and real-time.
+    - When asked to read, check, or summarize texts, quote the sender, date/time, and actual body content for each message in [RECENT SMS / TEXT MESSAGES].
+    - If a message body contains "{sms_body}", inform the user that the SMS was received from that sender, but their phone's MacroDroid action was configured with "{sms_body}" instead of "[sms_message]" (or "{sms_message}"), so the phone didn't pass the actual message text.
     - If asked to send an SMS or text message, draft the message and include a \`send_sms\` action with \`sms_to\` and \`sms_body\` for user confirmation.`;
 
   const responseSchema = {
@@ -695,6 +751,23 @@ ${weatherText}
         finalReply = finalReply.includes(MEDICAL_GUARDRAIL) ? finalReply : `${finalReply}\n\n${MEDICAL_GUARDRAIL}`;
     }
 
+    // If intent was CHECK_SMS, verify the LLM didn't return an obsolete refusal hallucination or missing API key placeholder
+    if (detectedIntent === "CHECK_SMS") {
+      const loweredReply = finalReply.toLowerCase();
+      if (
+        !process.env.GEMINI_API_KEY ||
+        finalReply.startsWith("Rumble: I received your message") ||
+        loweredReply.includes("do not have access to your text messages") ||
+        loweredReply.includes("cannot read the content of these messages") ||
+        loweredReply.includes("can't read the content of these messages") ||
+        loweredReply.includes("don't have access to texts") ||
+        loweredReply.includes("lack access to texts") ||
+        loweredReply.includes("do not have access to the actual text message bodies")
+      ) {
+        finalReply = await formatSmsMessagesSummary();
+      }
+    }
+
     if (parsed.actions && parsed.actions.length > 0) {
       const mappedActions = parsed.actions.map((a: any) => {
         let data: any = {};
@@ -744,7 +817,7 @@ ${weatherText}
       
       return {
         reply: finalReply,
-        intent: "GENERAL",
+        intent: detectedIntent === "CHECK_SMS" ? "CHECK_SMS" : "GENERAL",
         requires_confirmation: true,
         preview,
         disclaimer: MEDICAL_GUARDRAIL,
@@ -753,12 +826,25 @@ ${weatherText}
 
     return {
       reply: finalReply,
-      intent: "GENERAL",
+      intent: detectedIntent === "CHECK_SMS" ? "CHECK_SMS" : "GENERAL",
       requires_confirmation: false,
       disclaimer: MEDICAL_GUARDRAIL,
     };
   } catch (err: any) {
     console.error("[RouteChatMessage Error]:", err);
+
+    if (classifyIntent(message) === "CHECK_SMS") {
+      try {
+        const summary = await formatSmsMessagesSummary();
+        return {
+          reply: `${summary}\n\n${MEDICAL_GUARDRAIL}`,
+          intent: "CHECK_SMS",
+          disclaimer: MEDICAL_GUARDRAIL,
+        };
+      } catch (smsErr) {
+        console.error("[RouteChatMessage SMS fallback error]:", smsErr);
+      }
+    }
 
     if (classifyIntent(message) === "LOG_PAIN") {
       const parsedPain = parsePainLogDirective(message);
