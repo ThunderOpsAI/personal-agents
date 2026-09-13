@@ -7101,6 +7101,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     loadSmsMessages();
+    setInterval(loadSmsMessages, 20000);
 
     // --- 12. Pain Analytics & GP Report Logic ---
     const btnOpenPainAnalytics = document.getElementById('btnOpenPainAnalytics');
