@@ -15,17 +15,42 @@ function checkOAuthStatus(): OAuthStatus {
   };
 }
 
+import { fetchLiveCalendarEvents } from "../../dashboard/lib/google-auth";
+
 export const getCalendarEvents = defineTool({
   name: "getCalendarEvents",
   description: "Read-only fetch of Google Calendar events. Does not require approval.",
   execute: async (params?: { timeMin?: string; timeMax?: string }) => {
-    const oauthStatus = checkOAuthStatus();
-    if (!oauthStatus.authenticated) {
-      return { events: [], oauthStatus };
+    const res = await fetchLiveCalendarEvents(params);
+    if (res.status === "auth_required") {
+      return {
+        events: [],
+        oauthStatus: {
+          authenticated: false,
+          authUrl: res.authUrl,
+          error: res.message || "OAuth authorization required",
+        },
+      };
     }
-    // Return live calendar events list when authenticated
-    const events: CalendarEvent[] = [];
-    return { events, oauthStatus };
+    if (res.status === "error" || !res.events) {
+      return {
+        events: [],
+        oauthStatus: {
+          authenticated: false,
+          error: res.message || "Failed to fetch Calendar events",
+        },
+      };
+    }
+    const events: CalendarEvent[] = res.events.map((e: any) => ({
+      id: e.id,
+      summary: e.summary || "Event",
+      description: e.description || "",
+      start: e.start?.dateTime || e.start?.date || e.start || "",
+      end: e.end?.dateTime || e.end?.date || e.end || "",
+      location: e.location || "",
+      status: e.status || "confirmed",
+    }));
+    return { events, oauthStatus: { authenticated: true } };
   },
 });
 

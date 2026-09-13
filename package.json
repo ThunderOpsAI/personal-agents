@@ -10,5 +10,17 @@
     "lint": "npm --prefix dashboard run lint",
     "typecheck": "npm --prefix dashboard run typecheck",
     "test": "npm --prefix dashboard run test"
+  },
+  "allowScripts": {
+    "esbuild": true,
+    "sharp": true,
+    "unrs-resolver": true
+  },
+  "lavamoat": {
+    "allowScripts": {
+      "esbuild": true,
+      "sharp": true,
+      "unrs-resolver": true
+    }
   }
 }

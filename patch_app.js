@@ -1,264 +1,80 @@
 const fs = require('fs');
+for (const file of ['dashboard/public/app.js', 'dashboard/app.js']) {
+    let content = fs.readFileSync(file, 'utf8');
 
-let content = fs.readFileSync('dashboard/app.js', 'utf8');
+    // 1. Mock Data changes
+    content = content.replace(
+        /{ id: 'yest_med_2100', time: '09:00 PM', title: 'Evening Meditation Protocol', item_type: 'meditation', status: 'completed' }/g,
+        "{ id: 'yest_med_2100', time: '09:00 PM', title: 'Sleep Meditation', item_type: 'meditation', status: 'completed' }"
+    );
+    content = content.replace(
+        /{ id: 'tom_med_2100', time: '09:00 PM', title: 'Evening Meditation Protocol & Somatic Unwind', item_type: 'meditation', status: 'pending' },\n\s*{ id: 'tom_rest_0000', time: '12:00 AM', title: 'Midnight Restorative Decompression', item_type: 'meditation', status: 'pending' }/g,
+        "{ id: 'tom_yoga_1700', time: '05:00 PM', title: 'Shoulder & Neck Decompression', item_type: 'yoga', status: 'pending' },\n            { id: 'tom_med_2100', time: '09:00 PM', title: 'Sleep Meditation', item_type: 'meditation', status: 'pending' }"
+    );
 
-// A. Replace `isTomorrowView` with `currentAgendaView` in loadAgenda
-content = content.replace(
-    /if \(isTomorrowView\) \{\s*renderTomorrowAgenda\(\);\s*return;\s*\}/,
-    `if (currentAgendaView === 'tomorrow') {
-                    renderTomorrowAgenda();
-                    return;
-                } else if (currentAgendaView === 'yesterday') {
-                    renderYesterdayAgenda();
-                    return;
-                }`
-);
+    // 2. Redirect meditation
+    content = content.replace(
+        /function startRunnerModal\(id\) \{\n\s*runnerModal.classList.remove\('hidden'\);\n\s*const rawId = \(id \|\| ''\).toLowerCase\(\).trim\(\);/g,
+        "function startRunnerModal(id) {\n        const rawId = (id || '').toLowerCase().trim();\n        if (rawId.includes('meditation')) {\n            window.open('https://insighttimer.com', '_blank');\n            return;\n        }\n\n        runnerModal.classList.remove('hidden');"
+    );
 
-// Add currentAgendaView state
-content = content.replace(
-    /let currentLearnTopic = null;/,
-    "let currentLearnTopic = null;\n    let currentAgendaView = 'today';"
-);
+    // 3. Export chat event listener
+    content = content.replace(
+        /btnCloseRumbleChat.addEventListener\('click', \(\) => \{\n\s*rumbleChatModal.classList.add\('hidden'\);\n\s*\}\);\n\n\s*let pendingChatAction/g,
+        "btnCloseRumbleChat.addEventListener('click', () => {\n        rumbleChatModal.classList.add('hidden');\n    });\n\n    const btnExportChat = document.getElementById('btnExportChat');\n    if (btnExportChat) {\n        btnExportChat.addEventListener('click', () => {\n            const msgs = Array.from(rumbleChatMessages.querySelectorAll('.message')).map(m => {\n                const isUser = m.classList.contains('user-message');\n                return { role: isUser ? 'user' : 'rumble', text: m.innerText };\n            });\n            navigator.clipboard.writeText(JSON.stringify(msgs, null, 2)).then(() => {\n                showToast('Chat exported to clipboard');\n            }).catch(e => {\n                showToast('Failed to export chat');\n                console.error(e);\n            });\n        });\n    }\n\n    let pendingChatAction"
+    );
 
-// B. In renderTodayAgenda: handle dismissed items and UI
-let renderTodayAgendaSrc = `
-    function renderTodayAgenda(data) {
-        const today = new Date();
-        const dayStr = today.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' });
+    // 4. Budget UI logic
+    content = content.replace(
+        /if \(btnToggleBudgetPeriod\) \{\n\s*btnToggleBudgetPeriod.addEventListener\('click', \(e\) => \{\n\s*e.stopPropagation\(\);\n\s*currentBudgetPeriod = currentBudgetPeriod === 'weekly' \? 'monthly' : 'weekly';\n\s*btnToggleBudgetPeriod.innerText = currentBudgetPeriod === 'weekly' \? 'Show Month' : 'Show Week';\n\s*if \(budgetPeriodBadge\) \{\n\s*budgetPeriodBadge.innerText = currentBudgetPeriod === 'weekly' \? 'Weekly' : 'Monthly';\n\s*\}\n\s*loadBudget\(\);\n\s*\}\);\n\s*\}/g,
+        "if (btnToggleBudgetPeriod) {\n        btnToggleBudgetPeriod.addEventListener('click', (e) => {\n            e.stopPropagation();\n            currentBudgetPeriod = currentBudgetPeriod === 'weekly' ? 'monthly' : 'weekly';\n            btnToggleBudgetPeriod.innerText = currentBudgetPeriod === 'weekly' ? 'Show Month' : 'Show Week';\n            if (budgetPeriodBadge) {\n                budgetPeriodBadge.innerText = currentBudgetPeriod === 'weekly' ? 'Weekly' : 'Monthly';\n            }\n            loadBudget();\n        });\n    }\n\n    const btnViewBudgetEntries = document.getElementById('btnViewBudgetEntries');\n    const budgetEntriesList = document.getElementById('budgetEntriesList');\n    if (btnViewBudgetEntries && budgetEntriesList) {\n        btnViewBudgetEntries.addEventListener('click', (e) => {\n            e.stopPropagation();\n            budgetEntriesList.classList.toggle('hidden');\n        });\n    }"
+    );
 
-        if (window.dailyAgendaTitle) window.dailyAgendaTitle.innerText = "Daily Agenda";
-        if (window.agendaDateIndicator) window.agendaDateIndicator.innerHTML = \`<span class="badge neon-blue" style="margin-right: 6px;">Today</span> <span style="color: var(--text-primary); font-weight: 500;">\${dayStr}</span>\`;
-        if (window.tomorrowBanner) window.tomorrowBanner.classList.add('hidden');
-        
-        if (window.btnTomorrowText) {
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            const tomShort = tomorrow.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' });
-            window.btnTomorrowText.innerText = \`Continue to Tomorrow's Agenda (\${tomShort})\`;
-        }
-        if (window.btnTomorrowIcon) window.btnTomorrowIcon.innerHTML = "&rarr;";
-        if (window.btnYesterdayText) {
-            const yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - 1);
-            const yestShort = yesterday.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' });
-            window.btnYesterdayText.innerText = \`Return to Yesterday (\${yestShort})\`;
-        }
-        if (window.btnYesterdayAgenda) window.btnYesterdayAgenda.style.display = 'flex';
-        if (window.btnTomorrowAgenda) window.btnTomorrowAgenda.style.display = 'flex';
+    const oldBudgetDisplay = `const spentVal = Number(data.summary?.Total || 0).toFixed(2);
+                    const incomeVal = Number(data.summary?.Income || 0).toFixed(2);
+                    const periodLabel = currentBudgetPeriod === 'weekly' ? \`Week (\${data.weekly?.label || ''})\` : \`Month (\${data.monthly?.label || ''})\`;
+                    if (budgetTotalSpent) {
+                        if (Number(incomeVal) > 0) {
+                            budgetTotalSpent.innerText = \`Spent: \$\${spentVal} | In: \$\${incomeVal}\`;
+                        } else {
+                            budgetTotalSpent.innerText = \`Spent: \$\${spentVal}\`;
+                        }
+                    }
+                    if (budgetPeriodBadge) budgetPeriodBadge.innerText = periodLabel;`;
 
-        const dailyItems = data.daily || [];
-        const countBadge = document.getElementById('agendaCount');
-        if (countBadge) countBadge.textContent = \`\${dailyItems.length} Items\`;
-        
-        document.querySelectorAll('.protocol-card:not(#protocol-learn)').forEach(c => c.remove());
+    const newBudgetDisplay = `const spentVal = Number(data.summary?.Total || 0).toFixed(2);
+                    const incomeVal = Number(data.summary?.Income || 0).toFixed(2);
+                    const totalVal = (Number(incomeVal) - Number(spentVal)).toFixed(2);
+                    const periodLabel = currentBudgetPeriod === 'weekly' ? \`Week (\${data.weekly?.label || ''})\` : \`Month (\${data.monthly?.label || ''})\`;
+                    if (budgetTotalSpent) {
+                        budgetTotalSpent.innerText = \`IN: \$\${incomeVal} | OUT: \$\${spentVal} | TOTAL: \$\${totalVal}\`;
+                    }
+                    if (budgetPeriodBadge) budgetPeriodBadge.innerText = periodLabel;
+                    
+                    const entriesList = document.getElementById('budgetEntriesList');
+                    if (entriesList) {
+                        const items = currentBudgetPeriod === 'weekly' ? data.weekly?.items : data.monthly?.items;
+                        if (items && items.length > 0) {
+                            let tableHtml = \`<table style="width: 100%; border-collapse: collapse;">\`;
+                            tableHtml += \`<tr><th style="text-align: left; padding: 4px; border-bottom: 1px solid var(--glass-border);">Date</th><th style="text-align: left; padding: 4px; border-bottom: 1px solid var(--glass-border);">Desc</th><th style="text-align: left; padding: 4px; border-bottom: 1px solid var(--glass-border);">Cat</th><th style="text-align: right; padding: 4px; border-bottom: 1px solid var(--glass-border);">Amount</th></tr>\`;
+                            items.forEach(item => {
+                                const d = new Date(item.created_at).toLocaleDateString('en-AU', {day: '2-digit', month: 'short'});
+                                const amtColor = item.type === 'income' ? 'var(--neon-green)' : 'var(--text-primary)';
+                                tableHtml += \`<tr>
+                                    <td style="padding: 4px; border-bottom: 1px solid rgba(255,255,255,0.05);">\${d}</td>
+                                    <td style="padding: 4px; border-bottom: 1px solid rgba(255,255,255,0.05);">\${item.description.replace(/</g, "&lt;")}</td>
+                                    <td style="padding: 4px; border-bottom: 1px solid rgba(255,255,255,0.05);">\${item.category.replace(/</g, "&lt;")}</td>
+                                    <td style="padding: 4px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: right; color: \${amtColor};">\$\${Number(item.amount).toFixed(2)}</td>
+                                </tr>\`;
+                            });
+                            tableHtml += \`</table>\`;
+                            entriesList.innerHTML = tableHtml;
+                        } else {
+                            entriesList.innerHTML = '<div style="color: var(--text-secondary);">No entries logged.</div>';
+                        }
+                    }`;
 
-        if (dailyItems.length > 0) {
-            dailyItems.forEach(item => {
-                if (item.item_type === 'learning' || item.id === 'protocol-learn') return;
-                const isCompleted = item.status === 'completed';
-                const isDismissed = item.status === 'dismissed';
+    content = content.replace(oldBudgetDisplay, newBudgetDisplay);
 
-                const card = document.createElement('div');
-                card.className = \`protocol-card glass-panel\${isCompleted ? ' completed' : ''}\${isDismissed ? ' dismissed' : ''}\`;
-                card.id = \`protocol-\${item.id}\`;
-                
-                if (isDismissed) {
-                    card.style.opacity = '0.5';
-                    card.innerHTML = \`
-                        <div class="protocol-info">
-                            <h3>\${item.time}</h3>
-                            <p style="text-decoration: line-through;">\${item.title}</p>
-                            <small class="form-hint">Dismissed</small>
-                        </div>
-                        <div class="protocol-actions">
-                            <button class="btn btn-outline btn-reinstate" data-id="\${item.id}" data-type="\${item.item_type || ''}">Reinstate</button>
-                        </div>
-                    \`;
-                } else {
-                    card.innerHTML = \`
-                        <div class="protocol-info">
-                            <h3>\${item.time}</h3>
-                            <p>\${item.title}</p>
-                            \${item.choices ? \`<small class="form-hint">Choices: \${item.choices.join(' · ')}</small>\` : ''}
-                        </div>
-                        <div class="protocol-actions">
-                            <button class="btn btn-neon-purple btn-show-me" data-id="\${item.id}" data-type="\${item.item_type || ''}" \${isCompleted ? 'disabled' : ''}>Show Me</button>
-                            <button class="btn btn-neon-green btn-done" data-id="\${item.id}" data-type="\${item.item_type || ''}" \${isCompleted ? 'disabled' : ''}>\${isCompleted ? 'Done' : 'Done'}</button>
-                            <button class="btn btn-outline btn-dismiss" data-id="\${item.id}" data-type="\${item.item_type || ''}" \${isCompleted ? '' : 'disabled'}>Dismiss</button>
-                        </div>
-                    \`;
-                }
-                agendaStream.appendChild(card);
-                attachCardEvents(card);
-            });
-        }
-        
-        const cards = Array.from(agendaStream.querySelectorAll('.protocol-card'));
-        cards.sort((a, b) => {
-            const timeStrA = a.querySelector('h3').innerText.trim();
-            const timeStrB = b.querySelector('h3').innerText.trim();
-            const parseTime = (str) => {
-                const match = str.match(/(\\d+):(\\d+)\\s*(AM|PM)/i);
-                if (!match) return 0;
-                let h = parseInt(match[1]);
-                let m = parseInt(match[2]);
-                let ampm = match[3].toUpperCase();
-                if (ampm === 'PM' && h < 12) h += 12;
-                if (ampm === 'AM' && h === 12) h = 0;
-                return h * 60 + m;
-            };
-            return parseTime(timeStrA) - parseTime(timeStrB);
-        });
-        cards.forEach(c => agendaStream.appendChild(c));
-
-        renderWeeklyCalendarList(data);
-        renderMonthlyCalendarList(data);
-    }
-`;
-
-content = content.replace(/function renderTodayAgenda\(data\) \{[\s\S]*?renderMonthlyCalendarList\(data\);\n    \}/, renderTodayAgendaSrc.trim());
-
-// C. Modify renderTomorrowAgenda to hide Yesterday button
-content = content.replace(
-    /if \(btnTomorrowText\) btnTomorrowText\.innerText = `Return to Today's Agenda.*?`;/,
-    `if (window.btnTomorrowText) window.btnTomorrowText.innerText = \`Return to Today's Agenda (\${todayShort})\`;
-        if (window.btnYesterdayAgenda) window.btnYesterdayAgenda.style.display = 'none';`
-);
-
-// D. Add renderYesterdayAgenda
-const renderYesterdaySrc = `
-    function renderYesterdayAgenda() {
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        const dayStr = yesterday.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' });
-        
-        const today = new Date();
-        const todayShort = today.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' });
-
-        if (window.dailyAgendaTitle) window.dailyAgendaTitle.innerText = "Yesterday's Agenda";
-        if (window.agendaDateIndicator) window.agendaDateIndicator.innerHTML = \`<span class="badge neon-purple" style="margin-right: 6px;">Yesterday</span> <span style="color: var(--neon-blue); font-weight: 500;">\${dayStr}</span>\`;
-        if (window.tomorrowBanner) window.tomorrowBanner.classList.add('hidden');
-        
-        if (window.btnYesterdayText) window.btnYesterdayText.innerText = \`Return to Today's Agenda (\${todayShort})\`;
-        if (window.btnYesterdayIcon) window.btnYesterdayIcon.innerHTML = "&rarr;";
-        if (window.btnTomorrowAgenda) window.btnTomorrowAgenda.style.display = 'none';
-        if (window.btnYesterdayAgenda) window.btnYesterdayAgenda.style.display = 'flex';
-
-        // Remove non-learning cards
-        document.querySelectorAll('.protocol-card:not(#protocol-learn)').forEach(c => c.remove());
-        
-        const yesterdayProtocols = [
-            { id: 'yest_retrieval_0600', time: '06:00 AM', title: 'Automated Retrieval: Scrape Gmail & Calendar', item_type: 'retrieval', status: 'completed' },
-            { id: 'yest_yoga_0900', time: '09:00 AM', title: 'Adaptive Morning Yoga Routine', item_type: 'yoga', status: 'completed' },
-            { id: 'yest_med_2100', time: '09:00 PM', title: 'Evening Meditation Protocol', item_type: 'meditation', status: 'completed' }
-        ];
-
-        const countBadge = document.getElementById('agendaCount');
-        if (countBadge) countBadge.textContent = \`\${yesterdayProtocols.length} Items (Past)\`;
-        
-        yesterdayProtocols.forEach(item => {
-            const card = document.createElement('div');
-            card.className = 'protocol-card glass-panel completed';
-            card.id = \`protocol-\${item.id}\`;
-            card.innerHTML = \`
-                <div class="protocol-info">
-                    <h3>\${item.time} <span class="badge neon-purple" style="font-size: 0.72rem;">Yesterday</span></h3>
-                    <p>\${item.title}</p>
-                </div>
-                <div class="protocol-actions">
-                    <button class="btn btn-neon-green btn-done" disabled>Done</button>
-                </div>
-            \`;
-            agendaStream.appendChild(card);
-        });
-        
-        showToast('Yesterday\\'s agenda loaded', 'info');
-    }
-`;
-
-content = content.replace("function renderTomorrowAgenda() {", renderYesterdaySrc + "\n    function renderTomorrowAgenda() {");
-
-// E. Toggle listeners
-content = content.replace(
-    /if \(btnTomorrowAgenda\) \{[\s\S]*?\}\n\s*\}\)/,
-    `if (window.btnTomorrowAgenda) {
-        window.btnTomorrowAgenda.addEventListener('click', () => {
-            if (currentAgendaView === 'today') {
-                currentAgendaView = 'tomorrow';
-            } else if (currentAgendaView === 'tomorrow') {
-                currentAgendaView = 'today';
-            } else if (currentAgendaView === 'yesterday') {
-                currentAgendaView = 'today';
-            }
-            if (currentAgendaView === 'tomorrow') {
-                renderTomorrowAgenda();
-            } else if (currentAgendaView === 'today') {
-                if (cachedAgendaData) {
-                    renderTodayAgenda(cachedAgendaData);
-                } else {
-                    loadAgenda();
-                }
-            }
-        });
-    }
-
-    if (window.btnYesterdayAgenda) {
-        window.btnYesterdayAgenda.addEventListener('click', () => {
-            if (currentAgendaView === 'today') {
-                currentAgendaView = 'yesterday';
-                renderYesterdayAgenda();
-            } else if (currentAgendaView === 'yesterday') {
-                currentAgendaView = 'today';
-                if (cachedAgendaData) {
-                    renderTodayAgenda(cachedAgendaData);
-                } else {
-                    loadAgenda();
-                }
-            } else if (currentAgendaView === 'tomorrow') {
-                currentAgendaView = 'today';
-                if (cachedAgendaData) {
-                    renderTodayAgenda(cachedAgendaData);
-                } else {
-                    loadAgenda();
-                }
-            }
-        });
-    }`
-);
-
-// F. attachCardEvents -> add dismiss and reinstate
-content = content.replace(
-    "const dismissBtn = card.querySelector('.btn-dismiss');",
-    "const dismissBtn = card.querySelector('.btn-dismiss');\n        const reinstateBtn = card.querySelector('.btn-reinstate');"
-);
-
-content = content.replace(
-    /if \(dismissBtn\) \{[\s\S]*?\}\n        \}/,
-    `if (dismissBtn) {
-            dismissBtn.addEventListener('click', () => {
-                if (id) {
-                    fetch(API_AGENDA, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ id, action: 'update_status', status: 'dismissed' })
-                    }).then(() => { loadAgenda(); }).catch(() => {});
-                } else {
-                    card.remove();
-                }
-            });
-        }
-        
-        if (reinstateBtn) {
-            reinstateBtn.addEventListener('click', () => {
-                if (id) {
-                    fetch(API_AGENDA, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ id, action: 'update_status', status: 'pending' })
-                    }).then(() => { loadAgenda(); }).catch(() => {});
-                }
-            });
-        }`
-);
-
-fs.writeFileSync('dashboard/app.js', content, 'utf8');
+    fs.writeFileSync(file, content);
+}

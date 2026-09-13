@@ -9,6 +9,8 @@ export const GOOGLE_SCOPES = [
   "https://www.googleapis.com/auth/calendar.events",
   "https://www.googleapis.com/auth/gmail.readonly",
   "https://www.googleapis.com/auth/gmail.send",
+  "https://www.googleapis.com/auth/drive",
+  "https://www.googleapis.com/auth/tasks",
 ];
 
 export interface GoogleAuthStatus {
@@ -19,6 +21,7 @@ export interface GoogleAuthStatus {
 }
 
 let cachedAccessToken: { token: string; expiresAt: number } | null = null;
+const messageDetailCache = new Map<string, any>();
 
 export function getGoogleAuthUrl(): string {
   const clientId = process.env.GOOGLE_CLIENT_ID || "";
@@ -46,7 +49,10 @@ export async function getGoogleAccessToken(): Promise<GoogleAuthStatus> {
 
   // 3. Refresh token flow via Google OAuth Token endpoint
   const clientId = process.env.GOOGLE_CLIENT_ID;
-  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  let clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  if (clientSecret) {
+    clientSecret = clientSecret.trim().replace(/^GOCSPX-GOCSPX-/, "GOCSPX-");
+  }
   const refreshToken = process.env.GOOGLE_REFRESH_TOKEN;
 
   if (!clientId || !clientSecret || !refreshToken) {
@@ -387,15 +393,524 @@ export async function fetchLiveGmailMessages(options?: {
     }
 
     const data = await res.json();
+    const rawList = (data.messages || []).slice(0, maxResults);
+
+    // Fetch full payload details for each message
+    const detailedMessages = await Promise.all(
+      rawList.map(async (item: { id: string; threadId: string }) => {
+        if (messageDetailCache.has(item.id)) {
+          return messageDetailCache.get(item.id);
+        }
+        try {
+          const detailRes = await fetch(
+            `https://gmail.googleapis.com/gmail/v1/users/me/messages/${item.id}?format=full`,
+            {
+              headers: { Authorization: `Bearer ${auth.accessToken}` },
+            }
+          );
+          if (!detailRes.ok) return item;
+          const msgData = await detailRes.json();
+
+          const headers: Array<{ name: string; value: string }> = msgData.payload?.headers || [];
+          const getHeader = (name: string) =>
+            headers.find((h) => h.name.toLowerCase() === name.toLowerCase())?.value;
+
+          const subject = getHeader("Subject") || "No Subject";
+          const from = getHeader("From") || "Unknown";
+          const to = getHeader("To") || "";
+          const date = getHeader("Date") || "";
+          const snippet = msgData.snippet || "";
+
+          let bodyText = "";
+          const extractBody = (part: any) => {
+            if (!part) return;
+            if (part.body && part.body.data) {
+              try {
+                const decoded = Buffer.from(
+                  part.body.data.replace(/-/g, "+").replace(/_/g, "/"),
+                  "base64"
+                ).toString("utf8");
+                if (part.mimeType === "text/plain") {
+                  bodyText += "\n" + decoded;
+                } else if (part.mimeType === "text/html" && !bodyText) {
+                  bodyText += "\n" + decoded;
+                }
+              } catch (e) {}
+            }
+            if (part.parts && Array.isArray(part.parts)) {
+              part.parts.forEach(extractBody);
+            }
+          };
+
+          const attachments: Array<{ filename: string; mimeType: string; size: number; attachmentId: string }> = [];
+          const extractAttachments = (part: any) => {
+            if (!part) return;
+            if (part.filename && part.body && part.body.attachmentId) {
+              attachments.push({
+                filename: part.filename,
+                mimeType: part.mimeType,
+                size: part.body.size,
+                attachmentId: part.body.attachmentId,
+              });
+            }
+            if (part.parts && Array.isArray(part.parts)) {
+              part.parts.forEach(extractAttachments);
+            }
+          };
+
+          if (msgData.payload) {
+            extractBody(msgData.payload);
+            extractAttachments(msgData.payload);
+          }
+
+          // Clean HTML tags and excessive whitespace
+          const cleanBody = bodyText
+            .replace(/<style[\s\S]*?<\/style>/gi, "")
+            .replace(/<script[\s\S]*?<\/script>/gi, "")
+            .replace(/<[^>]+>/g, " ")
+            .replace(/&nbsp;/g, " ")
+            .replace(/&amp;/g, "&")
+            .replace(/&lt;/g, "<")
+            .replace(/&gt;/g, ">")
+            .replace(/&#39;/g, "'")
+            .replace(/&quot;/g, '"')
+            .replace(/\s{2,}/g, " ")
+            .trim();
+
+          const bodySummary = cleanBody ? cleanBody.substring(0, 800) : snippet;
+
+          const parsedMsg = {
+            id: msgData.id,
+            threadId: msgData.threadId,
+            snippet,
+            subject,
+            from,
+            to,
+            date,
+            body: cleanBody || snippet,
+            bodySummary,
+            attachments,
+            actionRequired: /action required|due|urgent|important/i.test(`${subject} ${snippet}`),
+          };
+          messageDetailCache.set(msgData.id, parsedMsg);
+          return parsedMsg;
+        } catch (e) {
+          return item;
+        }
+      })
+    );
+
     return {
       status: "success",
-      messages: data.messages || [],
+      messages: detailedMessages,
     };
   } catch (err: any) {
     return {
       status: "error",
-      message: err.message || "Failed to connect to Gmail service",
+      message: `Failed to fetch live Gmail messages: ${err.message}`,
     };
   }
 }
+
+/**
+ * Fetches a specific attachment from Gmail and returns it as base64.
+ */
+export async function fetchLiveGmailAttachment(
+  messageId: string,
+  attachmentId: string
+): Promise<{ status: "success" | "error"; data?: string; size?: number; message?: string }> {
+  const auth = await getGoogleAccessToken();
+  if (!auth.authenticated || !auth.accessToken) {
+    return { status: "error", message: "Gmail authorization required" };
+  }
+
+  try {
+    const res = await fetch(
+      `https://gmail.googleapis.com/gmail/v1/users/me/messages/${messageId}/attachments/${attachmentId}`,
+      {
+        headers: { Authorization: `Bearer ${auth.accessToken}` },
+      }
+    );
+
+    if (!res.ok) {
+      return { status: "error", message: `Failed to fetch attachment: ${res.statusText}` };
+    }
+
+    const json = await res.json();
+    const cleanBase64 = (json.data || "").replace(/-/g, "+").replace(/_/g, "/");
+    return { status: "success", data: cleanBase64, size: json.size };
+  } catch (err: any) {
+    return { status: "error", message: err.message };
+  }
+}
+
+/**
+ * Send an email using live Gmail API.
+ */
+export async function sendLiveGmailMessage(options: {
+  to: string;
+  cc?: string;
+  subject: string;
+  body: string;
+  inReplyTo?: string;
+  threadId?: string;
+}): Promise<{
+  status: "success" | "auth_required" | "error";
+  messageId?: string;
+  threadId?: string;
+  authUrl?: string;
+  message?: string;
+}> {
+  const auth = await getGoogleAccessToken();
+  if (!auth.authenticated || !auth.accessToken) {
+    return {
+      status: "auth_required",
+      authUrl: auth.authUrl || getGoogleAuthUrl(),
+      message: auth.error || "Gmail authorization required to send emails",
+    };
+  }
+
+  try {
+    const utf8Subject = `=?utf-8?B?${Buffer.from(options.subject).toString("base64")}?=`;
+    const messageParts = [
+      `To: ${options.to}`,
+    ];
+    if (options.cc) {
+      messageParts.push(`Cc: ${options.cc}`);
+    }
+    messageParts.push(
+      `Subject: ${utf8Subject}`,
+      "MIME-Version: 1.0",
+      "Content-Type: text/plain; charset=utf-8",
+      "Content-Transfer-Encoding: 7bit"
+    );
+
+    if (options.inReplyTo) {
+      messageParts.push(`In-Reply-To: ${options.inReplyTo}`);
+      messageParts.push(`References: ${options.inReplyTo}`);
+    }
+
+    messageParts.push("");
+    messageParts.push(options.body);
+
+    const message = messageParts.join("\r\n");
+    const encodedMessage = Buffer.from(message)
+      .toString("base64")
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=+$/, "");
+
+    const payload: any = { raw: encodedMessage };
+    if (options.threadId) {
+      payload.threadId = options.threadId;
+    }
+
+    const res = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${auth.accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (res.status === 401 || res.status === 403) {
+      return {
+        status: "auth_required",
+        authUrl: getGoogleAuthUrl(),
+        message: "Gmail send access token expired or missing scope",
+      };
+    }
+
+    if (!res.ok) {
+      const errJson = await res.json().catch(() => ({}));
+      return {
+        status: "error",
+        message: errJson.error?.message || `Gmail API send error: ${res.statusText}`,
+      };
+    }
+
+    const data = await res.json();
+    return {
+      status: "success",
+      messageId: data.id,
+      threadId: data.threadId,
+    };
+  } catch (err: any) {
+    return {
+      status: "error",
+      message: err.message || "Failed to send email via Gmail API",
+    };
+  }
+}
+
+/**
+ * Fetch Google Tasks from a user's task list.
+ */
+export async function fetchLiveTasks(options?: {
+  taskListId?: string;
+  showCompleted?: boolean;
+  showHidden?: boolean;
+  dueMin?: string;
+  dueMax?: string;
+}): Promise<{
+  status: "success" | "auth_required" | "error";
+  tasks?: any[];
+  authUrl?: string;
+  message?: string;
+}> {
+  const auth = await getGoogleAccessToken();
+  if (!auth.authenticated || !auth.accessToken) {
+    return {
+      status: "auth_required",
+      authUrl: auth.authUrl || getGoogleAuthUrl(),
+      message: auth.error || "Google Tasks authorization required",
+    };
+  }
+
+  const taskListId = options?.taskListId || "@default";
+  const params = new URLSearchParams();
+  params.set("showCompleted", String(options?.showCompleted ?? true));
+  params.set("showHidden", String(options?.showHidden ?? true));
+  if (options?.dueMin) params.set("dueMin", options.dueMin);
+  if (options?.dueMax) params.set("dueMax", options.dueMax);
+
+  const url = `https://tasks.googleapis.com/tasks/v1/lists/${encodeURIComponent(taskListId)}/tasks?${params.toString()}`;
+
+  try {
+    const res = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${auth.accessToken}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (res.status === 401 || res.status === 403) {
+      return {
+        status: "auth_required",
+        authUrl: getGoogleAuthUrl(),
+        message: "Google Tasks access token expired or missing scope",
+      };
+    }
+
+    if (!res.ok) {
+      return {
+        status: "error",
+        message: `Google Tasks API error: ${res.statusText}`,
+      };
+    }
+
+    const data = await res.json();
+    return {
+      status: "success",
+      tasks: data.items || [],
+    };
+  } catch (err: any) {
+    return {
+      status: "error",
+      message: err.message || "Failed to fetch live tasks from Google Tasks",
+    };
+  }
+}
+
+/**
+ * Create a live Google Task.
+ */
+export async function createLiveTask(taskData: {
+  taskListId?: string;
+  title: string;
+  notes?: string;
+  due?: string;
+  status?: "needsAction" | "completed";
+}): Promise<{
+  status: "success" | "auth_required" | "error";
+  task?: any;
+  message?: string;
+}> {
+  const auth = await getGoogleAccessToken();
+  if (!auth.authenticated || !auth.accessToken) {
+    return {
+      status: "auth_required",
+      message: auth.error || "Google Tasks authorization required",
+    };
+  }
+
+  const taskListId = taskData.taskListId || "@default";
+  const url = `https://tasks.googleapis.com/tasks/v1/lists/${encodeURIComponent(taskListId)}/tasks`;
+
+  const body: any = {
+    title: taskData.title,
+    notes: taskData.notes || "",
+    status: taskData.status || "needsAction",
+  };
+
+  if (taskData.due) {
+    body.due = taskData.due.includes("T") ? taskData.due : `${taskData.due}T00:00:00.000Z`;
+  }
+
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${auth.accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (res.status === 401 || res.status === 403) {
+      return {
+        status: "auth_required",
+        message: "Google Tasks access token expired or missing scope",
+      };
+    }
+
+    if (!res.ok) {
+      const errJson = await res.json().catch(() => ({}));
+      return {
+        status: "error",
+        message: errJson.error?.message || `Google Tasks API error: ${res.statusText}`,
+      };
+    }
+
+    const created = await res.json();
+    return {
+      status: "success",
+      task: created,
+    };
+  } catch (err: any) {
+    return {
+      status: "error",
+      message: err.message || "Failed to create task in Google Tasks",
+    };
+  }
+}
+
+/**
+ * Update an existing live Google Task.
+ */
+export async function updateLiveTask(taskData: {
+  taskId: string;
+  taskListId?: string;
+  title?: string;
+  notes?: string;
+  due?: string | null;
+  status?: "needsAction" | "completed";
+  completed?: string | null;
+}): Promise<{
+  status: "success" | "auth_required" | "error";
+  task?: any;
+  message?: string;
+}> {
+  const auth = await getGoogleAccessToken();
+  if (!auth.authenticated || !auth.accessToken) {
+    return {
+      status: "auth_required",
+      message: auth.error || "Google Tasks authorization required",
+    };
+  }
+
+  const taskListId = taskData.taskListId || "@default";
+  const url = `https://tasks.googleapis.com/tasks/v1/lists/${encodeURIComponent(taskListId)}/tasks/${encodeURIComponent(taskData.taskId)}`;
+
+  const body: any = {};
+  if (taskData.title !== undefined) body.title = taskData.title;
+  if (taskData.notes !== undefined) body.notes = taskData.notes;
+  if (taskData.status !== undefined) body.status = taskData.status;
+  if (taskData.due !== undefined) {
+    body.due = taskData.due ? (taskData.due.includes("T") ? taskData.due : `${taskData.due}T00:00:00.000Z`) : null;
+  }
+  if (taskData.completed !== undefined) body.completed = taskData.completed;
+
+  try {
+    const res = await fetch(url, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${auth.accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (res.status === 401 || res.status === 403) {
+      return {
+        status: "auth_required",
+        message: "Google Tasks access token expired or missing scope",
+      };
+    }
+
+    if (!res.ok) {
+      const errJson = await res.json().catch(() => ({}));
+      return {
+        status: "error",
+        message: errJson.error?.message || `Google Tasks API error: ${res.statusText}`,
+      };
+    }
+
+    const updated = await res.json();
+    return {
+      status: "success",
+      task: updated,
+    };
+  } catch (err: any) {
+    return {
+      status: "error",
+      message: err.message || "Failed to update task in Google Tasks",
+    };
+  }
+}
+
+/**
+ * Delete a live Google Task.
+ */
+export async function deleteLiveTask(
+  taskId: string,
+  taskListId?: string
+): Promise<{
+  status: "success" | "auth_required" | "error";
+  message?: string;
+}> {
+  const auth = await getGoogleAccessToken();
+  if (!auth.authenticated || !auth.accessToken) {
+    return {
+      status: "auth_required",
+      message: auth.error || "Google Tasks authorization required",
+    };
+  }
+
+  const targetListId = taskListId || "@default";
+  const url = `https://tasks.googleapis.com/tasks/v1/lists/${encodeURIComponent(targetListId)}/tasks/${encodeURIComponent(taskId)}`;
+
+  try {
+    const res = await fetch(url, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${auth.accessToken}`,
+      },
+    });
+
+    if (res.status === 401 || res.status === 403) {
+      return {
+        status: "auth_required",
+        message: "Google Tasks access token expired or missing scope",
+      };
+    }
+
+    if (!res.ok && res.status !== 204) {
+      const errJson = await res.json().catch(() => ({}));
+      return {
+        status: "error",
+        message: errJson.error?.message || `Google Tasks API error: ${res.statusText}`,
+      };
+    }
+
+    return { status: "success" };
+  } catch (err: any) {
+    return {
+      status: "error",
+      message: err.message || "Failed to delete task in Google Tasks",
+    };
+  }
+}
+
 

@@ -147,6 +147,44 @@ CREATE TABLE IF NOT EXISTS budget_items (
 );
 `;
 
+export interface BudgetReportRecord {
+  id: string;
+  period_type: 'weekly' | 'monthly';
+  period_label: string;
+  start_date: string;
+  end_date: string;
+  total_spent: number;
+  breakdown_json: string;
+  report_markdown: string;
+  created_at: string;
+}
+
+export interface CreateBudgetReportInput {
+  id?: string;
+  period_type: 'weekly' | 'monthly';
+  period_label: string;
+  start_date: string;
+  end_date: string;
+  total_spent: number;
+  breakdown_json: string;
+  report_markdown: string;
+  created_at?: string;
+}
+
+export const CREATE_BUDGET_REPORTS_TABLE_SQL = `
+CREATE TABLE IF NOT EXISTS budget_reports (
+    id TEXT PRIMARY KEY,
+    period_type TEXT NOT NULL,
+    period_label TEXT NOT NULL,
+    start_date TEXT NOT NULL,
+    end_date TEXT NOT NULL,
+    total_spent REAL NOT NULL,
+    breakdown_json TEXT NOT NULL,
+    report_markdown TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+`;
+
 export interface ExercisePreferenceRecord {
   id: string;
   routine_id: string;
@@ -277,4 +315,111 @@ CREATE TABLE IF NOT EXISTS learning_progress (
     updated_at TEXT NOT NULL
 );
 `;
+
+export interface ChatLogRecord {
+  id: string;
+  role: 'user' | 'rumble';
+  text: string;
+  created_at: string;
+}
+
+export const CREATE_CHAT_LOGS_TABLE_SQL = `
+CREATE TABLE IF NOT EXISTS chat_logs (
+    id TEXT PRIMARY KEY,
+    role TEXT NOT NULL,
+    text TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+`;
+
+export interface SmsMessage {
+  id: string;
+  sender: string;
+  body: string;
+  received_at: string;
+  read: boolean;
+  created_at: string;
+}
+
+export interface CreateSmsMessageInput {
+  sender: string;
+  body: string;
+  received_at?: string;
+}
+
+export const CREATE_SMS_MESSAGES_TABLE_SQL = `
+CREATE TABLE IF NOT EXISTS sms_messages (
+    id TEXT PRIMARY KEY,
+    sender TEXT NOT NULL,
+    body TEXT NOT NULL,
+    received_at TEXT NOT NULL,
+    read BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TEXT NOT NULL
+);
+`;
+
+export interface PendingChatAction {
+  id: string;
+  action_data: any;
+  created_at: string;
+  resolved_at: string | null;
+}
+
+export const CREATE_PENDING_CHAT_ACTIONS_TABLE_SQL = `
+CREATE TABLE IF NOT EXISTS pending_chat_actions (
+    id TEXT PRIMARY KEY,
+    action_data JSONB NOT NULL,
+    created_at TEXT NOT NULL,
+    resolved_at TEXT
+);
+`;
+
+export type TaskStatus = 'needsAction' | 'completed';
+
+export interface TaskRecord {
+  id: string;
+  google_id?: string | null;
+  task_list_id?: string;
+  title: string;
+  notes?: string | null;
+  status: TaskStatus;
+  due?: string | null;
+  completed_at?: string | null;
+  deleted?: boolean;
+  created_at: string;
+  isUrgent?: boolean;
+  updated_at: string;
+}
+
+export interface CreateTaskInput {
+  id?: string;
+  google_id?: string | null;
+  task_list_id?: string;
+  title: string;
+  notes?: string | null;
+  status?: TaskStatus;
+  due?: string | null;
+  completed_at?: string | null;
+  deleted?: boolean;
+  isUrgent?: boolean;
+}
+
+export const CREATE_TASKS_TABLE_SQL = `
+CREATE TABLE IF NOT EXISTS tasks (
+    id TEXT PRIMARY KEY,
+    google_id TEXT,
+    task_list_id TEXT NOT NULL DEFAULT '@default',
+    title TEXT NOT NULL,
+    notes TEXT,
+    status TEXT NOT NULL DEFAULT 'needsAction' CHECK (status IN ('needsAction', 'completed')),
+    due TEXT,
+    completed_at TEXT,
+    deleted BOOLEAN NOT NULL DEFAULT FALSE,
+    isUrgent BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+`;
+
+
 

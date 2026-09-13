@@ -26,7 +26,7 @@
                 </div>
                 
                 <div class="header-actions">
-                    <button class="btn btn-sm btn-outline" id="btnOpenNotes">Notes</button>
+                    <button class="btn btn-sm btn-outline" id="btnOpenNotes" title="Notes & Scratchpad">Notes</button>
                     <button class="btn btn-sm btn-outline btn-icon btn-rumble" id="btnOpenRumbleChat" title="Rumble Chat" aria-label="Rumble Chat">
                         <img src="Rumble_Icon.png" alt="Rumble" class="rumble-header-icon">
                     </button>
@@ -48,25 +48,45 @@
             
             <!-- Budget Widget -->
             <section class="widget glass-panel sticky-budget" id="budgetWidget">
-                <div class="widget-header">
-                    <h2>Budget Overview</h2>
-                    <span class="badge neon-green" id="budgetTotalSpent">Spent: $0</span>
+                <div class="widget-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <h2>Budget Overview</h2>
+                        <span class="badge neon-purple" id="budgetPeriodBadge" style="font-size: 0.72rem;">Weekly</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <button class="btn btn-sm btn-outline" id="btnToggleBudgetPeriod" style="padding: 2px 8px; font-size: 0.74rem;">Show Month</button>
+                        <span class="badge neon-green" id="budgetTotalSpent">IN: $0.00 | OUT: $0.00 | TOTAL: $0.00</span>
+                    </div>
                 </div>
                 <div class="budget-body" id="budgetSummary" style="margin-bottom: 14px; display: flex; flex-wrap: wrap; gap: 8px;">
                     <!-- Dynamic Summary -->
                 </div>
+                <div style="margin-bottom: 8px;">
+                    <button class="btn btn-sm btn-outline" id="btnViewBudgetEntries" style="padding: 2px 8px; font-size: 0.74rem;">Toggle Entries</button>
+                </div>
+                <div id="budgetEntriesList" class="hidden" style="margin-bottom: 14px; font-size: 0.85rem; max-height: 200px; overflow-y: auto; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 6px;">
+                     <!-- Individual entries go here -->
+                </div>
                 <div class="budget-form hidden" id="budgetForm" style="display: flex; gap: 8px; flex-wrap: wrap;">
                     <input type="text" id="budgetDesc" class="glass-input" placeholder="Description" style="flex: 1; min-width: 150px; padding: 8px;">
                     <input type="number" id="budgetAmount" class="glass-input" placeholder="Amount" style="width: 100px; padding: 8px;">
+                    <select id="budgetType" class="glass-select" style="padding: 8px;">
+                        <option value="expense">Expense</option>
+                        <option value="income">Income</option>
+                    </select>
                     <select id="budgetCategory" class="glass-select" style="padding: 8px;">
                         <option value="Groceries">Groceries</option>
                         <option value="Medical">Medical</option>
                         <option value="Transport">Transport</option>
                         <option value="Entertainment">Entertainment</option>
+                        <option value="Casino">Casino</option>
+                        <option value="Sportsbet">Sportsbet</option>
+                        <option value="Ladbrokes">Ladbrokes</option>
+                        <option value="Salary">Salary</option>
                         <option value="Other">Other</option>
                     </select>
                     <input type="text" id="budgetNotes" class="glass-input" placeholder="Notes" style="flex: 1; min-width: 150px; padding: 8px;">
-                    <button class="btn btn-neon-green" id="btnLogBudget">Add Expense</button>
+                    <button class="btn btn-neon-green" id="btnLogBudget">Add</button>
                 </div>
             </section>
 
@@ -125,7 +145,7 @@
                                 <button class="btn btn-outline encyclopedia-btn" data-enc="pain" style="flex-direction: column; align-items: flex-start; padding: 10px 12px; text-align: left; border-color: rgba(255, 60, 60, 0.3); background: rgba(255, 60, 60, 0.04);">
                                     <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
                                         <span class="badge neon-red" style="font-size: 0.7rem; padding: 2px 6px;">PAIN</span>
-                                        <span class="enc-progress-pill" id="painProgressBadge" style="font-size: 0.7rem; color: var(--text-muted);">Ch. 1/10</span>
+                                        <span class="enc-progress-pill" id="painProgressBadge" style="font-size: 0.7rem; color: var(--text-muted);">Ch. 1/20</span>
                                     </div>
                                     <strong style="color: #fff; font-size: 0.85rem; margin-top: 6px; display: block;" id="painCurrentTitle">Central Sensitization</strong>
                                     <span style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 2px;">Resume reading &rarr;</span>
@@ -134,7 +154,7 @@
                                 <button class="btn btn-outline encyclopedia-btn" data-enc="ai" style="flex-direction: column; align-items: flex-start; padding: 10px 12px; text-align: left; border-color: rgba(168, 85, 247, 0.3); background: rgba(168, 85, 247, 0.04);">
                                     <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
                                         <span class="badge neon-purple" style="font-size: 0.7rem; padding: 2px 6px;">AI</span>
-                                        <span class="enc-progress-pill" id="aiProgressBadge" style="font-size: 0.7rem; color: var(--text-muted);">Ch. 1/10</span>
+                                        <span class="enc-progress-pill" id="aiProgressBadge" style="font-size: 0.7rem; color: var(--text-muted);">Ch. 1/20</span>
                                     </div>
                                     <strong style="color: #fff; font-size: 0.85rem; margin-top: 6px; display: block;" id="aiCurrentTitle">Transformers & Attention</strong>
                                     <span style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 2px;">Resume reading &rarr;</span>
@@ -143,7 +163,7 @@
                                 <button class="btn btn-outline encyclopedia-btn" data-enc="tech" style="flex-direction: column; align-items: flex-start; padding: 10px 12px; text-align: left; border-color: rgba(0, 229, 255, 0.3); background: rgba(0, 229, 255, 0.04);">
                                     <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
                                         <span class="badge neon-blue" style="font-size: 0.7rem; padding: 2px 6px;">TECH</span>
-                                        <span class="enc-progress-pill" id="techProgressBadge" style="font-size: 0.7rem; color: var(--text-muted);">Ch. 1/10</span>
+                                        <span class="enc-progress-pill" id="techProgressBadge" style="font-size: 0.7rem; color: var(--text-muted);">Ch. 1/20</span>
                                     </div>
                                     <strong style="color: #fff; font-size: 0.85rem; margin-top: 6px; display: block;" id="techCurrentTitle">Serverless & Edge Runtimes</strong>
                                     <span style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 2px;">Resume reading &rarr;</span>
@@ -152,7 +172,7 @@
                                 <button class="btn btn-outline encyclopedia-btn" data-enc="cbt" style="flex-direction: column; align-items: flex-start; padding: 10px 12px; text-align: left; border-color: rgba(76, 175, 80, 0.3); background: rgba(76, 175, 80, 0.04);">
                                     <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
                                         <span class="badge neon-green" style="font-size: 0.7rem; padding: 2px 6px;">MINDSET</span>
-                                        <span class="enc-progress-pill" id="cbtProgressBadge" style="font-size: 0.7rem; color: var(--text-muted);">Ch. 1/10</span>
+                                        <span class="enc-progress-pill" id="cbtProgressBadge" style="font-size: 0.7rem; color: var(--text-muted);">Ch. 1/20</span>
                                     </div>
                                     <strong style="color: #fff; font-size: 0.85rem; margin-top: 6px; display: block;" id="cbtCurrentTitle">Cognitive Behavioral Therapy</strong>
                                     <span style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 2px;">Resume reading &rarr;</span>
@@ -175,9 +195,22 @@
                 </div>
             </section>
 
-            <!-- Interactive Calendar -->
+            <!-- Interactive Calendar & Tasks Tabs -->
             <div class="agenda-grid-row" style="display: block;">
-                <section class="widget glass-panel agenda-panel" style="width: 100%;">
+                <!-- Tab Controls -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <div style="display: flex; gap: 8px;" role="tablist" aria-label="Schedule and Tasks">
+                        <button class="btn btn-sm btn-neon-blue active" id="tabBtnCalendar" role="tab" aria-selected="true" aria-controls="calendarSection">
+                            Calendar
+                        </button>
+                        <button class="btn btn-sm btn-outline" id="tabBtnTasks" role="tab" aria-selected="false" aria-controls="tasksSection">
+                            Tasks <span class="badge neon-blue" id="tasksTabBadge" style="margin-left: 6px; font-size: 0.75rem; padding: 2px 6px;">0</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Interactive Calendar -->
+                <section class="widget glass-panel agenda-panel" id="calendarSection" style="width: 100%;">
                     <div class="widget-header">
                         <div>
                             <h2>Calendar</h2>
@@ -186,6 +219,40 @@
                         <button class="btn btn-outline btn-sm" id="btnAddCalendarEvent">+ Add Event</button>
                     </div>
                     <div id="fullCalendar" style="min-height: 500px; margin-top: 15px;"></div>
+                </section>
+
+                <!-- Tasks Tab Section (identical visual layout, populated with Tasks) -->
+                <section class="widget glass-panel agenda-panel hidden" id="tasksSection" style="width: 100%;">
+                    <div class="widget-header">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <h2 style="margin: 0;">Tasks</h2>
+                            <span class="badge neon-blue" id="tasksActiveCountBadge">0 Pending</span>
+                            <span class="badge neon-green" id="tasksCompletedCountBadge" style="display: none;">0 Done</span>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn btn-outline btn-sm" id="btnSyncTasks" title="Synchronize with Google Tasks">🔄 Sync Tasks</button>
+                            <button class="btn btn-neon-blue btn-sm" id="btnAddTask">+ Add Task</button>
+                        </div>
+                    </div>
+                    <div id="tasksCalendar" style="min-height: 500px; margin-top: 15px;"></div>
+                </section>
+            </div>
+
+            <!-- Text Messages Widget -->
+            <div class="agenda-grid-row" style="display: block; margin-top: 24px;">
+                <section class="widget glass-panel sms-panel" id="smsWidget" style="width: 100%;">
+                    <div class="widget-header" style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <h2 style="margin: 0;">Text Messages</h2>
+                            <span class="badge neon-blue" id="smsUnreadBadge">0 Unread</span>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn btn-neon-blue btn-sm" id="btnComposeSms">Compose SMS</button>
+                        </div>
+                    </div>
+                    <div id="smsMessagesList" style="margin-top: 15px; display: flex; flex-direction: column; gap: 10px; max-height: 400px; overflow-y: auto;">
+                        <div style="color: var(--text-secondary); font-size: 0.88rem; text-align: center; padding: 20px;">Loading messages...</div>
+                    </div>
                 </section>
             </div>
 
@@ -197,6 +264,7 @@
                 <span class="footer-status">Rumble OS live data controls</span>
                 <div class="footer-actions">
                     <button class="btn btn-neon-red btn-sm" id="btnOpenPainLog">Log Pain</button>
+                    <button class="btn btn-outline btn-sm" id="btnOpenPainAnalyticsBottom" title="Clinical Pain Analytics & GP Report">Analytics</button>
                     <button class="btn btn-neon-purple btn-sm" id="btnOpenExercises">Explore Exercises</button>
                 </div>
             </div>
@@ -204,22 +272,49 @@
 
         <!-- Modals -->
 
-        <!-- Postpone Modal Window -->
+        <!-- Postpone / Delay Modal Window -->
         <div class="modal-overlay hidden" id="postponeModal">
-            <div class="modal-content glass-panel" style="max-width: 400px;">
+            <div class="modal-content glass-panel" style="max-width: 440px; width: 92%;">
                 <div class="modal-header">
-                    <h2>Postpone Agenda Item</h2>
+                    <h2 id="postponeModalTitle" style="font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">Delay Agenda Item</h2>
                     <button class="btn-close" id="btnClosePostpone">&times;</button>
                 </div>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label>Select New Date</label>
-                        <input type="datetime-local" id="postponeDate" class="glass-input" style="width: 100%; padding: 8px;" />
+                <div class="modal-body" style="margin-top: 10px; display: flex; flex-direction: column; gap: 14px;">
+                    <div style="font-size: 0.88rem; color: var(--text-secondary);" id="postponeItemSummary">Choose when you would like to reschedule this item:</div>
+                    
+                    <!-- Quick Delay Presets -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;" id="postponeQuickPresets">
+                        <button type="button" class="btn btn-outline btn-sm btn-quick-postpone" data-hours="2">In 2 Hours</button>
+                        <button type="button" class="btn btn-outline btn-sm btn-quick-postpone" data-tomorrow="09:00">Tomorrow 9 AM</button>
+                        <button type="button" class="btn btn-outline btn-sm btn-quick-postpone" data-tomorrow="14:00">Tomorrow 2 PM</button>
+                        <button type="button" class="btn btn-outline btn-sm btn-quick-postpone" data-tomorrow="21:00">Tomorrow 9 PM</button>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 4px;">
+                        <label style="font-size: 0.8rem; color: var(--text-secondary);">Or Custom Date & Time</label>
+                        <input type="datetime-local" id="postponeDate" class="glass-input" style="width: 100%; padding: 10px; font-size: 0.9rem;" />
                     </div>
                 </div>
-                <div class="modal-footer" style="margin-top: 15px;">
+                <div class="modal-footer" style="margin-top: 16px; display: flex; gap: 8px; justify-content: flex-end;">
                     <button class="btn btn-outline" id="btnCancelPostpone">Cancel</button>
-                    <button class="btn btn-neon-blue" id="btnConfirmPostpone">Confirm Postpone</button>
+                    <button class="btn btn-neon-blue" id="btnConfirmPostpone">Reschedule</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dismiss Confirmation Modal -->
+        <div class="modal-overlay hidden" id="dismissConfirmModal">
+            <div class="modal-content glass-panel" style="max-width: 380px; width: 90%;">
+                <div class="modal-header">
+                    <h2 style="font-size: 1.05rem; color: var(--neon-red);">Dismiss Agenda Item</h2>
+                    <button class="btn-close" id="btnCloseDismissConfirm">&times;</button>
+                </div>
+                <div class="modal-body" style="margin-top: 10px;">
+                    <p style="font-size: 0.9rem; color: var(--text-secondary);" id="dismissConfirmItemTitle">Are you sure you want to dismiss this item from today's agenda?</p>
+                </div>
+                <div class="modal-footer" style="margin-top: 16px; display: flex; gap: 8px; justify-content: flex-end;">
+                    <button class="btn btn-outline" id="btnCancelDismiss">Keep</button>
+                    <button class="btn btn-neon-red" id="btnConfirmDismiss">Dismiss Item</button>
                 </div>
             </div>
         </div>
@@ -260,6 +355,8 @@
                     <div id="settingsIntegrations" class="hidden">
                         <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;"><label style="margin:0;">Google Calendar</label><button class="btn btn-sm btn-neon-green">Connected</button></div>
                         <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;"><label style="margin:0;">Emails</label><button class="btn btn-sm btn-neon-green">Connected</button></div>
+                        <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;"><label style="margin:0;">Telegram Bot</label><button class="btn btn-sm btn-outline" id="btnTriggerTelegramCheckin" title="Dispatch an immediate pain check-in prompt to Telegram">Send Check-in Prompt Now</button></div>
+                        <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;"><label style="margin:0;">Manual Data Scrape</label><button class="btn btn-sm btn-outline" id="btnTriggerRetrieval">Run Retrieval Scan</button></div>
                         <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;"><label style="margin:0;">Google Keep</label><button class="btn btn-sm btn-outline" disabled title="API Not Available">Not Available</button></div>
                     </div>
                 </div>
@@ -327,48 +424,161 @@
 
         <!-- Pain logging slide-up widget -->
         <div class="modal-overlay hidden slide-up-overlay" id="painLogModal">
-            <div class="modal-content glass-panel slide-up-widget pain-log-widget">
+            <div class="modal-content glass-panel slide-up-widget pain-log-widget" style="max-width: 960px; width: 100%;">
                 <div class="modal-header">
-                    <h2>Log Pain</h2>
+                    <h2>Log Pain & Symptom Check-in</h2>
+                    <div style="margin-left: auto; display: flex; align-items: center; gap: 8px; margin-right: 12px;">
+                        <button type="button" class="btn btn-sm btn-outline" id="btnOpenPainAnalyticsFromModal" title="Open Clinical Analytics">Analytics</button>
+                        <button type="button" class="btn btn-sm btn-outline" id="btnTriggerTelegramCheckinFromModal" title="Send Check-in Prompt to Telegram">Test Telegram Bot</button>
+                    </div>
                     <button class="btn-close" id="btnClosePainLog">&times;</button>
                 </div>
-                <div class="modal-body-form">
-                    <div class="form-group">
-                        <label>Pain level <span class="val-tag" id="painValDisplay">0</span>/10</label>
-                        <div class="scale-buttons scale-buttons-modal" id="painScaleButtons">
-                            <button class="btn-num pain-num active" data-val="0">0</button><button class="btn-num pain-num" data-val="1">1</button><button class="btn-num pain-num" data-val="2">2</button><button class="btn-num pain-num" data-val="3">3</button><button class="btn-num pain-num" data-val="4">4</button><button class="btn-num pain-num" data-val="5">5</button><button class="btn-num pain-num" data-val="6">6</button><button class="btn-num pain-num" data-val="7">7</button><button class="btn-num pain-num" data-val="8">8</button><button class="btn-num pain-num" data-val="9">9</button><button class="btn-num pain-num" data-val="10">10</button>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Anatomical locations and relative weight</label>
-                        <div id="painLocations">
-                            <div class="pain-location-row">
-                                <select class="glass-select pain-area-select" id="painAreaSelect"><option value="lumbar">Lumbar</option><option value="cervical">Cervical</option><option value="thoracic">Thoracic</option><option value="ankle">Ankle</option><option value="knee">Knee</option><option value="shoulder">Shoulder</option><option value="elbow">Elbow</option><option value="hip">Hip</option></select>
-                                <select class="glass-select pain-side-select" id="painSideSelect"><option value="right">Right</option><option value="left">Left</option><option value="both">Both</option></select>
-                                <input class="glass-input pain-percentage" type="number" min="1" max="100" value="100" aria-label="Pain percentage">
-                                <span>%</span><button class="btn btn-sm btn-outline remove-location" type="button" aria-label="Remove location">Remove</button>
+                <div class="modal-body-form pain-modal-two-col">
+                    <!-- LEFT COLUMN: Top Area Selector (1-3) + Dynamic Selected Cards -->
+                    <div class="pain-modal-left-col">
+                        <div class="top-anatomy-panel">
+                            <div class="anatomy-header-row">
+                                <span class="section-label-cyan">Select Pain Areas (1 to 3)</span>
+                                <span class="val-tag" id="painSelectedCountBadge">2/3 Selected</span>
+                            </div>
+                            <div class="anatomy-chips-grid" id="painAnatomyChipsGrid">
+                                <div class="anatomy-chip-btn selected" data-area="Right Lumbar">✓ Right Lumbar</div>
+                                <div class="anatomy-chip-btn" data-area="Left Lumbar">Left Lumbar</div>
+                                <div class="anatomy-chip-btn selected" data-area="Neck / Cervical">✓ Neck / Cervical</div>
+                                <div class="anatomy-chip-btn" data-area="Right Shoulder">Right Shoulder</div>
+                                <div class="anatomy-chip-btn" data-area="Sciatica">Sciatica</div>
+                                <div class="anatomy-chip-btn" data-area="Thoracic">Thoracic</div>
+                                <div class="anatomy-chip-btn" data-area="Right Ankle">Right Ankle</div>
+                                <div class="anatomy-chip-btn" data-area="Right Knee">Right Knee</div>
+                                <div class="anatomy-chip-btn" data-area="Left Knee">Left Knee</div>
+                                <div class="anatomy-chip-btn" data-area="Hip">Hip</div>
                             </div>
                         </div>
-                        <button class="btn btn-sm btn-outline" id="btnAddPainLocation" type="button">+ Add location</button>
-                        <small id="painWeightTotal" class="form-hint">Total: 100%</small>
+
+                        <!-- Dynamically populated selected area cards -->
+                        <div class="dynamic-pain-cards-container" id="dynamicPainCardsContainer">
+                            <!-- Populated dynamically by app.js -->
+                        </div>
+
+                        <!-- Total Percentage Status & Auto Balance -->
+                        <div class="total-percent-bar" id="painTotalPercentBar">
+                            <div>
+                                <span>Total Allocation: </span>
+                                <strong id="painTotalPercentDisplay" style="color: var(--neon-green);">100% (Balanced ✓)</strong>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline" id="btnAutoBalancePain" style="display: none;">Auto-Balance 100%</button>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>Mood</label>
-                        <div class="mood-emoji-selector" id="moodEmojiSelector"><button type="button" class="mood-emoji active" data-emoji="🙂" aria-label="Neutral mood">🙂</button><button type="button" class="mood-emoji" data-emoji="😌" aria-label="Calm mood">😌</button><button type="button" class="mood-emoji" data-emoji="😔" aria-label="Low mood">😔</button><button type="button" class="mood-emoji" data-emoji="😣" aria-label="Stressed mood">😣</button></div>
-                        <div class="scale-buttons scale-buttons-modal" id="moodScaleButtons"><button class="btn-num mood-num" data-val="0">0</button><button class="btn-num mood-num" data-val="1">1</button><button class="btn-num mood-num" data-val="2">2</button><button class="btn-num mood-num" data-val="3">3</button><button class="btn-num mood-num" data-val="4">4</button><button class="btn-num mood-num active" data-val="5">5</button><button class="btn-num mood-num" data-val="6">6</button><button class="btn-num mood-num" data-val="7">7</button><button class="btn-num mood-num" data-val="8">8</button><button class="btn-num mood-num" data-val="9">9</button><button class="btn-num mood-num" data-val="10">10</button></div>
+
+                    <!-- RIGHT COLUMN: Combined Mood & Notes -->
+                    <div class="pain-modal-right-col">
+                        <div class="glass-card pain-rhs-combined">
+                            <!-- Mood Score -->
+                            <div class="form-group">
+                                <label>Mood Level <span class="val-tag" id="moodValDisplay">5.0</span>/10 <span id="moodLabelDisplay" style="color: var(--neon-blue); margin-left: 4px;">(Calm)</span></label>
+                                <div class="scale-buttons scale-buttons-modal" id="moodScaleButtons">
+                                    <button type="button" class="btn-num mood-num" data-val="0">0</button><button type="button" class="btn-num mood-num" data-val="1">1</button><button type="button" class="btn-num mood-num" data-val="2">2</button><button type="button" class="btn-num mood-num" data-val="3">3</button><button type="button" class="btn-num mood-num" data-val="4">4</button><button type="button" class="btn-num mood-num active" data-val="5">5</button><button type="button" class="btn-num mood-num" data-val="6">6</button><button type="button" class="btn-num mood-num" data-val="7">7</button><button type="button" class="btn-num mood-num" data-val="8">8</button><button type="button" class="btn-num mood-num" data-val="9">9</button><button type="button" class="btn-num mood-num" data-val="10">10</button>
+                                </div>
+                                <div class="mood-emoji-selector" id="moodEmojiSelector" style="margin-top: 8px;">
+                                    <button type="button" class="mood-emoji" data-emoji="😌" data-label="Calm" aria-label="Calm mood">😌 Calm</button>
+                                    <button type="button" class="mood-emoji active" data-emoji="🙂" data-label="Good" aria-label="Good mood">🙂 Good</button>
+                                    <button type="button" class="mood-emoji" data-emoji="😴" data-label="Fatigued" aria-label="Fatigued mood">😴 Tired</button>
+                                    <button type="button" class="mood-emoji" data-emoji="😣" data-label="Stressed" aria-label="Stressed mood">😣 Flare</button>
+                                </div>
+                            </div>
+
+                            <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.08); margin: 10px 0;" />
+
+                            <!-- Notes -->
+                            <div class="form-group" style="flex: 1; display: flex; flex-direction: column;">
+                                <label>Clinical Notes</label>
+                                <div class="quick-note-chips-row" style="display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 8px;">
+                                    <span class="quick-note-chip" data-text="Morning lumbar stiffness">Morning stiffness</span>
+                                    <span class="quick-note-chip" data-text="Post-hydrotherapy relief">Post-hydro</span>
+                                    <span class="quick-note-chip" data-text="Desk work fatigue">Desk fatigue</span>
+                                    <span class="quick-note-chip" data-text="Weather flare">Weather flare</span>
+                                </div>
+                                <textarea id="unifiedNotesInput" class="glass-input notes-textarea" style="flex: 1; min-height: 110px;" placeholder="Notes, triggers, relief observations..."></textarea>
+                            </div>
+
+                            <div class="modal-footer" style="padding: 0; margin-top: 10px; display: flex; gap: 8px;">
+                                <button class="btn btn-outline" id="btnCancelPainLog" type="button">Cancel</button>
+                                <button class="btn btn-neon-red" id="btnLogPain" type="button" style="flex: 1;">Save pain log</button>
+                            </div>
+                        </div>
                     </div>
-                    <textarea id="unifiedNotesInput" class="glass-input notes-textarea" placeholder="Notes..."></textarea>
+
+                    <!-- Today's Logged Check-ins Section -->
+                    <div class="todays-pain-history-section" style="grid-column: 1 / -1; width: 100%;">
+                        <div class="todays-history-header">
+                            <span class="section-label-cyan">Today's Check-ins</span>
+                            <span class="val-tag" id="todaysPainLogsCount">0 Logged Today</span>
+                        </div>
+                        <div class="todays-pain-logs-list" id="todaysPainLogsList">
+                            <div class="empty-history-hint">Loading today's logged check-ins...</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="modal-footer"><button class="btn btn-outline" id="btnCancelPainLog">Cancel</button><button class="btn btn-neon-red" id="btnLogPain">Save pain log</button></div>
             </div>
         </div>
 
         <!-- Exercise recommendation slide-up widget -->
         <div class="modal-overlay hidden slide-up-overlay" id="exerciseModal">
-            <div class="modal-content glass-panel slide-up-widget exercise-widget">
-                <div class="modal-header"><h2>Explore Exercises</h2><button class="btn-close" id="btnCloseExercises">&times;</button></div>
-                <p class="form-hint">Suggestions are based on your latest live pain log and learned feedback.</p>
-                <div id="exerciseSuggestions" class="exercise-list"><p class="form-hint">Loading recommendations...</p></div>
+            <div class="modal-content glass-panel slide-up-widget exercise-widget" style="max-height: 88vh; overflow-y: auto;">
+                <div class="modal-header">
+                    <div>
+                        <h2>Explore Exercise & Rehab Library</h2>
+                        <p class="form-hint" style="margin-top: 2px;">Search 34+ clinical-grade Yoga, Pilates, Stretches, Spine Stabilization & Hydrotherapy routines.</p>
+                    </div>
+                    <button class="btn-close" id="btnCloseExercises">&times;</button>
+                </div>
+                
+                <!-- Search & Filters -->
+                <div class="exercise-search-container" style="margin: 12px 0; display: flex; flex-direction: column; gap: 10px;">
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <input type="text" id="exerciseSearchInput" class="glass-input" placeholder="Search by name, body area (e.g. lumbar, cervical, psoas), or keyword..." style="flex: 1; padding: 9px 14px; font-size: 0.9rem;">
+                        <button class="btn btn-outline btn-sm" id="btnClearExerciseSearch" style="white-space: nowrap;">Clear</button>
+                    </div>
+
+                    <!-- Category Pills -->
+                    <div class="exercise-filter-chips" id="exerciseCategoryFilters" style="display: flex; flex-wrap: wrap; gap: 6px;">
+                        <button class="btn btn-sm btn-filter-chip active" data-category="all">All Categories</button>
+                        <button class="btn btn-sm btn-filter-chip" data-category="yoga">Yoga</button>
+                        <button class="btn btn-sm btn-filter-chip" data-category="pilates">Pilates</button>
+                        <button class="btn btn-sm btn-filter-chip" data-category="stretches">Stretches & Mobility</button>
+                        <button class="btn btn-sm btn-filter-chip" data-category="rehab">Spine & Neuro Rehab</button>
+                        <button class="btn btn-sm btn-filter-chip" data-category="hydrotherapy">Hydrotherapy</button>
+                    </div>
+
+                    <!-- Focus Area Pills -->
+                    <div class="exercise-area-chips" id="exerciseAreaFilters" style="display: flex; flex-wrap: wrap; gap: 5px; font-size: 0.8rem; align-items: center;">
+                        <span style="color: var(--text-muted); font-size: 0.75rem; margin-right: 2px;">Focus:</span>
+                        <button class="btn-area-chip active" data-area="all">All Areas</button>
+                        <button class="btn-area-chip" data-area="lumbar">Lower Back</button>
+                        <button class="btn-area-chip" data-area="cervical">Neck / Cervical</button>
+                        <button class="btn-area-chip" data-area="thoracic">Mid Back / Shoulders</button>
+                        <button class="btn-area-chip" data-area="hip">Hips & Pelvis</button>
+                        <button class="btn-area-chip" data-area="sciatic">Sciatica / Hamstrings</button>
+                        <button class="btn-area-chip" data-area="core">Core Stabilization</button>
+                    </div>
+                </div>
+
+                <!-- Daily AI Recommendations Section -->
+                <div id="exerciseRecommendationsSection" style="margin-top: 10px; margin-bottom: 12px; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 8px; padding: 10px 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <strong style="font-size: 0.85rem; color: #60a5fa;">Daily AI Recommendations (Pain-Matched)</strong>
+                        <span style="font-size: 0.75rem; color: var(--text-muted);" id="recomContextNote">Live analysis</span>
+                    </div>
+                    <div id="exerciseRecomList" style="display: flex; flex-direction: column; gap: 6px;"></div>
+                </div>
+
+                <!-- Full Filterable Library -->
+                <div id="exerciseLibraryHeader" style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; margin-bottom: 8px;">
+                    <h3 style="font-size: 0.95rem; color: var(--text-secondary); font-weight: 600;">Exercise Library (<span id="exerciseCatalogCount">34</span>)</h3>
+                    <span id="exerciseActiveFilterLabel" style="font-size: 0.78rem; color: var(--text-muted);">Showing all</span>
+                </div>
+                
+                <div id="exerciseSuggestions" class="exercise-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 50vh; overflow-y: auto; padding-right: 4px;"><p class="form-hint">Loading comprehensive library...</p></div>
             </div>
         </div>
 
@@ -420,6 +630,7 @@
                 <div class="modal-header" style="flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; margin-bottom: 15px;">
                     <h2>Notes</h2>
                     <div style="display: flex; gap: 15px; align-items: center;">
+                        <button class="btn-icon" id="btnToggleFollowUpView" style="background: none; border: none; color: rgba(255,255,255,0.7); cursor: pointer; padding: 4px; display: flex; align-items: center; gap: 4px; font-weight: bold;" title="View Follow Up List">🔥 Follow Up</button>
                         <button class="btn-icon" id="btnToggleArchiveView" style="background: none; border: none; color: rgba(255,255,255,0.7); cursor: pointer; padding: 4px;" title="View Archived Notes">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>
                         </button>
@@ -430,25 +641,63 @@
                 <div style="flex: 1; overflow-y: auto; padding: 10px;" class="notes-scroll-container">
                     <!-- Inline Note Editor -->
                     <div id="inlineNoteEditorContainer" class="glass-panel" style="max-width: 600px; margin: 0 auto 30px auto; padding: 15px; background: rgba(30,30,40,0.6); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; transition: all 0.3s ease;">
-                        <div id="noteEditorCollapsed" style="cursor: text;">
+                        <input type="file" id="noteFileInput" accept="image/*,application/pdf,.doc,.docx,.txt" style="display: none;">
+                        <input type="file" id="noteCameraInput" accept="image/*" capture="environment" style="display: none;">
+                        <div id="noteEditorCollapsed" style="cursor: text; display: flex; justify-content: space-between; align-items: center;">
                             <input type="text" class="glass-input" placeholder="Take a note..." style="width: 100%; border: none; background: transparent; font-size: 1em; padding: 5px; outline: none; pointer-events: none;">
+                            <div style="display: flex; gap: 4px; align-items: center;">
+                                <label for="noteCameraInput" class="btn-icon" id="btnNoteCameraCollapsed" title="Take photo with camera" style="background: none; border: none; color: rgba(255,255,255,0.7); cursor: pointer; padding: 4px; font-size: 1.1rem; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;">📷</label>
+                                <label for="noteFileInput" class="btn-icon" id="btnNoteAttachCollapsed" title="Attach file or photo" style="background: none; border: none; color: rgba(255,255,255,0.7); cursor: pointer; padding: 4px; font-size: 1.1rem; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;">📎</label>
+                            </div>
                         </div>
                         <div id="noteEditorExpanded" class="hidden">
                             <input type="text" id="editNoteTitle" class="glass-input" placeholder="Title" style="width: 100%; font-size: 1.1em; font-weight: 500; margin-bottom: 10px; border: none; background: transparent; outline: none;">
                             <textarea id="editNoteBody" class="glass-input" placeholder="Take a note..." style="width: 100%; min-height: 100px; border: none; background: transparent; resize: none; outline: none;"></textarea>
                             
+                            <!-- Note Attachment Preview -->
+                            <div class="chat-attachment-preview hidden" id="noteAttachmentPreview" style="margin: 8px 0; padding: 8px; background: rgba(0,0,0,0.35); border-radius: 8px; display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--glass-border);">
+                                <div style="display: flex; align-items: center; gap: 8px; overflow: hidden;">
+                                    <img id="noteAttachmentImg" src="" alt="Attachment" style="width: 36px; height: 36px; object-fit: cover; border-radius: 6px; display: none;">
+                                    <span id="noteAttachmentFileIcon" style="font-size: 1.2rem; display: none;">📄</span>
+                                    <div style="display: flex; flex-direction: column; overflow: hidden;">
+                                        <span id="noteAttachmentName" style="font-size: 0.82rem; color: var(--text-primary); text-overflow: ellipsis; white-space: nowrap; overflow: hidden; max-width: 220px;">file.png</span>
+                                        <span id="noteAttachmentSize" style="font-size: 0.72rem; color: var(--text-secondary);">0 KB</span>
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span id="noteOcrStatus" style="font-size: 0.75rem; color: var(--neon-blue);"></span>
+                                    <button class="btn-close" id="btnRemoveNoteAttachment" style="font-size: 1.1rem; line-height: 1; padding: 2px 6px;">&times;</button>
+                                </div>
+                            </div>
+
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
-                                <button class="btn-icon" id="btnPinNote" style="background: none; border: none; color: rgba(255,255,255,0.5); cursor: pointer; padding: 4px;" title="Pin Note">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"></line><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.68V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3v4.68a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path></svg>
-                                </button>
-                                <div style="display: flex; gap: 10px;">
+                                <div style="display: flex; gap: 10px; align-items: center;">
+                                    <button class="btn-icon" id="btnPinNote" style="background: none; border: none; color: rgba(255,255,255,0.5); cursor: pointer; padding: 4px;" title="Pin Note">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"></line><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.68V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3v4.68a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path></svg>
+                                    </button>
+                                    <label for="noteCameraInput" class="btn-icon" id="btnNoteCameraExpanded" title="Take photo with camera" style="background: none; border: none; color: rgba(255,255,255,0.7); cursor: pointer; padding: 4px; font-size: 1.1rem; display: inline-flex; align-items: center; justify-content: center;">📷</label>
+                                    <label for="noteFileInput" class="btn-icon" id="btnNoteAttachExpanded" title="Attach file or photo" style="background: none; border: none; color: rgba(255,255,255,0.7); cursor: pointer; padding: 4px; font-size: 1.1rem; display: inline-flex; align-items: center; justify-content: center;">📎</label>
+                                </div>
+                                <div style="display: flex; gap: 10px; align-items: center;">
+                                    <button class="btn btn-sm btn-outline" id="btnDeleteNoteEditor" style="color: #ff5252; border-color: rgba(255,82,82,0.4); display: none;">Delete</button>
                                     <button class="btn btn-sm btn-outline" id="btnCancelNoteEdit">Close</button>
                                 </div>
                             </div>
                         </div>
                     </div>
 
+                    <!-- Follow Up List Workspace -->
+                    <div id="followUpWorkspace" class="hidden" style="margin-bottom: 30px; display: flex; flex-direction: column; gap: 10px; min-height: 400px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <h3 style="margin: 0; font-size: 1.1rem; color: var(--neon-red);">🔥 Critical Follow Up Items</h3>
+                            <span style="font-size: 0.8rem; color: var(--text-secondary);" id="followUpSaveStatus"></span>
+                        </div>
+                        <textarea id="followUpTextarea" class="glass-input" style="flex: 1; resize: none; font-family: monospace; font-size: 0.95rem; padding: 15px; border: 1px solid rgba(255, 60, 60, 0.4); background: rgba(20, 0, 0, 0.4);" placeholder="- Follow up on blood test results..."></textarea>
+                        <button class="btn btn-sm btn-outline" id="btnSaveFollowUp" style="align-self: flex-end; border-color: var(--neon-red); color: var(--neon-red);">Save Follow Up List</button>
+                    </div>
+
                     <!-- Notes Grids -->
+                    <div id="standardNotesWorkspace">
                     <div id="notesSectionTitle" style="margin-bottom: 15px; font-weight: 500; color: rgba(255,255,255,0.5); display: none;">PINNED</div>
                     <div class="notes-workspace" style="column-count: auto; column-width: 250px; column-gap: 15px; margin-bottom: 30px;" id="pinnedNotesGrid">
                         <!-- Pinned Notes will go here -->
@@ -458,6 +707,52 @@
                     <div class="notes-workspace" style="column-count: auto; column-width: 250px; column-gap: 15px;" id="notesGrid">
                         <!-- Unpinned Notes will go here -->
                     </div>
+
+                    <!-- Designated Archive Section at Bottom -->
+                    <div id="archivedNotesSectionTitle" style="margin-top: 35px; margin-bottom: 15px; font-weight: 500; color: rgba(255,255,255,0.5); display: none; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+                        <span style="display: flex; align-items: center; gap: 8px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>
+                            ARCHIVED
+                        </span>
+                    </div>
+                    <div class="notes-workspace" style="column-count: auto; column-width: 250px; column-gap: 15px;" id="archivedNotesGrid">
+                        <!-- Archived Notes will go here -->
+                    </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Image Lightbox Modal -->
+        <div class="modal-overlay hidden" id="imageLightboxModal" style="z-index: 1200; background: rgba(0,0,0,0.88); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center;">
+            <div style="position: relative; max-width: 90vw; max-height: 90vh; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                <button class="btn-close" id="btnCloseImageLightbox" style="position: absolute; top: -36px; right: 0; font-size: 2rem; color: #fff; background: none; border: none; cursor: pointer; line-height: 1;">&times;</button>
+                <img id="lightboxImg" src="" alt="Full view" style="max-width: 90vw; max-height: 82vh; object-fit: contain; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
+                <div id="lightboxCaption" style="margin-top: 10px; color: rgba(255,255,255,0.8); font-size: 0.9rem; text-align: center;"></div>
+            </div>
+        </div>
+
+        <!-- Compose SMS Modal -->
+        <div class="modal-overlay hidden" id="composeSmsModal">
+            <div class="modal-content glass-panel" style="max-width: 480px; width: 92%;">
+                <div class="modal-header">
+                    <h2>Compose Text Message</h2>
+                    <button class="btn-close" id="btnCloseComposeSms">&times;</button>
+                </div>
+                <div style="padding: 15px 0; display: flex; flex-direction: column; gap: 12px;">
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 6px;">To (Phone Number)</label>
+                        <input type="tel" id="smsToInput" class="glass-input" placeholder="+61400000000" style="width: 100%;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 6px;">Message Body</label>
+                        <textarea id="smsBodyInput" class="glass-input" rows="4" placeholder="Type your text message here..." style="width: 100%; resize: vertical;"></textarea>
+                    </div>
+                    <div id="smsSendError" style="color: var(--neon-red); font-size: 0.85rem; display: none;"></div>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px;">
+                    <button class="btn btn-outline btn-sm" id="btnCancelComposeSms">Cancel</button>
+                    <button class="btn btn-neon-blue btn-sm" id="btnSubmitSendSms">Send Message</button>
                 </div>
             </div>
         </div>
@@ -467,7 +762,10 @@
             <div class="modal-content glass-panel chat-modal-content">
                 <div class="modal-header">
                     <h2>Chat with RUMBLE</h2>
-                    <button class="btn-close" id="btnCloseRumbleChat">&times;</button>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <button class="btn btn-outline btn-sm" id="btnExportChat" title="Export Chat as JSON">Export JSON</button>
+                        <button class="btn-close" id="btnCloseRumbleChat">&times;</button>
+                    </div>
                 </div>
                 <div class="chat-messages" id="rumbleChatMessages">
                     <div class="message rumble-message">
@@ -485,12 +783,10 @@
                     </div>
                     <button class="btn-close" id="btnRemoveChatAttachment" style="font-size: 1.1rem; line-height: 1; padding: 2px 6px;">&times;</button>
                 </div>
-                <div class="chat-input-row" style="position: relative;">
+                <div class="chat-input-row">
                     <input type="file" id="chatFileInput" accept="image/*,application/pdf,.doc,.docx,.txt" style="display: none;">
-                    <input type="file" id="chatCameraInput" accept="image/*" capture="environment" style="display: none;">
-                    <input type="text" id="rumbleChatInput" class="glass-input" placeholder="Type to Rumble, attach files, or use voice...">
-                    <button class="btn btn-outline btn-sm" id="btnChatCamera" title="Take Photo with Camera" aria-label="Take Photo with Camera">📷</button>
-                    <button class="btn btn-outline btn-sm" id="btnChatAttach" title="Attach Photo or Document" aria-label="Attach Photo or Document">📎</button>
+                    <button class="btn btn-outline btn-sm" id="btnChatAttach" title="Attach file or photo" aria-label="Attach File">📎</button>
+                    <textarea id="rumbleChatInput" class="glass-input" rows="1" placeholder="Type to Rumble, attach files, or use voice..."></textarea>
                     <button class="btn btn-voice btn-sm" id="btnRumbleVoice" title="Voice Input">Voice</button>
                     <button class="btn btn-neon-blue btn-sm" id="btnSendRumbleChat">Send</button>
                 </div>
@@ -563,14 +859,18 @@
                     <video id="runnerVideo" playsinline autoplay muted loop style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; display: none;"></video>
                     <div class="visual-placeholder" id="runnerPlaceholder" style="z-index: 1;">START</div>
                 </div>
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
-                    <div>
-                        <h3 id="runnerStep">Step 1: Alignment & Position</h3>
-                        <div class="timer" id="runnerTimer">00:30</div>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                    <div style="flex: 1; min-width: 0; padding-right: 8px;">
+                        <h3 id="runnerStep" style="margin-bottom: 2px;">Step 1: Alignment & Position</h3>
+                        <p id="runnerCue" style="margin: 3px 0 6px 0; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.35;"></p>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div class="timer" id="runnerTimer" style="cursor: pointer; margin: 0;" title="Click to Pause/Resume">00:30</div>
+                            <button class="btn btn-outline btn-sm" id="btnTogglePauseRunner">Pause</button>
+                        </div>
                     </div>
-                    <button class="btn btn-outline btn-sm" id="btnSwapExercise">Swap Exercise</button>
+                    <button class="btn btn-outline btn-sm" id="btnSwapExercise" style="white-space: nowrap;">Swap Exercise</button>
                 </div>
-                <div class="runner-actions" style="display: flex; justify-content: space-between;">
+                <div class="runner-actions" style="display: flex; justify-content: space-between; margin-top: 10px;">
                     <button class="btn btn-outline" id="btnPrevStep">Prev</button>
                     <button class="btn btn-neon-purple" id="btnNextStep">Next Step</button>
                 </div>
@@ -671,21 +971,205 @@
             </div>
         </div>
 
+        <!-- Task View Modal -->
+        <div class="modal-overlay hidden" id="taskViewModal">
+            <div class="modal-content glass-panel" style="max-width: 480px;">
+                <div class="modal-header">
+                    <h2 id="viewTaskTitle">Task Details</h2>
+                    <button class="btn-close" id="btnCloseTaskView">&times;</button>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 12px; margin: 15px 0;">
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <span class="badge neon-blue" id="viewTaskBadge">Pending</span>
+                        <span class="badge" style="background: rgba(255,255,255,0.08); color: var(--text-secondary);" id="viewTaskSourceBadge">Google Tasks</span>
+                    </div>
+                    <div style="font-size: 0.95rem; color: var(--text-primary);">
+                        <strong style="color: var(--neon-blue);">Due Date: </strong>
+                        <span id="viewTaskDue">--</span>
+                    </div>
+                    <div style="font-size: 0.9rem; color: var(--text-secondary); background: rgba(0,0,0,0.25); padding: 10px; border-radius: 8px; border: 1px solid var(--glass-border);">
+                        <strong style="color: var(--text-primary); display: block; margin-bottom: 4px;">Notes:</strong>
+                        <div id="viewTaskNotes" style="white-space: pre-wrap;">No additional notes provided.</div>
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: space-between; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
+                    <button class="btn btn-neon-red btn-sm" id="btnDeleteTask">Delete Task</button>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-outline btn-sm" id="btnToggleTaskComplete">Mark Complete</button>
+                        <button class="btn btn-outline btn-sm" id="btnEditTask">Edit Task</button>
+                        <button class="btn btn-neon-blue btn-sm" id="btnDoneTaskView">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add / Edit Task Modal -->
+        <div class="modal-overlay hidden" id="taskEditModal">
+            <div class="modal-content glass-panel" style="max-width: 500px;">
+                <div class="modal-header">
+                    <h2 id="editTaskModalTitle">Add Task</h2>
+                    <button class="btn-close" id="btnCloseTaskEdit">&times;</button>
+                </div>
+                <form id="taskForm" style="display: flex; flex-direction: column; gap: 12px; margin-top: 15px;">
+                    <input type="hidden" id="taskId" value="">
+                    <div>
+                        <label style="font-size: 0.85rem; color: var(--text-secondary); display: block; margin-bottom: 4px;">Task Title *</label>
+                        <input type="text" id="taskInputTitle" class="glass-input" placeholder="e.g., Review hydrotherapy exercise regimen" required style="width: 100%; padding: 8px 10px;">
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div>
+                            <label style="font-size: 0.85rem; color: var(--text-secondary); display: block; margin-bottom: 4px;">Due Date</label>
+                            <input type="date" id="taskInputDate" class="glass-input" style="width: 100%; padding: 8px 10px;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.85rem; color: var(--text-secondary); display: block; margin-bottom: 4px;">Time</label>
+                            <input type="time" id="taskInputTime" class="glass-input" value="09:00" style="width: 100%; padding: 8px 10px;">
+                        </div>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.85rem; color: var(--text-secondary); display: block; margin-bottom: 4px;">Status</label>
+                        <select id="taskInputStatus" class="glass-select" style="width: 100%; padding: 8px 10px;">
+                            <option value="needsAction">Pending (Needs Action)</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.85rem; color: var(--text-secondary); display: block; margin-bottom: 4px;">Notes & Details</label>
+                        <textarea id="taskInputNotes" class="glass-input" placeholder="Actionable checklist, clinician instructions, or details..." rows="3" style="width: 100%; padding: 8px 10px; resize: vertical;"></textarea>
+                    </div>
+                    <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px;">
+                        <button type="button" class="btn btn-outline" id="btnCancelTaskEdit">Cancel</button>
+                        <button type="submit" class="btn btn-neon-blue" id="btnSaveTask">Save Task</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Clinical Pain Analytics & GP Report Modal -->
+        <div class="modal-overlay hidden" id="painAnalyticsModal">
+            <div class="modal-content glass-panel" style="max-width: 900px; width: 95%; max-height: 90vh; overflow-y: auto;">
+                <div class="modal-header">
+                    <div>
+                        <h2 style="display: flex; align-items: center; gap: 8px;">📊 Longitudinal Pain Analytics & Clinical GP Report</h2>
+                        <div style="font-size: 0.82rem; color: var(--text-secondary); margin-top: 2px;">Clinical decision support & 30-day anatomical flare tracking for GP/specialist review.</div>
+                    </div>
+                    <button class="btn-close" id="btnClosePainAnalytics">&times;</button>
+                </div>
+
+                <div class="modal-body" style="display: flex; flex-direction: column; gap: 18px; margin-top: 10px;">
+                    <!-- Period Filter Tabs -->
+                    <div style="display: flex; gap: 8px; align-items: center; justify-content: space-between; flex-wrap: wrap; padding-bottom: 6px; border-bottom: 1px solid var(--glass-border);">
+                        <div style="display: flex; gap: 8px; align-items: center;" id="painPeriodTabs">
+                            <button type="button" class="btn btn-sm btn-outline pain-period-btn" id="btnPainPeriodDay" data-period="day">Today (Intra-Day)</button>
+                            <button type="button" class="btn btn-sm btn-outline pain-period-btn" id="btnPainPeriodWeek" data-period="week">7 Days (Week)</button>
+                            <button type="button" class="btn btn-sm btn-neon-blue pain-period-btn active" id="btnPainPeriodMonth" data-period="month">30 Days (Month)</button>
+                            <button type="button" class="btn btn-sm btn-outline pain-period-btn" id="btnPainPeriodAll" data-period="all">All Time</button>
+                        </div>
+                        <div style="font-size: 0.82rem; color: var(--neon-blue); font-weight: 500;" id="painAnalyticsPeriodBadge">Showing Last 30 Days</div>
+                    </div>
+
+                    <!-- Key Clinical Metric Cards -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px;" id="painKpiGrid">
+                        <div class="glass-panel" style="padding: 12px; border-radius: 8px; border-left: 3px solid var(--neon-red);">
+                            <div style="font-size: 0.78rem; color: var(--text-secondary); text-transform: uppercase;" id="statPainAvgLabel">30-Day Average Pain</div>
+                            <div style="font-size: 1.6rem; font-weight: 700; color: var(--neon-red);" id="statPainAvg">7.4 / 10</div>
+                            <div style="font-size: 0.72rem; color: var(--text-secondary);" id="statPainRange">Range: 5.0 - 9.5</div>
+                        </div>
+                        <div class="glass-panel" style="padding: 12px; border-radius: 8px; border-left: 3px solid var(--neon-purple);">
+                            <div style="font-size: 0.78rem; color: var(--text-secondary); text-transform: uppercase;">Primary Pain Driver</div>
+                            <div style="font-size: 1.3rem; font-weight: 600; color: var(--neon-purple); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" id="statPainPrimary">Right Lumbar</div>
+                            <div style="font-size: 0.72rem; color: var(--text-secondary);" id="statPainPrimaryPct">51% of Total Burden</div>
+                        </div>
+                        <div class="glass-panel" style="padding: 12px; border-radius: 8px; border-left: 3px solid var(--neon-blue);">
+                            <div style="font-size: 0.78rem; color: var(--text-secondary); text-transform: uppercase;">Total Clinical Logs</div>
+                            <div style="font-size: 1.6rem; font-weight: 700; color: var(--neon-blue);" id="statPainTotalLogs">310 Entries</div>
+                            <div style="font-size: 0.72rem; color: var(--text-secondary);">Recorded 4x Daily</div>
+                        </div>
+                        <div class="glass-panel" style="padding: 12px; border-radius: 8px; border-left: 3px solid var(--neon-green);">
+                            <div style="font-size: 0.78rem; color: var(--text-secondary); text-transform: uppercase;">Morning vs Night Flares</div>
+                            <div style="font-size: 1.3rem; font-weight: 600; color: var(--neon-green);" id="statPainMorningNight">6.8 AM · 7.7 PM</div>
+                            <div style="font-size: 0.72rem; color: var(--text-secondary);">Nighttime Cumulative Strain</div>
+                        </div>
+                    </div>
+
+                    <!-- Visual Graphs Grid -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 16px;">
+                        <!-- 30-Day Trend Chart -->
+                        <div class="glass-panel" style="padding: 14px; border-radius: 8px;">
+                            <div style="font-weight: 600; font-size: 0.95rem; margin-bottom: 8px; display: flex; justify-content: space-between;">
+                                <span>30-Day Pain Score Trajectory</span>
+                                <span class="badge neon-red" style="font-size: 0.72rem;">Severe Threshold ≥ 7</span>
+                            </div>
+                            <div style="position: relative; height: 220px;">
+                                <canvas id="painTrendsChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Anatomical Burden Distribution Chart -->
+                        <div class="glass-panel" style="padding: 14px; border-radius: 8px;">
+                            <div style="font-weight: 600; font-size: 0.95rem; margin-bottom: 8px; display: flex; justify-content: space-between;">
+                                <span>Anatomical Burden Distribution</span>
+                                <span class="badge neon-purple" style="font-size: 0.72rem;">Relative Weight %</span>
+                            </div>
+                            <div style="position: relative; height: 220px; display: flex; justify-content: center;">
+                                <canvas id="painAnatomyChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Time-of-Day Pattern & Recent Logs -->
+                    <div class="glass-panel" style="padding: 14px; border-radius: 8px;">
+                        <div style="font-weight: 600; font-size: 0.95rem; margin-bottom: 8px;">Recent Clinical Observations & Symptoms</div>
+                        <div style="max-height: 200px; overflow-y: auto;">
+                            <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: left;" id="painLogsTable">
+                                <thead>
+                                    <tr style="border-bottom: 1px solid var(--glass-border); color: var(--text-secondary);">
+                                        <th style="padding: 6px 8px;">Date & Time</th>
+                                        <th style="padding: 6px 8px;">Score</th>
+                                        <th style="padding: 6px 8px;">Generators & Distribution</th>
+                                        <th style="padding: 6px 8px;">Mood</th>
+                                        <th style="padding: 6px 8px;">Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="painLogsTableBody">
+                                    <!-- Injected dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div style="font-size: 0.76rem; color: var(--text-secondary); font-style: italic; border-left: 2px solid var(--neon-blue); padding-left: 8px;">
+                        Medical output is decision support, not diagnosis. Preserve clinician restrictions; recommend clinician review for worsening or concerning symptoms.
+                    </div>
+                </div>
+
+                <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; flex-wrap: wrap; gap: 8px;">
+                    <button class="btn btn-neon-blue btn-sm" id="btnAskRumbleForGP">💬 Ask Rumble to Summarize for GP</button>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-outline btn-sm" id="btnPrintPainReport">🖨 Print / Export GP Report</button>
+                        <button class="btn btn-outline btn-sm" id="btnDismissPainAnalytics">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Budget Overview Modal -->
         <div class="modal-overlay hidden" id="budgetOverviewModal">
-            <div class="modal-content glass-panel" style="max-width: 800px; width: 95%;">
+            <div class="modal-content glass-panel" style="max-width: 850px; width: 95%; max-height: 90vh; overflow-y: auto;">
                 <div class="modal-header">
-                    <h2>Budget Analytics & Overviews</h2>
+                    <h2>Budget Analytics & Synthesized Reports</h2>
                     <button class="btn-close" id="btnCloseBudgetOverview">&times;</button>
                 </div>
                 <div class="modal-body" style="display: flex; flex-direction: column; gap: 16px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-                        <h3 style="margin: 0; font-size: 1.1rem; color: var(--text-primary);">Weekly Overviews</h3>
-                        <select id="budgetMonthSelect" class="glass-select" style="padding: 8px;">
-                            <option value="2026-08">August 2026</option>
-                            <option value="2026-07">July 2026</option>
-                            <option value="2026-06">June 2026</option>
-                        </select>
+                        <h3 style="margin: 0; font-size: 1.1rem; color: var(--text-primary);">Interactive Analytics</h3>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <select id="budgetMonthSelect" class="glass-select" style="padding: 6px 10px;">
+                                <option value="2026-08">August 2026</option>
+                                <option value="2026-07">July 2026</option>
+                                <option value="2026-06">June 2026</option>
+                            </select>
+                        </div>
                     </div>
                     
                     <div class="glass-panel" style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px;">
@@ -695,9 +1179,37 @@
                     <div id="budgetDetailedStats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px;">
                         <!-- dynamic stats -->
                     </div>
+
+                    <!-- Periodic Archiving & Synthesized Reports Section -->
+                    <div class="glass-panel" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 16px; border-radius: 12px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
+                            <div>
+                                <h4 style="color: var(--neon-blue); margin: 0; font-size: 1rem;">📑 Periodic Reports Archive (agent_reports/)</h4>
+                                <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 4px 0 0 0;">Weekly and monthly syntheses are automatically archived and logged for review.</p>
+                            </div>
+                            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                                <button class="btn btn-outline btn-sm" id="btnArchiveResetWeek" title="Close out and archive current week report">Archive & Reset Week</button>
+                                <button class="btn btn-outline btn-sm" id="btnArchiveResetMonth" title="Close out and archive current month report">Archive & Reset Month</button>
+                            </div>
+                        </div>
+
+                        <div id="budgetReportsList" style="display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto;">
+                            <!-- Dynamic archived reports -->
+                            <div style="color: var(--text-secondary); font-size: 0.85rem;">Loading archived reports...</div>
+                        </div>
+
+                        <div id="budgetReportDetail" class="hidden" style="margin-top: 14px; padding: 14px; background: rgba(0,0,0,0.3); border: 1px solid var(--neon-blue); border-radius: 8px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <strong id="budgetReportDetailTitle" style="color: var(--neon-blue); font-size: 0.95rem;">Report Details</strong>
+                                <button class="btn btn-sm btn-outline" id="btnCloseReportDetail" style="padding: 2px 6px;">&times;</button>
+                            </div>
+                            <pre id="budgetReportDetailContent" style="white-space: pre-wrap; font-family: monospace; font-size: 0.8rem; color: var(--text-primary); max-height: 250px; overflow-y: auto; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px;"></pre>
+                        </div>
+                    </div>
                     
-                    <div style="text-align: right; margin-top: 8px;">
-                        <button class="btn btn-outline" id="btnPrintBudgetReport">🖨 Print Report</button>
+                    <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px;">
+                        <button class="btn btn-outline btn-sm" id="btnPrintBudgetReport">🖨 Print Report</button>
+                        <button class="btn btn-outline btn-sm" id="btnDismissBudgetModal">Close</button>
                     </div>
                 </div>
             </div>
@@ -708,6 +1220,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="app.js?v=22"></script>
+    <script src="app.js?v=25"></script>
 </body>
 </html>

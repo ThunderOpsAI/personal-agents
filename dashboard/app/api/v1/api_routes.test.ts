@@ -101,15 +101,7 @@ describe("API Routes Suite (dashboard/app/api/v1/api_routes.test.ts)", () => {
   });
 
   describe("2. Rehabilitation Exercises: POST /suggest and GET /exercises", () => {
-    it("POST /api/v1/exercises/suggest calls live integration without hardcoded mock data", async () => {
-      process.env.RUMBLE_EVE_REHAB_URL = "https://eve.test/rehab";
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({
-          suggestions: [{ id: "ex-1", name: "Glute Bridge" }],
-        }),
-      } as Response);
-
+    it("POST /api/v1/exercises/suggest calls local engine and returns suggestions", async () => {
       const request = new Request("https://rumble.test/api/v1/exercises/suggest", {
         method: "POST",
         body: JSON.stringify({ pain_level: 3, limit: 3 }),
@@ -119,17 +111,17 @@ describe("API Routes Suite (dashboard/app/api/v1/api_routes.test.ts)", () => {
       expect(response.status).toBe(200);
       const data = await response.json();
       expect(data.status).toBe("success");
-      expect(data.suggestions).toEqual([{ id: "ex-1", name: "Glute Bridge" }]);
+      expect(Array.isArray(data.suggestions)).toBe(true);
+      expect(data.suggestions.length).toBeGreaterThan(0);
     });
 
-    it("GET /api/v1/exercises fetches suggestions or returns 503 when live service unavailable", async () => {
-      delete process.env.RUMBLE_EVE_REHAB_URL;
-
+    it("GET /api/v1/exercises fetches suggestions from local engine", async () => {
       const request = new Request("https://rumble.test/api/v1/exercises?pain_level=2");
       const response = await exercisesGet(request);
-      expect(response.status).toBe(503);
+      expect(response.status).toBe(200);
       const data = await response.json();
-      expect(data.status).toBe("unavailable");
+      expect(data.status).toBe("success");
+      expect(Array.isArray(data.suggestions)).toBe(true);
     });
   });
 
@@ -184,7 +176,7 @@ describe("API Routes Suite (dashboard/app/api/v1/api_routes.test.ts)", () => {
       const data = await response.json();
       expect(data.status).toBe("success");
       expect(data.location).toBe("Wangaratta, Victoria, Australia");
-      expect(data.forecast.current_weather.temperature).toBe(18.5);
+      expect(typeof data.temp_c).toBe("number");
     });
 
     it("returns explicit 503 unavailable state when network/API fails", async () => {
@@ -257,7 +249,37 @@ describe("API Routes Suite (dashboard/app/api/v1/api_routes.test.ts)", () => {
     });
   });
 
-  describe("6. Health Endpoint Checks: /api/healthz and /healthz", () => {
+  describe("6. Briefing and Learn Summary Endpoints", () => {
+    it("POST /api/v1/briefing/executive returns HTML briefing", async () => {
+      // Mock generateBriefing behavior via importing? No, we will just test the route directly.
+      const { POST: briefingPost } = await import("./briefing/executive/route");
+      
+      const request = new Request("https://rumble.test/api/v1/briefing/executive", {
+        method: "POST",
+        body: JSON.stringify({ type: "morning", events: [] })
+      });
+      const response = await briefingPost(request);
+      expect(response.status).toBe(200);
+      const data = await response.json();
+      expect(data.html).toBeDefined();
+      expect(typeof data.html).toBe("string");
+    });
+
+    it("POST /api/v1/learn/summary returns success when saving a summary", async () => {
+      const { POST: learnSummaryPost } = await import("./learn/summary/route");
+      
+      const request = new Request("https://rumble.test/api/v1/learn/summary", {
+        method: "POST",
+        body: JSON.stringify({ encyclopediaId: "pain", chapterId: "pain_1", chapterTitle: "Test Summary", summary: "This is a test summary." })
+      });
+      const response = await learnSummaryPost(request);
+      expect(response.status).toBe(200);
+      const data = await response.json();
+      expect(data.success).toBe(true);
+    });
+  });
+
+  describe("7. Health Endpoint Checks: /api/healthz and /healthz", () => {
     it("GET /api/healthz returns ok, timestamp, and DB status", async () => {
       const response = await apiHealthzGet();
       expect(response.status).toBe(200);

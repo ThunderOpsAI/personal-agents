@@ -47,7 +47,7 @@ export const retrievalSchedule: RetrievalScheduleConfig = {
           source: "gmail",
           sourceId: msg.id,
           timeSlot: "13:30", // Tied to deadline or relevant time slot
-          title: `Action Required: ${msg.subject}`,
+          title: `[Rumble: Email Alert] Action Required: ${msg.subject}`,
           summary: msg.snippet,
           actionRequired: true,
           requiresApprovalForAction: true, // Any reply or event write requires needsApproval
@@ -62,7 +62,7 @@ export const retrievalSchedule: RetrievalScheduleConfig = {
           source: "calendar",
           sourceId: evt.id,
           timeSlot: evt.start ? new Date(evt.start).toLocaleTimeString("en-AU", { hour: "2-digit", minute: "2-digit", timeZone: "Australia/Melbourne" }) : "09:00",
-          title: `Agenda Alert: ${evt.summary}`,
+          title: `[Rumble: Calendar Alert] Agenda Alert: ${evt.summary}`,
           summary: evt.description || "",
           actionRequired: true,
           requiresApprovalForAction: true,

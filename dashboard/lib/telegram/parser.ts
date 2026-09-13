@@ -37,6 +37,9 @@ const AREA_ALIAS_MAP: Record<string, string> = {
   'knees': 'knee',
   'shoulder': 'shoulder',
   'shoulders': 'shoulder',
+  'sciatica': 'sciatica',
+  'sciatic': 'sciatica',
+  'sciatic nerve': 'sciatica',
   'hip': 'hip',
   'hips': 'hip',
   'glute': 'hip',
@@ -101,7 +104,7 @@ export function extractLocations(text: string): Array<{
   const found: Array<{ area: string; side: 'left' | 'right' | 'unspecified'; percentage: number }> = [];
 
   // Pass 1: Prefix percentage format: "75% right lumbar", "10% neck", "5% right ankle"
-  const prefixRegex = /(\d{1,3}(?:\.\d+)?)\s*%\s*(?:(right|left|r|l)\s+)?(lower back|low back|l-spine|lumbar|neck|cervical|c-spine|ankles?|thoracic|mid[- ]back|upper[- ]back|t-spine|knees?|shoulders?|hips?|glutes?|wrists?|elbows?)/gi;
+  const prefixRegex = /(\d{1,3}(?:\.\d+)?)\s*%\s*(?:(right|left|r|l)\s+)?(lower back|low back|l-spine|lumbar|neck|cervical|c-spine|sciatica|sciatic|ankles?|thoracic|mid[- ]back|upper[- ]back|t-spine|knees?|shoulders?|hips?|glutes?|wrists?|elbows?)/gi;
   let match: RegExpExecArray | null;
 
   while ((match = prefixRegex.exec(cleaned)) !== null) {
@@ -125,7 +128,7 @@ export function extractLocations(text: string): Array<{
 
   // Pass 2: If Pass 1 found nothing, try Postfix percentage format: "right lumbar 75%", "neck: 10%", "lumbar 75"
   if (found.length === 0) {
-    const postfixRegex = /(?:(right|left|r|l)\s+)?(lower back|low back|l-spine|lumbar|neck|cervical|c-spine|ankles?|thoracic|mid[- ]back|upper[- ]back|t-spine|knees?|shoulders?|hips?|glutes?|wrists?|elbows?)(?:\s+(right|left|r|l))?(?:\s*[:=]?\s*(\d{1,3}(?:\.\d+)?)\s*%?)?/gi;
+    const postfixRegex = /(?:(right|left|r|l)\s+)?(lower back|low back|l-spine|lumbar|neck|cervical|c-spine|sciatica|sciatic|ankles?|thoracic|mid[- ]back|upper[- ]back|t-spine|knees?|shoulders?|hips?|glutes?|wrists?|elbows?)(?:\s+(right|left|r|l))?(?:\s*[:=]?\s*(\d{1,3}(?:\.\d+)?)\s*%?)?/gi;
 
     while ((match = postfixRegex.exec(cleaned)) !== null) {
       const preSide = match[1]?.toLowerCase();

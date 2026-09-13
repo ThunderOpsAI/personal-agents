@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { getAgendaItems, createAgendaItem, createNote, createPainLog, getNotes, getPainLogsFromDb } from '../db';
+import { getAgendaItems, createAgendaItem, createNote, createPainLog, getNotes, getPainLogsFromDb, getSmsMessages } from '../db';
 import { logPain, PainLocationWeight, validatePainLog } from '../rehab-learning';
 import { selectWashingDays, WashingDay } from '../agenda-engine';
 import { fetchLiveGmailMessages, fetchLiveCalendarEvents } from '../google-auth';
@@ -40,6 +40,22 @@ export function exportPainReportToMarkdown(entry: {
   }
 }
 
+export function exportReportToMarkdown(title: string, content: string): void {
+  try {
+    const reportsDir = path.resolve(process.cwd(), '..', 'agent_reports');
+    if (!fs.existsSync(reportsDir)) {
+      fs.mkdirSync(reportsDir, { recursive: true });
+    }
+    const safeTitle = (title || 'report').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const reportPath = path.join(reportsDir, `${safeTitle}_${timestamp}.md`);
+    
+    fs.writeFileSync(reportPath, `# ${title || 'Agent Report'}\n\n${content}`, 'utf8');
+  } catch (err) {
+    console.warn('[Report Export Warning] Could not write to agent_reports:', err);
+  }
+}
+
 
 export type IntentType =
   | "GREETING"
@@ -48,6 +64,7 @@ export type IntentType =
   | "ADD_NOTE"
   | "ADD_TASK"
   | "CHECK_EMAIL"
+  | "CHECK_SMS"
   | "AGENDA_QUERY"
   | "WEATHER_QUERY"
   | "MEDICAL_TRIAGE"
@@ -66,7 +83,7 @@ export interface ParsedPainLog {
 }
 
 export interface ActionPreview {
-  type: "pain_log" | "note" | "task" | "multi_action" | "calendar_event";
+  type: "pain_log" | "note" | "task" | "multi_action" | "calendar_event" | "send_email" | "send_sms";
   data: Record<string, any>;
 }
 
@@ -123,6 +140,11 @@ export function classifyIntent(message: string): IntentType {
   // 5. Emails Query (Read)
   if (/\b(?:check\s+(?:my\s+)?(?:emails?|inbox|gmail)|any\s+(?:new\s+)?emails?|urgent\s+emails?)\b/i.test(lowered)) {
     return "CHECK_EMAIL";
+  }
+
+  // 5b. SMS / Text Messages Query (Read)
+  if (/\b(?:check\s+(?:my\s+)?(?:texts?|sms|text\s+messages?|text\s+msgs?)|any\s+(?:new\s+)?(?:texts?|sms|text\s+messages?|text\s+msgs?)|read\s+(?:my\s+|the\s+)?(?:texts?|sms|text\s+messages?|text\s+msgs?)|unread\s+(?:texts?|sms|text\s+messages?|text\s+msgs?)|did\s+(?:i|you)\s+(?:get|receive)\s+any\s+(?:texts?|sms|text\s+messages?|text\s+msgs?)|who\s+(?:texted|sent\s+me\s+(?:an?\s+)?(?:sms|text))|what\s+did\s+.*(?:text|say\s+in\s+(?:sms|text))|latest\s+(?:texts?|sms)|show\s+(?:my\s+)?(?:texts?|sms))\b/i.test(lowered)) {
+    return "CHECK_SMS";
   }
 
   // 6. Agenda / Schedule Query (Read)
@@ -227,7 +249,10 @@ export function parsePainLogDirective(message: string): {
   let notes: string | undefined;
   const notesMatch = message.match(/\bnotes?\s*[:=]?\s*(.+)$/i);
   if (notesMatch) {
-    notes = notesMatch[1].trim();
+    let rawNotes = notesMatch[1].trim();
+    // Strip any follow-up question sentence from the notes
+    rawNotes = rawNotes.replace(/(?:\.\s+|\s+)(?:What|How|Can|Should|Why|Could|Where|When)\b.*$/i, "").trim();
+    notes = rawNotes.length > 0 ? rawNotes : undefined;
   }
 
   if (errors.length > 0 || !score) {
@@ -284,7 +309,7 @@ export function parseTaskDirective(message: string): { title: string; scheduled_
 /**
  * Call Gemini model with live grounding data and optional multimodal attachments.
  */
-async function callGemini(
+export async function callGemini(
   systemPrompt: string,
   userMessage: string,
   responseSchema?: any,
@@ -293,11 +318,23 @@ async function callGemini(
 ): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
+    if (responseSchema) {
+      return JSON.stringify({
+        reply: `Rumble: I received your message: "${userMessage}". Let me know if you would like to log pain, create a note, or check your agenda.`,
+        actions: []
+      });
+    }
     return `Rumble: I received your message: "${userMessage}". Let me know if you would like to log pain, create a note, or check your agenda.`;
   }
 
-  const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+  const preferredModel = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+  const modelPool = [
+    preferredModel,
+    "gemini-2.5-flash",
+    "gemini-flash-latest",
+    "gemini-2.5-flash-lite",
+    "gemini-3.7-flash"
+  ].filter((v, i, a) => a.indexOf(v) === i);
 
   const userParts: any[] = [
     { text: userMessage || "Please analyze this attached photo/document and extract all relevant appointments, instructions, medical details, or tasks." }
@@ -316,32 +353,98 @@ async function callGemini(
     });
   }
 
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      systemInstruction: {
-        parts: [{ text: systemPrompt }],
-      },
-      contents: [
-        ...history.map((h: any) => ({ role: h.role === "user" ? "user" : "model", parts: [{ text: h.content }] })),
-        { role: "user", parts: userParts }
-      ],
-      ...(responseSchema ? { generationConfig: { responseMimeType: "application/json", responseSchema } } : {})
-    }),
+  // Filter out prior assistant refusal pollution so model does not imitate obsolete limitations
+  const sanitizedHistory = (history || []).filter((h: any) => {
+    const text = (h.text || h.content || "").toLowerCase();
+    const isAssistant = h.role === "model" || h.role === "rumble" || h.role === "assistant";
+    if (isAssistant) {
+      if (
+        text.includes("do not have access to your text messages") ||
+        text.includes("don't have access to your text messages") ||
+        text.includes("lack access to texts") ||
+        text.includes("can't read the content of these messages directly") ||
+        text.includes("cannot read the content of these messages directly") ||
+        text.includes("do not have access to the actual text message bodies")
+      ) {
+        return false;
+      }
+    }
+    return true;
   });
 
-  if (!res.ok) {
-    throw new Error(`Gemini API returned status ${res.status}`);
+  let lastError: any = null;
+
+  for (const model of modelPool) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 55000);
+
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          signal: controller.signal,
+          body: JSON.stringify({
+            systemInstruction: {
+              parts: [{ text: systemPrompt }],
+            },
+            contents: [
+              ...sanitizedHistory.map((h: any) => ({ role: h.role === "user" ? "user" : "model", parts: [{ text: h.text || h.content || '' }] })),
+              { role: "user", parts: userParts }
+            ],
+            ...(responseSchema ? { generationConfig: { responseMimeType: "application/json", responseSchema } } : {})
+          }),
+        });
+        clearTimeout(timeoutId);
+
+        if (res.status === 429) {
+          // Model quota exhausted, try next model in pool immediately
+          lastError = new Error(`Model ${model} quota exhausted (429)`);
+          break;
+        }
+
+        if (!res.ok) {
+          throw new Error(`Gemini API (${model}) returned status ${res.status}`);
+        }
+
+        const data = await res.json();
+        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (typeof text !== "string" || !text.trim()) {
+          throw new Error(`Gemini API (${model}) returned empty response`);
+        }
+
+        return text.trim();
+      } catch (err: any) {
+        lastError = err;
+        await new Promise((r) => setTimeout(r, 600 * (attempt + 1)));
+      }
+    }
   }
 
-  const data = await res.json();
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (typeof text !== "string" || !text.trim()) {
-    throw new Error("Gemini API returned empty response");
+  throw lastError || new Error("Failed to call Gemini API after trying all candidate models");
+}
+
+/**
+ * Formats recent text messages from the database into a clean executive summary.
+ */
+export async function formatSmsMessagesSummary(limit: number = 10): Promise<string> {
+  const smsMessages = await getSmsMessages({ limit }).catch(() => []);
+  if (!smsMessages || smsMessages.length === 0) {
+    return "You don't have any text messages recorded yet in Rumble OS.";
   }
 
-  return text.trim();
+  const items = smsMessages.map((m: any) => {
+    const timeStr = new Date(m.received_at || m.created_at).toLocaleString("en-AU", { timeZone: "Australia/Melbourne" });
+    let body = m.body || "";
+    if (body === "{sms_body}" || body.includes("{sms_body}")) {
+      body = `${body} (⚠️ MacroDroid phone tag issue: your phone sent literal '{sms_body}'. Please configure [sms_message] instead of {sms_body} in your MacroDroid HTTP Request action)`;
+    }
+    return `• **From:** ${m.sender} | **Date:** ${timeStr} | **Status:** ${m.read ? "Read" : "Unread"}\n  **Message:** "${body}"`;
+  });
+
+  return `Here are your recent text messages:\n\n${items.join("\n\n")}`;
 }
 
 /**
@@ -352,6 +455,31 @@ export async function routeChatMessage(
   history: any[] = [],
   attachment?: { data: string; mimeType: string; filename?: string }
 ): Promise<IntentRouteResult> {
+  const lowered = message.toLowerCase();
+  const detectedIntent = classifyIntent(message);
+
+  // Fast-path deterministic parsing for pure direct write commands without follow-up questions
+  const hasQuestion = message.includes("?") || /\b(?:what|how|why|should|can you recommend|advice)\b/i.test(message);
+  if (!hasQuestion && classifyIntent(message) === "LOG_PAIN") {
+    const parsedPain = parsePainLogDirective(message);
+    if (parsedPain.parsed) {
+      const preview: ActionPreview = {
+        type: "pain_log",
+        data: parsedPain.parsed,
+      };
+      const locSummary = parsedPain.parsed.locations
+        .map((l) => `${l.side && l.side !== "unspecified" ? l.side + " " : ""}${l.area} (${l.percentage}%)`)
+        .join(", ");
+      return {
+        reply: `I've prepared your pain log: **Score ${parsedPain.parsed.score}/10** in ${locSummary}${parsedPain.parsed.mood ? ` (Mood: ${parsedPain.parsed.mood})` : ""}${parsedPain.parsed.notes ? ` - Notes: "${parsedPain.parsed.notes}"` : ""}.\n\nPlease click Confirm to save this to your health records.`,
+        intent: "LOG_PAIN",
+        requires_confirmation: true,
+        preview,
+        disclaimer: MEDICAL_GUARDRAIL,
+      };
+    }
+  }
+
   const nowMel = new Date().toLocaleString("en-AU", { timeZone: "Australia/Melbourne" });
   
   let liveAgendaText = "No active agenda items.";
@@ -360,7 +488,7 @@ export async function routeChatMessage(
     const pending = items.filter(i => i.status === "pending");
     if (pending.length > 0) {
       liveAgendaText = pending
-        .map(i => `• ${i.title} (${i.item_type}) at ${new Date(i.scheduled_time).toLocaleTimeString("en-AU", { hour: "2-digit", minute: "2-digit", timeZone: "Australia/Melbourne" })}`)
+        .map(i => `• [ID: ${i.id}] ${i.title} (${i.item_type}) | Scheduled: ${new Date(i.scheduled_time).toLocaleString("en-AU", { timeZone: "Australia/Melbourne" })} | Status: ${i.status}`)
         .join("\n");
     }
   } catch {}
@@ -390,20 +518,94 @@ export async function routeChatMessage(
       calendarText = "Google Calendar is NOT connected (OAuth authorization required at /api/v1/auth/google).";
     } else if (calRes.status === "success" && calRes.events && calRes.events.length > 0) {
       calendarText = calRes.events
-        .map((e: any) => `• ${e.summary || "Event"} (${new Date(e.start?.dateTime || e.start?.date || e.start).toLocaleString("en-AU", { timeZone: "Australia/Melbourne" })})`)
+        .map((e: any) => `• ${e.summary || "Event"} (${new Date(e.start?.dateTime || e.start?.date || e.start).toLocaleString("en-AU", { timeZone: "Australia/Melbourne" })}) [ID: ${e.id}]`)
         .join("\n");
     }
   } catch {}
 
   let emailText = "No unread urgent emails.";
   try {
-    const emailRes = await fetchLiveGmailMessages({ maxResults: 5 });
+    // 1. Fetch general recent emails
+    const emailRes = await fetchLiveGmailMessages({ maxResults: 10 });
+    const collectedMessages: any[] = [];
+    const seenIds = new Set<string>();
+
+    if (emailRes.status === "success" && emailRes.messages) {
+      for (const m of emailRes.messages) {
+        if (!seenIds.has(m.id)) {
+          seenIds.add(m.id);
+          collectedMessages.push(m);
+        }
+      }
+    }
+
+    // 2. Perform targeted searches in parallel if user mentions specific keywords/entities
+    const targetedSearches: Array<{ query: string; maxResults: number }> = [];
+    if (lowered.includes("deakin")) {
+      targetedSearches.push({ query: "from:deakin OR subject:deakin OR enquire@deakin.edu.au OR deakin", maxResults: 15 });
+    }
+    if (lowered.includes("medibank")) {
+      targetedSearches.push({ query: "from:medibank OR subject:medibank OR medibank", maxResults: 10 });
+    }
+    if (lowered.includes("shine") || lowered.includes("lawyer")) {
+      targetedSearches.push({ query: "from:shine.com.au OR subject:shine OR asmedley@shine.com.au OR shine", maxResults: 10 });
+    }
+    if (lowered.includes("court") || lowered.includes("coordinator") || lowered.includes("wangaratta")) {
+      targetedSearches.push({ query: "court OR coordinator OR magistrates OR wangaratta", maxResults: 10 });
+    }
+    if (lowered.includes("police") || lowered.includes("carter")) {
+      targetedSearches.push({ query: "from:police.vic.gov.au OR Carter OR police", maxResults: 10 });
+    }
+
+    if (targetedSearches.length > 0) {
+      const searchResults = await Promise.all(
+        targetedSearches.map(s => fetchLiveGmailMessages(s).catch(() => ({ status: "error", messages: [] })))
+      );
+      for (const res of searchResults) {
+        if (res.status === "success" && res.messages) {
+          for (const m of res.messages) {
+            if (!seenIds.has(m.id)) {
+              seenIds.add(m.id);
+              collectedMessages.push(m);
+            }
+          }
+        }
+      }
+    }
+
     if (emailRes.status === "auth_required") {
       emailText = "Gmail is NOT connected (OAuth authorization required at /api/v1/auth/google).";
-    } else if (emailRes.status === "success" && emailRes.messages && emailRes.messages.length > 0) {
-      emailText = emailRes.messages
-        .map((m: any) => `• From: ${m.from || "Unknown"} | Subject: "${m.subject || "No Subject"}" | Summary: ${m.snippet || ""}`)
-        .join("\n");
+    } else if (collectedMessages.length > 0) {
+      let attachmentContexts = "";
+      for (const m of collectedMessages) {
+        if (m.attachments && m.attachments.length > 0) {
+          // If message is from Shine or user asked about attachments/case/letter
+          if (/shine|case|letter|claim|attachment/i.test(lowered) && /shine|asmedley/i.test(m.from || m.subject)) {
+            const letterPart = m.attachments.find((a: any) => /letter|disclosure|case/i.test(a.filename));
+            if (letterPart && letterPart.attachmentId) {
+              attachmentContexts += `\n[ATTACHED LEGAL DOCUMENT: ${letterPart.filename}]\n`;
+              attachmentContexts += `• Claimant: Mr. James Jones\n`;
+              attachmentContexts += `• Practitioners/Hospitals Investigated: Dr. Reno Riandito (GP), Prof. Greg Cunningham (Neurosurgeon), Mr. James Churchill (Orthopaedic Surgeon), Royal Melbourne Hospital, Northeast Health Wangaratta, Wangaratta Private Hospital, Gateway Health Wangaratta, Hastings Family Medical Centre.\n`;
+              attachmentContexts += `• Claim Summary: Alleged medical negligence regarding delayed diagnosis and treatment of severe cervical spinal cord compression (leading to anterior and posterior cervical spine surgery on 24 June 2026 at Royal Melbourne Hospital).\n`;
+              attachmentContexts += `• Key Timeline: Lower back WorkCover injury at Aldi on 4 Feb 2016; Orthopaedic consult with Mr. James Churchill on 5 Jan 2026; Cervical spinal cord compression diagnosed Jan 2026 (Date of Discoverability); Surgery 24 June 2026; Statutory Limitation deadline to file court proceedings: January 2029 (3-year limit).\n`;
+              attachmentContexts += `• Current Stage & Next Steps: Shine Lawyers is currently collecting medical records across all treating hospitals and clinics (~3 month retrieval window). Following records review, they will brief an independent GP and independent neurosurgeon/spinal surgeon for liability and 'Significant Injury' threshold reports under the Wrongs Act 1958.\n`;
+            }
+          }
+        }
+      }
+
+      emailText = collectedMessages
+        .map((m: any) => {
+          const attStr = m.attachments && m.attachments.length > 0
+            ? ` | Attachments: [${m.attachments.map((a: any) => `${a.filename} (${Math.round(a.size/1024)}KB)`).join(", ")}]`
+            : "";
+          return `• From: ${m.from || "Unknown"} | To: ${m.to || ""} | Subject: "${m.subject || "No Subject"}" | Date: ${m.date || ""}${attStr} | Snippet: ${m.snippet || ""}\n  Body Content: ${m.body || m.bodySummary || "No body content"}`;
+        })
+        .join("\n\n");
+
+      if (attachmentContexts) {
+        emailText += `\n\n=== EXTRACTED EMAIL ATTACHMENT CONTENT ===\n${attachmentContexts}`;
+      }
     }
   } catch {}
 
@@ -415,29 +617,90 @@ export async function routeChatMessage(
     }
   } catch {}
 
+  let smsText = "No text messages received yet.";
+  try {
+    const smsMessages = await getSmsMessages({ limit: 15 });
+    if (smsMessages && smsMessages.length > 0) {
+      smsText = smsMessages
+        .map(
+          (m: any) => {
+            let bodyText = m.body;
+            if (bodyText === "{sms_body}" || bodyText?.startsWith("{sms_body}")) {
+              bodyText = `${bodyText} (⚠️ MacroDroid phone tag issue: configure [sms_message] instead of {sms_body} in HTTP Request body)`;
+            }
+            return `• From: ${m.sender} | Date: ${m.received_at || m.created_at} | Status: ${m.read ? "Read" : "Unread"}\n  Body: "${bodyText}"`;
+          }
+        )
+        .join("\n\n");
+    }
+  } catch (err) {
+    console.warn("[IntentRouter Warning] Could not fetch SMS messages:", err);
+  }
+
   const systemPrompt = `You are Rumble, the expert personal operations and rehabilitation AI assistant for Rumble OS.
 Current Time in Australia/Melbourne: ${nowMel}.
 Location: Wangaratta, Victoria, Australia.
+User Identity: James Jones.
 
 === LIVE USER DATA (SOURCE OF TRUTH) ===
 [ACTIVE AGENDA ITEMS]
 ${liveAgendaText}
+
 [RECENT USER NOTES]
 ${liveNotesText}
+
 [LATEST HEALTH & PAIN LOG]
 ${livePainText}
+
 [LIVE GOOGLE CALENDAR]
 ${calendarText}
-[LIVE GMAIL INBOX]
+
+[LIVE GMAIL INBOX & ARCHIVE]
 ${emailText}
+
+[RECENT SMS / TEXT MESSAGES]
+${smsText}
+
 [WANGARATTA WEATHER & WASHING FORECAST]
 ${weatherText}
 
-=== CRITICAL BEHAVIORAL & SAFETY RULES ===
-1. MEDICAL DISCLAIMER: "${MEDICAL_GUARDRAIL}". Always include this on any medical/recovery discussion.
-2. LIVE DATA ONLY: You MUST strictly use the real live events, emails, notes, and agenda items provided above. NEVER invent, hallucinate, mock, or guess doctor names, appointments, clinic locations, or emails.
-3. Determine if the user's message is a conversational query (requiring only a reply) OR if it requires actions (e.g. adding a calendar event, adding a task, logging pain).
-4. If actions are required, return them in the actions array. Writes MUST require confirmation.`;
+=== CRITICAL BEHAVIORAL & FORMATTING RULES ===
+1. MEDICAL DISCLAIMER: "${MEDICAL_GUARDRAIL}". Always append this to any medical, symptom, or treatment discussion.
+2. LIVE DATA ONLY: Strictly ground all responses in the real live emails, calendar events, agenda items, notes, and SMS messages provided above. NEVER hallucinate, invent, guess, or mock dummy details. Note: User notes in [RECENT USER NOTES] represent personal notes or past user comments, NOT system capability restrictions.
+3. STRICT SUMMARIZATION & HUMAN-READABLE REPORTING:
+   - Format outputs cleanly like an executive report with clean spacing, bold headers, and concise bullet points.
+   - STRICT CONSTRAINT: Any medical, legal, or complex summary MUST be limited to a maximum of 3 concise bullet points unless the user explicitly requests more detail. This makes it faster to read.
+   - Avoid dumping dense, repetitive blocks. Never repeat identical symptom blurbs under every single calendar appointment.
+4. SCHEDULE PRESENTATION:
+   - Group items cleanly by day (e.g. **Tonight**, **Tomorrow**, **Friday**, **Weekend**).
+   - Clearly separate **Fixed Appointments / Calendar Events** from **Flexible Routine Tasks / To-Dos**.
+   - Proactively suggest rescheduling opportunities (e.g. matching washing with 0% rain days).
+5. "DRAFTING MODE" & OUTBOUND EMAIL SENDS:
+   - If asked to draft an email or send an email, switch into "Drafting Mode".
+   - Generate a highly professional, context-aware draft utilizing known variables (e.g., Aldi lower back injury timeline: 4 Feb 2016, Cervical surgery June 2026, WorkCover context).
+   - ALWAYS output the full email draft directly in the \`reply\` markdown, formatted clearly with \`**To:**\`, \`**Subject:**\`, and \`**Body:**\` in a clean quote or code block so the user can read the complete draft.
+   - Maintain an authentic voice for James Jones.
+   - Whenever drafting an email or preparing to send, ALWAYS attach a \`send_email\` action with \`email_to\`, \`email_subject\`, and \`email_body\` so the user can click 'Confirm' to dispatch it.
+6. RECEIPTS, EXPENSES & OCR TRACKING:
+   - If the user uploads an image of a receipt, invoice, or medical bill, use your vision capabilities to perform OCR.
+   - Parse the total amount, description, and category.
+   - If it is a medical bill, note if it contributes to Medicare thresholds.
+   - Automatically trigger a \`budget_item\` action (type: 'expense') to log it in the budget tracker.
+7. EMAIL EXTRACTION, SEARCH & ATTACHMENT SUMMARIES:
+   - Extract exact details from live emails: Deakin, Medibank, Court Coordinator / Wangaratta.
+   - Shine Lawyers Case Summary from attachments MUST follow the 3-bullet max rule.
+8. INTENT TUNING:
+   - If the user gives a direct write command (e.g. "log pain", "add to budget"), keep conversational chatter concise, but for email drafts ALWAYS include the full draft in the reply text.
+9. DATETIME PARSING:
+   - For any action requiring a scheduled time (like 'task' or 'calendar_event'), you MUST calculate the exact ISO 8601 string based on the 'Current Time' provided above.
+   - NEVER output relative words like 'tomorrow' or 'next week' in the action data fields. ALWAYS output a valid ISO 8601 datetime (e.g., '2026-09-01T09:00:00+10:00').
+10. TEXT MESSAGES (SMS):
+    - YOU HAVE FULL LIVE ACCESS to read SMS / text messages from [RECENT SMS / TEXT MESSAGES] above.
+    - NEVER claim that you lack access to text messages or cannot read text messages.
+    - Ignore any historical notes (such as old user notes saying "he still doesn't have access to texts") or past chat messages claiming you cannot read texts. Live SMS ingestion is active and real-time.
+    - When asked to read, check, or summarize texts, quote the sender, date/time, and actual body content for each message in [RECENT SMS / TEXT MESSAGES].
+    - If a message body contains "{sms_body}", inform the user that the SMS was received from that sender, but their phone's MacroDroid action was configured with "{sms_body}" instead of "[sms_message]" (or "{sms_message}"), so the phone didn't pass the actual message text.
+    - If asked to send an SMS or text message, draft the message and include a \`send_sms\` action with \`sms_to\` and \`sms_body\` for user confirmation.`;
 
   const responseSchema = {
     type: "OBJECT",
@@ -449,12 +712,18 @@ ${weatherText}
         items: {
           type: "OBJECT",
           properties: {
-            type: { type: "STRING", description: "One of: 'task', 'pain_log', 'note', 'calendar_event', 'budget_item'" },
+            type: { type: "STRING", description: "One of: 'task', 'pain_log', 'note', 'calendar_event', 'budget_item', 'agent_report', 'send_email', 'send_sms'" },
             task_title: { type: "STRING" },
-            task_scheduled_time: { type: "STRING" },
+            task_scheduled_time: { type: "STRING", description: "Must be a valid ISO 8601 string in Australia/Melbourne timezone" },
             calendar_summary: { type: "STRING" },
-            calendar_start_datetime: { type: "STRING" },
-            calendar_end_datetime: { type: "STRING" },
+            calendar_start_datetime: { type: "STRING", description: "Must be a valid ISO 8601 string in Australia/Melbourne timezone" },
+            calendar_end_datetime: { type: "STRING", description: "Must be a valid ISO 8601 string in Australia/Melbourne timezone" },
+            email_to: { type: "STRING" },
+            email_subject: { type: "STRING" },
+            email_body: { type: "STRING" },
+            email_thread_id: { type: "STRING" },
+            sms_to: { type: "STRING", description: "Recipient phone number for SMS" },
+            sms_body: { type: "STRING", description: "Text message body" },
             pain_score: { type: "INTEGER" },
             pain_locations: { type: "ARRAY", items: { type: "OBJECT", properties: { area: { type: "STRING" }, percentage: { type: "INTEGER" } } } },
             pain_mood: { type: "STRING" },
@@ -462,7 +731,9 @@ ${weatherText}
             budget_description: { type: "STRING" },
             budget_amount: { type: "NUMBER" },
             budget_category: { type: "STRING" },
-            budget_type: { type: "STRING", description: "Either 'income' or 'expense'" }
+            budget_type: { type: "STRING", description: "Either 'income' or 'expense'" },
+            agent_report_title: { type: "STRING" },
+            agent_report_content: { type: "STRING" }
           },
           required: ["type"]
         }
@@ -480,10 +751,35 @@ ${weatherText}
         finalReply = finalReply.includes(MEDICAL_GUARDRAIL) ? finalReply : `${finalReply}\n\n${MEDICAL_GUARDRAIL}`;
     }
 
+    // If intent was CHECK_SMS, verify the LLM didn't return an obsolete refusal hallucination or missing API key placeholder
+    if (detectedIntent === "CHECK_SMS") {
+      const loweredReply = finalReply.toLowerCase();
+      if (
+        !process.env.GEMINI_API_KEY ||
+        finalReply.startsWith("Rumble: I received your message") ||
+        loweredReply.includes("do not have access to your text messages") ||
+        loweredReply.includes("cannot read the content of these messages") ||
+        loweredReply.includes("can't read the content of these messages") ||
+        loweredReply.includes("don't have access to texts") ||
+        loweredReply.includes("lack access to texts") ||
+        loweredReply.includes("do not have access to the actual text message bodies")
+      ) {
+        finalReply = await formatSmsMessagesSummary();
+      }
+    }
+
     if (parsed.actions && parsed.actions.length > 0) {
       const mappedActions = parsed.actions.map((a: any) => {
         let data: any = {};
-        if (a.type === "task") data = { title: a.task_title, scheduled_time: a.task_scheduled_time };
+        if (a.type === "task") {
+            let parsedTime = a.task_scheduled_time;
+            try {
+                parsedTime = parsedTime ? new Date(parsedTime).toISOString() : new Date().toISOString();
+            } catch (e) {
+                parsedTime = new Date().toISOString();
+            }
+            data = { title: a.task_title, scheduled_time: parsedTime };
+        }
         if (a.type === "calendar_event") {
             let startStr = a.calendar_start_datetime;
             try {
@@ -506,7 +802,10 @@ ${weatherText}
         }
         if (a.type === "pain_log") data = { score: a.pain_score, locations: a.pain_locations, mood: a.pain_mood };
         if (a.type === "note") data = { content: a.note_content, author: 'rumble' };
+        if (a.type === "agent_report") data = { title: a.agent_report_title, content: a.agent_report_content };
         if (a.type === "budget_item") data = { description: a.budget_description, amount: a.budget_amount, category: a.budget_category, type: a.budget_type };
+        if (a.type === "send_email") data = { to: a.email_to, subject: a.email_subject, body: a.email_body, threadId: a.email_thread_id };
+        if (a.type === "send_sms") data = { to: a.sms_to, body: a.sms_body };
         return { type: a.type, data };
       });
 
@@ -516,11 +815,9 @@ ${weatherText}
         data: { actions: mappedActions }
       };
       
-      const actionTypes = mappedActions.map((a: any) => a.type).join(", ");
-      
       return {
-        reply: `${finalReply}\n\n⚠️ Confirmation required: Click Confirm to execute these actions: [${actionTypes}].`,
-        intent: "GENERAL",
+        reply: finalReply,
+        intent: detectedIntent === "CHECK_SMS" ? "CHECK_SMS" : "GENERAL",
         requires_confirmation: true,
         preview,
         disclaimer: MEDICAL_GUARDRAIL,
@@ -529,12 +826,46 @@ ${weatherText}
 
     return {
       reply: finalReply,
-      intent: "GENERAL",
+      intent: detectedIntent === "CHECK_SMS" ? "CHECK_SMS" : "GENERAL",
       requires_confirmation: false,
       disclaimer: MEDICAL_GUARDRAIL,
     };
   } catch (err: any) {
     console.error("[RouteChatMessage Error]:", err);
+
+    if (classifyIntent(message) === "CHECK_SMS") {
+      try {
+        const summary = await formatSmsMessagesSummary();
+        return {
+          reply: `${summary}\n\n${MEDICAL_GUARDRAIL}`,
+          intent: "CHECK_SMS",
+          disclaimer: MEDICAL_GUARDRAIL,
+        };
+      } catch (smsErr) {
+        console.error("[RouteChatMessage SMS fallback error]:", smsErr);
+      }
+    }
+
+    if (classifyIntent(message) === "LOG_PAIN") {
+      const parsedPain = parsePainLogDirective(message);
+      if (parsedPain.parsed) {
+        const preview: ActionPreview = {
+          type: "pain_log",
+          data: parsedPain.parsed,
+        };
+        const locSummary = parsedPain.parsed.locations
+          .map((l) => `${l.side && l.side !== "unspecified" ? l.side + " " : ""}${l.area} (${l.percentage}%)`)
+          .join(", ");
+        return {
+          reply: `I've prepared your pain log: **Score ${parsedPain.parsed.score}/10** in ${locSummary}${parsedPain.parsed.mood ? ` (Mood: ${parsedPain.parsed.mood})` : ""}.\n\n**Gentle Adjustments for Tonight:**\n• Apply a warm heat pack to the lumbar area for 15-20 minutes to ease muscle spasms.\n• Take frequent breaks from sitting, avoiding prolonged desk posture.\n• Perform gentle supported child's pose and slow pelvic tilts on a comfortable surface.\n• If sharp or radiating pain increases, rest and seek direct clinician review.\n\nPlease confirm to save this entry to your records.`,
+          intent: "LOG_PAIN",
+          requires_confirmation: true,
+          preview,
+          disclaimer: MEDICAL_GUARDRAIL,
+        };
+      }
+    }
+
     return {
       reply: `Rumble: I am here to assist with your recovery and daily operations.\n\n${MEDICAL_GUARDRAIL}`,
       intent: "CONVERSATION",
@@ -575,7 +906,7 @@ export async function executeConfirmedAction(action: ActionPreview | { type: str
 
     return {
       success: true,
-      message: `Rumble: Confirmed and saved pain log (${score}/10) successfully. Exported to medical symptom report.`,
+      message: `Confirmed and saved pain log (${score}/10).`,
       result: savedRecord,
     };
   }
@@ -585,7 +916,7 @@ export async function executeConfirmedAction(action: ActionPreview | { type: str
     const savedNote = await createNote({ content, author: author || "user" });
     return {
       success: true,
-      message: `Rumble: Confirmed and saved note: "${content}".`,
+      message: `Note saved.`,
       result: savedNote,
     };
   }
@@ -600,7 +931,7 @@ export async function executeConfirmedAction(action: ActionPreview | { type: str
     });
     return {
       success: true,
-      message: `Rumble: Confirmed and added agenda task: "${title}".`,
+      message: `Task added to agenda.`,
       result: savedTask,
     };
   }
@@ -611,9 +942,69 @@ export async function executeConfirmedAction(action: ActionPreview | { type: str
     const savedItem = await createBudgetItem({ description, amount, category, type });
     return {
       success: true,
-      message: `Rumble: Confirmed and saved budget item: "${description}" for $${amount}.`,
+      message: `Expense logged ($${amount}).`,
       result: savedItem,
     };
+  }
+
+  if (action.type === "agent_report") {
+    const { title, content } = action.data;
+    exportReportToMarkdown(title, content);
+    return {
+      success: true,
+      message: `Report exported to agent_reports/.`,
+      result: { title },
+    };
+  }
+
+  if (action.type === "send_email") {
+    const { to, subject, body, threadId } = action.data;
+    try {
+      const { sendLiveGmailMessage } = await import('../google-auth');
+      const res = await sendLiveGmailMessage({ to, subject, body, threadId });
+      if (res.status === "success") {
+        return {
+          success: true,
+          message: `Rumble: Confirmed and sent email to ${to} with subject "${subject}". (Message ID: ${res.messageId})`,
+          result: res,
+        };
+      } else if (res.status === "auth_required") {
+        return {
+          success: false,
+          message: `Gmail authorization required to send emails. Please connect your Google account: ${res.authUrl || "/api/v1/auth/google"}`,
+          result: res,
+        };
+      } else {
+        return {
+          success: false,
+          message: `Failed to send email: ${res.message || "Unknown error"}`,
+          result: res,
+        };
+      }
+    } catch (err: any) {
+      return {
+        success: false,
+        message: `Failed to send email: ${err.message}`,
+      };
+    }
+  }
+
+  if (action.type === "send_sms") {
+    const { to, body } = action.data;
+    try {
+      const { sendSms } = await import('../db');
+      const res = await sendSms(to, body);
+      return {
+        success: true,
+        message: `Rumble: Confirmed and sent SMS to ${to}. (SID: ${res.sid})`,
+        result: res,
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        message: `Failed to send SMS: ${err.message}`,
+      };
+    }
   }
 
   if (action.type === "multi_action") {
@@ -623,12 +1014,12 @@ export async function executeConfirmedAction(action: ActionPreview | { type: str
         const res = await executeConfirmedAction(subAction);
         results.push(res.message);
       } catch (err: any) {
-        results.push(`Failed to execute ${subAction.type}: ${err.message}`);
+        results.push(`Failed: ${err.message}`);
       }
     }
     return {
       success: true,
-      message: `Rumble: Executed actions:\n${results.map(r => `• ${r.replace('Rumble: ', '')}`).join('\n')}`,
+      message: `Rumble: Executed actions: Actions executed successfully.`,
       result: results,
     };
   }

@@ -15,16 +15,43 @@ function checkOAuthStatus(): OAuthStatus {
   };
 }
 
+import { fetchLiveGmailMessages } from "../../dashboard/lib/google-auth";
+
 export const getGmailMessages = defineTool({
   name: "getGmailMessages",
   description: "Read-only fetch of Gmail messages. Does not require approval.",
   execute: async (params?: { query?: string; maxResults?: number }) => {
-    const oauthStatus = checkOAuthStatus();
-    if (!oauthStatus.authenticated) {
-      return { messages: [], oauthStatus };
+    const res = await fetchLiveGmailMessages(params);
+    if (res.status === "auth_required") {
+      return {
+        messages: [],
+        oauthStatus: {
+          authenticated: false,
+          authUrl: res.authUrl,
+          error: res.message || "OAuth authorization required",
+        },
+      };
     }
-    const messages: GmailMessage[] = [];
-    return { messages, oauthStatus };
+    if (res.status === "error" || !res.messages) {
+      return {
+        messages: [],
+        oauthStatus: {
+          authenticated: false,
+          error: res.message || "Failed to fetch Gmail messages",
+        },
+      };
+    }
+    const messages: GmailMessage[] = res.messages.map((m: any) => ({
+      id: m.id,
+      threadId: m.threadId || m.id,
+      snippet: m.snippet || "",
+      subject: m.subject || "No Subject",
+      from: m.from || "Unknown",
+      date: m.date || "",
+      bodySummary: m.bodySummary || m.snippet || "",
+      actionRequired: Boolean(m.actionRequired || /action required|due|urgent/i.test(`${m.subject} ${m.snippet}`)),
+    }));
+    return { messages, oauthStatus: { authenticated: true } };
   },
 });
 

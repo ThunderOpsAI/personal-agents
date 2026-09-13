@@ -268,24 +268,24 @@ export function ensureDailyStandingProtocols(
       time: `${datePrefix}T07:30:00+10:00`,
     },
     {
-      id: `yoga_${datePrefix}`,
+      id: `yoga_am_${datePrefix}`,
       item_type: 'yoga' as const,
-      title: 'Daily Adaptive Yoga Routine',
+      title: 'Morning Adaptive Yoga Routine',
       time: `${datePrefix}T09:00:00+10:00`,
+    },
+    {
+      id: `yoga_pm_${datePrefix}`,
+      item_type: 'yoga' as const,
+      title: 'Evening Adaptive Yoga Routine',
+      time: `${datePrefix}T21:00:00+10:00`,
     },
     {
       id: `meditation_night_${datePrefix}`,
       item_type: 'meditation' as const,
-      title: 'Night Meditation Protocol',
+      title: 'Sleep Meditation',
       time: `${datePrefix}T21:00:00+10:00`,
     },
-    {
-      id: `meditation_midnight_${datePrefix}`,
-      item_type: 'meditation' as const,
-      title: 'Sleep & Relaxation Meditation',
-      time: `${datePrefix}T23:59:00+10:00`,
-    },
-    ...['06:00:00', '09:00:00', '12:00:00', '15:00:00', '18:00:00', '21:00:00', '23:59:00'].map((timeStr) => ({
+    ...['00:00:00', '08:00:00', '12:00:00', '16:00:00', '20:00:00'].map((timeStr) => ({
       id: `pain_log_reminder_${timeStr.replace(/:/g, '')}_${datePrefix}`,
       item_type: 'task' as const,
       title: 'Log Pain Level',
@@ -297,10 +297,7 @@ export function ensureDailyStandingProtocols(
 
   for (const protocol of requiredProtocols) {
     const exists = currentItems.some(
-      (item) =>
-        item.id === protocol.id ||
-        (item.item_type === protocol.item_type &&
-          item.scheduled_time.startsWith(datePrefix))
+      (item) => item.id === protocol.id
     );
 
     if (!exists) {

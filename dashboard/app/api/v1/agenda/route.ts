@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from "next/server";
 import { createAgendaItem, getAgendaItems, getDbStatus, updateAgendaItemStatus, rescheduleAgendaItem } from "../../../../lib/db";
 import { AgendaItemStatus } from "../../../../lib/schema";
@@ -24,32 +25,13 @@ export async function GET(request: Request) {
 
 
 
-    // 2. Fetch live Google Calendar events within the view window
-    let timeMin: string | undefined;
-    let timeMax: string | undefined;
-
-
-    if (view === "daily") {
-      const startOfDay = new Date(now);
-      startOfDay.setHours(0, 0, 0, 0);
-      const endOfDay = new Date(now);
-      endOfDay.setHours(23, 59, 59, 999);
-      timeMin = startOfDay.toISOString();
-      timeMax = endOfDay.toISOString();
-    } else if (view === "weekly") {
-      const startOfWeek = new Date(now);
-      startOfWeek.setDate(now.getDate() - now.getDay());
-      startOfWeek.setHours(0, 0, 0, 0);
-      const endOfWeek = new Date(startOfWeek);
-      endOfWeek.setDate(startOfWeek.getDate() + 7);
-      timeMin = startOfWeek.toISOString();
-      timeMax = endOfWeek.toISOString();
-    } else if (view === "monthly") {
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
-      timeMin = startOfMonth.toISOString();
-      timeMax = endOfMonth.toISOString();
-    }
+    // 2. Fetch live Google Calendar events spanning the current and next month
+    const startOfWindow = new Date(now.getFullYear(), now.getMonth(), 1);
+    startOfWindow.setHours(0, 0, 0, 0);
+    const endOfWindow = new Date(now.getFullYear(), now.getMonth() + 2, 0);
+    endOfWindow.setHours(23, 59, 59, 999);
+    const timeMin = startOfWindow.toISOString();
+    const timeMax = endOfWindow.toISOString();
 
     let calendarStatus: "connected" | "auth_required" | "error" = "connected";
     let calendarEvents: any[] = [];
@@ -70,14 +52,34 @@ export async function GET(request: Request) {
       authUrl = getGoogleAuthUrl();
     }
 
-    const standingProcessed = ensureStandingTasks(ensureDailyStandingProtocols(rawItems, now), now);
-    standingProcessed.sort((a, b) => {
+    let targetDate = now;
+    if (view === "tomorrow") {
+      targetDate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    } else if (view === "yesterday") {
+      targetDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    }
+    const targetDatePrefix = targetDate.toLocaleDateString("en-CA", { timeZone: "Australia/Melbourne" });
+
+    const standingProcessed = ensureStandingTasks(ensureDailyStandingProtocols(rawItems, targetDate), targetDate);
+    
+    // Filter items to strictly include those scheduled for the target date
+    const dailyItemsForDate = standingProcessed.filter((item) => {
+      try {
+        const itemDate = new Date(item.scheduled_time);
+        const itemDatePrefix = itemDate.toLocaleDateString("en-CA", { timeZone: "Australia/Melbourne" });
+        return itemDatePrefix === targetDatePrefix;
+      } catch {
+        return false;
+      }
+    });
+
+    dailyItemsForDate.sort((a, b) => {
       const timeA = new Date(a.scheduled_time).getTime();
       const timeB = new Date(b.scheduled_time).getTime();
       return (isNaN(timeA) ? 0 : timeA) - (isNaN(timeB) ? 0 : timeB);
     });
 
-    const daily = standingProcessed.map((item) => {
+    const daily = dailyItemsForDate.map((item) => {
       const d = new Date(item.scheduled_time);
       const timeStr = isNaN(d.getTime())
         ? "09:00 AM"
@@ -91,6 +93,7 @@ export async function GET(request: Request) {
         time: timeStr,
         item_type: item.item_type,
         status: item.status,
+        scheduled_time: item.scheduled_time,
         choices,
       };
     });
@@ -142,9 +145,9 @@ export async function GET(request: Request) {
       }
     } catch {}
 
-    // Map DB calendar events
+    // Map DB calendar events and appointments
     const dbCalEvents = rawItems
-      .filter((i) => i.item_type === "calendar_event" && i.status !== "dismissed")
+      .filter((i) => (i.item_type === "calendar_event" || i.item_type === "appointment") && i.status !== "dismissed")
       .map((i) => {
         const d = parseEventDate(i);
         const dayStr = d.toLocaleDateString("en-AU", { weekday: "short", day: "numeric", month: "short", timeZone: "Australia/Melbourne" });
@@ -228,6 +231,23 @@ export async function GET(request: Request) {
     monthly.forEach(m => { if (!monthlyMap.has(m.id)) monthlyMap.set(m.id, m); });
     const uniqueMonthly = Array.from(monthlyMap.values());
 
+    // Trigger Weekly Insight Aggregation (Cron-less)
+    const isSunday = now.getDay() === 0;
+    if (isSunday) {
+      const startOfWeek = new Date(now);
+      startOfWeek.setDate(now.getDate() - now.getDay());
+      const weekPrefix = startOfWeek.toISOString().split('T')[0];
+      const weeklyInsightId = `weekly_insight_${weekPrefix}`;
+      
+      const hasWeeklyInsight = rawItems.some(i => i.id === weeklyInsightId);
+      if (!hasWeeklyInsight) {
+        // Fire-and-forget
+        import("../../../../lib/agents/insight-engine").then(m => {
+          m.generateWeeklyInsights(weeklyInsightId);
+        }).catch(console.error);
+      }
+    }
+
     return NextResponse.json({
       status: "success",
       view,
@@ -235,6 +255,8 @@ export async function GET(request: Request) {
       daily,
       weekly,
       monthly: uniqueMonthly,
+      hydrotherapy: hydroItems,
+      washing: washingItems,
       calendar_status: calendarStatus,
       calendar_events: calendarEvents,
       ...(authUrl ? { authUrl } : {}),
@@ -267,7 +289,10 @@ export async function POST(request: Request) {
 
   if (body.action === "reschedule" && body.id && body.new_date) {
     try {
-      const updated = await rescheduleAgendaItem(body.id, body.new_date);
+      const updated = await rescheduleAgendaItem(body.id, body.new_date, {
+        title: body.title,
+        item_type: body.item_type,
+      });
       if (!updated) {
         return NextResponse.json({ status: "error", error: "Agenda item not found" }, { status: 404 });
       }
@@ -278,7 +303,7 @@ export async function POST(request: Request) {
   }
 
   if (body.action === "update_status" || (body.id && body.status && !body.title)) {
-    const { id, status, note } = body;
+    const { id, status, note, title, item_type, scheduled_time } = body;
     if (!id || !status) {
       return NextResponse.json(
         { status: "error", error: "id and status are required for status update" },
@@ -287,10 +312,21 @@ export async function POST(request: Request) {
     }
 
     try {
-      const updated = await updateAgendaItemStatus(id, status as AgendaItemStatus, note);
+      const updated = await updateAgendaItemStatus(id, status as AgendaItemStatus, note, {
+        title,
+        item_type,
+        scheduled_time,
+      });
       if (!updated) {
         return NextResponse.json({ status: "error", error: "Agenda item not found" }, { status: 404 });
       }
+
+      if (status === 'completed') {
+        import("../../../../lib/agents/insight-engine").then(m => {
+          m.evaluateForInsights('protocol', updated);
+        }).catch(console.error);
+      }
+
       return NextResponse.json({ status: "success", item: updated });
     } catch (error) {
       return NextResponse.json({ status: "error", error: "Failed to update agenda item status" }, { status: 500 });

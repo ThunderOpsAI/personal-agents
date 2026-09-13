@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { TelegramUpdate, telegramBot } from '../../../../../lib/telegram/bot';
 import { createPainLog, getPainLogsFromDb } from '../../../../../lib/db';
+import { logPain } from '../../../../../lib/rehab-learning';
 import { exportPainReportToMarkdown } from '../../../../../lib/agents/intent-router';
 import { parseTelegramPainMessage, DEFAULT_PAIN_DISTRIBUTION } from '../../../../../lib/telegram/parser';
 
@@ -23,121 +24,58 @@ export async function POST(req: NextRequest) {
     if (body.callback_query) {
       const cb = body.callback_query;
       const chatId = cb.message?.chat.id || cb.from.id;
+      const messageId = cb.message?.message_id;
       const data = cb.data || '';
 
-      await telegramBot.answerCallbackQuery(cb.id, "Processing selection...").catch(() => {});
+      // Immediately acknowledge callback query to dismiss Telegram button spinner
+      if (cb.id) {
+        telegramBot.answerCallbackQuery(cb.id, "Recorded!").catch(() => {});
+      }
+
+      let score: number | null = null;
+      let locations: Array<{ area: string; side: 'left' | 'right' | 'unspecified'; percentage: number; weight?: number }> = [];
+      let mood: string = 'neutral';
+      let notes = 'Logged via Telegram inline button';
+      let summaryTitle = '✅ *Pain Log Recorded!*';
+      let alertTriggered = false;
 
       if (data.startsWith('pain_preset:')) {
-        const score = parseFloat(data.replace('pain_preset:', '')) || 7.5;
-        const locations = [...DEFAULT_PAIN_DISTRIBUTION];
-
-        await createPainLog({
-          score,
-          locations,
-          mood: score >= 8 ? 'stressed' : score <= 5 ? 'good' : 'neutral',
-          notes: 'Logged via Telegram preset (Baseline distribution)',
-        });
-
-        exportPainReportToMarkdown({
-          score,
-          locations,
-          mood: score >= 8 ? 'stressed' : score <= 5 ? 'good' : 'neutral',
-          notes: 'Logged via Telegram preset (Baseline distribution)',
-        });
-
-        const locSummary = locations
-          .map(l => `• ${l.side && l.side !== 'unspecified' ? l.side.toUpperCase() + ' ' : ''}${l.area.toUpperCase()}: ${l.percentage}%`)
-          .join('\n');
-
-        await telegramBot.sendMessage(
-          chatId,
-          `✅ *Pain Log Recorded!*\n\n• *Score:* ${score}/10\n• *Distribution:*\n${locSummary}\n\n📝 _Baseline distribution applied._`,
-          { parse_mode: 'Markdown' }
-        );
-      } else if (data.startsWith('pain_lumbar_flare:')) {
-        const score = parseFloat(data.replace('pain_lumbar_flare:', '')) || 9.0;
-        const locations = [
-          { area: 'lumbar', side: 'right' as const, percentage: 85 },
-          { area: 'neck', side: 'unspecified' as const, percentage: 10 },
-          { area: 'ankle', side: 'right' as const, percentage: 2.5 },
-          { area: 'ankle', side: 'left' as const, percentage: 2.5 },
+        score = parseFloat(data.replace('pain_preset:', '')) || 7.5;
+        locations = [...DEFAULT_PAIN_DISTRIBUTION];
+        mood = score >= 8 ? 'stressed' : score <= 5 ? 'good' : 'neutral';
+        notes = `Logged via Telegram preset (${score >= 8 ? 'High' : score >= 7 ? 'Avg/Mod' : 'Mild'} - Baseline distribution)`;
+      } else if (data.startsWith('pain_lumbar_flare')) {
+        score = parseFloat(data.replace(/pain_lumbar_flare:?/, '')) || 9.0;
+        locations = [
+          { area: 'lumbar', side: 'right' as const, percentage: 85, weight: 85 },
+          { area: 'neck', side: 'unspecified' as const, percentage: 10, weight: 10 },
+          { area: 'ankle', side: 'right' as const, percentage: 2.5, weight: 2.5 },
+          { area: 'ankle', side: 'left' as const, percentage: 2.5, weight: 2.5 },
         ];
-
-        await createPainLog({
-          score,
-          locations,
-          mood: 'stressed',
-          notes: 'Logged via Telegram (Lumbar flare preset)',
-        });
-
-        exportPainReportToMarkdown({
-          score,
-          locations,
-          mood: 'stressed',
-          notes: 'Logged via Telegram (Lumbar flare preset)',
-        });
-
-        await telegramBot.sendMessage(
-          chatId,
-          `🚨 *High Pain Alert Recorded!*\n\n• *Score:* ${score}/10 (Severe Lumbar Flare)\n• *Distribution:*\n• RIGHT LUMBAR: 85%\n• NECK: 10%\n• ANKLES: 5%\n\n⚠️ _Agenda adjustments initiated._`,
-          { parse_mode: 'Markdown' }
-        );
-      } else if (data.startsWith('pain_neck_focus:')) {
-        const score = parseFloat(data.replace('pain_neck_focus:', '')) || 6.5;
-        const locations = [
-          { area: 'neck', side: 'unspecified' as const, percentage: 60 },
-          { area: 'lumbar', side: 'right' as const, percentage: 30 },
-          { area: 'ankle', side: 'right' as const, percentage: 5 },
-          { area: 'ankle', side: 'left' as const, percentage: 5 },
+        mood = 'stressed';
+        notes = 'Logged via Telegram (Severe Lumbar Flare preset)';
+        summaryTitle = '🚨 *High Pain Alert Recorded!*';
+        alertTriggered = true;
+      } else if (data.startsWith('pain_neck_focus')) {
+        score = parseFloat(data.replace(/pain_neck_focus:?/, '')) || 6.5;
+        locations = [
+          { area: 'neck', side: 'unspecified' as const, percentage: 60, weight: 60 },
+          { area: 'lumbar', side: 'right' as const, percentage: 30, weight: 30 },
+          { area: 'ankle', side: 'right' as const, percentage: 5, weight: 5 },
+          { area: 'ankle', side: 'left' as const, percentage: 5, weight: 5 },
         ];
-
-        await createPainLog({
-          score,
-          locations,
-          mood: 'neutral',
-          notes: 'Logged via Telegram (Neck tension preset)',
-        });
-
-        exportPainReportToMarkdown({
-          score,
-          locations,
-          mood: 'neutral',
-          notes: 'Logged via Telegram (Neck tension preset)',
-        });
-
-        await telegramBot.sendMessage(
-          chatId,
-          `✅ *Pain Log Recorded!*\n\n• *Score:* ${score}/10 (Neck Tension Focus)\n• *Distribution:*\n• NECK: 60%\n• RIGHT LUMBAR: 30%\n• ANKLES: 10%`,
-          { parse_mode: 'Markdown' }
-        );
-      } else if (data.startsWith('pain_ankle_focus:')) {
-        const score = parseFloat(data.replace('pain_ankle_focus:', '')) || 7.0;
-        const locations = [
-          { area: 'ankle', side: 'right' as const, percentage: 40 },
-          { area: 'ankle', side: 'left' as const, percentage: 35 },
-          { area: 'lumbar', side: 'right' as const, percentage: 20 },
-          { area: 'neck', side: 'unspecified' as const, percentage: 5 },
+        mood = 'neutral';
+        notes = 'Logged via Telegram (Neck Tension preset)';
+      } else if (data.startsWith('pain_ankle_focus')) {
+        score = parseFloat(data.replace(/pain_ankle_focus:?/, '')) || 7.0;
+        locations = [
+          { area: 'ankle', side: 'right' as const, percentage: 40, weight: 40 },
+          { area: 'ankle', side: 'left' as const, percentage: 35, weight: 35 },
+          { area: 'lumbar', side: 'right' as const, percentage: 20, weight: 20 },
+          { area: 'neck', side: 'unspecified' as const, percentage: 5, weight: 5 },
         ];
-
-        await createPainLog({
-          score,
-          locations,
-          mood: 'neutral',
-          notes: 'Logged via Telegram (Ankle/gait strain preset)',
-        });
-
-        exportPainReportToMarkdown({
-          score,
-          locations,
-          mood: 'neutral',
-          notes: 'Logged via Telegram (Ankle/gait strain preset)',
-        });
-
-        await telegramBot.sendMessage(
-          chatId,
-          `✅ *Pain Log Recorded!*\n\n• *Score:* ${score}/10 (Ankle/Gait Strain)\n• *Distribution:*\n• RIGHT ANKLE: 40%\n• LEFT ANKLE: 35%\n• RIGHT LUMBAR: 20%\n• NECK: 5%`,
-          { parse_mode: 'Markdown' }
-        );
+        mood = 'neutral';
+        notes = 'Logged via Telegram (Ankle/Gait Strain preset)';
       } else if (data === 'pain_help') {
         const helpText = [
           "📋 *How to Log Pain with Custom Area & %:*",
@@ -151,6 +89,67 @@ export async function POST(req: NextRequest) {
         ].join('\n');
 
         await telegramBot.sendMessage(chatId, helpText, { parse_mode: 'Markdown' });
+        return NextResponse.json({ status: 'ok' });
+      }
+
+      if (score !== null && locations.length > 0) {
+        const memoryLog = {
+          score,
+          locations: locations.map(l => ({
+            area: l.area,
+            side: l.side,
+            weight: l.percentage,
+            percentage: l.percentage,
+          })),
+          mood,
+          notes,
+        };
+
+        const result = logPain(memoryLog);
+        const logId = result.entry?.id || `pain_${Date.now()}`;
+
+        try {
+          await createPainLog({
+            id: logId,
+            score,
+            locations: locations.map(l => ({
+              area: l.area,
+              side: l.side,
+              percentage: l.percentage,
+            })),
+            mood,
+            notes,
+          });
+        } catch (dbErr) {
+          console.warn("DB save best-effort:", dbErr);
+        }
+
+        if (result.entry) {
+          exportPainReportToMarkdown(result.entry);
+        }
+
+        const locSummary = locations
+          .map(l => `• ${l.side && l.side !== 'unspecified' ? l.side.toUpperCase() + ' ' : ''}${l.area.toUpperCase()}: ${l.percentage}%`)
+          .join('\n');
+
+        const responseText = [
+          summaryTitle,
+          "",
+          `• *Score:* ${score}/10 ${score >= 8 ? '🔴 (High)' : score >= 7 ? '🟠 (Moderate)' : '🟢 (Mild)'}`,
+          `• *Distribution:*`,
+          locSummary,
+          alertTriggered ? `\n⚠️ _High pain threshold met (>=7). Adaptive agenda recalibration active._` : `\n📝 _Logged into Neon Postgres & ChromaDB._`,
+        ].join('\n');
+
+        if (messageId) {
+          try {
+            await telegramBot.editMessageText(chatId, messageId, responseText, { parse_mode: 'Markdown' });
+          } catch {
+            await telegramBot.sendMessage(chatId, responseText, { parse_mode: 'Markdown' });
+          }
+        } else {
+          await telegramBot.sendMessage(chatId, responseText, { parse_mode: 'Markdown' });
+        }
       }
 
       return NextResponse.json({ status: 'ok' });
