@@ -1497,7 +1497,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 title,
                 notes: notes || undefined,
                 due: dueIso || undefined,
-                status
+                status,
+                isUrgent
             };
 
             try {
@@ -2412,7 +2413,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await res.json();
                 
                 if (data.html || data.markdown) {
-                    // Very simple markdown formatting just for display if needed
                     briefingContent.innerHTML = data.html || data.markdown.replace(/\n/g, '<br>');
                 } else {
                     briefingContent.innerHTML = 'Error loading briefing.';
@@ -2429,6 +2429,41 @@ document.addEventListener('DOMContentLoaded', () => {
         const closeBriefingModal = () => briefingModal.classList.add('hidden');
         if (btnCloseBriefing) btnCloseBriefing.addEventListener('click', closeBriefingModal);
         if (btnDismissBriefing) btnDismissBriefing.addEventListener('click', closeBriefingModal);
+
+        // Tab navigation within the briefing modal
+        if (briefingContent) {
+            briefingContent.addEventListener('click', (e) => {
+                const tabBtn = e.target.closest('.briefing-nav-tab');
+                if (!tabBtn) return;
+                const targetId = tabBtn.getAttribute('data-tab');
+                if (!targetId) return;
+
+                const container = tabBtn.closest('.briefing-container') || briefingContent;
+                container.querySelectorAll('.briefing-nav-tab').forEach(btn => {
+                    btn.classList.remove('active');
+                    btn.setAttribute('aria-selected', 'false');
+                });
+                container.querySelectorAll('.briefing-tab-pane').forEach(pane => {
+                    pane.classList.remove('active');
+                });
+
+                tabBtn.classList.add('active');
+                tabBtn.setAttribute('aria-selected', 'true');
+                const targetPane = document.getElementById(targetId);
+                if (targetPane) targetPane.classList.add('active');
+            });
+        }
+
+        const btnBriefingOpenChat = document.getElementById('btnBriefingOpenChat');
+        if (btnBriefingOpenChat) {
+            btnBriefingOpenChat.addEventListener('click', () => {
+                briefingModal.classList.add('hidden');
+                const rumbleChatModal = document.getElementById('rumbleChatModal');
+                if (rumbleChatModal) {
+                    rumbleChatModal.classList.remove('hidden');
+                }
+            });
+        }
     }
     
     if (btnDoneBriefing && executiveBriefingCard) {

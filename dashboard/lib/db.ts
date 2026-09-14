@@ -1785,11 +1785,12 @@ export async function getTasksFromDb(options?: {
       due: row.due || null,
       completed_at: row.completed_at || null,
       deleted: Boolean(row.deleted),
+      isUrgent: Boolean(row.isurgent ?? row.isUrgent),
       created_at: row.created_at,
       updated_at: row.updated_at,
     }));
   } else if (sqliteDb) {
-    let query = 'SELECT id, google_id, task_list_id, title, notes, status, due, completed_at, deleted, created_at, updated_at FROM tasks WHERE deleted = 0 AND task_list_id = ?';
+    let query = 'SELECT id, google_id, task_list_id, title, notes, status, due, completed_at, deleted, isUrgent, created_at, updated_at FROM tasks WHERE deleted = 0 AND task_list_id = ?';
     const params: any[] = [taskListId];
     if (!includeCompleted) {
       query += ' AND status = ?';
@@ -1808,6 +1809,7 @@ export async function getTasksFromDb(options?: {
       due: row.due || null,
       completed_at: row.completed_at || null,
       deleted: Boolean(row.deleted),
+      isUrgent: Boolean(row.isUrgent ?? row.isurgent),
       created_at: row.created_at,
       updated_at: row.updated_at,
     }));
@@ -1885,7 +1887,7 @@ export async function updateTaskInDb(
         due: r.due || null,
         completed_at: r.completed_at || null,
         deleted: Boolean(r.deleted),
-        isUrgent: Boolean(r.isUrgent),
+        isUrgent: Boolean(r.isurgent ?? r.isUrgent),
         created_at: r.created_at,
         updated_at: r.updated_at,
       };
@@ -1904,7 +1906,7 @@ export async function updateTaskInDb(
         due: r.due || null,
         completed_at: r.completed_at || null,
         deleted: Boolean(r.deleted),
-        isUrgent: Boolean(r.isUrgent),
+        isUrgent: Boolean(r.isUrgent ?? r.isurgent),
         created_at: r.created_at,
         updated_at: r.updated_at,
       };
@@ -1929,14 +1931,14 @@ export async function updateTaskInDb(
 
   if (status.provider === 'neon' && pgPool) {
     await pgPool.query(
-      `UPDATE tasks SET title = $1, notes = $2, status = $3, due = $4, completed_at = $5, deleted = $6, google_id = $7, updated_at = $8 WHERE id = $9`,
-      [newTitle, newNotes, newStatus, newDue, newCompletedAt, newDeleted, newGoogleId, now, id]
+      `UPDATE tasks SET title = $1, notes = $2, status = $3, due = $4, completed_at = $5, deleted = $6, google_id = $7, isUrgent = $8, updated_at = $9 WHERE id = $10`,
+      [newTitle, newNotes, newStatus, newDue, newCompletedAt, newDeleted, newGoogleId, newIsUrgent, now, id]
     );
   } else if (sqliteDb) {
     const stmt = sqliteDb.prepare(
-      `UPDATE tasks SET title = ?, notes = ?, status = ?, due = ?, completed_at = ?, deleted = ?, google_id = ?, updated_at = ? WHERE id = ?`
+      `UPDATE tasks SET title = ?, notes = ?, status = ?, due = ?, completed_at = ?, deleted = ?, google_id = ?, isUrgent = ?, updated_at = ? WHERE id = ?`
     );
-    stmt.run(newTitle, newNotes, newStatus, newDue, newCompletedAt, newDeleted ? 1 : 0, newGoogleId, now, id);
+    stmt.run(newTitle, newNotes, newStatus, newDue, newCompletedAt, newDeleted ? 1 : 0, newGoogleId, newIsUrgent ? 1 : 0, now, id);
   }
 
   return {
@@ -1948,6 +1950,7 @@ export async function updateTaskInDb(
     completed_at: newCompletedAt,
     deleted: newDeleted,
     google_id: newGoogleId,
+    isUrgent: newIsUrgent,
     updated_at: now,
   };
 }
