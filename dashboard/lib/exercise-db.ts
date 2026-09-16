@@ -18,6 +18,7 @@ export interface ExerciseItem {
   precautions: string[];
   contraindications: string[]; // alias for compatibility
   steps: ExerciseStep[];
+  video_url?: string;
 }
 
 export const EXERCISE_DATABASE: ExerciseItem[] = [
@@ -41,7 +42,8 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
       { title: "Supported Child's Pose", duration: 60, cue: "Widen knees, rest torso forward on bolster, lengthen spine.", frames: ["/exercises/childs_pose_1.jpg", "/exercises/childs_pose_2.jpg"] },
       { title: "Supine Single Knee-to-Chest", duration: 45, cue: "Gently hug right knee, then left knee. Keep sacrum grounded.", frames: ["/lumbar_core_routine.jpg", "/exercises/cat_cow_2.jpg"] },
       { title: "Restorative Savasana with Bolster", duration: 60, cue: "Place bolster under knees to release psoas and lumbar pressure.", frames: ["/exercises/childs_pose_2.jpg", "/exercises/cat_cow_1.jpg"] }
-    ]
+    ],
+    video_url: "https://www.youtube.com/watch?v=zeWO_635loM"
   },
   {
     id: "y2",
@@ -60,7 +62,8 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
       { title: "Gentle Lateral Ear-to-Shoulder", duration: 45, cue: "Drop right ear to right shoulder without lifting left shoulder. Repeat left.", frames: ["/shoulder_rehab_routine.jpg", "/exercises/cat_cow_2.jpg"] },
       { title: "Shoulder Shrug & Release", duration: 45, cue: "Inhale lift shoulders to ears, exhale drop down with sigh.", frames: ["/exercises/childs_pose_2.jpg"] },
       { title: "Restorative Alignment Breathing", duration: 60, cue: "Sit upright, focus on diaphragmatic 360 breathing relaxing neck muscles.", frames: ["/exercises/childs_pose_1.jpg"] }
-    ]
+    ],
+    video_url: "https://www.youtube.com/watch?v=X3-gKPNyrTA"
   },
   {
     id: "y3",
@@ -79,7 +82,8 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
       { title: "Gentle Cat-Cow Spine Wave", duration: 60, cue: "Flow gently with breath, avoiding end-range extremes.", frames: ["/exercises/cat_cow_1.jpg", "/exercises/cat_cow_2.jpg"] },
       { title: "Supported Gentle Sphinx", duration: 60, cue: "Rest elbows on mat, gentle passive thoracic extension.", frames: ["/lumbar_core_routine.jpg"] },
       { title: "Legs Up the Wall Relaxation", duration: 120, cue: "Elevate legs against wall to facilitate venous return and spinal decompression.", frames: ["/exercises/childs_pose_2.jpg"] }
-    ]
+    ],
+    video_url: "https://www.youtube.com/watch?v=FXPGuNU-BYA"
   },
   {
     id: "y4",
@@ -98,7 +102,8 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
       { title: "Puppy Pose Thoracic Stretch", duration: 60, cue: "Hips stay over knees, walk hands forward melting chest towards floor.", frames: ["/shoulder_rehab_routine.jpg", "/exercises/cat_cow_2.jpg"] },
       { title: "Seated Cactus Arm Openers", duration: 45, cue: "Draw elbows back and down, opening anterior chest wall.", frames: ["/exercises/childs_pose_2.jpg", "/exercises/cat_cow_1.jpg"] },
       { title: "Scapular Retraction & Rest", duration: 60, cue: "Rest in prone or seated, focusing on mid-back breathing.", frames: ["/shoulder_rehab_routine.jpg"] }
-    ]
+    ],
+    video_url: "https://www.youtube.com/watch?v=mgpjd4JMSZg"
   },
   {
     id: "y5",
@@ -117,7 +122,8 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
       { title: "90/90 Seated Hip Flow", duration: 60, cue: "Rotate knees side to side gently to mobilize internal and external rotation.", frames: ["/hip_mobility_routine.jpg", "/exercises/childs_pose_2.jpg"] },
       { title: "Gentle Reclined Figure-4", duration: 60, cue: "Cross right ankle over left thigh, hold left hamstring gently.", frames: ["/exercises/childs_pose_2.jpg"] },
       { title: "Savasana Psoas Rest", duration: 60, cue: "Lie flat with gentle diaphragmatic expansion.", frames: ["/exercises/childs_pose_1.jpg"] }
-    ]
+    ],
+    video_url: "https://www.youtube.com/watch?v=JsE4csvlUfA"
   },
   {
     id: "y6",
@@ -136,7 +142,8 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
       { title: "Gentle Side Body Lateral Stretch", duration: 45, cue: "Walk hands to the right in child's pose, then left.", frames: ["/exercises/childs_pose_1.jpg"] },
       { title: "Gentle Supine Torso Twist", duration: 45, cue: "Drop knees gently to right, look center or left. Keep shoulders relaxed.", frames: ["/lumbar_core_routine.jpg", "/exercises/cat_cow_2.jpg"] },
       { title: "Restorative Prone Rest", duration: 45, cue: "Rest face down on hands, allowing spine to settle in neutral.", frames: ["/exercises/childs_pose_2.jpg"] }
-    ]
+    ],
+    video_url: "https://www.youtube.com/watch?v=UEEsdXn8oG8"
   },
   {
     id: "y7",
@@ -155,7 +162,8 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
       { title: "Seated Figure-4 Hip Opener", duration: 60, cue: "Ankle on opposite knee, lean gently forward with straight back.", frames: ["/hip_mobility_routine.jpg"] },
       { title: "Seated Upper Trapezius Drop", duration: 45, cue: "Hold chair base with right hand, tilt head to left.", frames: ["/shoulder_rehab_routine.jpg"] },
       { title: "Seated Chest Expansion", duration: 45, cue: "Interlace hands behind lower back or chair frame, gently lift collarbones.", frames: ["/exercises/childs_pose_1.jpg"] }
-    ]
+    ],
+    video_url: "https://www.youtube.com/watch?v=tAUf7aajBWE"
   },
   {
     id: "y8",
@@ -174,7 +182,8 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
       { title: "Suboccipital Massage with Towel", duration: 60, cue: "Rest base of skull on rolled towel, gentle micro-turns of head.", frames: ["/shoulder_rehab_routine.jpg"] },
       { title: "Oculomotor Vagal Reset", duration: 60, cue: "Keep head straight, look fully right for 30s until swallow/sigh, then left.", frames: ["/exercises/cat_cow_2.jpg"] },
       { title: "Gentle Heart-Belly Grounding", duration: 60, cue: "One hand on heart, one on belly. Feel warmth and safety.", frames: ["/exercises/childs_pose_2.jpg"] }
-    ]
+    ],
+    video_url: "https://www.youtube.com/watch?v=R0__e0QTtQw"
   },
   {
     id: "y9",
@@ -193,7 +202,8 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
       { title: "Gentle IT Band Cross-Body", duration: 45, cue: "Draw straight leg slightly across midline (2-3 inches max).", frames: ["/hip_mobility_routine.jpg"] },
       { title: "Reclined Hamstring Flutter", duration: 45, cue: "Gentle micro-bends and straightening of knee to desensitize nerve.", frames: ["/exercises/cat_cow_2.jpg"] },
       { title: "Restorative Leg Rest", duration: 60, cue: "Rest legs long on mat, noticing length through lower back.", frames: ["/exercises/childs_pose_2.jpg"] }
-    ]
+    ],
+    video_url: "https://www.youtube.com/watch?v=2xF_teT2_V0"
   },
   {
     id: "y10",
@@ -212,7 +222,8 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
       { title: "Supported Bridge Pose", duration: 60, cue: "Block or pillow under sacrum, arms relaxed overhead.", frames: ["/lumbar_core_routine.jpg"] },
       { title: "Supine Spinal Twist with Pillow", duration: 60, cue: "Pillow between knees, slow gentle twist to each side.", frames: ["/exercises/cat_cow_1.jpg"] },
       { title: "Corpse Pose Deep Relaxation", duration: 120, cue: "Complete still surrender into mattress or mat.", frames: ["/exercises/childs_pose_2.jpg"] }
-    ]
+    ],
+    video_url: "https://www.youtube.com/watch?v=BiWDsfZ3zbo"
   },
 
   // ==========================================
