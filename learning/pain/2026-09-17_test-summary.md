@@ -3,13 +3,13 @@ encyclopedia: Pain Science & Neuro-Rehabilitation
 category: PAIN
 chapter_id: pain_1
 title: "Test Summary"
-date: 2026-09-16
-timestamp: 2026-09-16T18:26:57.875Z
+date: 2026-09-17
+timestamp: 2026-09-17T07:53:14.642Z
 ---
 
 # Test Summary
 **Encyclopedia:** Pain Science & Neuro-Rehabilitation  
-**Date Read:** 2026-09-16
+**Date Read:** 2026-09-17
 
 ## Executive Summary
 This is a test summary.
