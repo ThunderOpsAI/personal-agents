@@ -569,12 +569,26 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!interactiveCalendar) {
             interactiveCalendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
-                weekends: false,
+                weekends: true,
                 firstDay: 1,
+                dayHeaders: true,
+                nowIndicator: true,
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+                },
+                views: {
+                    timeGridWeek: {
+                        dayHeaderFormat: { weekday: 'short', month: 'numeric', day: 'numeric', omitCommas: true },
+                        slotDuration: '01:00:00',
+                        titleFormat: { year: 'numeric', month: 'short', day: 'numeric' }
+                    },
+                    timeGridDay: {
+                        dayHeaderFormat: { weekday: 'long', month: 'long', day: 'numeric' },
+                        slotDuration: '00:30:00',
+                        titleFormat: { year: 'numeric', month: 'long', day: 'numeric' }
+                    }
                 },
                 height: 'auto',
                 selectable: true,
@@ -1250,12 +1264,26 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!tasksCalendar) {
             tasksCalendar = new FullCalendar.Calendar(tasksCalendarEl, {
                 initialView: 'dayGridMonth',
-                weekends: false,
+                weekends: true,
                 firstDay: 1,
+                dayHeaders: true,
+                nowIndicator: true,
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+                },
+                views: {
+                    timeGridWeek: {
+                        dayHeaderFormat: { weekday: 'short', month: 'numeric', day: 'numeric', omitCommas: true },
+                        slotDuration: '01:00:00',
+                        titleFormat: { year: 'numeric', month: 'short', day: 'numeric' }
+                    },
+                    timeGridDay: {
+                        dayHeaderFormat: { weekday: 'long', month: 'long', day: 'numeric' },
+                        slotDuration: '00:30:00',
+                        titleFormat: { year: 'numeric', month: 'long', day: 'numeric' }
+                    }
                 },
                 height: 'auto',
                 selectable: true,

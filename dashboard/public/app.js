@@ -569,7 +569,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!interactiveCalendar) {
             interactiveCalendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
-                weekends: false,
+                weekends: true,
                 firstDay: 1,
                 headerToolbar: {
                     left: 'prev,next today',
@@ -1235,7 +1235,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!tasksCalendar) {
             tasksCalendar = new FullCalendar.Calendar(tasksCalendarEl, {
                 initialView: 'dayGridMonth',
-                weekends: false,
+                weekends: true,
                 firstDay: 1,
                 headerToolbar: {
                     left: 'prev,next today',
