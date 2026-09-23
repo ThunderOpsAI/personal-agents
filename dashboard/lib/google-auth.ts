@@ -554,6 +554,11 @@ export async function sendLiveGmailMessage(options: {
   body: string;
   inReplyTo?: string;
   threadId?: string;
+  attachments?: Array<{
+    filename: string;
+    mimeType: string;
+    contentBase64: string;
+  }>;
 }): Promise<{
   status: "success" | "auth_required" | "error";
   messageId?: string;
@@ -571,6 +576,7 @@ export async function sendLiveGmailMessage(options: {
   }
 
   try {
+    const boundary = `====_Part_${Date.now()}_${Math.random().toString(36).slice(2, 9)}====`;
     const utf8Subject = `=?utf-8?B?${Buffer.from(options.subject).toString("base64")}?=`;
     const messageParts = [
       `To: ${options.to}`,
@@ -580,9 +586,7 @@ export async function sendLiveGmailMessage(options: {
     }
     messageParts.push(
       `Subject: ${utf8Subject}`,
-      "MIME-Version: 1.0",
-      "Content-Type: text/plain; charset=utf-8",
-      "Content-Transfer-Encoding: 7bit"
+      "MIME-Version: 1.0"
     );
 
     if (options.inReplyTo) {
@@ -590,8 +594,35 @@ export async function sendLiveGmailMessage(options: {
       messageParts.push(`References: ${options.inReplyTo}`);
     }
 
-    messageParts.push("");
-    messageParts.push(options.body);
+    if (options.attachments && options.attachments.length > 0) {
+      messageParts.push(`Content-Type: multipart/mixed; boundary="${boundary}"`);
+      messageParts.push("");
+      messageParts.push(`--${boundary}`);
+      messageParts.push("Content-Type: text/plain; charset=utf-8");
+      messageParts.push("Content-Transfer-Encoding: 7bit");
+      messageParts.push("");
+      messageParts.push(options.body);
+
+      for (const att of options.attachments) {
+        messageParts.push(`--${boundary}`);
+        messageParts.push(`Content-Type: ${att.mimeType}; name="${att.filename}"`);
+        messageParts.push("Content-Transfer-Encoding: base64");
+        messageParts.push(`Content-Disposition: attachment; filename="${att.filename}"`);
+        messageParts.push("");
+        // Format base64 in 76-character chunks standard for MIME
+        const cleanBase64 = att.contentBase64.replace(/\s/g, "");
+        const chunked = cleanBase64.match(/.{1,76}/g)?.join("\r\n") || cleanBase64;
+        messageParts.push(chunked);
+      }
+      messageParts.push(`--${boundary}--`);
+    } else {
+      messageParts.push(
+        "Content-Type: text/plain; charset=utf-8",
+        "Content-Transfer-Encoding: 7bit",
+        "",
+        options.body
+      );
+    }
 
     const message = messageParts.join("\r\n");
     const encodedMessage = Buffer.from(message)
