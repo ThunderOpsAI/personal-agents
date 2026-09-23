@@ -567,31 +567,39 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!calendarEl || typeof FullCalendar === 'undefined') return;
 
         if (!interactiveCalendar) {
-            interactiveCalendar = new FullCalendar.Calendar(calendarEl, {
+            const calendarConfig = {
                 initialView: 'dayGridMonth',
                 weekends: true,
                 firstDay: 1,
                 dayHeaders: true,
                 nowIndicator: true,
+                selectable: true,
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+                    right: 'dayGridMonth,listWeek'
+                },
+                buttonText: {
+                    today: 'Today',
+                    dayGridMonth: 'Month',
+                    listWeek: 'Week'
+                },
+                eventTimeFormat: {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    meridiem: 'short'
                 },
                 views: {
-                    timeGridWeek: {
-                        dayHeaderFormat: { weekday: 'short', month: 'numeric', day: 'numeric', omitCommas: true },
-                        slotDuration: '01:00:00',
-                        titleFormat: { year: 'numeric', month: 'short', day: 'numeric' }
+                    dayGridMonth: {
+                        dayHeaderFormat: { weekday: 'short' },
+                        dayMaxEvents: 2
                     },
-                    timeGridDay: {
-                        dayHeaderFormat: { weekday: 'long', month: 'long', day: 'numeric' },
-                        slotDuration: '00:30:00',
-                        titleFormat: { year: 'numeric', month: 'long', day: 'numeric' }
+                    listWeek: {
+                        dayHeaderFormat: { weekday: 'long', month: 'short', day: 'numeric' },
+                        noEventsContent: 'No events scheduled this week'
                     }
                 },
                 height: 'auto',
-                selectable: true,
                 dateClick: function(info) {
                     let datePart = info.dateStr;
                     let timePart = '09:00';
@@ -607,7 +615,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         openCalendarEventView(info.event.extendedProps.originalEvent);
                     }
                 }
-            });
+            };
+
+            interactiveCalendar = new FullCalendar.Calendar(calendarEl, calendarConfig);
             interactiveCalendar.render();
         }
 
@@ -1262,31 +1272,39 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!tasksCalendarEl || typeof FullCalendar === 'undefined') return;
 
         if (!tasksCalendar) {
-            tasksCalendar = new FullCalendar.Calendar(tasksCalendarEl, {
+            const tasksCalendarConfig = {
                 initialView: 'dayGridMonth',
                 weekends: true,
                 firstDay: 1,
                 dayHeaders: true,
                 nowIndicator: true,
+                selectable: true,
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+                    right: 'dayGridMonth,listWeek'
+                },
+                buttonText: {
+                    today: 'Today',
+                    dayGridMonth: 'Month',
+                    listWeek: 'Week'
+                },
+                eventTimeFormat: {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    meridiem: 'short'
                 },
                 views: {
-                    timeGridWeek: {
-                        dayHeaderFormat: { weekday: 'short', month: 'numeric', day: 'numeric', omitCommas: true },
-                        slotDuration: '01:00:00',
-                        titleFormat: { year: 'numeric', month: 'short', day: 'numeric' }
+                    dayGridMonth: {
+                        dayHeaderFormat: { weekday: 'short' },
+                        dayMaxEvents: 2
                     },
-                    timeGridDay: {
-                        dayHeaderFormat: { weekday: 'long', month: 'long', day: 'numeric' },
-                        slotDuration: '00:30:00',
-                        titleFormat: { year: 'numeric', month: 'long', day: 'numeric' }
+                    listWeek: {
+                        dayHeaderFormat: { weekday: 'long', month: 'short', day: 'numeric' },
+                        noEventsContent: 'No tasks scheduled this week'
                     }
                 },
                 height: 'auto',
-                selectable: true,
                 dateClick: function(info) {
                     let datePart = info.dateStr;
                     let timePart = '09:00';
@@ -1302,7 +1320,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         openTaskView(info.event.extendedProps.task);
                     }
                 }
-            });
+            };
+
+            tasksCalendar = new FullCalendar.Calendar(tasksCalendarEl, tasksCalendarConfig);
             tasksCalendar.render();
         }
 

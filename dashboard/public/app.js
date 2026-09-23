@@ -567,17 +567,39 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!calendarEl || typeof FullCalendar === 'undefined') return;
 
         if (!interactiveCalendar) {
-            interactiveCalendar = new FullCalendar.Calendar(calendarEl, {
+            const calendarConfig = {
                 initialView: 'dayGridMonth',
                 weekends: true,
                 firstDay: 1,
+                dayHeaders: true,
+                nowIndicator: true,
+                selectable: true,
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                    right: 'dayGridMonth,listWeek'
+                },
+                buttonText: {
+                    today: 'Today',
+                    dayGridMonth: 'Month',
+                    listWeek: 'Week'
+                },
+                eventTimeFormat: {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    meridiem: 'short'
+                },
+                views: {
+                    dayGridMonth: {
+                        dayHeaderFormat: { weekday: 'short' },
+                        dayMaxEvents: 2
+                    },
+                    listWeek: {
+                        dayHeaderFormat: { weekday: 'long', month: 'short', day: 'numeric' },
+                        noEventsContent: 'No events scheduled this week'
+                    }
                 },
                 height: 'auto',
-                selectable: true,
                 dateClick: function(info) {
                     let datePart = info.dateStr;
                     let timePart = '09:00';
@@ -593,7 +615,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         openCalendarEventView(info.event.extendedProps.originalEvent);
                     }
                 }
-            });
+            };
+
+            interactiveCalendar = new FullCalendar.Calendar(calendarEl, calendarConfig);
             interactiveCalendar.render();
         }
 
@@ -1156,6 +1180,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const taskInputDate = document.getElementById('taskInputDate');
     const taskInputTime = document.getElementById('taskInputTime');
     const taskInputStatus = document.getElementById('taskInputStatus');
+    const taskInputUrgent = document.getElementById('taskInputUrgent');
     const taskInputNotes = document.getElementById('taskInputNotes');
     const btnSaveTask = document.getElementById('btnSaveTask');
 
@@ -1221,6 +1246,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const doneCount = tasks.filter(t => t.status === 'completed').length;
 
         if (tasksTabBadge) tasksTabBadge.textContent = pendingCount.toString();
+        
+        const urgentBanner = document.getElementById('urgentTasksBanner');
+        const urgentText = document.getElementById('urgentTasksBannerText');
+        const urgentTasks = tasks.filter(t => t.status !== 'completed' && t.isUrgent);
+        
+        if (urgentBanner && urgentText) {
+            if (urgentTasks.length > 0) {
+                urgentBanner.classList.remove('hidden');
+                const titles = urgentTasks.map(t => t.title).join(', ');
+                urgentText.textContent = `URGENT TASK: ${titles}`;
+            } else {
+                urgentBanner.classList.add('hidden');
+            }
+        }
         if (tasksActiveCountBadge) tasksActiveCountBadge.textContent = `${pendingCount} Pending`;
         if (tasksCompletedCountBadge) {
             tasksCompletedCountBadge.textContent = `${doneCount} Done`;
@@ -1233,17 +1272,39 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!tasksCalendarEl || typeof FullCalendar === 'undefined') return;
 
         if (!tasksCalendar) {
-            tasksCalendar = new FullCalendar.Calendar(tasksCalendarEl, {
+            const tasksCalendarConfig = {
                 initialView: 'dayGridMonth',
                 weekends: true,
                 firstDay: 1,
+                dayHeaders: true,
+                nowIndicator: true,
+                selectable: true,
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                    right: 'dayGridMonth,listWeek'
+                },
+                buttonText: {
+                    today: 'Today',
+                    dayGridMonth: 'Month',
+                    listWeek: 'Week'
+                },
+                eventTimeFormat: {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    meridiem: 'short'
+                },
+                views: {
+                    dayGridMonth: {
+                        dayHeaderFormat: { weekday: 'short' },
+                        dayMaxEvents: 2
+                    },
+                    listWeek: {
+                        dayHeaderFormat: { weekday: 'long', month: 'short', day: 'numeric' },
+                        noEventsContent: 'No tasks scheduled this week'
+                    }
                 },
                 height: 'auto',
-                selectable: true,
                 dateClick: function(info) {
                     let datePart = info.dateStr;
                     let timePart = '09:00';
@@ -1259,7 +1320,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         openTaskView(info.event.extendedProps.task);
                     }
                 }
-            });
+            };
+
+            tasksCalendar = new FullCalendar.Calendar(tasksCalendarEl, tasksCalendarConfig);
             tasksCalendar.render();
         }
 
@@ -1331,6 +1394,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (taskId) taskId.value = isEditing ? taskOrPrefill.id : '';
         if (taskInputTitle) taskInputTitle.value = isEditing ? taskOrPrefill.title : '';
+        if (taskInputUrgent) taskInputUrgent.checked = isEditing ? Boolean(taskOrPrefill.isUrgent) : false;
         
         let dateVal = '';
         let timeVal = '09:00';
@@ -1460,6 +1524,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const date = taskInputDate ? taskInputDate.value : '';
             const time = taskInputTime ? taskInputTime.value : '';
             const status = taskInputStatus ? taskInputStatus.value : 'needsAction';
+            const isUrgent = taskInputUrgent ? taskInputUrgent.checked : false;
             const notes = taskInputNotes ? taskInputNotes.value.trim() : '';
 
             if (!title) {
@@ -1480,7 +1545,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 title,
                 notes: notes || undefined,
                 due: dueIso || undefined,
-                status
+                status,
+                isUrgent
             };
 
             try {
@@ -2395,7 +2461,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await res.json();
                 
                 if (data.html || data.markdown) {
-                    // Very simple markdown formatting just for display if needed
                     briefingContent.innerHTML = data.html || data.markdown.replace(/\n/g, '<br>');
                 } else {
                     briefingContent.innerHTML = 'Error loading briefing.';
@@ -2412,6 +2477,41 @@ document.addEventListener('DOMContentLoaded', () => {
         const closeBriefingModal = () => briefingModal.classList.add('hidden');
         if (btnCloseBriefing) btnCloseBriefing.addEventListener('click', closeBriefingModal);
         if (btnDismissBriefing) btnDismissBriefing.addEventListener('click', closeBriefingModal);
+
+        // Tab navigation within the briefing modal
+        if (briefingContent) {
+            briefingContent.addEventListener('click', (e) => {
+                const tabBtn = e.target.closest('.briefing-nav-tab');
+                if (!tabBtn) return;
+                const targetId = tabBtn.getAttribute('data-tab');
+                if (!targetId) return;
+
+                const container = tabBtn.closest('.briefing-container') || briefingContent;
+                container.querySelectorAll('.briefing-nav-tab').forEach(btn => {
+                    btn.classList.remove('active');
+                    btn.setAttribute('aria-selected', 'false');
+                });
+                container.querySelectorAll('.briefing-tab-pane').forEach(pane => {
+                    pane.classList.remove('active');
+                });
+
+                tabBtn.classList.add('active');
+                tabBtn.setAttribute('aria-selected', 'true');
+                const targetPane = document.getElementById(targetId);
+                if (targetPane) targetPane.classList.add('active');
+            });
+        }
+
+        const btnBriefingOpenChat = document.getElementById('btnBriefingOpenChat');
+        if (btnBriefingOpenChat) {
+            btnBriefingOpenChat.addEventListener('click', () => {
+                briefingModal.classList.add('hidden');
+                const rumbleChatModal = document.getElementById('rumbleChatModal');
+                if (rumbleChatModal) {
+                    rumbleChatModal.classList.remove('hidden');
+                }
+            });
+        }
     }
     
     if (btnDoneBriefing && executiveBriefingCard) {

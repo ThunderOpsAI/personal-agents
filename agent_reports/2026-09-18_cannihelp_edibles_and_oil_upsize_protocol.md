@@ -1,7 +1,7 @@
 # Cann I Help (Icann) Clinical Consult & Prescription Strategy
 
-**Date:** 2026-09-18  
-**Scheduled Consult:** Saturday, 19 September 2026 @ 10:00 AM AEST  
+**Date:** 2026-09-18 (Updated 2026-09-19)  
+**Scheduled Consult:** Saturday, 26 September 2026 @ 10:00 AM – 10:30 AM AEST (To be confirmed during the week)  
 **Clinic:** Cann I Help / Medcan Australia  
 **Status:** Consult Preparation & Script Strategy  
 
