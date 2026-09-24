@@ -38,8 +38,15 @@
             </div>
             
             <!-- Dynamic Alert Banner -->
-            <div class="alert-banner hidden" id="urgentTasksBanner" style="background: rgba(220, 38, 38, 0.2); border-left: 4px solid var(--neon-red); margin-top: 10px; padding: 10px; border-radius: 8px;">
-                <span class="alert-text" id="urgentTasksBannerText" style="color: var(--neon-red); font-weight: bold;"></span>
+            <div class="alert-banner hidden" id="urgentTasksBanner" style="background: rgba(220, 38, 38, 0.2); border-left: 4px solid var(--neon-red); margin-top: 10px; padding: 12px 16px; border-radius: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="background: var(--neon-red); color: #fff; font-size: 0.75rem; font-weight: 800; padding: 2px 7px; border-radius: 4px; text-transform: uppercase;">Urgent</span>
+                        <span class="alert-text" id="urgentTasksBannerText" style="color: var(--neon-red); font-weight: bold;"></span>
+                    </div>
+                    <button class="btn btn-outline btn-sm" id="btnDismissUrgentBanner" style="font-size: 0.75rem; padding: 2px 8px; color: var(--text-secondary); border-color: rgba(255,255,255,0.2);" title="Dismiss banner">&times; Dismiss</button>
+                </div>
+                <div id="urgentTasksBannerList" style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;"></div>
             </div>
             <div class="alert-banner hidden" id="alertBanner">
                 <span class="alert-text" id="alertBannerText">High Pain Alert: Lumbar at 8/10.</span>
@@ -985,6 +992,7 @@
                 <div style="display: flex; flex-direction: column; gap: 12px; margin: 15px 0;">
                     <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                         <span class="badge neon-blue" id="viewTaskBadge">Pending</span>
+                        <span class="badge hidden" id="viewTaskUrgentBadge" style="background: rgba(255, 0, 60, 0.2); border: 1px solid var(--neon-red); color: var(--neon-red);">Urgent</span>
                         <span class="badge" style="background: rgba(255,255,255,0.08); color: var(--text-secondary);" id="viewTaskSourceBadge">Google Tasks</span>
                     </div>
                     <div style="font-size: 0.95rem; color: var(--text-primary);">
@@ -999,6 +1007,7 @@
                 <div style="display: flex; justify-content: space-between; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
                     <button class="btn btn-neon-red btn-sm" id="btnDeleteTask">Delete Task</button>
                     <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-outline btn-sm" id="btnToggleTaskUrgent" style="border-color: var(--neon-red); color: var(--neon-red);">Mark Urgent</button>
                         <button class="btn btn-outline btn-sm" id="btnToggleTaskComplete">Mark Complete</button>
                         <button class="btn btn-outline btn-sm" id="btnEditTask">Edit Task</button>
                         <button class="btn btn-neon-blue btn-sm" id="btnDoneTaskView">Close</button>

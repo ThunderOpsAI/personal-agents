@@ -509,9 +509,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     `;
                 } else {
+                    const isOverdue = item.scheduled_time && !isNaN(new Date(item.scheduled_time).getTime()) && new Date(item.scheduled_time) < new Date();
+                    if (isOverdue) {
+                        card.style.borderLeft = '4px solid var(--neon-red)';
+                        card.style.background = 'rgba(255, 0, 60, 0.08)';
+                    }
                     card.innerHTML = `
                         <div class="protocol-info">
-                            <h3>${item.time}</h3>
+                            <h3${isOverdue ? ' style="color: var(--neon-red);"' : ''}>${item.time}${isOverdue ? ' <span class="badge" style="background: rgba(255,0,60,0.25); border: 1px solid var(--neon-red); color: var(--neon-red); font-size: 0.72rem; margin-left: 6px; padding: 1px 6px;">Overdue</span>' : ''}</h3>
                             <p>${escapeHtml(item.title)}</p>
                             ${item.choices ? `<small class="form-hint">Choices: ${item.choices.join(' · ')}</small>` : ''}
                         </div>
@@ -1241,6 +1246,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    let urgentBannerDismissed = false;
+    const btnDismissUrgentBanner = document.getElementById('btnDismissUrgentBanner');
+    if (btnDismissUrgentBanner) {
+        btnDismissUrgentBanner.addEventListener('click', () => {
+            const urgentBanner = document.getElementById('urgentTasksBanner');
+            if (urgentBanner) urgentBanner.classList.add('hidden');
+            urgentBannerDismissed = true;
+        });
+    }
+
     function updateTaskBadges(tasks) {
         const pendingCount = tasks.filter(t => t.status !== 'completed').length;
         const doneCount = tasks.filter(t => t.status === 'completed').length;
@@ -1249,15 +1264,111 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const urgentBanner = document.getElementById('urgentTasksBanner');
         const urgentText = document.getElementById('urgentTasksBannerText');
-        const urgentTasks = tasks.filter(t => t.status !== 'completed' && t.isUrgent);
+        const urgentList = document.getElementById('urgentTasksBannerList');
+        const now = new Date();
+        const urgentTasks = tasks.filter(t => {
+            if (t.status === 'completed') return false;
+            const isOverdue = t.due && !isNaN(new Date(t.due).getTime()) && new Date(t.due) < now;
+            return Boolean(t.isUrgent) || isOverdue;
+        });
         
         if (urgentBanner && urgentText) {
-            if (urgentTasks.length > 0) {
+            if (urgentTasks.length > 0 && !urgentBannerDismissed) {
                 urgentBanner.classList.remove('hidden');
-                const titles = urgentTasks.map(t => t.title).join(', ');
-                urgentText.textContent = `URGENT TASK: ${titles}`;
+                urgentText.textContent = `${urgentTasks.length} urgent / overdue task${urgentTasks.length > 1 ? 's' : ''}`;
+                
+                if (urgentList) {
+                    urgentList.innerHTML = urgentTasks.map(t => {
+                        const isOverdue = t.due && !isNaN(new Date(t.due).getTime()) && new Date(t.due) < now;
+                        let dueStr = '';
+                        if (t.due) {
+                            const d = new Date(t.due);
+                            dueStr = t.due.includes('T') && !t.due.endsWith('T00:00:00.000Z')
+                                ? d.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' })
+                                : d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short' });
+                        }
+                        return `
+                            <div class="urgent-task-item" style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.35); padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(255,0,60,0.3); gap: 10px; flex-wrap: wrap;">
+                                <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 200px;">
+                                    <span style="color: var(--neon-red); font-size: 1.1rem; line-height: 1;">&#x25cf;</span>
+                                    <span class="urgent-task-title" data-id="${t.id}" style="color: var(--text-primary); font-weight: 500; cursor: pointer; text-decoration: underline;" title="Click to view task">${escapeHtml(t.title)}</span>
+                                    ${isOverdue ? '<span class="badge" style="background: rgba(255,0,60,0.25); border: 1px solid var(--neon-red); color: var(--neon-red); font-size: 0.7rem; padding: 1px 5px;">Overdue</span>' : '<span class="badge" style="background: rgba(255,0,60,0.2); border: 1px solid var(--neon-red); color: var(--neon-red); font-size: 0.7rem; padding: 1px 5px;">Urgent</span>'}
+                                    ${dueStr ? `<small style="color: var(--text-muted); font-size: 0.75rem;">Due: ${dueStr}</small>` : ''}
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    <button class="btn btn-neon-green btn-sm btn-done-urgent" data-id="${t.id}" style="padding: 3px 10px; font-size: 0.78rem;">&#x2713; Done</button>
+                                    ${t.isUrgent ? `<button class="btn btn-outline btn-sm btn-unurgent" data-id="${t.id}" style="padding: 3px 8px; font-size: 0.78rem; color: var(--text-secondary);" title="Unmark as urgent">Unmark</button>` : ''}
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+
+                    urgentList.querySelectorAll('.urgent-task-title').forEach(el => {
+                        el.addEventListener('click', () => {
+                            const taskId = el.getAttribute('data-id');
+                            const found = (cachedTasks || []).find(x => x.id === taskId);
+                            if (found) openTaskView(found);
+                        });
+                    });
+
+                    urgentList.querySelectorAll('.btn-done-urgent').forEach(btn => {
+                        btn.addEventListener('click', async (e) => {
+                            e.stopPropagation();
+                            const taskId = btn.getAttribute('data-id');
+                            btn.disabled = true;
+                            btn.innerText = 'Completing...';
+                            try {
+                                const res = await fetch(`${API_TASKS}/${encodeURIComponent(taskId)}`, {
+                                    method: 'PATCH',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ status: 'completed' })
+                                });
+                                if (res.ok) {
+                                    showToast('Urgent task marked complete!', 'info');
+                                    await loadTasks();
+                                } else {
+                                    showToast('Failed to complete task');
+                                    btn.disabled = false;
+                                    btn.innerText = '✓ Done';
+                                }
+                            } catch (err) {
+                                console.error(err);
+                                showToast('Network error completing task');
+                                btn.disabled = false;
+                                btn.innerText = '✓ Done';
+                            }
+                        });
+                    });
+
+                    urgentList.querySelectorAll('.btn-unurgent').forEach(btn => {
+                        btn.addEventListener('click', async (e) => {
+                            e.stopPropagation();
+                            const taskId = btn.getAttribute('data-id');
+                            btn.disabled = true;
+                            try {
+                                const res = await fetch(`${API_TASKS}/${encodeURIComponent(taskId)}`, {
+                                    method: 'PATCH',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ isUrgent: false })
+                                });
+                                if (res.ok) {
+                                    showToast('Task removed from urgent list', 'info');
+                                    await loadTasks();
+                                } else {
+                                    showToast('Failed to update task');
+                                    btn.disabled = false;
+                                }
+                            } catch (err) {
+                                console.error(err);
+                                showToast('Network error updating task');
+                                btn.disabled = false;
+                            }
+                        });
+                    });
+                }
             } else {
                 urgentBanner.classList.add('hidden');
+                if (urgentList) urgentList.innerHTML = '';
             }
         }
         if (tasksActiveCountBadge) tasksActiveCountBadge.textContent = `${pendingCount} Pending`;
@@ -1329,18 +1440,32 @@ document.addEventListener('DOMContentLoaded', () => {
         const events = [];
         (tasks || []).forEach(t => {
             const isDone = t.status === 'completed';
+            const isOverdue = !isDone && t.due && !isNaN(new Date(t.due).getTime()) && new Date(t.due) < new Date();
+            const isUrgent = Boolean(t.isUrgent) || isOverdue;
+
             let start = t.due ? t.due.slice(0, 19) : (t.created_at ? t.created_at.slice(0, 10) : new Date().toISOString().slice(0, 10));
             const hasTime = t.due && t.due.includes('T') && !t.due.endsWith('T00:00:00.000Z');
 
+            let bg = isDone ? 'rgba(0, 255, 102, 0.15)' : 'rgba(0, 240, 255, 0.15)';
+            let border = isDone ? 'var(--neon-green)' : 'var(--neon-blue)';
+            let text = isDone ? 'rgba(255, 255, 255, 0.6)' : '#ffffff';
+
+            if (isUrgent && !isDone) {
+                bg = 'rgba(255, 0, 60, 0.25)';
+                border = 'var(--neon-red)';
+                text = '#ff6b8b';
+            }
+
             events.push({
                 id: t.id,
-                title: `${isDone ? '✓ ' : '○ '}${t.title}`,
+                title: `${isDone ? '✓ ' : (isOverdue ? '⚠️ ' : (t.isUrgent ? '❗ ' : '○ '))}${t.title}`,
                 start: start,
                 allDay: !hasTime,
-                backgroundColor: isDone ? 'rgba(0, 255, 102, 0.15)' : 'rgba(0, 240, 255, 0.15)',
-                borderColor: isDone ? 'var(--neon-green)' : 'var(--neon-blue)',
-                textColor: isDone ? 'rgba(255, 255, 255, 0.6)' : '#ffffff',
-                extendedProps: { task: t }
+                backgroundColor: bg,
+                borderColor: border,
+                textColor: text,
+                className: isUrgent && !isDone ? 'task-event-urgent' : '',
+                extendedProps: { task: t, isUrgent, isOverdue }
             });
         });
 
@@ -1358,6 +1483,26 @@ document.addEventListener('DOMContentLoaded', () => {
             viewTaskBadge.innerText = isDone ? 'Completed' : 'Pending';
             viewTaskBadge.className = isDone ? 'badge neon-green' : 'badge neon-blue';
         }
+        
+        const viewTaskUrgentBadge = document.getElementById('viewTaskUrgentBadge');
+        const btnToggleTaskUrgent = document.getElementById('btnToggleTaskUrgent');
+        const isOverdue = !isDone && task.due && !isNaN(new Date(task.due).getTime()) && new Date(task.due) < new Date();
+
+        if (viewTaskUrgentBadge) {
+            if (task.isUrgent || isOverdue) {
+                viewTaskUrgentBadge.classList.remove('hidden');
+                viewTaskUrgentBadge.innerText = isOverdue ? 'Overdue' : 'Urgent';
+            } else {
+                viewTaskUrgentBadge.classList.add('hidden');
+            }
+        }
+
+        if (btnToggleTaskUrgent) {
+            btnToggleTaskUrgent.innerText = task.isUrgent ? 'Unmark Urgent' : '! Mark Urgent';
+            btnToggleTaskUrgent.style.borderColor = task.isUrgent ? 'var(--text-muted)' : 'var(--neon-red)';
+            btnToggleTaskUrgent.style.color = task.isUrgent ? 'var(--text-secondary)' : 'var(--neon-red)';
+        }
+
         if (viewTaskSourceBadge) {
             viewTaskSourceBadge.innerText = task.google_task_id ? 'Google Tasks Synced' : 'Local Task';
         }
@@ -1370,7 +1515,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const timeStr = task.due.includes('T') && !task.due.endsWith('T00:00:00.000Z')
                     ? ' • ' + d.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' })
                     : '';
-                dueDisplay = `${dateStr}${timeStr}`;
+                dueDisplay = `${dateStr}${timeStr}${isOverdue ? ' (Overdue)' : ''}`;
             }
         }
         if (viewTaskDue) viewTaskDue.innerText = dueDisplay;
@@ -1454,9 +1599,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 if (res.ok) {
                     const updated = await res.json();
-                    activeTask = updated;
+                    activeTask = updated.task || updated;
                     showToast(newStatus === 'completed' ? 'Task marked complete!' : 'Task marked pending!', 'info');
                     openTaskView(activeTask);
+                    urgentBannerDismissed = false;
                     await loadTasks();
                 } else {
                     showToast('Failed to update task status');
@@ -1464,6 +1610,37 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (err) {
                 console.error(err);
                 showToast('Network error updating task status');
+            }
+        });
+    }
+
+    const btnToggleTaskUrgent = document.getElementById('btnToggleTaskUrgent');
+    if (btnToggleTaskUrgent) {
+        btnToggleTaskUrgent.addEventListener('click', async () => {
+            if (!activeTask) return;
+            const newUrgent = !activeTask.isUrgent;
+            btnToggleTaskUrgent.disabled = true;
+            try {
+                const res = await fetch(`${API_TASKS}/${encodeURIComponent(activeTask.id)}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ isUrgent: newUrgent })
+                });
+                if (res.ok) {
+                    const updated = await res.json();
+                    activeTask = updated.task || { ...activeTask, isUrgent: newUrgent };
+                    showToast(newUrgent ? 'Task marked as Urgent!' : 'Task unmarked as urgent', 'info');
+                    openTaskView(activeTask);
+                    urgentBannerDismissed = false;
+                    await loadTasks();
+                } else {
+                    showToast('Failed to update urgent status');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Network error updating task');
+            } finally {
+                btnToggleTaskUrgent.disabled = false;
             }
         });
     }
