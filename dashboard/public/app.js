@@ -965,6 +965,21 @@ document.addEventListener('DOMContentLoaded', () => {
             btnConfirmPostpone.innerText = 'Rescheduling...';
 
             try {
+                const taskMatch = (cachedTasks || []).find(x => x.id === itemToPostpone);
+                if (taskMatch) {
+                    const res = await fetch(`${API_TASKS}/${encodeURIComponent(itemToPostpone)}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ due: new Date(selectedDate).toISOString() })
+                    });
+                    if (!res.ok) throw new Error(`Status ${res.status}`);
+                    if (postponeModal) postponeModal.classList.add('hidden');
+                    showToast('Task delayed and rescheduled', 'success');
+                    itemToPostpone = null;
+                    await loadTasks();
+                    return;
+                }
+
                 const res = await fetch(API_AGENDA, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1003,6 +1018,21 @@ document.addEventListener('DOMContentLoaded', () => {
             if (dismissConfirmModal) dismissConfirmModal.classList.add('hidden');
             if (itemToDismiss) {
                 try {
+                    const taskMatch = (cachedTasks || []).find(x => x.id === itemToDismiss);
+                    if (taskMatch) {
+                        const res = await fetch(`${API_TASKS}/${encodeURIComponent(itemToDismiss)}`, {
+                            method: 'DELETE'
+                        });
+                        if (res.ok) {
+                            showToast(`Dismissed: ${taskMatch.title}`, 'info');
+                            await loadTasks();
+                        } else {
+                            showToast('Failed to dismiss task');
+                        }
+                        itemToDismiss = null;
+                        return;
+                    }
+
                     const currentCard = cardToDismiss || document.getElementById(`protocol-${itemToDismiss}`);
                     if (currentCard) {
                         currentCard.classList.add('dismissed');
@@ -1251,6 +1281,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnDismissUrgentBanner) {
         btnDismissUrgentBanner.addEventListener('click', () => {
             const urgentBanner = document.getElementById('urgentTasksBanner');
+            const now = new Date();
+            const persistentUrgent = (cachedTasks || []).some(t => t.status !== 'completed' && Boolean(t.isUrgent) && t.due && !isNaN(new Date(t.due).getTime()) && new Date(t.due) < now);
+            if (persistentUrgent) {
+                showToast('Overdue urgent tasks are persistent. Please resolve each task with Done, Delay, or Dismiss.', 'info');
+                return;
+            }
             if (urgentBanner) urgentBanner.classList.add('hidden');
             urgentBannerDismissed = true;
         });
@@ -1266,20 +1302,49 @@ document.addEventListener('DOMContentLoaded', () => {
         const urgentText = document.getElementById('urgentTasksBannerText');
         const urgentList = document.getElementById('urgentTasksBannerList');
         const now = new Date();
-        const urgentTasks = tasks.filter(t => {
+
+        const criticalOverdueTasks = tasks.filter(t => {
+            if (t.status === 'completed') return false;
+            const isOverdue = t.due && !isNaN(new Date(t.due).getTime()) && new Date(t.due) < now;
+            return Boolean(t.isUrgent) && isOverdue;
+        });
+
+        const allUrgentTasks = tasks.filter(t => {
             if (t.status === 'completed') return false;
             const isOverdue = t.due && !isNaN(new Date(t.due).getTime()) && new Date(t.due) < now;
             return Boolean(t.isUrgent) || isOverdue;
         });
+
+        // If there are critical overdue urgent tasks, banner is strictly PERSISTENT
+        const isPersistent = criticalOverdueTasks.length > 0;
+        if (isPersistent) {
+            urgentBannerDismissed = false;
+        }
         
         if (urgentBanner && urgentText) {
-            if (urgentTasks.length > 0 && !urgentBannerDismissed) {
+            if (allUrgentTasks.length > 0 && (!urgentBannerDismissed || isPersistent)) {
                 urgentBanner.classList.remove('hidden');
-                urgentText.textContent = `${urgentTasks.length} urgent / overdue task${urgentTasks.length > 1 ? 's' : ''}`;
+
+                if (isPersistent) {
+                    urgentBanner.style.background = 'rgba(255, 0, 60, 0.28)';
+                    urgentBanner.style.border = '2px solid var(--neon-red)';
+                    urgentBanner.style.borderLeft = '6px solid var(--neon-red)';
+                    urgentBanner.style.boxShadow = '0 0 18px rgba(255, 0, 60, 0.45)';
+                    urgentText.innerHTML = `<strong>PERSISTENT URGENT:</strong> ${criticalOverdueTasks.length} task${criticalOverdueTasks.length > 1 ? 's' : ''} overdue &mdash; action required`;
+                    if (btnDismissUrgentBanner) btnDismissUrgentBanner.style.display = 'none';
+                } else {
+                    urgentBanner.style.background = 'rgba(220, 38, 38, 0.2)';
+                    urgentBanner.style.border = '1px solid var(--neon-red)';
+                    urgentBanner.style.borderLeft = '4px solid var(--neon-red)';
+                    urgentBanner.style.boxShadow = 'none';
+                    urgentText.textContent = `${allUrgentTasks.length} urgent / overdue task${allUrgentTasks.length > 1 ? 's' : ''}`;
+                    if (btnDismissUrgentBanner) btnDismissUrgentBanner.style.display = 'inline-block';
+                }
                 
                 if (urgentList) {
-                    urgentList.innerHTML = urgentTasks.map(t => {
+                    urgentList.innerHTML = allUrgentTasks.map(t => {
                         const isOverdue = t.due && !isNaN(new Date(t.due).getTime()) && new Date(t.due) < now;
+                        const isCritical = Boolean(t.isUrgent) && isOverdue;
                         let dueStr = '';
                         if (t.due) {
                             const d = new Date(t.due);
@@ -1288,16 +1353,21 @@ document.addEventListener('DOMContentLoaded', () => {
                                 : d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short' });
                         }
                         return `
-                            <div class="urgent-task-item" style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.35); padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(255,0,60,0.3); gap: 10px; flex-wrap: wrap;">
+                            <div class="urgent-task-item" style="display: flex; justify-content: space-between; align-items: center; background: ${isCritical ? 'rgba(0,0,0,0.55)' : 'rgba(0,0,0,0.35)'}; padding: 8px 12px; border-radius: 6px; border: ${isCritical ? '2px solid var(--neon-red)' : '1px solid rgba(255,0,60,0.3)'}; gap: 10px; flex-wrap: wrap;">
                                 <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 200px;">
-                                    <span style="color: var(--neon-red); font-size: 1.1rem; line-height: 1;">&#x25cf;</span>
-                                    <span class="urgent-task-title" data-id="${t.id}" style="color: var(--text-primary); font-weight: 500; cursor: pointer; text-decoration: underline;" title="Click to view task">${escapeHtml(t.title)}</span>
-                                    ${isOverdue ? '<span class="badge" style="background: rgba(255,0,60,0.25); border: 1px solid var(--neon-red); color: var(--neon-red); font-size: 0.7rem; padding: 1px 5px;">Overdue</span>' : '<span class="badge" style="background: rgba(255,0,60,0.2); border: 1px solid var(--neon-red); color: var(--neon-red); font-size: 0.7rem; padding: 1px 5px;">Urgent</span>'}
-                                    ${dueStr ? `<small style="color: var(--text-muted); font-size: 0.75rem;">Due: ${dueStr}</small>` : ''}
+                                    <span style="color: var(--neon-red); font-size: 1.1rem; line-height: 1;">${isCritical ? '🚨' : '&#x25cf;'}</span>
+                                    <div>
+                                        <span class="urgent-task-title" data-id="${t.id}" style="color: var(--text-primary); font-weight: ${isCritical ? '700' : '500'}; cursor: pointer; text-decoration: underline;" title="Click to view task">${escapeHtml(t.title)}</span>
+                                        <div style="display: flex; gap: 6px; align-items: center; margin-top: 2px;">
+                                            ${isCritical ? '<span class="badge" style="background: var(--neon-red); color: #fff; font-size: 0.68rem; font-weight: 800; padding: 1px 6px;">OVERDUE URGENT</span>' : (isOverdue ? '<span class="badge" style="background: rgba(255,170,0,0.25); border: 1px solid var(--neon-orange, #ffaa00); color: var(--neon-orange, #ffaa00); font-size: 0.7rem; padding: 1px 5px;">Overdue</span>' : '<span class="badge" style="background: rgba(255,0,60,0.2); border: 1px solid var(--neon-red); color: var(--neon-red); font-size: 0.7rem; padding: 1px 5px;">Urgent</span>')}
+                                            ${dueStr ? `<small style="color: ${isOverdue ? 'var(--neon-red)' : 'var(--text-muted)'}; font-size: 0.75rem; font-weight: ${isOverdue ? '600' : 'normal'};">Due: ${dueStr}</small>` : ''}
+                                        </div>
+                                    </div>
                                 </div>
-                                <div style="display: flex; align-items: center; gap: 6px;">
-                                    <button class="btn btn-neon-green btn-sm btn-done-urgent" data-id="${t.id}" style="padding: 3px 10px; font-size: 0.78rem;">&#x2713; Done</button>
-                                    ${t.isUrgent ? `<button class="btn btn-outline btn-sm btn-unurgent" data-id="${t.id}" style="padding: 3px 8px; font-size: 0.78rem; color: var(--text-secondary);" title="Unmark as urgent">Unmark</button>` : ''}
+                                <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                                    <button class="btn btn-neon-green btn-sm btn-done-urgent" data-id="${t.id}" style="padding: 4px 10px; font-size: 0.78rem; font-weight: 600;">✓ Done</button>
+                                    <button class="btn btn-neon-blue btn-sm btn-delay-urgent" data-id="${t.id}" style="padding: 4px 10px; font-size: 0.78rem;">🕒 Delay</button>
+                                    <button class="btn btn-outline btn-sm btn-dismiss-urgent" data-id="${t.id}" style="padding: 4px 10px; font-size: 0.78rem; border-color: rgba(255,0,60,0.5); color: var(--neon-red);" title="Dismiss task">✕ Dismiss</button>
                                 </div>
                             </div>
                         `;
@@ -1340,28 +1410,60 @@ document.addEventListener('DOMContentLoaded', () => {
                         });
                     });
 
-                    urgentList.querySelectorAll('.btn-unurgent').forEach(btn => {
-                        btn.addEventListener('click', async (e) => {
+                    urgentList.querySelectorAll('.btn-delay-urgent').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
                             e.stopPropagation();
                             const taskId = btn.getAttribute('data-id');
-                            btn.disabled = true;
-                            try {
-                                const res = await fetch(`${API_TASKS}/${encodeURIComponent(taskId)}`, {
-                                    method: 'PATCH',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ isUrgent: false })
-                                });
-                                if (res.ok) {
-                                    showToast('Task removed from urgent list', 'info');
-                                    await loadTasks();
-                                } else {
-                                    showToast('Failed to update task');
-                                    btn.disabled = false;
+                            const found = (cachedTasks || []).find(x => x.id === taskId);
+                            if (!found) return;
+
+                            itemToPostpone = taskId;
+                            activePostponeItemTitle = found.title;
+                            activePostponeItemType = 'task';
+
+                            if (postponeItemSummary) {
+                                postponeItemSummary.textContent = `Delay Urgent Task: "${found.title}"`;
+                            }
+
+                            const tmr = new Date();
+                            tmr.setHours(tmr.getHours() + 2);
+                            const tzOffset = tmr.getTimezoneOffset() * 60000;
+                            const localIso = new Date(tmr - tzOffset).toISOString().slice(0, 16);
+                            if (postponeDateInput) postponeDateInput.value = localIso;
+
+                            document.querySelectorAll('.btn-quick-postpone').forEach(b => b.classList.remove('selected'));
+                            const preset2h = document.querySelector('.btn-quick-postpone[data-hours="2"]');
+                            if (preset2h) preset2h.classList.add('selected');
+
+                            if (postponeModal) postponeModal.classList.remove('hidden');
+                        });
+                    });
+
+                    urgentList.querySelectorAll('.btn-dismiss-urgent').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            const taskId = btn.getAttribute('data-id');
+                            const found = (cachedTasks || []).find(x => x.id === taskId);
+                            if (!found) return;
+
+                            itemToDismiss = taskId;
+                            cardToDismiss = null;
+                            activeDismissItemTitle = found.title;
+                            activeDismissItemType = 'task';
+
+                            if (dismissConfirmItemTitle) {
+                                dismissConfirmItemTitle.textContent = `Are you sure you want to dismiss the urgent task: "${found.title}"?`;
+                            }
+                            if (dismissConfirmModal) {
+                                dismissConfirmModal.classList.remove('hidden');
+                            } else {
+                                if (confirm(`Dismiss urgent task "${found.title}"?`)) {
+                                    fetch(`${API_TASKS}/${encodeURIComponent(taskId)}`, { method: 'DELETE' })
+                                        .then(() => {
+                                            showToast('Task dismissed', 'info');
+                                            loadTasks();
+                                        }).catch(console.error);
                                 }
-                            } catch (err) {
-                                console.error(err);
-                                showToast('Network error updating task');
-                                btn.disabled = false;
                             }
                         });
                     });
