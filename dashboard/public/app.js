@@ -6211,7 +6211,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentRoutineRunning = null;
     let isRunnerPaused = false;
 
-    function startRunnerModal(id) {
+    async function startRunnerModal(id) {
         const rawId = (id || '').toLowerCase().trim();
         if (rawId.includes('meditation') || rawId.startsWith('med_')) {
             window.open('https://insighttimer.com', '_blank');
@@ -6225,9 +6225,32 @@ document.addEventListener('DOMContentLoaded', () => {
         if (btnTogglePause) btnTogglePause.innerText = 'Pause';
         
         let foundRoutine = YOGA_ROUTINES[rawId];
+        
+        if (!foundRoutine && typeof cachedExerciseCatalog !== 'undefined') {
+            foundRoutine = cachedExerciseCatalog.find(r => (r.id || '').toLowerCase() === rawId || (r.title || '').toLowerCase().includes(rawId) || (r.name || '').toLowerCase().includes(rawId));
+        }
+
         if (!foundRoutine) {
             const matchingKey = Object.keys(YOGA_ROUTINES).find(k => k === rawId || rawId.includes(k) || (YOGA_ROUTINES[k].title || '').toLowerCase().includes(rawId));
             if (matchingKey) foundRoutine = YOGA_ROUTINES[matchingKey];
+        }
+
+        if (!foundRoutine) {
+            if (runnerTitleEl) runnerTitleEl.innerText = "Loading routine details...";
+            try {
+                const res = await fetch("/api/v1/exercises");
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.exercises && data.exercises.length > 0) {
+                        if (typeof cachedExerciseCatalog !== 'undefined') {
+                            cachedExerciseCatalog = data.exercises;
+                        }
+                        foundRoutine = data.exercises.find(r => (r.id || '').toLowerCase() === rawId || (r.title || '').toLowerCase().includes(rawId) || (r.name || '').toLowerCase().includes(rawId));
+                    }
+                }
+            } catch (e) {
+                console.warn("Failed to fetch exercise catalog fallback", e);
+            }
         }
 
         if (foundRoutine) {
