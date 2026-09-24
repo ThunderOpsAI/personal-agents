@@ -4149,48 +4149,44 @@ document.addEventListener('DOMContentLoaded', () => {
                 "intensity": "Gentle Restorative",
                 "focus_areas": [
                         "lumbar",
-                        "lower back",
-                        "pelvis"
+                        " lower back",
+                        " pelvi"
                 ],
                 "instruction": "Slow pelvic tilts, supported child's pose, and gentle supine knee-to-chest holds to safely decompress the lumbar spine.",
                 "precautions": [
-                        "Avoid aggressive lumbar flexion during acute disc flare-ups."
+                        "Avoid aggreive lumbar flexion during acute dic flare-up."
                 ],
                 "steps": [
                         {
                                 "title": "Supine Pelvic Tilts",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Flatten lower back against the mat on exhale, gentle arch on inhale.",
                                 "frames": [
-                                        "/exercises/cat_cow_1.jpg",
-                                        "/exercises/cat_cow_2.jpg"
+                                        "/exercises/supine_pelvic_tilts.jpg"
                                 ]
                         },
                         {
                                 "title": "Supported Child's Pose",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Widen knees, rest torso forward on bolster, lengthen spine.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg",
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/exercises/supported_childs_pose.jpg"
                                 ]
                         },
                         {
                                 "title": "Supine Single Knee-to-Chest",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Gently hug right knee, then left knee. Keep sacrum grounded.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg",
-                                        "/exercises/cat_cow_2.jpg"
+                                        "/exercises/knee_to_chest_stretch.jpg"
                                 ]
                         },
                         {
                                 "title": "Restorative Savasana with Bolster",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Place bolster under knees to release psoas and lumbar pressure.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg",
-                                        "/exercises/cat_cow_1.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         }
                 ]
@@ -4203,46 +4199,44 @@ document.addEventListener('DOMContentLoaded', () => {
                 "intensity": "Gentle Restorative",
                 "focus_areas": [
                         "cervical",
-                        "neck",
-                        "upper trapezius"
+                        " neck",
+                        " upper trapeziu"
                 ],
                 "instruction": "Gentle seated neck retractions, slow lateral tilts, and upper trapezius relaxation for post-surgical cervical safety.",
                 "precautions": [
-                        "No rapid cervical rotations or forced extension post-cervical surgery."
+                        "No rapid cervical rotation or forced extenion pot-cervical urgery."
                 ],
                 "steps": [
                         {
                                 "title": "Seated Axial Retraction",
-                                "duration": 45,
+                                "duration": 150,
                                 "cue": "Gently draw chin backwards creating a double chin, lengthening back of neck.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg",
-                                        "/exercises/childs_pose_1.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Gentle Lateral Ear-to-Shoulder",
-                                "duration": 45,
+                                "duration": 150,
                                 "cue": "Drop right ear to right shoulder without lifting left shoulder. Repeat left.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg",
-                                        "/exercises/cat_cow_2.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Shoulder Shrug & Release",
-                                "duration": 45,
+                                "duration": 150,
                                 "cue": "Inhale lift shoulders to ears, exhale drop down with sigh.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Restorative Alignment Breathing",
-                                "duration": 60,
+                                "duration": 150,
                                 "cue": "Sit upright, focus on diaphragmatic 360 breathing relaxing neck muscles.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         }
                 ]
@@ -4255,45 +4249,44 @@ document.addEventListener('DOMContentLoaded', () => {
                 "intensity": "Gentle Restorative",
                 "focus_areas": [
                         "full body",
-                        "nervous system",
-                        "spine"
+                        " nervou ytem",
+                        " pine"
                 ],
                 "instruction": "Passive supported poses using bolsters and blocks to downregulate sympathetic tone and relieve chronic muscular tension.",
                 "precautions": [
-                        "Maintain comfortable support under all joints."
+                        "Maintain comfortable upport under all joint."
                 ],
                 "steps": [
                         {
                                 "title": "Supported Reclined Bound Angle",
-                                "duration": 90,
+                                "duration": 375,
                                 "cue": "Feet together, knees open supported by pillows, hands on lower abdomen.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         },
                         {
                                 "title": "Gentle Cat-Cow Spine Wave",
-                                "duration": 60,
+                                "duration": 375,
                                 "cue": "Flow gently with breath, avoiding end-range extremes.",
-                                "frames": [
-                                        "/exercises/cat_cow_1.jpg",
-                                        "/exercises/cat_cow_2.jpg"
-                                ]
-                        },
-                        {
-                                "title": "Supported Gentle Sphinx",
-                                "duration": 60,
-                                "cue": "Rest elbows on mat, gentle passive thoracic extension.",
                                 "frames": [
                                         "/lumbar_core_routine.jpg"
                                 ]
                         },
                         {
+                                "title": "Supported Gentle Sphinx",
+                                "duration": 375,
+                                "cue": "Rest elbows on mat, gentle passive thoracic extension.",
+                                "frames": [
+                                        "/exercises/thoracic_spine_mobility.jpg"
+                                ]
+                        },
+                        {
                                 "title": "Legs Up the Wall Relaxation",
-                                "duration": 120,
+                                "duration": 375,
                                 "cue": "Elevate legs against wall to facilitate venous return and spinal decompression.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         }
                 ]
@@ -4305,48 +4298,46 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 20,
                 "intensity": "Adaptive Mobility",
                 "focus_areas": [
-                        "shoulder",
-                        "thoracic",
-                        "scapula",
-                        "chest"
+                        "houlder",
+                        " thoracic",
+                        " capula",
+                        " chet"
                 ],
                 "instruction": "Targeted mobility for the mid-back and pectoral girdle to counter rounded desk posture and relieve neck strain.",
                 "precautions": [
-                        "Avoid overhead impingement angles if shoulder pain is sharp."
+                        "Avoid overhead impingement angle if houlder pain i harp."
                 ],
                 "steps": [
                         {
                                 "title": "Thread the Needle",
-                                "duration": 60,
+                                "duration": 300,
                                 "cue": "Slide right arm under torso, rest right shoulder and temple on mat.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Puppy Pose Thoracic Stretch",
-                                "duration": 60,
+                                "duration": 300,
                                 "cue": "Hips stay over knees, walk hands forward melting chest towards floor.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg",
-                                        "/exercises/cat_cow_2.jpg"
+                                        "/exercises/supported_childs_pose.jpg"
                                 ]
                         },
                         {
                                 "title": "Seated Cactus Arm Openers",
-                                "duration": 45,
+                                "duration": 300,
                                 "cue": "Draw elbows back and down, opening anterior chest wall.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg",
-                                        "/exercises/cat_cow_1.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Scapular Retraction & Rest",
-                                "duration": 60,
+                                "duration": 300,
                                 "cue": "Rest in prone or seated, focusing on mid-back breathing.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         }
                 ]
@@ -4359,18 +4350,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 "intensity": "Adaptive Mobility",
                 "focus_areas": [
                         "hip",
-                        "psoas",
-                        "pelvis",
-                        "lumbar"
+                        " poa",
+                        " pelvi",
+                        " lumbar"
                 ],
                 "instruction": "Gentle low lunges and 90/90 pelvic alignments to release anterior hip tightness that pulls on the lumbar spine.",
                 "precautions": [
-                        "Tuck pelvis under (posterior pelvic tilt) to avoid hyperextending lower back."
+                        "Tuck pelvi under (poterior pelvic tilt) to avoid hyperextending lower back."
                 ],
                 "steps": [
                         {
                                 "title": "Low Kneeling Lunge",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Step right foot forward, tuck tailbone, feel stretch in left front hip.",
                                 "frames": [
                                         "/hip_mobility_routine.jpg"
@@ -4378,27 +4369,26 @@ document.addEventListener('DOMContentLoaded', () => {
                         },
                         {
                                 "title": "90/90 Seated Hip Flow",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Rotate knees side to side gently to mobilize internal and external rotation.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg",
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Gentle Reclined Figure-4",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Cross right ankle over left thigh, hold left hamstring gently.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/exercises/knee_to_chest_stretch.jpg"
                                 ]
                         },
                         {
                                 "title": "Savasana Psoas Rest",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Lie flat with gentle diaphragmatic expansion.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         }
                 ]
@@ -4410,47 +4400,45 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 15,
                 "intensity": "Adaptive Mobility",
                 "focus_areas": [
-                        "spine",
-                        "core",
-                        "full body"
+                        "pine",
+                        " core",
+                        " full body"
                 ],
                 "instruction": "Gentle multi-directional spinal mobilization to lubricate facet joints and stimulate spinal cord circulation upon waking.",
                 "precautions": [
-                        "Start slowly without forcing range of motion in early morning."
+                        "Start lowly without forcing range of motion in early morning."
                 ],
                 "steps": [
                         {
                                 "title": "Cat-Cow Spine Awakening",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Coordinate slow spinal flexion and extension with deep breathing.",
                                 "frames": [
-                                        "/exercises/cat_cow_1.jpg",
-                                        "/exercises/cat_cow_2.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         },
                         {
                                 "title": "Gentle Side Body Lateral Stretch",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Walk hands to the right in child's pose, then left.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg"
+                                        "/exercises/supported_childs_pose.jpg"
                                 ]
                         },
                         {
                                 "title": "Gentle Supine Torso Twist",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Drop knees gently to right, look center or left. Keep shoulders relaxed.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg",
-                                        "/exercises/cat_cow_2.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Restorative Prone Rest",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Rest face down on hands, allowing spine to settle in neutral.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         }
                 ]
@@ -4462,46 +4450,46 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 10,
                 "intensity": "Gentle Restorative",
                 "focus_areas": [
-                        "spine",
-                        "neck",
-                        "hips",
-                        "chest"
+                        "pine",
+                        " neck",
+                        " hip",
+                        " chet"
                 ],
                 "instruction": "Zero-floor routine performed entirely in an ergonomic chair to break up prolonged sitting intervals.",
                 "precautions": [
-                        "Keep chair stable on firm ground."
+                        "Keep chair table on firm ground."
                 ],
                 "steps": [
                         {
                                 "title": "Seated Cat-Cow",
-                                "duration": 45,
+                                "duration": 150,
                                 "cue": "Hands on knees, inhale arch chest forward, exhale round mid-back.",
                                 "frames": [
-                                        "/exercises/cat_cow_1.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Seated Figure-4 Hip Opener",
-                                "duration": 60,
+                                "duration": 150,
                                 "cue": "Ankle on opposite knee, lean gently forward with straight back.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Seated Upper Trapezius Drop",
-                                "duration": 45,
+                                "duration": 150,
                                 "cue": "Hold chair base with right hand, tilt head to left.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Seated Chest Expansion",
-                                "duration": 45,
+                                "duration": 150,
                                 "cue": "Interlace hands behind lower back or chair frame, gently lift collarbones.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         }
                 ]
@@ -4513,45 +4501,45 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 15,
                 "intensity": "Gentle Restorative",
                 "focus_areas": [
-                        "nervous system",
-                        "diaphragm",
-                        "cervical"
+                        "nervou ytem",
+                        " diaphragm",
+                        " cervical"
                 ],
                 "instruction": "Pranayama, suboccipital release, and gentle eye movements designed to activate the parasympathetic vagal brake.",
                 "precautions": [
-                        "Breathe at a comfortable rhythm without breath-holding dizziness."
+                        "Breathe at a comfortable rhythm without breath-holding dizzine."
                 ],
                 "steps": [
                         {
                                 "title": "4-7-8 Parasympathetic Breathing",
-                                "duration": 90,
+                                "duration": 225,
                                 "cue": "Inhale 4 sec through nose, hold 7 sec, exhale 8 sec through pursed lips.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         },
                         {
                                 "title": "Suboccipital Massage with Towel",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Rest base of skull on rolled towel, gentle micro-turns of head.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Oculomotor Vagal Reset",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Keep head straight, look fully right for 30s until swallow/sigh, then left.",
                                 "frames": [
-                                        "/exercises/cat_cow_2.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         },
                         {
                                 "title": "Gentle Heart-Belly Grounding",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "One hand on heart, one on belly. Feel warmth and safety.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         }
                 ]
@@ -4563,46 +4551,46 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 15,
                 "intensity": "Adaptive Mobility",
                 "focus_areas": [
-                        "hamstrings",
-                        "calves",
-                        "sciatic nerve",
-                        "pelvis"
+                        "hamtring",
+                        " calve",
+                        " ciatic nerve",
+                        " pelvi"
                 ],
                 "instruction": "Supine strap stretches to lengthen posterior fascia without placing flexion load on the lumbar discs.",
                 "precautions": [
-                        "Keep slight bend in knee; do not pull into sharp nerve pain."
+                        "Keep light bend in knee; do not pull into harp nerve pain."
                 ],
                 "steps": [
                         {
                                 "title": "Supine Strap Leg Extension",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Loop strap under right foot, extend leg upward keeping pelvis flat.",
+                                "frames": [
+                                        "/exercises/knee_to_chest_stretch.jpg"
+                                ]
+                        },
+                        {
+                                "title": "Gentle IT Band Cross-Body",
+                                "duration": 225,
+                                "cue": "Draw straight leg slightly across midline (2-3 inches max).",
                                 "frames": [
                                         "/lumbar_core_routine.jpg"
                                 ]
                         },
                         {
-                                "title": "Gentle IT Band Cross-Body",
-                                "duration": 45,
-                                "cue": "Draw straight leg slightly across midline (2-3 inches max).",
-                                "frames": [
-                                        "/hip_mobility_routine.jpg"
-                                ]
-                        },
-                        {
                                 "title": "Reclined Hamstring Flutter",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Gentle micro-bends and straightening of knee to desensitize nerve.",
                                 "frames": [
-                                        "/exercises/cat_cow_2.jpg"
+                                        "/exercises/knee_to_chest_stretch.jpg"
                                 ]
                         },
                         {
                                 "title": "Restorative Leg Rest",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Rest legs long on mat, noticing length through lower back.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/lumbar_core_routine.jpg"
                                 ]
                         }
                 ]
@@ -4615,8 +4603,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 "intensity": "Gentle Restorative",
                 "focus_areas": [
                         "full body",
-                        "nervous system",
-                        "sleep"
+                        " nervou ytem",
+                        " leep"
                 ],
                 "instruction": "Pre-bed restorative yoga protocol designed to drop core body temperature and release nighttime muscle guarding.",
                 "precautions": [
@@ -4625,35 +4613,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 "steps": [
                         {
                                 "title": "Wide Knee Child's Pose",
-                                "duration": 90,
+                                "duration": 300,
                                 "cue": "Allow belly to soften between thighs, long slow exhales.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg",
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/exercises/supported_childs_pose.jpg"
                                 ]
                         },
                         {
                                 "title": "Supported Bridge Pose",
-                                "duration": 60,
+                                "duration": 300,
                                 "cue": "Block or pillow under sacrum, arms relaxed overhead.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/supine_pelvic_tilts.jpg"
                                 ]
                         },
                         {
                                 "title": "Supine Spinal Twist with Pillow",
-                                "duration": 60,
+                                "duration": 300,
                                 "cue": "Pillow between knees, slow gentle twist to each side.",
                                 "frames": [
-                                        "/exercises/cat_cow_1.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Corpse Pose Deep Relaxation",
-                                "duration": 120,
+                                "duration": 300,
                                 "cue": "Complete still surrender into mattress or mat.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         }
                 ]
@@ -4666,46 +4653,45 @@ document.addEventListener('DOMContentLoaded', () => {
                 "intensity": "Core Stabilization",
                 "focus_areas": [
                         "core",
-                        "pelvic floor",
-                        "lumbar",
-                        "transverse abdominis"
+                        " pelvic floor",
+                        " lumbar",
+                        " tranvere abdomini"
                 ],
                 "instruction": "Foundational clinical Pilates finding neutral spine, gentle pelvic floor cues, and deep abdominal bracing.",
                 "precautions": [
-                        "Do not tilt pelvis into excessive posterior or anterior tuck."
+                        "Do not tilt pelvi into exceive poterior or anterior tuck."
                 ],
                 "steps": [
                         {
                                 "title": "Finding Neutral Spine",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "ASIS hips and pubic bone in a level flat plane.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/supine_pelvic_tilts.jpg"
                                 ]
                         },
                         {
                                 "title": "Transverse Abdominis Draw-In",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Exhale gently drawing navel toward spine without flattening lower back.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg",
-                                        "/exercises/cat_cow_2.jpg"
+                                        "/exercises/supine_pelvic_tilts.jpg"
                                 ]
                         },
                         {
                                 "title": "Supine Heel Slides",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Slide right heel forward along mat and return while keeping pelvis totally still.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/supine_pelvic_tilts.jpg"
                                 ]
                         },
                         {
                                 "title": "Restorative Pelvic Rest",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Soft belly breathing, releasing tension.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/exercises/supine_pelvic_tilts.jpg"
                                 ]
                         }
                 ]
@@ -4718,45 +4704,44 @@ document.addEventListener('DOMContentLoaded', () => {
                 "intensity": "Core Stabilization",
                 "focus_areas": [
                         "core",
-                        "lumbar stability",
-                        "hip flexors"
+                        " lumbar tability",
+                        " hip flexor"
                 ],
                 "instruction": "Antagonistic limb reach while maintaining rigid neutral spine, eliminating lumbar hyperextension shear forces.",
                 "precautions": [
-                        "Lower limb only as far as you can maintain neutral lower back."
+                        "Lower limb only a far a you can maintain neutral lower back."
                 ],
                 "steps": [
                         {
                                 "title": "Deadbug Level 1 (Arm Reach Only)",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Knees at tabletop (90 deg), reach right arm overhead and return.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/hip_mobility_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "Deadbug Level 2 (Heel Tap Only)",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Keep arms still, lower right heel to tap floor, return.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg",
-                                        "/exercises/cat_cow_1.jpg"
+                                        "/hip_mobility_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "Deadbug Level 3 (Opposite Arm & Leg)",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Extend opposite arm and leg simultaneously while maintaining rock-solid core.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/hip_mobility_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "Knees to Chest Neutral Reset",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Soft hold, resting hip flexors.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg"
+                                        "/exercises/knee_to_chest_stretch.jpg"
                                 ]
                         }
                 ]
@@ -4768,47 +4753,46 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 15,
                 "intensity": "Core Stabilization",
                 "focus_areas": [
-                        "multifidus",
-                        "glutes",
-                        "thoracic",
-                        "core"
+                        "multifidu",
+                        " glute",
+                        " thoracic",
+                        " core"
                 ],
                 "instruction": "McGill-validated quadruped stabilization building cross-body posterior chain endurance with zero spinal flexion.",
                 "precautions": [
-                        "Do not lift leg above hip level to avoid lumbar extension arching."
+                        "Do not lift leg above hip level to avoid lumbar extenion arching."
                 ],
                 "steps": [
                         {
                                 "title": "Quadruped Neutral Alignment",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Hands under shoulders, knees under hips, neck in neutral line.",
                                 "frames": [
-                                        "/exercises/cat_cow_1.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Bird-Dog Reach (Right Arm, Left Leg)",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Reach straight out, thumb up, heel pushed back. Hold 6 seconds.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg",
-                                        "/exercises/cat_cow_2.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Bird-Dog Reach (Left Arm, Right Leg)",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Keep pelvis level like balancing a cup of water on lower back.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Child's Pose Decompression",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Sink hips back, lengthening spinal erectors.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg"
+                                        "/exercises/supported_childs_pose.jpg"
                                 ]
                         }
                 ]
@@ -4820,18 +4804,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 15,
                 "intensity": "Targeted Strengthening",
                 "focus_areas": [
-                        "glute medius",
-                        "hip abductors",
-                        "pelvis stability"
+                        "glute mediu",
+                        " hip abductor",
+                        " pelvi tability"
                 ],
                 "instruction": "Isolates the gluteus medius to stabilize the Trendelenburg sign, reducing lateral spinal sway and lumbar fatigue.",
                 "precautions": [
-                        "Do not roll top hip backwards; keep hips stacked perpendicularly."
+                        "Do not roll top hip backward; keep hip tacked perpendicularly."
                 ],
                 "steps": [
                         {
                                 "title": "Clamshell Level 1 (Right Side)",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Heels together, open top knee like a clamshell, squeeze outer glute.",
                                 "frames": [
                                         "/hip_mobility_routine.jpg"
@@ -4839,16 +4823,15 @@ document.addEventListener('DOMContentLoaded', () => {
                         },
                         {
                                 "title": "Side-Lying Leg Lift (Right Side)",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Straighten top leg, lift 6 inches with slight internal rotation.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg",
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Clamshell Level 1 (Left Side)",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Switch sides. Keep core engaged and hips stacked.",
                                 "frames": [
                                         "/hip_mobility_routine.jpg"
@@ -4856,10 +4839,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         },
                         {
                                 "title": "Side-Lying Leg Lift (Left Side)",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Lift top leg with control, avoiding hip rotation.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         }
                 ]
@@ -4871,46 +4854,45 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 15,
                 "intensity": "Targeted Strengthening",
                 "focus_areas": [
-                        "glutes",
-                        "hamstrings",
-                        "lumbar stability"
+                        "glute",
+                        " hamtring",
+                        " lumbar tability"
                 ],
                 "instruction": "Builds posterior chain strength to support standing posture and relieve anterior pelvic tilt shear on L4-S1.",
                 "precautions": [
-                        "Drive through heels and squeeze glutes; avoid arching lower back at peak."
+                        "Drive through heel and queeze glute; avoid arching lower back at peak."
                 ],
                 "steps": [
                         {
                                 "title": "Basic Glute Bridge (Feet Flat)",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Exhale lift hips until straight line from knees to shoulders, hold 3s.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/hip_mobility_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "Bridge with Pelvic Squeeze",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Place small ball/block between knees, squeeze gently while bridging.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg",
-                                        "/exercises/cat_cow_2.jpg"
+                                        "/exercises/supine_pelvic_tilts.jpg"
                                 ]
                         },
                         {
                                 "title": "Single Leg Bridge Marching",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Hold bridge, lift right foot 1 inch off floor without dipping pelvis. Repeat left.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Spine Articulation Roll Down",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Lower spine down bone by bone, finishing in neutral.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/hip_mobility_routine.jpg"
                                 ]
                         }
                 ]
@@ -4923,45 +4905,44 @@ document.addEventListener('DOMContentLoaded', () => {
                 "intensity": "Core Stabilization",
                 "focus_areas": [
                         "core",
-                        "breath endurance",
-                        "transverse abdominis"
+                        " breath endurance",
+                        " tranvere abdomini"
                 ],
                 "instruction": "Modified Pilates classic keeping head on mat or supported, pumping arms with rhythmic staccato breathing.",
                 "precautions": [
-                        "Head stays grounded if cervical fusion/strain is present."
+                        "Head tay grounded if cervical fuion/train i preent."
                 ],
                 "steps": [
                         {
                                 "title": "Arm Pump Preparation",
-                                "duration": 30,
+                                "duration": 150,
                                 "cue": "Arms long by side, legs in tabletop, head resting comfortably.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/shoulder_rehab_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "The Hundred: Set 1-50",
-                                "duration": 60,
+                                "duration": 150,
                                 "cue": "Inhale 5 arm pumps, exhale 5 arm pumps with abdominal brace.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg",
-                                        "/exercises/cat_cow_1.jpg"
+                                        "/shoulder_rehab_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "The Hundred: Set 51-100",
-                                "duration": 60,
+                                "duration": 150,
                                 "cue": "Maintain steady rhythmic breathing and flat lower abdomen.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         },
                         {
                                 "title": "Full Body Stretch Release",
-                                "duration": 45,
+                                "duration": 150,
                                 "cue": "Extend arms and legs long, releasing abdominal wall.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg"
+                                        "/shoulder_rehab_routine.jpg"
                                 ]
                         }
                 ]
@@ -4974,45 +4955,45 @@ document.addEventListener('DOMContentLoaded', () => {
                 "intensity": "Adaptive Mobility",
                 "focus_areas": [
                         "thoracic",
-                        "obliques",
-                        "ribcage"
+                        " oblique",
+                        " ribcage"
                 ],
                 "instruction": "Seated or side-lying rotational mobility targeting the thoracic spine while locking the lumbar spine in neutral.",
                 "precautions": [
-                        "Rotation comes purely from ribs/chest, not twisting lower back."
+                        "Rotation come purely from rib/chet",
+                        " not twiting lower back."
                 ],
                 "steps": [
                         {
                                 "title": "Seated Spine Twist with Ball",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Sit upright, hug ball to chest, exhale rotate ribs 20 degrees right, then left.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Side-Lying Pinwheel Arm Flow",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Circle top arm overhead opening chest to ceiling, follow with eyes.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg",
-                                        "/exercises/cat_cow_2.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Opposite Side Pinwheel",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Switch sides. Feel opening through anterior shoulder and ribcage.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Restorative Prone Breath",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Feel posterior ribcage expand with every inhalation.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         }
                 ]
@@ -5025,8 +5006,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 "intensity": "Core Stabilization",
                 "focus_areas": [
                         "core",
-                        "hip flexors",
-                        "lumbar stability"
+                        " hip flexor",
+                        " lumbar tability"
                 ],
                 "instruction": "Alternating leg reach with hands guiding knee, demanding high lumbar-pelvic stabilization under dynamic load.",
                 "precautions": [
@@ -5035,35 +5016,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 "steps": [
                         {
                                 "title": "Single Leg Stretch (Head Down)",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Hug right knee, extend left leg at 45 deg angle, switch rhythmically.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/knee_to_chest_stretch.jpg"
                                 ]
                         },
                         {
                                 "title": "Double Leg Tap Adaptation",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Both knees bent, tap toes to mat and return with locked core.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg",
-                                        "/exercises/cat_cow_2.jpg"
+                                        "/hip_mobility_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "Single Leg Stretch Set 2",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Focus on smooth breathing and rock-steady pelvis.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         },
                         {
                                 "title": "Knees to Chest Reset",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Gentle rocking side to side.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg"
+                                        "/exercises/knee_to_chest_stretch.jpg"
                                 ]
                         }
                 ]
@@ -5075,46 +5055,46 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 15,
                 "intensity": "Adaptive Mobility",
                 "focus_areas": [
-                        "spine articulation",
-                        "glutes",
-                        "hamstrings"
+                        "pine articulation",
+                        " glute",
+                        " hamtring"
                 ],
                 "instruction": "Segmental rolling of the spine up and down off the mat, improving intervertebral mobility and proprioception.",
                 "precautions": [
-                        "Weight stays on shoulder blades, never pressing into cervical neck."
+                        "Weight tay on houlder blade",
+                        " never preing into cervical neck."
                 ],
                 "steps": [
                         {
                                 "title": "Pelvic Curl Preparation",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Tuck pelvis, lift only sacrum off mat, and roll back down.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/supine_pelvic_tilts.jpg"
                                 ]
                         },
                         {
                                 "title": "Full Segmental Bridge Roll",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Peel spine up vertebra by vertebra to upper thoracic, hold and roll down.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg",
-                                        "/exercises/cat_cow_2.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Bridge with Arm Reaches",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "At top of bridge, float arms back overhead, then roll spine down.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/hip_mobility_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "Supine Rest",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Neutral spine alignment rest.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/hip_mobility_routine.jpg"
                                 ]
                         }
                 ]
@@ -5126,47 +5106,46 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 15,
                 "intensity": "Targeted Strengthening",
                 "focus_areas": [
-                        "erector spinae",
-                        "glutes",
-                        "scapula",
-                        "upper back"
+                        "erector pinae",
+                        " glute",
+                        " capula",
+                        " upper back"
                 ],
                 "instruction": "Prone alternating arm and leg fluttering with pillow under pelvis to strengthen extensor muscles safely.",
                 "precautions": [
-                        "Place small pillow under lower abdomen/pelvis to prevent hyperextension."
+                        "Place mall pillow under lower abdomen/pelvi to prevent hyperextenion."
                 ],
                 "steps": [
                         {
                                 "title": "Prone Arm Float Only",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Lie prone, pillow under belly, float right arm 1 inch, then left.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/hip_mobility_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "Prone Leg Float Only",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Squeeze glute, float straight leg 1 inch, then opposite.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/hip_mobility_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "Slow Swimming Flutter",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Alternate opposite arm and leg fluttering rhythmically.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg",
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/knee_to_chest_stretch.jpg"
                                 ]
                         },
                         {
                                 "title": "Prone Relaxation & Breath",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Turn head to side, relax glutes and back completely.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/hip_mobility_routine.jpg"
                                 ]
                         }
                 ]
@@ -5178,19 +5157,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 12,
                 "intensity": "Gentle Restorative",
                 "focus_areas": [
-                        "glutes",
-                        "piriformis",
-                        "sciatic nerve",
-                        "hips"
+                        "glute",
+                        " piriformi",
+                        " ciatic nerve",
+                        " hip"
                 ],
                 "instruction": "Relieves piriformis spasm and sciatic nerve entrapment through supine figure-4 and seated chair variants.",
                 "precautions": [
-                        "Stop if numbness or tingling shoots down the leg."
+                        "Stop if numbne or tingling hoot down the leg."
                 ],
                 "steps": [
                         {
                                 "title": "Supine Figure-4 (Right)",
-                                "duration": 60,
+                                "duration": 180,
                                 "cue": "Cross right ankle over left thigh, reach through and draw left leg in.",
                                 "frames": [
                                         "/hip_mobility_routine.jpg"
@@ -5198,27 +5177,26 @@ document.addEventListener('DOMContentLoaded', () => {
                         },
                         {
                                 "title": "Supine Figure-4 (Left)",
-                                "duration": 60,
+                                "duration": 180,
                                 "cue": "Repeat on left side, keeping shoulders and neck relaxed.",
+                                "frames": [
+                                        "/exercises/cervical_neck_mobility.jpg"
+                                ]
+                        },
+                        {
+                                "title": "Seated Chair Glute Stretch",
+                                "duration": 180,
+                                "cue": "Sit tall, cross ankle on knee, hinge forward from hips with flat back.",
                                 "frames": [
                                         "/hip_mobility_routine.jpg"
                                 ]
                         },
                         {
-                                "title": "Seated Chair Glute Stretch",
-                                "duration": 60,
-                                "cue": "Sit tall, cross ankle on knee, hinge forward from hips with flat back.",
-                                "frames": [
-                                        "/hip_mobility_routine.jpg",
-                                        "/exercises/childs_pose_2.jpg"
-                                ]
-                        },
-                        {
                                 "title": "Restorative Hip Shakes",
-                                "duration": 45,
+                                "duration": 180,
                                 "cue": "Gently shake legs to release residual muscle tone.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg"
+                                        "/hip_mobility_routine.jpg"
                                 ]
                         }
                 ]
@@ -5230,46 +5208,46 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 10,
                 "intensity": "Gentle Restorative",
                 "focus_areas": [
-                        "scalenes",
-                        "upper trapezius",
-                        "levator scapulae",
-                        "neck"
+                        "calene",
+                        " upper trapeziu",
+                        " levator capulae",
+                        " neck"
                 ],
                 "instruction": "Gentle targeted releases for the anterior scalenes and levator scapulae to ease tension headaches and thoracic outlet tightness.",
                 "precautions": [
-                        "Never pull hard on head; use gentle weight of hand only."
+                        "Never pull hard on head; ue gentle weight of hand only."
                 ],
                 "steps": [
                         {
                                 "title": "Scalene Anterior Stretch",
-                                "duration": 45,
+                                "duration": 150,
                                 "cue": "Tilt head right, rotate chin 15 deg upward, feel stretch in front-left neck.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Levator Scapulae 'Nose to Armpit'",
-                                "duration": 45,
+                                "duration": 150,
                                 "cue": "Turn head 45 deg right, gently drop chin towards right armpit.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Opposite Side Scalene & Levator",
-                                "duration": 90,
+                                "duration": 150,
                                 "cue": "Repeat carefully on opposite side with relaxed shoulders.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Suboccipital Nod Release",
-                                "duration": 45,
+                                "duration": 150,
                                 "cue": "Tiny nodding motions like saying 'yes' without flexing lower neck.",
                                 "frames": [
-                                        "/exercises/cat_cow_2.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         }
                 ]
@@ -5281,18 +5259,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 15,
                 "intensity": "Gentle Restorative",
                 "focus_areas": [
-                        "hamstrings",
-                        "posterior chain",
-                        "lumbar"
+                        "hamtring",
+                        " poterior chain",
+                        " lumbar"
                 ],
                 "instruction": "Doorframe or wall-assisted hamstring lengthening that protects the lower back by supporting the pelvis flat on the floor.",
                 "precautions": [
-                        "Other leg extends through doorframe flat on the floor."
+                        "Other leg extend through doorframe flat on the floor."
                 ],
                 "steps": [
                         {
                                 "title": "Doorframe Stretch (Right Leg)",
-                                "duration": 90,
+                                "duration": 225,
                                 "cue": "Right leg up doorframe, left leg flat on floor through doorway. Breathe deeply.",
                                 "frames": [
                                         "/lumbar_core_routine.jpg"
@@ -5300,26 +5278,26 @@ document.addEventListener('DOMContentLoaded', () => {
                         },
                         {
                                 "title": "Doorframe Stretch (Left Leg)",
-                                "duration": 90,
+                                "duration": 225,
                                 "cue": "Switch sides. Relax hips and sacrum flat against mat.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/supine_pelvic_tilts.jpg"
                                 ]
                         },
                         {
                                 "title": "Ankle Pumps in Stretch",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Point and flex toes gently while elevated to floss sciatic pathway.",
                                 "frames": [
-                                        "/exercises/cat_cow_2.jpg"
+                                        "/exercises/knee_to_chest_stretch.jpg"
                                 ]
                         },
                         {
                                 "title": "Supine Rest",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Both legs down, resting pelvis in neutral.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/lumbar_core_routine.jpg"
                                 ]
                         }
                 ]
@@ -5331,47 +5309,46 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 12,
                 "intensity": "Adaptive Mobility",
                 "focus_areas": [
-                        "thoracic spine",
-                        "chest",
-                        "ribcage",
-                        "shoulders"
+                        "thoracic pine",
+                        " chet",
+                        " ribcage",
+                        " houlder"
                 ],
                 "instruction": "Side-lying rotational stretch to restore thoracic rotation and expand ribcage volume without stressing the lumbar spine.",
                 "precautions": [
-                        "Knees stay clamped together on floor or pillow to lock lumbar spine."
+                        "Knee tay clamped together on floor or pillow to lock lumbar pine."
                 ],
                 "steps": [
                         {
                                 "title": "Open Book (Right Arm Opening)",
-                                "duration": 60,
+                                "duration": 180,
                                 "cue": "Side-lying on left, sweep right arm open across body, look towards right hand.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Open Book Static Hold",
-                                "duration": 45,
+                                "duration": 180,
                                 "cue": "Hold open for 3 deep breaths into right chest wall.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg",
-                                        "/exercises/cat_cow_2.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Open Book (Left Arm Opening)",
-                                "duration": 60,
+                                "duration": 180,
                                 "cue": "Switch sides. Sweep left arm open, keeping knees glued together.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Open Book Static Hold Left",
-                                "duration": 45,
+                                "duration": 180,
                                 "cue": "Deep ribcage breathing.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         }
                 ]
@@ -5383,46 +5360,46 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 10,
                 "intensity": "Adaptive Mobility",
                 "focus_areas": [
-                        "calves",
-                        "achilles",
-                        "ankle mobility",
-                        "plantar fascia"
+                        "calve",
+                        " achille",
+                        " ankle mobility",
+                        " plantar facia"
                 ],
                 "instruction": "Wall and step calf stretches to restore dorsiflexion, improving walking gait mechanics and offloading lumbar compensation.",
                 "precautions": [
-                        "Keep heel firmly planted on ground; do not let arch collapse."
+                        "Keep heel firmly planted on ground; do not let arch collape."
                 ],
                 "steps": [
                         {
                                 "title": "Straight-Leg Gastrocnemius (Right)",
-                                "duration": 45,
+                                "duration": 150,
                                 "cue": "Hands on wall, step right leg back straight, press heel down.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/lumbar_core_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "Bent-Knee Soleus (Right)",
-                                "duration": 45,
+                                "duration": 150,
                                 "cue": "Bend back right knee slightly, shifting stretch deeper towards Achilles.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/lumbar_core_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "Straight-Leg Gastrocnemius (Left)",
-                                "duration": 45,
+                                "duration": 150,
                                 "cue": "Switch legs. Step left leg back straight, heel grounded.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/lumbar_core_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "Bent-Knee Soleus (Left)",
-                                "duration": 45,
+                                "duration": 150,
                                 "cue": "Bend left knee slightly, keeping heel pinned down.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/lumbar_core_routine.jpg"
                                 ]
                         }
                 ]
@@ -5434,19 +5411,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 12,
                 "intensity": "Adaptive Mobility",
                 "focus_areas": [
-                        "quadriceps",
-                        "rectus femoris",
-                        "patella",
-                        "hips"
+                        "quadricep",
+                        " rectu femori",
+                        " patella",
+                        " hip"
                 ],
                 "instruction": "Standing or side-lying quad stretch that lengthens the two-joint rectus femoris muscle without knee hyperextension.",
                 "precautions": [
-                        "Tuck pelvis under to engage glute; avoid arching lower back."
+                        "Tuck pelvi under to engage glute; avoid arching lower back."
                 ],
                 "steps": [
                         {
                                 "title": "Side-Lying Quad Stretch (Right)",
-                                "duration": 60,
+                                "duration": 180,
                                 "cue": "Lie on left side, hold right ankle, gently draw heel toward glute.",
                                 "frames": [
                                         "/hip_mobility_routine.jpg"
@@ -5454,7 +5431,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         },
                         {
                                 "title": "Side-Lying Quad Stretch (Left)",
-                                "duration": 60,
+                                "duration": 180,
                                 "cue": "Switch sides, keeping knees aligned and hips stacked.",
                                 "frames": [
                                         "/hip_mobility_routine.jpg"
@@ -5462,18 +5439,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         },
                         {
                                 "title": "Prone Quad Stretch with Towel",
-                                "duration": 60,
+                                "duration": 180,
                                 "cue": "Lie prone, loop towel around ankle if reaching is difficult.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Prone Hip Rocking Reset",
-                                "duration": 45,
+                                "duration": 180,
                                 "cue": "Gently rock hips side to side to release hip flexors.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/hip_mobility_routine.jpg"
                                 ]
                         }
                 ]
@@ -5485,45 +5462,45 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 12,
                 "intensity": "Adaptive Mobility",
                 "focus_areas": [
-                        "latissimus dorsi",
-                        "thoracolumbar fascia",
-                        "side body"
+                        "latiimu dori",
+                        " thoracolumbar facia",
+                        " ide body"
                 ],
                 "instruction": "Decompresses the thoracolumbar fascia and lateral ribcage where latissimus attachments often compress the lumbar spine.",
                 "precautions": [
-                        "Do not lean so far as to pinch the opposite side waist."
+                        "Do not lean o far a to pinch the oppoite ide wait."
                 ],
                 "steps": [
                         {
                                 "title": "Side-Reaching Child's Pose (Right)",
-                                "duration": 60,
+                                "duration": 180,
                                 "cue": "In child's pose, walk both hands to the left, feel stretch down right lat.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg"
+                                        "/exercises/supported_childs_pose.jpg"
                                 ]
                         },
                         {
                                 "title": "Side-Reaching Child's Pose (Left)",
-                                "duration": 60,
+                                "duration": 180,
                                 "cue": "Walk hands to the right, feel deep stretch through left ribcage and lat.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/exercises/supported_childs_pose.jpg"
                                 ]
                         },
                         {
                                 "title": "Doorframe Lat Hang",
-                                "duration": 45,
+                                "duration": 180,
                                 "cue": "Hold doorframe at shoulder height, sink hips back and away gently.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/hip_mobility_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "Restorative Center Breath",
-                                "duration": 45,
+                                "duration": 180,
                                 "cue": "Breathe into lateral ribcage.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg"
+                                        "/lumbar_core_routine.jpg"
                                 ]
                         }
                 ]
@@ -5535,19 +5512,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 10,
                 "intensity": "Gentle Restorative",
                 "focus_areas": [
-                        "wrists",
-                        "forearms",
-                        "median nerve",
-                        "carpal tunnel"
+                        "writ",
+                        " forearm",
+                        " median nerve",
+                        " carpal tunnel"
                 ],
                 "instruction": "Gentle wrist flexor/extensor stretches combined with median nerve glides for desk workers and typing fatigue.",
                 "precautions": [
-                        "Never force through sharp wrist or hand pain."
+                        "Never force through harp writ or hand pain."
                 ],
                 "steps": [
                         {
                                 "title": "Wrist Flexor Stretch",
-                                "duration": 45,
+                                "duration": 150,
                                 "cue": "Arm straight, palm facing out fingers down, gently draw fingers back.",
                                 "frames": [
                                         "/shoulder_rehab_routine.jpg"
@@ -5555,7 +5532,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         },
                         {
                                 "title": "Wrist Extensor Stretch",
-                                "duration": 45,
+                                "duration": 150,
                                 "cue": "Palm facing in, gently press back of hand down and toward body.",
                                 "frames": [
                                         "/shoulder_rehab_routine.jpg"
@@ -5563,18 +5540,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         },
                         {
                                 "title": "Median Nerve Gliding Flow",
-                                "duration": 60,
+                                "duration": 150,
                                 "cue": "Extend arm out to side, extend wrist, tilt head away, then return.",
                                 "frames": [
-                                        "/exercises/cat_cow_2.jpg"
+                                        "/shoulder_rehab_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "Wrist Circles & Finger Shakes",
-                                "duration": 45,
+                                "duration": 150,
                                 "cue": "Gentle rolling circles and shaking out hands.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg"
+                                        "/shoulder_rehab_routine.jpg"
                                 ]
                         }
                 ]
@@ -5587,45 +5564,45 @@ document.addEventListener('DOMContentLoaded', () => {
                 "intensity": "Adaptive Mobility",
                 "focus_areas": [
                         "pec major",
-                        "pec minor",
-                        "anterior shoulder",
-                        "thoracic"
+                        " pec minor",
+                        " anterior houlder",
+                        " thoracic"
                 ],
                 "instruction": "Releases tight pectoralis major and minor muscles that pull shoulders forward into kyphotic posture.",
                 "precautions": [
-                        "Keep forearm flat against doorframe; do not twist shoulder joint."
+                        "Keep forearm flat againt doorframe; do not twit houlder joint."
                 ],
                 "steps": [
                         {
                                 "title": "90-Degree Doorway Stretch (Right)",
-                                "duration": 45,
+                                "duration": 150,
                                 "cue": "Elbow at 90 deg on doorframe, step right foot through doorway gently.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "120-Degree High Doorway Stretch (Right)",
-                                "duration": 45,
+                                "duration": 150,
                                 "cue": "Elbow slightly higher to target lower pec fibers.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Doorway Stretch (Left Side)",
-                                "duration": 90,
+                                "duration": 150,
                                 "cue": "Repeat 90 and 120 degree angles on left side with relaxed neck.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Shoulder Rolls & Posture Reset",
-                                "duration": 45,
+                                "duration": 150,
                                 "cue": "Roll shoulders back and down 5 times.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         }
                 ]
@@ -5637,46 +5614,46 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 10,
                 "intensity": "Adaptive Mobility",
                 "focus_areas": [
-                        "ankles",
-                        "plantar fascia",
-                        "feet",
-                        "tibialis anterior"
+                        "ankle",
+                        " plantar facia",
+                        " feet",
+                        " tibiali anterior"
                 ],
                 "instruction": "Mobilizes the talocrural joint and rolls the plantar fascia to improve shock absorption during walking.",
                 "precautions": [
-                        "Do not roll ball aggressively over acute plantar fasciitis pain points."
+                        "Do not roll ball aggreively over acute plantar faciiti pain point."
                 ],
                 "steps": [
                         {
                                 "title": "Half-Kneeling Ankle Rocking",
-                                "duration": 60,
+                                "duration": 150,
                                 "cue": "Half-kneeling, drive front knee forward over second toe keeping heel flat.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/lumbar_core_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "Opposite Ankle Rocking",
-                                "duration": 60,
+                                "duration": 150,
                                 "cue": "Switch sides, mobilizing left ankle dorsiflexion.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/lumbar_core_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "Tennis Ball Foot Roll",
-                                "duration": 60,
+                                "duration": 150,
                                 "cue": "Roll ball along arch of foot for 30s per foot, releasing fascia.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/lumbar_core_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "Seated Toe Spreading",
-                                "duration": 30,
+                                "duration": 150,
                                 "cue": "Wiggle and spread toes wide to activate intrinsic foot muscles.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg"
+                                        "/lumbar_core_routine.jpg"
                                 ]
                         }
                 ]
@@ -5688,48 +5665,46 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 20,
                 "intensity": "Stabilization",
                 "focus_areas": [
-                        "lumbar spine",
-                        "core",
-                        "quadratus lumborum",
-                        "multifidus"
+                        "lumbar pine",
+                        " core",
+                        " quadratu lumborum",
+                        " multifidu"
                 ],
                 "instruction": "The gold-standard clinical spine stabilization protocol: Modified Curl-Up, Side Bridge, and Bird-Dog for maximal stiffness with minimal load.",
                 "precautions": [
-                        "Hands stay under lumbar spine during curl-up; no spinal flexion."
+                        "Hand tay under lumbar pine during curl-up; no pinal flexion."
                 ],
                 "steps": [
                         {
                                 "title": "McGill Modified Curl-Up",
-                                "duration": 60,
+                                "duration": 300,
                                 "cue": "Hands under lower back, one knee bent, lift only head/shoulders 1 inch. Hold 6s.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/shoulder_rehab_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "McGill Side Bridge (From Knees)",
-                                "duration": 60,
+                                "duration": 300,
                                 "cue": "Prop on elbow and knees, lift hips into straight alignment. Hold 6s per rep.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg",
                                         "/hip_mobility_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "McGill Quadruped Bird-Dog",
-                                "duration": 60,
+                                "duration": 300,
                                 "cue": "Extend opposite arm and leg, hold 6s. Focus on neutral spine stability.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg",
-                                        "/exercises/cat_cow_1.jpg"
+                                        "/shoulder_rehab_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "Spine Decompression Rest",
-                                "duration": 60,
+                                "duration": 300,
                                 "cue": "Rest in prone or supported child's pose.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/exercises/supported_childs_pose.jpg"
                                 ]
                         }
                 ]
@@ -5741,47 +5716,46 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 12,
                 "intensity": "Gentle Restorative",
                 "focus_areas": [
-                        "sciatic nerve",
-                        "hamstrings",
-                        "lumbar roots",
-                        "dura"
+                        "ciatic nerve",
+                        " hamtring",
+                        " lumbar root",
+                        " dura"
                 ],
                 "instruction": "Neurodynamic gliding where the sciatic nerve slides smoothly through its anatomical sheath without tensioning both ends at once.",
                 "precautions": [
-                        "Never pull into sharp radiating pain; flossing should be gentle and rhythmic."
+                        "Never pull into harp radiating pain; floing hould be gentle and rhythmic."
                 ],
                 "steps": [
                         {
                                 "title": "Seated Sciatic Slider Setup",
-                                "duration": 30,
+                                "duration": 180,
                                 "cue": "Sit on edge of chair with hands behind back, spine relaxed.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/knee_to_chest_stretch.jpg"
                                 ]
                         },
                         {
                                 "title": "Sciatic Slider (Right Leg)",
-                                "duration": 60,
+                                "duration": 180,
                                 "cue": "Extend right knee while looking UP at ceiling, bend knee while looking DOWN.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg",
-                                        "/exercises/cat_cow_2.jpg"
+                                        "/exercises/knee_to_chest_stretch.jpg"
                                 ]
                         },
                         {
                                 "title": "Sciatic Slider (Left Leg)",
-                                "duration": 60,
+                                "duration": 180,
                                 "cue": "Repeat smooth flossing motion on left leg for 10 slow reps.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/knee_to_chest_stretch.jpg"
                                 ]
                         },
                         {
                                 "title": "Supine Rest & Sensation Check",
-                                "duration": 45,
+                                "duration": 180,
                                 "cue": "Lie flat and observe reduction in nerve sensitivity.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/lumbar_core_routine.jpg"
                                 ]
                         }
                 ]
@@ -5793,46 +5767,45 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 12,
                 "intensity": "Targeted Strengthening",
                 "focus_areas": [
-                        "longus colli",
-                        "longus capitis",
-                        "cervical spine"
+                        "longu colli",
+                        " longu capiti",
+                        " cervical pine"
                 ],
                 "instruction": "Low-load isometric training of the deep cervical flexors (longus colli/capitis) to restore cervical stability post-decompression.",
                 "precautions": [
-                        "Do not use sternocleidomastoid (front surface muscles); keep jaw relaxed."
+                        "Do not ue ternocleidomatoid (front urface mucle); keep jaw relaxed."
                 ],
                 "steps": [
                         {
                                 "title": "Supine Chin Tuck (Cranial Nod)",
-                                "duration": 60,
+                                "duration": 180,
                                 "cue": "Lie supine with small towel under neck, gently nod chin as if flattening back of neck.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Supine Chin Tuck with 5s Hold",
-                                "duration": 60,
+                                "duration": 180,
                                 "cue": "Nod chin gently, hold for 5 seconds breathing normally through nose.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg",
-                                        "/exercises/cat_cow_1.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         },
                         {
                                 "title": "Wall Retraction with Foam Roller",
-                                "duration": 60,
+                                "duration": 180,
                                 "cue": "Stand against wall, press back of head gently into small soft ball.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Postural Breathing Reset",
-                                "duration": 45,
+                                "duration": 180,
                                 "cue": "Sit tall, crown of head reaching toward ceiling.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         }
                 ]
@@ -5844,47 +5817,46 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 15,
                 "intensity": "Targeted Strengthening",
                 "focus_areas": [
-                        "serratus anterior",
-                        "lower trapezius",
-                        "scapula",
-                        "thoracic"
+                        "erratu anterior",
+                        " lower trapeziu",
+                        " capula",
+                        " thoracic"
                 ],
                 "instruction": "Activates serratus anterior upward rotation of the scapula to prevent subacromial impingement and relieve upper trapezius spasm.",
                 "precautions": [
-                        "Keep forearms glued to wall and ribs tucked down."
+                        "Keep forearm glued to wall and rib tucked down."
                 ],
                 "steps": [
                         {
                                 "title": "Forearm Wall Slide Setup",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Forearms vertical on wall with foam roller or towel, step one foot forward.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Wall Slide Upward Sweep",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Slide forearms upward pushing into wall, shrug slightly at top, return with control.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg",
-                                        "/exercises/cat_cow_2.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Scapular Protraction Push-Plus (Wall)",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Hands on wall, push chest away rounding upper back without bending elbows.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Shoulder Roll Down",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Shake out arms and breathe deeply.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         }
                 ]
@@ -5896,47 +5868,46 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 12,
                 "intensity": "Gentle Restorative",
                 "focus_areas": [
-                        "brachial plexus",
-                        "first rib",
-                        "pectoralis minor",
-                        "scalenes"
+                        "brachial plexu",
+                        " firt rib",
+                        " pectorali minor",
+                        " calene"
                 ],
                 "instruction": "Decompresses the costoclavicular space and brachial plexus bundle to relieve hand numbness and forearm tingling.",
                 "precautions": [
-                        "Do not stretch into tingling sensations; stay within comfortable boundaries."
+                        "Do not tretch into tingling enation; tay within comfortable boundarie."
                 ],
                 "steps": [
                         {
                                 "title": "First Rib Self-Depression with Strap",
-                                "duration": 60,
+                                "duration": 180,
                                 "cue": "Loop strap over right collarbone, pull down across left hip while tilting head right.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/hip_mobility_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "Brachial Plexus Tension-Free Glide",
-                                "duration": 60,
+                                "duration": 180,
                                 "cue": "Extend arm out, bend wrist up while tilting head towards arm, then alternate.",
-                                "frames": [
-                                        "/shoulder_rehab_routine.jpg",
-                                        "/exercises/cat_cow_1.jpg"
-                                ]
-                        },
-                        {
-                                "title": "Opposite Side TOS Release",
-                                "duration": 60,
-                                "cue": "Repeat first rib depression and gliding on left side.",
                                 "frames": [
                                         "/shoulder_rehab_routine.jpg"
                                 ]
                         },
                         {
+                                "title": "Opposite Side TOS Release",
+                                "duration": 180,
+                                "cue": "Repeat first rib depression and gliding on left side.",
+                                "frames": [
+                                        "/lumbar_core_routine.jpg"
+                                ]
+                        },
+                        {
                                 "title": "Diaphragmatic Rib Expansion",
-                                "duration": 45,
+                                "duration": 180,
                                 "cue": "Breathe deeply into lower ribcage, avoiding upper chest clavicular breathing.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         }
                 ]
@@ -5948,46 +5919,45 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 12,
                 "intensity": "Targeted Strengthening",
                 "focus_areas": [
-                        "cervical spine",
-                        "neck extensors",
-                        "neck rotators"
+                        "cervical pine",
+                        " neck extenor",
+                        " neck rotator"
                 ],
                 "instruction": "Zero-movement isometric contractions against palm resistance to build cervical stability without joint shear.",
                 "precautions": [
-                        "Apply only 20-30% of maximum force; never strain."
+                        "Apply only 20-30% of maximum force; never train."
                 ],
                 "steps": [
                         {
                                 "title": "Isometric Cervical Flexion",
-                                "duration": 45,
+                                "duration": 180,
                                 "cue": "Palm on forehead, gently press head forward into palm without moving head. Hold 6s.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Isometric Cervical Extension",
-                                "duration": 45,
+                                "duration": 180,
                                 "cue": "Hands behind head, gently press head backward into palms without tilting.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg",
-                                        "/exercises/cat_cow_2.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Isometric Lateral Flexion (Left & Right)",
-                                "duration": 60,
+                                "duration": 180,
                                 "cue": "Palm against side of head, press gently for 6s each side.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Restorative Alignment Rest",
-                                "duration": 45,
+                                "duration": 180,
                                 "cue": "Sit tall with relaxed jaw and dropped shoulders.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         }
                 ]
@@ -6000,45 +5970,45 @@ document.addEventListener('DOMContentLoaded', () => {
                 "intensity": "Decompression",
                 "focus_areas": [
                         "lumbar",
-                        "cervical",
-                        "spine",
-                        "water buoyancy"
+                        " cervical",
+                        " pine",
+                        " water buoyancy"
                 ],
                 "instruction": "Warm water (34°C) buoyancy protocol offloading up to 90% of gravity compression on spinal discs and facet joints.",
                 "precautions": [
-                        "Use pool noodles or buoyancy belt for effortless floating."
+                        "Ue pool noodle or buoyancy belt for effortle floating."
                 ],
                 "steps": [
                         {
                                 "title": "Buoyant Vertical Traction",
-                                "duration": 90,
+                                "duration": 375,
                                 "cue": "Noodle under arms in deep water, allow legs and spine to hang weightlessly.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Gentle Water Knee-to-Chest",
-                                "duration": 60,
+                                "duration": 375,
                                 "cue": "Slowly draw knees towards chest in water, feeling gentle lumbar opening.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/knee_to_chest_stretch.jpg"
                                 ]
                         },
                         {
                                 "title": "Aquatic Torso Pendulum",
-                                "duration": 60,
+                                "duration": 375,
                                 "cue": "Gentle sway of legs side to side in water column.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Supine Water Float with Head Support",
-                                "duration": 120,
+                                "duration": 375,
                                 "cue": "Full supine float supported by pillows, deep parasympathetic relaxation.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         }
                 ]
@@ -6051,34 +6021,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 "intensity": "Adaptive Mobility",
                 "focus_areas": [
                         "gait",
-                        "hip flexors",
-                        "glutes",
-                        "balance"
+                        " hip flexor",
+                        " glute",
+                        " balance"
                 ],
                 "instruction": "Chest-deep water walking forward, backward, and sideways to retrain normal gait patterns without joint impact.",
                 "precautions": [
-                        "Maintain upright posture; do not lean forward against water resistance."
+                        "Maintain upright poture; do not lean forward againt water reitance."
                 ],
                 "steps": [
                         {
                                 "title": "Forward Water Marching",
-                                "duration": 90,
+                                "duration": 300,
                                 "cue": "High knee marching forward in chest-deep water with normal arm swing.",
+                                "frames": [
+                                        "/exercises/cervical_neck_mobility.jpg"
+                                ]
+                        },
+                        {
+                                "title": "Backward Heel-to-Toe Walking",
+                                "duration": 300,
+                                "cue": "Walk backward with control, engaging glutes and posterior chain.",
                                 "frames": [
                                         "/hip_mobility_routine.jpg"
                                 ]
                         },
                         {
-                                "title": "Backward Heel-to-Toe Walking",
-                                "duration": 90,
-                                "cue": "Walk backward with control, engaging glutes and posterior chain.",
-                                "frames": [
-                                        "/lumbar_core_routine.jpg"
-                                ]
-                        },
-                        {
                                 "title": "Lateral Sidestepping",
-                                "duration": 90,
+                                "duration": 300,
                                 "cue": "Step sideways across lane, engaging glute medius against water drag.",
                                 "frames": [
                                         "/hip_mobility_routine.jpg"
@@ -6086,10 +6056,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         },
                         {
                                 "title": "Warm Water Calming Rest",
-                                "duration": 60,
+                                "duration": 300,
                                 "cue": "Stand against pool wall, enjoying warmth and hydrostatic pressure.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg"
+                                        "/hip_mobility_routine.jpg"
                                 ]
                         }
                 ]
@@ -6101,19 +6071,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 20,
                 "intensity": "Targeted Strengthening",
                 "focus_areas": [
-                        "glutes",
-                        "hip abductors",
-                        "core",
-                        "pelvis"
+                        "glute",
+                        " hip abductor",
+                        " core",
+                        " pelvi"
                 ],
                 "instruction": "Water resistance exercises using kickboards and noodles to strengthen core and hips in a low-impact environment.",
                 "precautions": [
-                        "Move at a steady controlled speed; water resistance increases with speed."
+                        "Move at a teady controlled peed; water reitance increae with peed."
                 ],
                 "steps": [
                         {
                                 "title": "Aquatic Standing Hip Abduction",
-                                "duration": 60,
+                                "duration": 300,
                                 "cue": "Hold pool wall, sweep right leg out to side against water resistance. Repeat left.",
                                 "frames": [
                                         "/hip_mobility_routine.jpg"
@@ -6121,27 +6091,26 @@ document.addEventListener('DOMContentLoaded', () => {
                         },
                         {
                                 "title": "Kickboard Core Press-Down",
-                                "duration": 60,
+                                "duration": 300,
                                 "cue": "Hold kickboard with both hands, push down into water, engage abs.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/hip_mobility_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "Aquatic Bicycle Pedaling",
-                                "duration": 60,
+                                "duration": 300,
                                 "cue": "Rest back on noodles, pedal legs smoothly like riding a bike.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg",
                                         "/hip_mobility_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "Floating Spine Rest",
-                                "duration": 90,
+                                "duration": 300,
                                 "cue": "Rest supported on water surface.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/hip_mobility_routine.jpg"
                                 ]
                         }
                 ]
@@ -6154,26 +6123,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 "intensity": "Decompression",
                 "focus_areas": [
                         "lymphatic drainage",
-                        "edema",
-                        "nervous system",
-                        "circulation"
+                        " edema",
+                        " nervou ytem",
+                        " circulation"
                 ],
                 "instruction": "Leverages hydrostatic pressure to drive fluid return, clear metabolic waste, and reduce post-surgical swelling.",
                 "precautions": [
-                        "Hydrate with water before and after pool session."
+                        "Hydrate with water before and after pool eion."
                 ],
                 "steps": [
                         {
                                 "title": "Deep Water Submersion Breathing",
-                                "duration": 90,
+                                "duration": 300,
                                 "cue": "Chest submerged, feel hydrostatic pressure assist deep exhalations.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         },
                         {
                                 "title": "Aquatic Arm Sweeps (Lymphatic Flow)",
-                                "duration": 60,
+                                "duration": 300,
                                 "cue": "Smooth sweeping circles with hands submerged in water.",
                                 "frames": [
                                         "/shoulder_rehab_routine.jpg"
@@ -6181,18 +6150,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         },
                         {
                                 "title": "Ankle & Foot Water Mobility",
-                                "duration": 60,
+                                "duration": 300,
                                 "cue": "Point, flex, and rotate ankles in warm water.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/shoulder_rehab_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "Supported Supine Water Float",
-                                "duration": 120,
+                                "duration": 300,
                                 "cue": "Complete still surrender in warm hydro pool.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         }
                 ]
@@ -6201,11 +6170,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Backlog of alternative exercises for swapping
     const exerciseBacklog = [
-        { title: "Cat-Cow Flow", duration: 45, frames: ["/exercises/cat_cow_1.jpg", "/exercises/cat_cow_2.jpg"] },
-        { title: "Child's Pose Decompression", duration: 60, frames: ["/exercises/childs_pose_1.jpg", "/exercises/childs_pose_2.jpg"] },
-        { title: "Lumbar & Core Stability", duration: 60, frames: ["/lumbar_core_routine.jpg", "/exercises/cat_cow_1.jpg"] },
-        { title: "Hip & Lower Body Mobility", duration: 60, frames: ["/hip_mobility_routine.jpg", "/exercises/childs_pose_2.jpg"] },
-        { title: "Shoulder & Scapular Rehab", duration: 45, frames: ["/shoulder_rehab_routine.jpg", "/exercises/childs_pose_1.jpg"] }
+        { title: "Lumbar & Core Stability", duration: 225, frames: ["/lumbar_core_routine.jpg"] },
+        { title: "Child's Pose Decompression", duration: 225, frames: ["/exercises/supported_childs_pose.jpg"] },
+        { title: "Pelvic Tilt & Spinal Alignment", duration: 225, frames: ["/exercises/supine_pelvic_tilts.jpg"] },
+        { title: "Hip & Lower Body Mobility", duration: 225, frames: ["/hip_mobility_routine.jpg"] },
+        { title: "Shoulder & Scapular Rehab", duration: 225, frames: ["/shoulder_rehab_routine.jpg"] }
     ];
 
     let currentRoutineRunning = null;
@@ -6256,15 +6225,31 @@ document.addEventListener('DOMContentLoaded', () => {
         if (foundRoutine) {
             currentRoutineRunning = foundRoutine;
             if (runnerTitleEl) runnerTitleEl.innerText = foundRoutine.title || foundRoutine.name;
+            const targetTotalSecs = (foundRoutine.duration_minutes || 15) * 60;
             currentProtocolSteps = (foundRoutine.steps || []).map(s => ({ ...s }));
+            if (currentProtocolSteps.length > 0) {
+                const currentSum = currentProtocolSteps.reduce((acc, step) => acc + (step.duration || 45), 0);
+                if (currentSum !== targetTotalSecs && targetTotalSecs > 0) {
+                    const factor = targetTotalSecs / currentSum;
+                    let allocated = 0;
+                    currentProtocolSteps.forEach((s, idx) => {
+                        if (idx === currentProtocolSteps.length - 1) {
+                            s.duration = targetTotalSecs - allocated;
+                        } else {
+                            s.duration = Math.round((s.duration || 45) * factor);
+                            allocated += s.duration;
+                        }
+                    });
+                }
+            }
         } else {
             currentRoutineRunning = { id: rawId || 'y1', title: "Adaptive Restorative Yoga Protocol" };
             if (runnerTitleEl) runnerTitleEl.innerText = "Adaptive Restorative Yoga Protocol";
             currentProtocolSteps = [
-                { title: "Supine Pelvic Tilts & Decompression", duration: 45, cue: "Flatten lower back against the mat on exhale, gentle arch on inhale.", frames: ["/exercises/cat_cow_1.jpg", "/exercises/cat_cow_2.jpg"] },
-                { title: "Supported Child's Pose", duration: 60, cue: "Widen knees, rest torso forward on bolster, lengthen spine.", frames: ["/exercises/childs_pose_1.jpg", "/exercises/childs_pose_2.jpg"] },
-                { title: "Lumbar Core Decompression", duration: 45, cue: "Gently hug knees to chest, relaxing sacrum and pelvic floor.", frames: ["/lumbar_core_routine.jpg", "/exercises/cat_cow_2.jpg"] },
-                { title: "Restorative Savasana Release", duration: 60, cue: "Complete still surrender into mat with diaphragmatic breathing.", frames: ["/exercises/childs_pose_2.jpg", "/exercises/cat_cow_1.jpg"] }
+                { title: "Supine Pelvic Tilts & Decompression", duration: 225, cue: "Flatten lower back against the mat on exhale, gentle arch on inhale.", frames: ["/exercises/supine_pelvic_tilts.jpg"] },
+                { title: "Supported Child's Pose", duration: 225, cue: "Widen knees, rest torso forward on bolster, lengthen spine.", frames: ["/exercises/supported_childs_pose.jpg"] },
+                { title: "Supine Knee-to-Chest Decompression", duration: 225, cue: "Gently hug knees to chest, relaxing sacrum and pelvic floor.", frames: ["/exercises/knee_to_chest_stretch.jpg"] },
+                { title: "Restorative Savasana Release", duration: 225, cue: "Complete still surrender into mat with diaphragmatic breathing.", frames: ["/exercises/restorative_savasana.jpg"] }
             ];
         }
         
@@ -6320,17 +6305,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         `;
                     }
                 };
-                if (step.frames.length > 1) {
-                    frameInterval = setInterval(() => {
-                        if (isRunnerPaused) return;
-                        fIdx = (fIdx + 1) % step.frames.length;
-                        imgEl.style.opacity = '0.7';
-                        setTimeout(() => {
-                            imgEl.src = step.frames[fIdx];
-                            imgEl.style.opacity = '1';
-                        }, 150);
-                    }, 2000);
-                }
+                // Persistent single infographic display - no flicking or frame rotation
+                imgEl.style.opacity = "1";
             }
         } else if (step.video) {
             if (placeholderEl) placeholderEl.style.display = 'none';
