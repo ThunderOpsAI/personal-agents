@@ -3971,7 +3971,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const cleanId = id ? id.toLowerCase().trim() : '';
                     if (cleanId.includes('meditation') || cleanId.startsWith('med_')) {
                         window.open('https://insighttimer.com', '_blank');
-                    } else if (YOGA_ROUTINES[cleanId] || cleanId.match(/^(y|p|s|r|h)\d+$/i)) {
+                    } else if (YOGA_ROUTINES[cleanId] || cleanId.match(/^(y|p|s|r|h)\d+$/i) || cleanId.includes('yoga') || cleanId.includes('rehab')) {
                         startRunnerModal(cleanId);
                     } else {
                         loadExerciseSuggestions();
@@ -4149,12 +4149,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 "intensity": "Gentle Restorative",
                 "focus_areas": [
                         "lumbar",
-                        " lower back",
-                        " pelvi"
+                        "lower back",
+                        "pelvis"
                 ],
                 "instruction": "Slow pelvic tilts, supported child's pose, and gentle supine knee-to-chest holds to safely decompress the lumbar spine.",
                 "precautions": [
-                        "Avoid aggreive lumbar flexion during acute dic flare-up."
+                        "Avoid aggressive lumbar flexion during acute disc flare-ups."
                 ],
                 "steps": [
                         {
@@ -4199,12 +4199,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 "intensity": "Gentle Restorative",
                 "focus_areas": [
                         "cervical",
-                        " neck",
-                        " upper trapeziu"
+                        "neck",
+                        "upper trapezius"
                 ],
                 "instruction": "Gentle seated neck retractions, slow lateral tilts, and upper trapezius relaxation for post-surgical cervical safety.",
                 "precautions": [
-                        "No rapid cervical rotation or forced extenion pot-cervical urgery."
+                        "No rapid cervical rotations or forced extension post-cervical surgery."
                 ],
                 "steps": [
                         {
@@ -4249,12 +4249,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 "intensity": "Gentle Restorative",
                 "focus_areas": [
                         "full body",
-                        " nervou ytem",
-                        " pine"
+                        "nervous system",
+                        "spine"
                 ],
                 "instruction": "Passive supported poses using bolsters and blocks to downregulate sympathetic tone and relieve chronic muscular tension.",
                 "precautions": [
-                        "Maintain comfortable upport under all joint."
+                        "Maintain comfortable support under all joints."
                 ],
                 "steps": [
                         {
@@ -4298,14 +4298,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 20,
                 "intensity": "Adaptive Mobility",
                 "focus_areas": [
-                        "houlder",
-                        " thoracic",
-                        " capula",
-                        " chet"
+                        "shoulder",
+                        "thoracic",
+                        "scapula",
+                        "chest"
                 ],
                 "instruction": "Targeted mobility for the mid-back and pectoral girdle to counter rounded desk posture and relieve neck strain.",
                 "precautions": [
-                        "Avoid overhead impingement angle if houlder pain i harp."
+                        "Avoid overhead impingement angles if shoulder pain is sharp."
                 ],
                 "steps": [
                         {
@@ -4350,13 +4350,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 "intensity": "Adaptive Mobility",
                 "focus_areas": [
                         "hip",
-                        " poa",
-                        " pelvi",
-                        " lumbar"
+                        "psoas",
+                        "pelvis",
+                        "lumbar"
                 ],
                 "instruction": "Gentle low lunges and 90/90 pelvic alignments to release anterior hip tightness that pulls on the lumbar spine.",
                 "precautions": [
-                        "Tuck pelvi under (poterior pelvic tilt) to avoid hyperextending lower back."
+                        "Tuck pelvis under (posterior pelvic tilt) to avoid hyperextending lower back."
                 ],
                 "steps": [
                         {
@@ -4400,13 +4400,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 15,
                 "intensity": "Adaptive Mobility",
                 "focus_areas": [
-                        "pine",
-                        " core",
-                        " full body"
+                        "spine",
+                        "core",
+                        "full body"
                 ],
                 "instruction": "Gentle multi-directional spinal mobilization to lubricate facet joints and stimulate spinal cord circulation upon waking.",
                 "precautions": [
-                        "Start lowly without forcing range of motion in early morning."
+                        "Start slowly without forcing range of motion in early morning."
                 ],
                 "steps": [
                         {
@@ -4450,14 +4450,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 10,
                 "intensity": "Gentle Restorative",
                 "focus_areas": [
-                        "pine",
-                        " neck",
-                        " hip",
-                        " chet"
+                        "spine",
+                        "neck",
+                        "hips",
+                        "chest"
                 ],
                 "instruction": "Zero-floor routine performed entirely in an ergonomic chair to break up prolonged sitting intervals.",
                 "precautions": [
-                        "Keep chair table on firm ground."
+                        "Keep chair stable on firm ground."
                 ],
                 "steps": [
                         {
@@ -4501,13 +4501,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 15,
                 "intensity": "Gentle Restorative",
                 "focus_areas": [
-                        "nervou ytem",
-                        " diaphragm",
-                        " cervical"
+                        "nervous system",
+                        "diaphragm",
+                        "cervical"
                 ],
                 "instruction": "Pranayama, suboccipital release, and gentle eye movements designed to activate the parasympathetic vagal brake.",
                 "precautions": [
-                        "Breathe at a comfortable rhythm without breath-holding dizzine."
+                        "Breathe at a comfortable rhythm without breath-holding dizziness."
                 ],
                 "steps": [
                         {
@@ -4551,14 +4551,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 15,
                 "intensity": "Adaptive Mobility",
                 "focus_areas": [
-                        "hamtring",
-                        " calve",
-                        " ciatic nerve",
-                        " pelvi"
+                        "hamstrings",
+                        "calves",
+                        "sciatic nerve",
+                        "pelvis"
                 ],
                 "instruction": "Supine strap stretches to lengthen posterior fascia without placing flexion load on the lumbar discs.",
                 "precautions": [
-                        "Keep light bend in knee; do not pull into harp nerve pain."
+                        "Keep slight bend in knee; do not pull into sharp nerve pain."
                 ],
                 "steps": [
                         {
@@ -4603,8 +4603,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 "intensity": "Gentle Restorative",
                 "focus_areas": [
                         "full body",
-                        " nervou ytem",
-                        " leep"
+                        "nervous system",
+                        "sleep"
                 ],
                 "instruction": "Pre-bed restorative yoga protocol designed to drop core body temperature and release nighttime muscle guarding.",
                 "precautions": [
@@ -4653,13 +4653,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 "intensity": "Core Stabilization",
                 "focus_areas": [
                         "core",
-                        " pelvic floor",
-                        " lumbar",
-                        " tranvere abdomini"
+                        "pelvic floor",
+                        "lumbar",
+                        "transverse abdominis"
                 ],
                 "instruction": "Foundational clinical Pilates finding neutral spine, gentle pelvic floor cues, and deep abdominal bracing.",
                 "precautions": [
-                        "Do not tilt pelvi into exceive poterior or anterior tuck."
+                        "Do not tilt pelvis into excessive posterior or anterior tuck."
                 ],
                 "steps": [
                         {
@@ -4704,12 +4704,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 "intensity": "Core Stabilization",
                 "focus_areas": [
                         "core",
-                        " lumbar tability",
-                        " hip flexor"
+                        "lumbar stability",
+                        "hip flexors"
                 ],
                 "instruction": "Antagonistic limb reach while maintaining rigid neutral spine, eliminating lumbar hyperextension shear forces.",
                 "precautions": [
-                        "Lower limb only a far a you can maintain neutral lower back."
+                        "Lower limb only as far as you can maintain neutral lower back."
                 ],
                 "steps": [
                         {
@@ -4753,14 +4753,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 15,
                 "intensity": "Core Stabilization",
                 "focus_areas": [
-                        "multifidu",
-                        " glute",
-                        " thoracic",
-                        " core"
+                        "multifidus",
+                        "glutes",
+                        "thoracic",
+                        "core"
                 ],
                 "instruction": "McGill-validated quadruped stabilization building cross-body posterior chain endurance with zero spinal flexion.",
                 "precautions": [
-                        "Do not lift leg above hip level to avoid lumbar extenion arching."
+                        "Do not lift leg above hip level to avoid lumbar extension arching."
                 ],
                 "steps": [
                         {
@@ -4804,13 +4804,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 15,
                 "intensity": "Targeted Strengthening",
                 "focus_areas": [
-                        "glute mediu",
-                        " hip abductor",
-                        " pelvi tability"
+                        "glute medius",
+                        "hip abductors",
+                        "pelvis stability"
                 ],
                 "instruction": "Isolates the gluteus medius to stabilize the Trendelenburg sign, reducing lateral spinal sway and lumbar fatigue.",
                 "precautions": [
-                        "Do not roll top hip backward; keep hip tacked perpendicularly."
+                        "Do not roll top hip backwards; keep hips stacked perpendicularly."
                 ],
                 "steps": [
                         {
@@ -4854,13 +4854,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 15,
                 "intensity": "Targeted Strengthening",
                 "focus_areas": [
-                        "glute",
-                        " hamtring",
-                        " lumbar tability"
+                        "glutes",
+                        "hamstrings",
+                        "lumbar stability"
                 ],
                 "instruction": "Builds posterior chain strength to support standing posture and relieve anterior pelvic tilt shear on L4-S1.",
                 "precautions": [
-                        "Drive through heel and queeze glute; avoid arching lower back at peak."
+                        "Drive through heels and squeeze glutes; avoid arching lower back at peak."
                 ],
                 "steps": [
                         {
@@ -4905,12 +4905,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 "intensity": "Core Stabilization",
                 "focus_areas": [
                         "core",
-                        " breath endurance",
-                        " tranvere abdomini"
+                        "breath endurance",
+                        "transverse abdominis"
                 ],
                 "instruction": "Modified Pilates classic keeping head on mat or supported, pumping arms with rhythmic staccato breathing.",
                 "precautions": [
-                        "Head tay grounded if cervical fuion/train i preent."
+                        "Head stays grounded if cervical fusion/strain is present."
                 ],
                 "steps": [
                         {
@@ -4955,13 +4955,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 "intensity": "Adaptive Mobility",
                 "focus_areas": [
                         "thoracic",
-                        " oblique",
-                        " ribcage"
+                        "obliques",
+                        "ribcage"
                 ],
                 "instruction": "Seated or side-lying rotational mobility targeting the thoracic spine while locking the lumbar spine in neutral.",
                 "precautions": [
-                        "Rotation come purely from rib/chet",
-                        " not twiting lower back."
+                        "Rotation comes purely from ribs/chest, not twisting lower back."
                 ],
                 "steps": [
                         {
@@ -5006,8 +5005,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 "intensity": "Core Stabilization",
                 "focus_areas": [
                         "core",
-                        " hip flexor",
-                        " lumbar tability"
+                        "hip flexors",
+                        "lumbar stability"
                 ],
                 "instruction": "Alternating leg reach with hands guiding knee, demanding high lumbar-pelvic stabilization under dynamic load.",
                 "precautions": [
@@ -5055,14 +5054,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 15,
                 "intensity": "Adaptive Mobility",
                 "focus_areas": [
-                        "pine articulation",
-                        " glute",
-                        " hamtring"
+                        "spine articulation",
+                        "glutes",
+                        "hamstrings"
                 ],
                 "instruction": "Segmental rolling of the spine up and down off the mat, improving intervertebral mobility and proprioception.",
                 "precautions": [
-                        "Weight tay on houlder blade",
-                        " never preing into cervical neck."
+                        "Weight stays on shoulder blades, never pressing into cervical neck."
                 ],
                 "steps": [
                         {
@@ -5106,14 +5104,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 15,
                 "intensity": "Targeted Strengthening",
                 "focus_areas": [
-                        "erector pinae",
-                        " glute",
-                        " capula",
-                        " upper back"
+                        "erector spinae",
+                        "glutes",
+                        "scapula",
+                        "upper back"
                 ],
                 "instruction": "Prone alternating arm and leg fluttering with pillow under pelvis to strengthen extensor muscles safely.",
                 "precautions": [
-                        "Place mall pillow under lower abdomen/pelvi to prevent hyperextenion."
+                        "Place small pillow under lower abdomen/pelvis to prevent hyperextension."
                 ],
                 "steps": [
                         {
@@ -5157,14 +5155,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 12,
                 "intensity": "Gentle Restorative",
                 "focus_areas": [
-                        "glute",
-                        " piriformi",
-                        " ciatic nerve",
-                        " hip"
+                        "glutes",
+                        "piriformis",
+                        "sciatic nerve",
+                        "hips"
                 ],
                 "instruction": "Relieves piriformis spasm and sciatic nerve entrapment through supine figure-4 and seated chair variants.",
                 "precautions": [
-                        "Stop if numbne or tingling hoot down the leg."
+                        "Stop if numbness or tingling shoots down the leg."
                 ],
                 "steps": [
                         {
@@ -5208,14 +5206,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 10,
                 "intensity": "Gentle Restorative",
                 "focus_areas": [
-                        "calene",
-                        " upper trapeziu",
-                        " levator capulae",
-                        " neck"
+                        "scalenes",
+                        "upper trapezius",
+                        "levator scapulae",
+                        "neck"
                 ],
                 "instruction": "Gentle targeted releases for the anterior scalenes and levator scapulae to ease tension headaches and thoracic outlet tightness.",
                 "precautions": [
-                        "Never pull hard on head; ue gentle weight of hand only."
+                        "Never pull hard on head; use gentle weight of hand only."
                 ],
                 "steps": [
                         {
@@ -5259,13 +5257,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 15,
                 "intensity": "Gentle Restorative",
                 "focus_areas": [
-                        "hamtring",
-                        " poterior chain",
-                        " lumbar"
+                        "hamstrings",
+                        "posterior chain",
+                        "lumbar"
                 ],
                 "instruction": "Doorframe or wall-assisted hamstring lengthening that protects the lower back by supporting the pelvis flat on the floor.",
                 "precautions": [
-                        "Other leg extend through doorframe flat on the floor."
+                        "Other leg extends through doorframe flat on the floor."
                 ],
                 "steps": [
                         {
@@ -5309,14 +5307,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 12,
                 "intensity": "Adaptive Mobility",
                 "focus_areas": [
-                        "thoracic pine",
-                        " chet",
-                        " ribcage",
-                        " houlder"
+                        "thoracic spine",
+                        "chest",
+                        "ribcage",
+                        "shoulders"
                 ],
                 "instruction": "Side-lying rotational stretch to restore thoracic rotation and expand ribcage volume without stressing the lumbar spine.",
                 "precautions": [
-                        "Knee tay clamped together on floor or pillow to lock lumbar pine."
+                        "Knees stay clamped together on floor or pillow to lock lumbar spine."
                 ],
                 "steps": [
                         {
@@ -5360,14 +5358,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 10,
                 "intensity": "Adaptive Mobility",
                 "focus_areas": [
-                        "calve",
-                        " achille",
-                        " ankle mobility",
-                        " plantar facia"
+                        "calves",
+                        "achilles",
+                        "ankle mobility",
+                        "plantar fascia"
                 ],
                 "instruction": "Wall and step calf stretches to restore dorsiflexion, improving walking gait mechanics and offloading lumbar compensation.",
                 "precautions": [
-                        "Keep heel firmly planted on ground; do not let arch collape."
+                        "Keep heel firmly planted on ground; do not let arch collapse."
                 ],
                 "steps": [
                         {
@@ -5411,14 +5409,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 12,
                 "intensity": "Adaptive Mobility",
                 "focus_areas": [
-                        "quadricep",
-                        " rectu femori",
-                        " patella",
-                        " hip"
+                        "quadriceps",
+                        "rectus femoris",
+                        "patella",
+                        "hips"
                 ],
                 "instruction": "Standing or side-lying quad stretch that lengthens the two-joint rectus femoris muscle without knee hyperextension.",
                 "precautions": [
-                        "Tuck pelvi under to engage glute; avoid arching lower back."
+                        "Tuck pelvis under to engage glute; avoid arching lower back."
                 ],
                 "steps": [
                         {
@@ -5462,13 +5460,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 12,
                 "intensity": "Adaptive Mobility",
                 "focus_areas": [
-                        "latiimu dori",
-                        " thoracolumbar facia",
-                        " ide body"
+                        "latissimus dorsi",
+                        "thoracolumbar fascia",
+                        "side body"
                 ],
                 "instruction": "Decompresses the thoracolumbar fascia and lateral ribcage where latissimus attachments often compress the lumbar spine.",
                 "precautions": [
-                        "Do not lean o far a to pinch the oppoite ide wait."
+                        "Do not lean so far as to pinch the opposite side waist."
                 ],
                 "steps": [
                         {
@@ -5512,14 +5510,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 10,
                 "intensity": "Gentle Restorative",
                 "focus_areas": [
-                        "writ",
-                        " forearm",
-                        " median nerve",
-                        " carpal tunnel"
+                        "wrists",
+                        "forearms",
+                        "median nerve",
+                        "carpal tunnel"
                 ],
                 "instruction": "Gentle wrist flexor/extensor stretches combined with median nerve glides for desk workers and typing fatigue.",
                 "precautions": [
-                        "Never force through harp writ or hand pain."
+                        "Never force through sharp wrist or hand pain."
                 ],
                 "steps": [
                         {
@@ -5564,13 +5562,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 "intensity": "Adaptive Mobility",
                 "focus_areas": [
                         "pec major",
-                        " pec minor",
-                        " anterior houlder",
-                        " thoracic"
+                        "pec minor",
+                        "anterior shoulder",
+                        "thoracic"
                 ],
                 "instruction": "Releases tight pectoralis major and minor muscles that pull shoulders forward into kyphotic posture.",
                 "precautions": [
-                        "Keep forearm flat againt doorframe; do not twit houlder joint."
+                        "Keep forearm flat against doorframe; do not twist shoulder joint."
                 ],
                 "steps": [
                         {
@@ -5614,14 +5612,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 10,
                 "intensity": "Adaptive Mobility",
                 "focus_areas": [
-                        "ankle",
-                        " plantar facia",
-                        " feet",
-                        " tibiali anterior"
+                        "ankles",
+                        "plantar fascia",
+                        "feet",
+                        "tibialis anterior"
                 ],
                 "instruction": "Mobilizes the talocrural joint and rolls the plantar fascia to improve shock absorption during walking.",
                 "precautions": [
-                        "Do not roll ball aggreively over acute plantar faciiti pain point."
+                        "Do not roll ball aggressively over acute plantar fasciitis pain points."
                 ],
                 "steps": [
                         {
@@ -5665,14 +5663,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 20,
                 "intensity": "Stabilization",
                 "focus_areas": [
-                        "lumbar pine",
-                        " core",
-                        " quadratu lumborum",
-                        " multifidu"
+                        "lumbar spine",
+                        "core",
+                        "quadratus lumborum",
+                        "multifidus"
                 ],
                 "instruction": "The gold-standard clinical spine stabilization protocol: Modified Curl-Up, Side Bridge, and Bird-Dog for maximal stiffness with minimal load.",
                 "precautions": [
-                        "Hand tay under lumbar pine during curl-up; no pinal flexion."
+                        "Hands stay under lumbar spine during curl-up; no spinal flexion."
                 ],
                 "steps": [
                         {
@@ -5716,14 +5714,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 12,
                 "intensity": "Gentle Restorative",
                 "focus_areas": [
-                        "ciatic nerve",
-                        " hamtring",
-                        " lumbar root",
-                        " dura"
+                        "sciatic nerve",
+                        "hamstrings",
+                        "lumbar roots",
+                        "dura"
                 ],
                 "instruction": "Neurodynamic gliding where the sciatic nerve slides smoothly through its anatomical sheath without tensioning both ends at once.",
                 "precautions": [
-                        "Never pull into harp radiating pain; floing hould be gentle and rhythmic."
+                        "Never pull into sharp radiating pain; flossing should be gentle and rhythmic."
                 ],
                 "steps": [
                         {
@@ -5767,13 +5765,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 12,
                 "intensity": "Targeted Strengthening",
                 "focus_areas": [
-                        "longu colli",
-                        " longu capiti",
-                        " cervical pine"
+                        "longus colli",
+                        "longus capitis",
+                        "cervical spine"
                 ],
                 "instruction": "Low-load isometric training of the deep cervical flexors (longus colli/capitis) to restore cervical stability post-decompression.",
                 "precautions": [
-                        "Do not ue ternocleidomatoid (front urface mucle); keep jaw relaxed."
+                        "Do not use sternocleidomastoid (front surface muscles); keep jaw relaxed."
                 ],
                 "steps": [
                         {
@@ -5817,14 +5815,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 15,
                 "intensity": "Targeted Strengthening",
                 "focus_areas": [
-                        "erratu anterior",
-                        " lower trapeziu",
-                        " capula",
-                        " thoracic"
+                        "serratus anterior",
+                        "lower trapezius",
+                        "scapula",
+                        "thoracic"
                 ],
                 "instruction": "Activates serratus anterior upward rotation of the scapula to prevent subacromial impingement and relieve upper trapezius spasm.",
                 "precautions": [
-                        "Keep forearm glued to wall and rib tucked down."
+                        "Keep forearms glued to wall and ribs tucked down."
                 ],
                 "steps": [
                         {
@@ -5868,14 +5866,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 12,
                 "intensity": "Gentle Restorative",
                 "focus_areas": [
-                        "brachial plexu",
-                        " firt rib",
-                        " pectorali minor",
-                        " calene"
+                        "brachial plexus",
+                        "first rib",
+                        "pectoralis minor",
+                        "scalenes"
                 ],
                 "instruction": "Decompresses the costoclavicular space and brachial plexus bundle to relieve hand numbness and forearm tingling.",
                 "precautions": [
-                        "Do not tretch into tingling enation; tay within comfortable boundarie."
+                        "Do not stretch into tingling sensations; stay within comfortable boundaries."
                 ],
                 "steps": [
                         {
@@ -5919,13 +5917,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 12,
                 "intensity": "Targeted Strengthening",
                 "focus_areas": [
-                        "cervical pine",
-                        " neck extenor",
-                        " neck rotator"
+                        "cervical spine",
+                        "neck extensors",
+                        "neck rotators"
                 ],
                 "instruction": "Zero-movement isometric contractions against palm resistance to build cervical stability without joint shear.",
                 "precautions": [
-                        "Apply only 20-30% of maximum force; never train."
+                        "Apply only 20-30% of maximum force; never strain."
                 ],
                 "steps": [
                         {
@@ -5970,13 +5968,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 "intensity": "Decompression",
                 "focus_areas": [
                         "lumbar",
-                        " cervical",
-                        " pine",
-                        " water buoyancy"
+                        "cervical",
+                        "spine",
+                        "water buoyancy"
                 ],
                 "instruction": "Warm water (34°C) buoyancy protocol offloading up to 90% of gravity compression on spinal discs and facet joints.",
                 "precautions": [
-                        "Ue pool noodle or buoyancy belt for effortle floating."
+                        "Use pool noodles or buoyancy belt for effortless floating."
                 ],
                 "steps": [
                         {
@@ -6021,13 +6019,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 "intensity": "Adaptive Mobility",
                 "focus_areas": [
                         "gait",
-                        " hip flexor",
-                        " glute",
-                        " balance"
+                        "hip flexors",
+                        "glutes",
+                        "balance"
                 ],
                 "instruction": "Chest-deep water walking forward, backward, and sideways to retrain normal gait patterns without joint impact.",
                 "precautions": [
-                        "Maintain upright poture; do not lean forward againt water reitance."
+                        "Maintain upright posture; do not lean forward against water resistance."
                 ],
                 "steps": [
                         {
@@ -6071,14 +6069,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 "duration_minutes": 20,
                 "intensity": "Targeted Strengthening",
                 "focus_areas": [
-                        "glute",
-                        " hip abductor",
-                        " core",
-                        " pelvi"
+                        "glutes",
+                        "hip abductors",
+                        "core",
+                        "pelvis"
                 ],
                 "instruction": "Water resistance exercises using kickboards and noodles to strengthen core and hips in a low-impact environment.",
                 "precautions": [
-                        "Move at a teady controlled peed; water reitance increae with peed."
+                        "Move at a steady controlled speed; water resistance increases with speed."
                 ],
                 "steps": [
                         {
@@ -6123,13 +6121,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 "intensity": "Decompression",
                 "focus_areas": [
                         "lymphatic drainage",
-                        " edema",
-                        " nervou ytem",
-                        " circulation"
+                        "edema",
+                        "nervous system",
+                        "circulation"
                 ],
                 "instruction": "Leverages hydrostatic pressure to drive fluid return, clear metabolic waste, and reduce post-surgical swelling.",
                 "precautions": [
-                        "Hydrate with water before and after pool eion."
+                        "Hydrate with water before and after pool session."
                 ],
                 "steps": [
                         {
@@ -6179,6 +6177,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let currentRoutineRunning = null;
     let isRunnerPaused = false;
+    let totalTimeLeft = 0;
+    let totalRoutineDuration = 0;
 
     async function startRunnerModal(id) {
         const rawId = (id || '').toLowerCase().trim();
@@ -6205,6 +6205,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (!foundRoutine) {
+            // Intelligent fallback for agenda morning/evening yoga items
+            if (rawId.includes('yoga_am') || rawId.includes('morning')) {
+                foundRoutine = YOGA_ROUTINES['y1']; // Gentle Lumbar Release (15 min)
+            } else if (rawId.includes('yoga_pm') || rawId.includes('evening')) {
+                foundRoutine = YOGA_ROUTINES['y3']; // Full Body Restorative Yin (25 min)
+            }
+        }
+
+        if (!foundRoutine) {
             if (runnerTitleEl) runnerTitleEl.innerText = "Loading routine details...";
             try {
                 const res = await fetch("/api/v1/exercises");
@@ -6222,39 +6231,47 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        if (foundRoutine) {
-            currentRoutineRunning = foundRoutine;
-            if (runnerTitleEl) runnerTitleEl.innerText = foundRoutine.title || foundRoutine.name;
-            const targetTotalSecs = (foundRoutine.duration_minutes || 15) * 60;
-            currentProtocolSteps = (foundRoutine.steps || []).map(s => ({ ...s }));
-            if (currentProtocolSteps.length > 0) {
-                const currentSum = currentProtocolSteps.reduce((acc, step) => acc + (step.duration || 45), 0);
-                if (currentSum !== targetTotalSecs && targetTotalSecs > 0) {
-                    const factor = targetTotalSecs / currentSum;
-                    let allocated = 0;
-                    currentProtocolSteps.forEach((s, idx) => {
-                        if (idx === currentProtocolSteps.length - 1) {
-                            s.duration = targetTotalSecs - allocated;
-                        } else {
-                            s.duration = Math.round((s.duration || 45) * factor);
-                            allocated += s.duration;
-                        }
-                    });
-                }
-            }
-        } else {
-            currentRoutineRunning = { id: rawId || 'y1', title: "Adaptive Restorative Yoga Protocol" };
-            if (runnerTitleEl) runnerTitleEl.innerText = "Adaptive Restorative Yoga Protocol";
-            currentProtocolSteps = [
-                { title: "Supine Pelvic Tilts & Decompression", duration: 225, cue: "Flatten lower back against the mat on exhale, gentle arch on inhale.", frames: ["/exercises/supine_pelvic_tilts.jpg"] },
-                { title: "Supported Child's Pose", duration: 225, cue: "Widen knees, rest torso forward on bolster, lengthen spine.", frames: ["/exercises/supported_childs_pose.jpg"] },
-                { title: "Supine Knee-to-Chest Decompression", duration: 225, cue: "Gently hug knees to chest, relaxing sacrum and pelvic floor.", frames: ["/exercises/knee_to_chest_stretch.jpg"] },
-                { title: "Restorative Savasana Release", duration: 225, cue: "Complete still surrender into mat with diaphragmatic breathing.", frames: ["/exercises/restorative_savasana.jpg"] }
-            ];
+        if (!foundRoutine) {
+            foundRoutine = YOGA_ROUTINES['y1'] || {
+                id: rawId || 'y1',
+                title: "Gentle Lumbar Release",
+                duration_minutes: 15,
+                steps: [
+                    { title: "Supine Pelvic Tilts", duration: 225, cue: "Flatten lower back against the mat on exhale, gentle arch on inhale.", frames: ["/exercises/supine_pelvic_tilts.jpg"] },
+                    { title: "Supported Child's Pose", duration: 225, cue: "Widen knees, rest torso forward on bolster, lengthen spine.", frames: ["/exercises/supported_childs_pose.jpg"] },
+                    { title: "Supine Single Knee-to-Chest", duration: 225, cue: "Gently hug right knee, then left knee. Keep sacrum grounded.", frames: ["/exercises/knee_to_chest_stretch.jpg"] },
+                    { title: "Restorative Savasana with Bolster", duration: 225, cue: "Place bolster under knees to release psoas and lumbar pressure.", frames: ["/exercises/restorative_savasana.jpg"] }
+                ]
+            };
         }
+
+        currentRoutineRunning = foundRoutine;
+        const routineMins = foundRoutine.duration_minutes || 15;
+        totalRoutineDuration = routineMins * 60;
         
+        currentProtocolSteps = (foundRoutine.steps || []).map(s => ({ ...s }));
+        
+        // Calibrate step durations so they strictly add up to the routine's declared duration
+        if (currentProtocolSteps.length > 0) {
+            const currentSum = currentProtocolSteps.reduce((acc, step) => acc + (step.duration || 45), 0);
+            if (currentSum !== totalRoutineDuration && totalRoutineDuration > 0) {
+                const factor = totalRoutineDuration / currentSum;
+                let allocated = 0;
+                currentProtocolSteps.forEach((s, idx) => {
+                    if (idx === currentProtocolSteps.length - 1) {
+                        s.duration = totalRoutineDuration - allocated;
+                    } else {
+                        s.duration = Math.round((s.duration || 45) * factor);
+                        allocated += s.duration;
+                    }
+                });
+            }
+        }
+
         currentStepIndex = 0;
-        timeLeft = (currentProtocolSteps[currentStepIndex] && currentProtocolSteps[currentStepIndex].duration) || 45;
+        timeLeft = currentProtocolSteps[0].duration;
+        totalTimeLeft = totalRoutineDuration;
+
         updateStepUI();
         startRunnerTimer();
     }
@@ -6268,9 +6285,61 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateStepUI() {
         if (currentStepIndex >= currentProtocolSteps.length) return;
         const step = currentProtocolSteps[currentStepIndex];
-        if (runnerStep) runnerStep.innerText = `Step ${currentStepIndex + 1} of ${currentProtocolSteps.length}: ${step.title}`;
-        if (runnerTimer) runnerTimer.innerText = formatTime(timeLeft);
         
+        // Calculate remaining total time across remaining steps + current step's remaining time
+        let remainingAfter = 0;
+        for (let i = currentStepIndex + 1; i < currentProtocolSteps.length; i++) {
+            remainingAfter += currentProtocolSteps[i].duration;
+        }
+        totalTimeLeft = timeLeft + remainingAfter;
+
+        const runnerTitleEl = document.getElementById('runnerTitle');
+        if (runnerTitleEl && currentRoutineRunning) {
+            runnerTitleEl.innerText = currentRoutineRunning.title || currentRoutineRunning.name;
+        }
+
+        const runnerTotalBadge = document.getElementById('runnerTotalBadge');
+        if (runnerTotalBadge && currentRoutineRunning) {
+            runnerTotalBadge.innerText = `${currentRoutineRunning.duration_minutes || 15} Min Routine`;
+        }
+
+        const runnerTotalTimeDisplay = document.getElementById('runnerTotalTimeDisplay');
+        if (runnerTotalTimeDisplay) {
+            runnerTotalTimeDisplay.innerText = `Total Remaining: ${formatTime(totalTimeLeft)} / ${formatTime(totalRoutineDuration)}`;
+        }
+
+        // Primary Program Countdown (e.g. 15:00)
+        if (runnerTimer) {
+            runnerTimer.innerText = formatTime(totalTimeLeft);
+        }
+
+        // Current Step Hold Countdown (e.g. 03:45)
+        const runnerStepTimer = document.getElementById('runnerStepTimer');
+        if (runnerStepTimer) {
+            runnerStepTimer.innerText = formatTime(timeLeft);
+        }
+
+        if (runnerStep) runnerStep.innerText = `Step ${currentStepIndex + 1} of ${currentProtocolSteps.length}: ${step.title}`;
+        
+        // Total routine progress bar and percentage
+        const progressBar = document.getElementById('runnerTotalProgressBar');
+        const progressPct = document.getElementById('runnerTotalProgressPct');
+        if (totalRoutineDuration > 0) {
+            const pct = Math.min(100, Math.max(0, Math.round(((totalRoutineDuration - totalTimeLeft) / totalRoutineDuration) * 100)));
+            if (progressBar) progressBar.style.width = `${pct}%`;
+            if (progressPct) progressPct.innerText = `${pct}%`;
+        }
+
+        // Step hold progress bar and percentage
+        const stepProgressBar = document.getElementById('runnerStepProgressBar');
+        const stepProgressPct = document.getElementById('runnerStepProgressPct');
+        const stepDuration = step.duration || 45;
+        if (stepDuration > 0) {
+            const stepPct = Math.min(100, Math.max(0, Math.round(((stepDuration - timeLeft) / stepDuration) * 100)));
+            if (stepProgressBar) stepProgressBar.style.width = `${stepPct}%`;
+            if (stepProgressPct) stepProgressPct.innerText = `${stepPct}%`;
+        }
+
         const runnerCueEl = document.getElementById('runnerCue');
         if (runnerCueEl) {
             runnerCueEl.innerText = step.cue || step.instruction || 'Follow gentle diaphragmatic breath rhythm.';
@@ -6290,7 +6359,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (imgEl) {
                 imgEl.style.display = 'block';
-                let fIdx = 0;
+                imgEl.style.opacity = '1';
                 imgEl.src = step.frames[0];
                 imgEl.onerror = () => {
                     imgEl.style.display = 'none';
@@ -6305,8 +6374,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         `;
                     }
                 };
-                // Persistent single infographic display - no flicking or frame rotation
-                imgEl.style.opacity = "1";
             }
         } else if (step.video) {
             if (placeholderEl) placeholderEl.style.display = 'none';
@@ -6377,6 +6444,9 @@ document.addEventListener('DOMContentLoaded', () => {
         runnerInterval = setInterval(() => {
             if (isRunnerPaused) return;
             timeLeft--;
+            totalTimeLeft--;
+            if (totalTimeLeft < 0) totalTimeLeft = 0;
+
             if (timeLeft < 0) {
                 currentStepIndex++;
                 if (currentStepIndex >= currentProtocolSteps.length) {
@@ -6384,9 +6454,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     clearInterval(frameInterval);
                     if (runnerStep) runnerStep.innerText = "Routine Complete!";
                     if (runnerTimer) runnerTimer.innerText = "00:00";
+                    const runnerStepTimer = document.getElementById('runnerStepTimer');
+                    if (runnerStepTimer) runnerStepTimer.innerText = "00:00";
+                    const runnerTotalTimeDisplay = document.getElementById('runnerTotalTimeDisplay');
+                    if (runnerTotalTimeDisplay) runnerTotalTimeDisplay.innerText = `Total Remaining: 00:00 / ${formatTime(totalRoutineDuration)}`;
+                    const progressBar = document.getElementById('runnerTotalProgressBar');
+                    if (progressBar) progressBar.style.width = "100%";
+                    const progressPct = document.getElementById('runnerTotalProgressPct');
+                    if (progressPct) progressPct.innerText = "100%";
+                    const stepProgressBar = document.getElementById('runnerStepProgressBar');
+                    if (stepProgressBar) stepProgressBar.style.width = "100%";
+                    const stepProgressPct = document.getElementById('runnerStepProgressPct');
+                    if (stepProgressPct) stepProgressPct.innerText = "100%";
                     setTimeout(() => {
                         closeRunnerModal();
-                        // Seamlessly prompt to log relief delta
                         const routineName = currentRoutineRunning?.title || "Yoga Routine";
                         if (reliefExerciseName) reliefExerciseName.innerText = routineName;
                         if (afterPainScore) afterPainScore.value = currentPainLevel || 5;
@@ -6394,11 +6475,41 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (reliefModal) reliefModal.classList.remove('hidden');
                     }, 1200);
                 } else {
-                    timeLeft = (currentProtocolSteps[currentStepIndex] && currentProtocolSteps[currentStepIndex].duration) || 45;
+                    timeLeft = (currentProtocolSteps[currentStepIndex] && currentProtocolSteps[currentStepIndex].duration) || 225;
                     updateStepUI();
                 }
             } else {
-                if (runnerTimer) runnerTimer.innerText = formatTime(timeLeft);
+                // Update primary routine timer (e.g. 15:00 countdown)
+                if (runnerTimer) runnerTimer.innerText = formatTime(totalTimeLeft);
+                
+                // Update step timer (e.g. 03:45 hold countdown)
+                const runnerStepTimer = document.getElementById('runnerStepTimer');
+                if (runnerStepTimer) runnerStepTimer.innerText = formatTime(timeLeft);
+                
+                const runnerTotalTimeDisplay = document.getElementById('runnerTotalTimeDisplay');
+                if (runnerTotalTimeDisplay) {
+                    runnerTotalTimeDisplay.innerText = `Total Remaining: ${formatTime(totalTimeLeft)} / ${formatTime(totalRoutineDuration)}`;
+                }
+                
+                // Total progress bar and percentage
+                const progressBar = document.getElementById('runnerTotalProgressBar');
+                const progressPct = document.getElementById('runnerTotalProgressPct');
+                if (progressBar && totalRoutineDuration > 0) {
+                    const pct = Math.min(100, Math.max(0, Math.round(((totalRoutineDuration - totalTimeLeft) / totalRoutineDuration) * 100)));
+                    progressBar.style.width = `${pct}%`;
+                    if (progressPct) progressPct.innerText = `${pct}%`;
+                }
+
+                // Step hold progress bar and percentage
+                const stepProgressBar = document.getElementById('runnerStepProgressBar');
+                const stepProgressPct = document.getElementById('runnerStepProgressPct');
+                const curStep = currentProtocolSteps[currentStepIndex];
+                const stepDuration = (curStep && curStep.duration) || 45;
+                if (stepProgressBar && stepDuration > 0) {
+                    const stepPct = Math.min(100, Math.max(0, Math.round(((stepDuration - timeLeft) / stepDuration) * 100)));
+                    stepProgressBar.style.width = `${stepPct}%`;
+                    if (stepProgressPct) stepProgressPct.innerText = `${stepPct}%`;
+                }
             }
         }, 1000);
     }
@@ -6410,7 +6521,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btnPrevStep.addEventListener('click', () => {
             if (currentStepIndex > 0) {
                 currentStepIndex--;
-                timeLeft = (currentProtocolSteps[currentStepIndex] && currentProtocolSteps[currentStepIndex].duration) || 45;
+                timeLeft = (currentProtocolSteps[currentStepIndex] && currentProtocolSteps[currentStepIndex].duration) || 225;
                 updateStepUI();
             }
         });
@@ -6427,7 +6538,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 pendingProtocol = { id: currentRoutineRunning?.id || 'y1', name: routineName, beforePain: currentPainLevel || 5 };
                 if (reliefModal) reliefModal.classList.remove('hidden');
             } else {
-                timeLeft = (currentProtocolSteps[currentStepIndex] && currentProtocolSteps[currentStepIndex].duration) || 45;
+                timeLeft = (currentProtocolSteps[currentStepIndex] && currentProtocolSteps[currentStepIndex].duration) || 225;
                 updateStepUI();
             }
         });
