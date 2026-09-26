@@ -26,7 +26,8 @@ export async function GET(request: Request) {
       instruction: r.instruction,
       description: r.description,
       precautions: r.precautions,
-      steps: r.steps
+      steps: r.steps,
+      video_url: r.video_url
     }));
 
     return NextResponse.json({

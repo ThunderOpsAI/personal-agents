@@ -60,4 +60,22 @@ describe('Tasks Tab & Notes UI Verification', () => {
     expect(appJs).toContain('API_TASKS');
     expect(appJs).toContain('API_TASKS_SYNC');
   });
+
+  it('contains urgent banner dismiss button and list container in index.html', () => {
+    expect(indexHtml).toContain('id="urgentTasksBanner"');
+    expect(indexHtml).toContain('id="btnDismissUrgentBanner"');
+    expect(indexHtml).toContain('id="urgentTasksBannerList"');
+  });
+
+  it('contains urgent badge and toggle urgent button in task view modal', () => {
+    expect(indexHtml).toContain('id="viewTaskUrgentBadge"');
+    expect(indexHtml).toContain('id="btnToggleTaskUrgent"');
+  });
+
+  it('wires urgent task dismiss and urgency toggle listeners in app.js', () => {
+    expect(appJs).toContain('btnDismissUrgentBanner');
+    expect(appJs).toContain('btnToggleTaskUrgent');
+    expect(appJs).toContain('btn-done-urgent');
+    expect(appJs).toContain('task-event-urgent');
+  });
 });
