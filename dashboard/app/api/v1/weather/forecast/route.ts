@@ -21,7 +21,8 @@ export async function GET() {
       for (let i = 0; i < data.daily.time.length; i++) {
         forecastArray.push({
           date: data.daily.time[i],
-          precipitation_probability_pct: data.daily.precipitation_probability_max ? data.daily.precipitation_probability_max[i] : 0
+          precipitation_probability_pct: data.daily.precipitation_probability_max ? data.daily.precipitation_probability_max[i] : 0,
+          max_temp_c: data.daily.temperature_2m_max ? data.daily.temperature_2m_max[i] : null
         });
       }
     }
@@ -33,7 +34,9 @@ export async function GET() {
       longitude: LONGITUDE,
       timezone: TIMEZONE,
       temp_c: data.current_weather?.temperature,
+      max_temp_c: data.daily?.temperature_2m_max ? data.daily.temperature_2m_max[0] : null,
       rain_probability_pct: data.hourly?.precipitation_probability ? data.hourly.precipitation_probability[0] : 0,
+      rain_probability_pct_day: data.daily?.precipitation_probability_max ? data.daily.precipitation_probability_max[0] : 0,
       forecast: forecastArray,
     });
   } catch (error) {

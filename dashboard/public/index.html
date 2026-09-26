@@ -21,8 +21,11 @@
         <!-- Glass Header -->
         <header class="glass-header">
             <div class="header-content">
-                <div class="brand">
+                <div class="brand" style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
                     <h1>Rumble OS</h1>
+                    <div id="weatherWidget" style="font-size: 0.85rem; color: var(--text-secondary); background: rgba(0,0,0,0.15); padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05);">
+                        <span class="weather-text">Weather: Loading...</span>
+                    </div>
                 </div>
                 
                 <div class="header-actions">
