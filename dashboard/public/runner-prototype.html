@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PROTOTYPE - Runner UI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        body { margin: 0; height: 100vh; display: flex; align-items: center; justify-content: center; background: #111; overflow: hidden; }
+        .bg-orb { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.5; z-index: -1; }
+        .orb-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: rgba(0, 240, 255, 0.15); }
+        .orb-2 { bottom: -10%; right: -10%; width: 60vw; height: 60vw; background: rgba(138, 43, 226, 0.15); }
+
+        .floating-bar {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.2);
+            padding: 10px 20px; border-radius: 30px; display: flex; gap: 10px; z-index: 1000;
+        }
+        .floating-bar a {
+            color: #fff; text-decoration: none; padding: 6px 15px; border-radius: 20px;
+            font-family: 'Outfit', sans-serif; font-size: 0.9rem; transition: background 0.2s;
+        }
+        .floating-bar a.active { background: var(--neon-blue); color: #000; font-weight: 600; }
+        
+        .modal-content { max-width: 600px; width: 90%; background: rgba(20,20,25,0.85); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 20px; }
+        
+        /* Base styles from index.html for runner */
+        .runner-visual { position: relative; width: 100%; background: #000; border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .visual-placeholder { font-weight: 800; font-family: 'Outfit'; color: #fff; opacity: 0.5; }
+        
+        /* VARIANT 1: User Requested */
+        .v1 .runner-visual { aspect-ratio: 4/3; margin-bottom: 15px; } /* Doubled size effectively compared to 16/9, and much larger */
+        .v1 .timer-section { display: flex; justify-content: space-between; align-items: stretch; gap: 15px; }
+        .v1 .timer-box { flex: 1; background: rgba(0,0,0,0.4); padding: 10px; border-radius: 8px; border: 1px solid rgba(0, 240, 255, 0.2); }
+        .v1 .timer { font-size: 1.2rem; font-weight: 700; color: var(--neon-purple); } /* Shrunk timer */
+        .v1 .progress-section { 
+            width: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden;
+            display: flex; flex-direction: column; justify-content: flex-end;
+        } /* Progress bar on the right hand side */
+        .v1 .progress-fill { width: 100%; height: 45%; background: linear-gradient(0deg, var(--neon-blue), var(--neon-purple)); }
+
+        /* VARIANT 2: Split Layout */
+        .v2.modal-content { max-width: 800px; display: flex; gap: 20px; padding: 20px; }
+        .v2 .runner-visual { width: 60%; aspect-ratio: 1; margin: 0; }
+        .v2 .info-side { width: 40%; display: flex; flex-direction: column; justify-content: space-between; }
+        .v2 .timer { font-size: 3rem; font-weight: 800; color: var(--neon-blue); text-align: center; }
+        .v2 .progress-wrap { flex: 1; margin-top: 20px; background: rgba(255,255,255,0.05); border-radius: 8px; position: relative; overflow: hidden; }
+        .v2 .progress-fill { position: absolute; bottom: 0; left: 0; width: 100%; height: 60%; background: var(--neon-purple); opacity: 0.8; }
+
+        /* VARIANT 3: Cinematic Overlay */
+        .v3.modal-content { max-width: 900px; padding: 0; border: none; overflow: hidden; position: relative; }
+        .v3 .runner-visual { aspect-ratio: 16/9; border-radius: 16px; margin: 0; }
+        .v3 .overlay-ui {
+            position: absolute; bottom: 20px; right: 20px; left: 20px;
+            display: flex; justify-content: space-between; align-items: flex-end; z-index: 10;
+        }
+        .v3 .timer-pill { background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); padding: 10px 20px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.2); }
+        .v3 .timer { font-size: 1.5rem; font-weight: 700; color: #fff; margin: 0; }
+        .v3 .progress-bar-container { position: absolute; bottom: 0; left: 0; width: 100%; height: 6px; background: rgba(0,0,0,0.5); }
+        .v3 .progress-fill { height: 100%; width: 70%; background: var(--neon-blue); }
+
+    </style>
+</head>
+<body>
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+
+    <div id="appRoot"></div>
+
+    <div class="floating-bar">
+        <a href="?variant=1" id="btn-v1">V1: Requested</a>
+        <a href="?variant=2" id="btn-v2">V2: Split</a>
+        <a href="?variant=3" id="btn-v3">V3: Cinematic</a>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const variant = urlParams.get('variant') || '1';
+        
+        document.getElementById(`btn-v${variant}`).classList.add('active');
+
+        const appRoot = document.getElementById('appRoot');
+
+        if (variant === '1') {
+            appRoot.innerHTML = `
+                <div class="modal-content v1">
+                    <h2 style="margin: 0 0 10px 0; font-family: 'Outfit';">Protocol Runner</h2>
+                    <div class="runner-visual">
+                        <img src="/exercises/knee_to_chest_stretch.jpg" style="width:100%; height:100%; object-fit:cover; opacity: 0.8;" />
+                        <div class="visual-placeholder" style="position: absolute;">PAUSED</div>
+                    </div>
+                    <div class="timer-section">
+                        <div style="flex: 1;">
+                            <h3 style="margin: 0 0 5px 0;">Step 1: Knee to Chest Stretch</h3>
+                            <p style="margin: 0 0 10px 0; font-size: 0.85rem; color: #aaa;">Hold stretch gently without pushing into sharp pain.</p>
+                            <div class="timer-box">
+                                <span style="font-size: 0.7rem; color: #aaa; text-transform: uppercase;">Time Remaining</span>
+                                <div class="timer">11:45</div>
+                                <div style="margin-top: 5px; font-size: 0.7rem; color: #aaa;">Step: 00:45</div>
+                            </div>
+                        </div>
+                        <div class="progress-section" title="Overall Progress: 45%">
+                            <div class="progress-fill"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else if (variant === '2') {
+            appRoot.innerHTML = `
+                <div class="modal-content v2">
+                    <div class="runner-visual">
+                        <img src="/exercises/knee_to_chest_stretch.jpg" style="width:100%; height:100%; object-fit:cover; opacity: 0.8;" />
+                    </div>
+                    <div class="info-side">
+                        <div>
+                            <h2 style="margin: 0 0 5px 0; font-family: 'Outfit';">Protocol Runner</h2>
+                            <h3 style="margin: 0 0 5px 0; color: #aaa; font-size: 1rem;">Step 1: Knee to Chest</h3>
+                        </div>
+                        <div style="text-align: center;">
+                            <div class="timer">11:45</div>
+                            <div style="color: #666; font-size: 0.9rem;">Remaining</div>
+                        </div>
+                        <div class="progress-wrap">
+                            <div class="progress-fill"></div>
+                            <div style="position: absolute; top: 10px; left: 0; width: 100%; text-align: center; font-weight: 800; font-size: 0.8rem; letter-spacing: 2px;">45%</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else if (variant === '3') {
+            appRoot.innerHTML = `
+                <div class="modal-content v3">
+                    <div class="runner-visual">
+                        <img src="/exercises/knee_to_chest_stretch.jpg" style="width:100%; height:100%; object-fit:cover; opacity: 0.8;" />
+                        <div class="overlay-ui">
+                            <div style="background: rgba(0,0,0,0.6); padding: 10px 15px; border-radius: 12px; backdrop-filter: blur(10px);">
+                                <h3 style="margin: 0 0 3px 0; color: #fff;">Step 1: Knee to Chest</h3>
+                                <p style="margin: 0; color: #ccc; font-size: 0.8rem;">Hold gently</p>
+                            </div>
+                            <div class="timer-pill">
+                                <div class="timer">11:45</div>
+                            </div>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-fill"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
