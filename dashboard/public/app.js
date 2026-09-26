@@ -6328,7 +6328,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const progressPct = document.getElementById('runnerTotalProgressPct');
         if (totalRoutineDuration > 0) {
             const pct = Math.min(100, Math.max(0, Math.round(((totalRoutineDuration - totalTimeLeft) / totalRoutineDuration) * 100)));
-            if (progressBar) progressBar.style.width = `${pct}%`;
+            if (progressBar) progressBar.style.height = `${pct}%`;
             if (progressPct) progressPct.innerText = `${pct}%`;
         }
 
@@ -6461,7 +6461,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const runnerTotalTimeDisplay = document.getElementById('runnerTotalTimeDisplay');
                     if (runnerTotalTimeDisplay) runnerTotalTimeDisplay.innerText = `Total Remaining: 00:00 / ${formatTime(totalRoutineDuration)}`;
                     const progressBar = document.getElementById('runnerTotalProgressBar');
-                    if (progressBar) progressBar.style.width = "100%";
+                    if (progressBar) progressBar.style.height = "100%";
                     const progressPct = document.getElementById('runnerTotalProgressPct');
                     if (progressPct) progressPct.innerText = "100%";
                     const stepProgressBar = document.getElementById('runnerStepProgressBar');
@@ -6498,7 +6498,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const progressPct = document.getElementById('runnerTotalProgressPct');
                 if (progressBar && totalRoutineDuration > 0) {
                     const pct = Math.min(100, Math.max(0, Math.round(((totalRoutineDuration - totalTimeLeft) / totalRoutineDuration) * 100)));
-                    progressBar.style.width = `${pct}%`;
+                    progressBar.style.height = `${pct}%`;
                     if (progressPct) progressPct.innerText = `${pct}%`;
                 }
 
