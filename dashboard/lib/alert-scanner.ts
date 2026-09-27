@@ -5,8 +5,8 @@ export interface AlertCalendarEvent {
   id: string;
   summary: string;
   description?: string;
-  start: string;
-  end: string;
+  start: any;
+  end: any;
   location?: string;
   status: string;
 }
@@ -90,7 +90,7 @@ export async function scanRetrievalForAlerts(
     const textToScan = `${msg.subject || ""} ${msg.snippet || ""} ${msg.bodySummary || ""}`;
     const requiresAction =
       Boolean(msg.actionRequired) ||
-      /action required|due|follow-up|urgent|hostplus/i.test(textToScan);
+      /action required|action_required|due|follow-up|urgent|hostplus|important|importance|immediate|attention|dispute|notice/i.test(textToScan);
 
     if (requiresAction) {
       const alertId = `alert_msg_${msg.id}`;
@@ -129,12 +129,13 @@ export async function scanRetrievalForAlerts(
     const textToScan = `${evt.summary || ""} ${evt.description || ""}`;
     const isActionRequired =
       evt.status === "confirmed" &&
-      (/action required|action_required|due/i.test(textToScan) || textToScan.length > 0);
+      /action required|action_required|due|urgent|important/i.test(textToScan);
 
     if (isActionRequired) {
       const alertId = `alert_evt_${evt.id}`;
-      let scheduledTime = evt.start;
-      if (!scheduledTime || !scheduledTime.includes("T")) {
+      let rawStart = typeof evt.start === "string" ? evt.start : (evt.start?.dateTime || evt.start?.date || "");
+      let scheduledTime = rawStart;
+      if (!scheduledTime || typeof scheduledTime !== "string" || !scheduledTime.includes("T")) {
         const { timeSlot } = extractTimeSlot(textToScan);
         scheduledTime = `${dateStr}T${timeSlot}:00+10:00`;
       }
