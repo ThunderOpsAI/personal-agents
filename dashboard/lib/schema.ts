@@ -134,6 +134,7 @@ export interface CreateBudgetItemInput {
   amount: number;
   category: string;
   type: 'income' | 'expense';
+  created_at?: string;
 }
 
 export const CREATE_BUDGET_ITEMS_TABLE_SQL = `
