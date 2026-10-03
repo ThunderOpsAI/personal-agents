@@ -2437,6 +2437,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else if (data.intent === 'ADD_EXPENSE') {
                     if (typeof loadBudget === 'function') loadBudget();
                     showToast('Expense added', 'success');
+                } else if (data.intent === 'SEND_EMAIL' && actionToCommit) {
+                    if (data.status === 'success') {
+                        showToast('Email sent via Gmail', 'success');
+                    } else {
+                        showToast('Email could not be sent', 'error');
+                    }
                 }
             }
 

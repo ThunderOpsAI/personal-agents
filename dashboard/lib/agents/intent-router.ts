@@ -809,11 +809,13 @@ ${weatherText}
         return { type: a.type, data };
       });
 
-      // If multiple actions, wrap them in multi_action so frontend can confirm all at once
-      const preview: ActionPreview = {
-        type: "multi_action",
-        data: { actions: mappedActions }
-      };
+      // If single action, present that action directly; if multiple, wrap in multi_action
+      const preview: ActionPreview = mappedActions.length === 1
+        ? mappedActions[0]
+        : {
+            type: "multi_action",
+            data: { actions: mappedActions }
+          };
       
       return {
         reply: finalReply,
@@ -1008,18 +1010,26 @@ export async function executeConfirmedAction(action: ActionPreview | { type: str
   }
 
   if (action.type === "multi_action") {
-    const results = [];
+    const results: string[] = [];
+    let allSuccess = true;
     for (const subAction of action.data.actions) {
       try {
         const res = await executeConfirmedAction(subAction);
+        if (res && res.success === false) {
+          allSuccess = false;
+        }
         results.push(res.message);
       } catch (err: any) {
+        allSuccess = false;
         results.push(`Failed: ${err.message}`);
       }
     }
+    const header = allSuccess
+      ? "Rumble: Executed actions:"
+      : "Rumble: Action execution completed with errors/warnings:";
     return {
-      success: true,
-      message: `Rumble: Executed actions: Actions executed successfully.`,
+      success: allSuccess,
+      message: `${header}\n${results.map((r) => `• ${r.replace(/^Rumble:\s*/, "")}`).join("\n")}`,
       result: results,
     };
   }
