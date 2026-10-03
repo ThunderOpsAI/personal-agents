@@ -465,6 +465,7 @@
                                 <div class="anatomy-chip-btn" data-area="Right Knee">Right Knee</div>
                                 <div class="anatomy-chip-btn" data-area="Left Knee">Left Knee</div>
                                 <div class="anatomy-chip-btn" data-area="Hip">Hip</div>
+                                <div class="anatomy-chip-btn" data-area="Scapula">Scapula</div>
                             </div>
                         </div>
 
@@ -486,17 +487,43 @@
                     <!-- RIGHT COLUMN: Combined Mood & Notes -->
                     <div class="pain-modal-right-col">
                         <div class="glass-card pain-rhs-combined">
+                            <!-- Quick Auto-Log Presets: Standard, Hydro, Thoracic, Sciatica -->
+                            <div class="form-group" style="margin-bottom: 8px;">
+                                <label style="font-size: 0.78rem; font-weight: bold; color: var(--neon-blue); display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                    <span>Quick Auto-Log Presets</span>
+                                    <span style="font-size: 0.7rem; color: var(--text-secondary); font-weight: normal;">1-Click Auto Log</span>
+                                </label>
+                                <div class="quick-pain-grid" id="quickPainButtonsGrid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px;">
+                                    <button type="button" class="btn btn-sm btn-outline quick-pain-btn" id="btnQuickStandard" data-preset="standard" style="padding: 6px 8px; text-align: left; border-color: var(--neon-blue); color: #38bdf8; display: flex; flex-direction: column;">
+                                        <strong style="font-size: 0.82rem;">Standard</strong>
+                                        <span style="font-size: 0.68rem; color: var(--text-secondary);">70% Lumbar 7.5 &bull; Rotates Ankle/Knee</span>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline quick-pain-btn" id="btnQuickHydro" data-preset="hydro" style="padding: 6px 8px; text-align: left; border-color: var(--neon-green); color: #00e676; display: flex; flex-direction: column;">
+                                        <strong style="font-size: 0.82rem;">Hydro</strong>
+                                        <span style="font-size: 0.68rem; color: var(--text-secondary);">-1.5 vs Prev &bull; Hydro relief</span>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline quick-pain-btn" id="btnQuickThoracic" data-preset="thoracic" style="padding: 6px 8px; text-align: left; border-color: #a855f7; color: #c084fc; display: flex; flex-direction: column;">
+                                        <strong style="font-size: 0.82rem;">Thoracic</strong>
+                                        <span style="font-size: 0.68rem; color: var(--text-secondary);">70% Thor, 15% Neck, 15% Scap @ 7.5</span>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline quick-pain-btn" id="btnQuickSciatica" data-preset="sciatica" style="padding: 6px 8px; text-align: left; border-color: var(--neon-red); color: #ff5252; display: flex; flex-direction: column;">
+                                        <strong style="font-size: 0.82rem;">Sciatica</strong>
+                                        <span style="font-size: 0.68rem; color: var(--text-secondary);">9.5 &bull; 100% Sciatica attack</span>
+                                    </button>
+                                </div>
+                            </div>
+
                             <!-- Mood Score -->
                             <div class="form-group">
-                                <label>Mood Level <span class="val-tag" id="moodValDisplay">5.0</span>/10 <span id="moodLabelDisplay" style="color: var(--neon-blue); margin-left: 4px;">(Calm)</span></label>
+                                <label>Mood Level <span class="val-tag" id="moodValDisplay">5.0</span>/10 <span id="moodLabelDisplay" style="color: var(--neon-blue); margin-left: 4px;">(Standard)</span></label>
                                 <div class="scale-buttons scale-buttons-modal" id="moodScaleButtons">
                                     <button type="button" class="btn-num mood-num" data-val="0">0</button><button type="button" class="btn-num mood-num" data-val="1">1</button><button type="button" class="btn-num mood-num" data-val="2">2</button><button type="button" class="btn-num mood-num" data-val="3">3</button><button type="button" class="btn-num mood-num" data-val="4">4</button><button type="button" class="btn-num mood-num active" data-val="5">5</button><button type="button" class="btn-num mood-num" data-val="6">6</button><button type="button" class="btn-num mood-num" data-val="7">7</button><button type="button" class="btn-num mood-num" data-val="8">8</button><button type="button" class="btn-num mood-num" data-val="9">9</button><button type="button" class="btn-num mood-num" data-val="10">10</button>
                                 </div>
                                 <div class="mood-emoji-selector" id="moodEmojiSelector" style="margin-top: 8px;">
-                                    <button type="button" class="mood-emoji" data-emoji="😌" data-label="Calm" aria-label="Calm mood">😌 Calm</button>
-                                    <button type="button" class="mood-emoji active" data-emoji="🙂" data-label="Good" aria-label="Good mood">🙂 Good</button>
-                                    <button type="button" class="mood-emoji" data-emoji="😴" data-label="Fatigued" aria-label="Fatigued mood">😴 Tired</button>
-                                    <button type="button" class="mood-emoji" data-emoji="😣" data-label="Stressed" aria-label="Stressed mood">😣 Flare</button>
+                                    <button type="button" class="mood-emoji" data-emoji="😌" data-label="Standard" aria-label="Standard mood">Standard</button>
+                                    <button type="button" class="mood-emoji active" data-emoji="🙂" data-label="Hydro" aria-label="Hydro mood">Hydro</button>
+                                    <button type="button" class="mood-emoji" data-emoji="😴" data-label="Thoracic" aria-label="Thoracic mood">Thoracic</button>
+                                    <button type="button" class="mood-emoji" data-emoji="😣" data-label="Sciatica" aria-label="Sciatica mood">Sciatica</button>
                                 </div>
                             </div>
 

@@ -10,15 +10,9 @@ async function main() {
   const targetDate = "2026-09-27T12:00:00+10:00";
 
   const items = [
-    { description: "Ladbrokes deposit", amount: 280, category: "Ladbrokes", type: "expense" as const, created_at: targetDate },
-    { description: "Ladbrokes withdrawal", amount: 190, category: "Ladbrokes", type: "income" as const, created_at: targetDate },
-    { description: "Ladbrokes withdrawal", amount: 100, category: "Ladbrokes", type: "income" as const, created_at: targetDate },
-    { description: "Ladbrokes withdrawal", amount: 190, category: "Ladbrokes", type: "income" as const, created_at: targetDate },
-    { description: "Ladbrokes withdrawal", amount: 80, category: "Ladbrokes", type: "income" as const, created_at: targetDate },
-    { description: "Tab deposit", amount: 10, category: "Tab", type: "expense" as const, created_at: targetDate },
-    { description: "Tab withdrawal", amount: 22, category: "Tab", type: "income" as const, created_at: targetDate },
-    { description: "Sportsbet deposit", amount: 100, category: "Sportsbet", type: "expense" as const, created_at: targetDate },
-    { description: "Sportsbet withdrawal", amount: 47.4, category: "Sportsbet", type: "income" as const, created_at: targetDate },
+    { description: "Ladbrokes deposit", amount: 1000, category: "Ladbrokes", type: "expense" as const, created_at: targetDate },
+    { description: "Ladbrokes withdrawal", amount: 170, category: "Ladbrokes", type: "income" as const, created_at: targetDate },
+    { description: "Sportsbet withdrawal", amount: 21.49, category: "Sportsbet", type: "income" as const, created_at: targetDate },
   ];
 
   for (const item of items) {

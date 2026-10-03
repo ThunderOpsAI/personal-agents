@@ -2945,11 +2945,14 @@ document.addEventListener('DOMContentLoaded', () => {
                             </div>
                         </div>
                         <div>
-                            <label style="font-size: 0.75rem; color: var(--text-secondary); display: flex; justify-content: space-between; margin-bottom: 4px;">
+                            <label style="font-size: 0.75rem; color: var(--text-secondary); display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                                 <span>Pain Score</span>
-                                <strong style="color: var(--neon-red);" class="pain-score-val-label">${slot.score}/10</strong>
+                                <div style="display: flex; align-items: center; gap: 4px;">
+                                    <input type="number" class="pain-score-input-cell" data-area="${slot.area}" min="0" max="10" step="0.1" inputmode="decimal" value="${slot.score}" style="width: 52px; padding: 2px 4px; text-align: right; font-weight: bold; color: var(--neon-red); background: rgba(0,0,0,0.5); border: 1px solid rgba(255, 75, 75, 0.4); border-radius: 4px; font-size: 0.85rem;" title="Click to enter exact decimal score (e.g. 5.7, 8.3)">
+                                    <span style="font-size: 0.75rem; color: var(--text-secondary);">/10</span>
+                                </div>
                             </label>
-                            <input type="range" class="glass-input pain-slot-slider" data-area="${slot.area}" min="0" max="10" step="0.5" value="${slot.score}" style="width: 100%; height: 6px; padding: 0;">
+                            <input type="range" class="glass-input pain-slot-slider" data-area="${slot.area}" min="0" max="10" step="0.1" value="${slot.score}" style="width: 100%; height: 6px; padding: 0;">
                         </div>
                     </div>
                 </div>
@@ -2983,10 +2986,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 const area = slider.getAttribute('data-area');
                 const slot = selectedPainAreas.find(s => s.area === area);
                 if (slot) {
-                    slot.score = Number(e.target.value);
-                    const label = slider.parentElement.querySelector('.pain-score-val-label');
-                    if (label) label.innerText = `${slot.score}/10`;
+                    const parsed = parseFloat(e.target.value);
+                    slot.score = isNaN(parsed) ? 5.0 : Number(parsed.toFixed(1));
+                    const numInput = slider.closest('.pain-slot-controls')?.querySelector(`.pain-score-input-cell[data-area="${area}"]`);
+                    if (numInput && document.activeElement !== numInput) {
+                        numInput.value = slot.score;
+                    }
                 }
+            });
+        });
+
+        dynamicPainCardsContainer.querySelectorAll('.pain-score-input-cell').forEach(numInput => {
+            const handleScoreInput = (e) => {
+                const area = numInput.getAttribute('data-area');
+                const slot = selectedPainAreas.find(s => s.area === area);
+                if (slot) {
+                    let parsed = parseFloat(e.target.value);
+                    if (isNaN(parsed)) parsed = 0;
+                    parsed = Math.max(0, Math.min(10, parsed));
+                    slot.score = Number(parsed.toFixed(1));
+                    const slider = numInput.closest('.pain-slot-controls')?.querySelector(`.pain-slot-slider[data-area="${area}"]`);
+                    if (slider && document.activeElement !== slider) {
+                        slider.value = slot.score;
+                    }
+                }
+            };
+            numInput.addEventListener('input', handleScoreInput);
+            numInput.addEventListener('change', (e) => {
+                handleScoreInput(e);
+                numInput.value = slot?.score ?? numInput.value;
             });
         });
 
@@ -3035,6 +3063,126 @@ document.addEventListener('DOMContentLoaded', () => {
             moodLabelDisplay.innerText = `(${button.dataset.label})`;
         }
     }));
+
+    // Quick Pain Auto-Log Presets (Standard, Hydro, Thoracic, Sciatica)
+    async function autoLogQuickPreset(presetType) {
+        let score = 7.5;
+        let locations = [];
+        let notes = '';
+        let mood = 'neutral';
+        let mood_emoji = '😐';
+
+        if (presetType === 'sciatica') {
+            score = 9.5;
+            locations = [
+                { area: 'sciatica', side: 'unspecified', percentage: 100, weight: 100, pain_score: 9.5 }
+            ];
+            notes = 'Sciatica pain attack';
+            mood = 'stressed';
+            mood_emoji = '😫';
+        } else if (presetType === 'thoracic') {
+            score = 7.5;
+            locations = [
+                { area: 'thoracic', side: 'unspecified', percentage: 70, weight: 70, pain_score: 7.5 },
+                { area: 'cervical', side: 'unspecified', percentage: 15, weight: 15, pain_score: 7.5 },
+                { area: 'scapula', side: 'unspecified', percentage: 15, weight: 15, pain_score: 7.5 }
+            ];
+            notes = 'Thoracic strain & fatigue (70% thoracic, 15% neck, 15% scapula @ 7.5)';
+            mood = 'neutral';
+            mood_emoji = '😐';
+        } else if (presetType === 'hydro') {
+            let prevScore = 7.5;
+            let prevLocs = [
+                { area: 'lumbar', side: 'right', percentage: 75, weight: 75 },
+                { area: 'cervical', side: 'unspecified', percentage: 25, weight: 25 }
+            ];
+            try {
+                const res = await fetch('/api/v1/pain/log');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.logs && data.logs.length > 0) {
+                        const last = data.logs[0];
+                        prevScore = last.score ?? 7.5;
+                        if (Array.isArray(last.locations) && last.locations.length > 0) {
+                            prevLocs = last.locations.map(l => ({
+                                area: l.area,
+                                side: l.side || 'unspecified',
+                                percentage: l.percentage ?? l.weight ?? 100,
+                                weight: l.percentage ?? l.weight ?? 100
+                            }));
+                        }
+                    }
+                }
+            } catch (err) {
+                console.warn('Could not fetch last log for hydro delta:', err);
+            }
+            score = Math.max(1.0, Math.min(10.0, Number((prevScore - 1.5).toFixed(1))));
+            locations = prevLocs;
+            notes = 'Good hydrotherapy session, feeling slightly better';
+            mood = 'good';
+            mood_emoji = '😌';
+        } else if (presetType === 'standard') {
+            // Rotates between Variant A (ankle 15%, thoracic 15% @ 5) and Variant B (knee 15%, neck 15% @ 5)
+            const currentRotation = localStorage.getItem('rumble_standard_rotation') || 'B';
+            const nextRotation = currentRotation === 'A' ? 'B' : 'A';
+            localStorage.setItem('rumble_standard_rotation', nextRotation);
+
+            if (nextRotation === 'A') {
+                locations = [
+                    { area: 'lumbar', side: 'right', percentage: 70, weight: 70, pain_score: 7.5 },
+                    { area: 'ankle', side: 'right', percentage: 15, weight: 15, pain_score: 5.0 },
+                    { area: 'thoracic', side: 'unspecified', percentage: 15, weight: 15, pain_score: 5.0 }
+                ];
+                score = 6.8;
+                notes = 'Standard check-in (70% lumbar 7.5, 15% ankle 5.0, 15% thoracic 5.0)';
+            } else {
+                locations = [
+                    { area: 'lumbar', side: 'right', percentage: 70, weight: 70, pain_score: 7.5 },
+                    { area: 'knee', side: 'right', percentage: 15, weight: 15, pain_score: 5.0 },
+                    { area: 'cervical', side: 'unspecified', percentage: 15, weight: 15, pain_score: 5.0 }
+                ];
+                score = 6.8;
+                notes = 'Standard check-in (70% lumbar 7.5, 15% knee 5.0, 15% neck 5.0)';
+            }
+            mood = 'neutral';
+            mood_emoji = '😐';
+        }
+
+        try {
+            showToast(`Logging ${presetType.toUpperCase()} preset...`);
+            const res = await fetch(API_PAIN_LOG, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    score,
+                    pain_level: score,
+                    generators: locations,
+                    locations,
+                    pain_notes: notes,
+                    notes,
+                    mood,
+                    mood_notes: notes,
+                    mood_emoji
+                })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.detail || data.error || 'Quick log failed');
+            closePainLog();
+            showToast(`Auto-logged: ${presetType.toUpperCase()} (${score}/10)`, 'success');
+            if (typeof loadTodaysPainLogs === 'function') loadTodaysPainLogs();
+            if (typeof loadPainAnalytics === 'function') loadPainAnalytics();
+            if (typeof loadAgendaItems === 'function') loadAgendaItems();
+        } catch (e) {
+            showToast(e.message || 'Quick log failed');
+        }
+    }
+
+    document.querySelectorAll('.quick-pain-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const preset = btn.getAttribute('data-preset');
+            if (preset) autoLogQuickPreset(preset);
+        });
+    });
 
     // Initial render of pain modal
     renderPainModal();
@@ -6680,7 +6828,9 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (lower.includes('left')) side = 'left';
         
         let area = 'lumbar';
-        if (lower.includes('lumbar')) area = 'lumbar';
+        if (lower.includes('sciatica')) area = 'sciatica';
+        else if (lower.includes('scapula')) area = 'scapula';
+        else if (lower.includes('lumbar')) area = 'lumbar';
         else if (lower.includes('cervical') || lower.includes('neck')) area = 'cervical';
         else if (lower.includes('thoracic') || lower.includes('mid-back')) area = 'thoracic';
         else if (lower.includes('ankle')) area = 'ankle';

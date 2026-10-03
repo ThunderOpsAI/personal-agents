@@ -162,6 +162,160 @@ describe('Telegram Bot Inline Callbacks & Symptoms Logging & Mobile Agenda', () 
         expect.objectContaining({ parse_mode: 'Markdown' })
       );
     });
+
+    it('handles Sciatica (9.5, 100% sciatica attack) quick preset', async () => {
+      vi.spyOn(telegramBot, 'answerCallbackQuery').mockResolvedValue({ ok: true });
+      vi.spyOn(telegramBot, 'sendMessage').mockResolvedValue({ ok: true, result: {} });
+
+      const req = new Request('https://rumble.test/api/v1/telegram/webhook', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-telegram-bot-api-secret-token': 'test_secret_123',
+        },
+        body: JSON.stringify({
+          update_id: 1005,
+          callback_query: {
+            id: 'cb_sciatica_1',
+            from: { id: 999, is_bot: false, first_name: 'TestUser' },
+            data: 'pain_quick:sciatica',
+          },
+        }),
+      });
+
+      const res = await telegramWebhookPost(req as any);
+      expect(res.status).toBe(200);
+
+      const inMemLogs = getPainLogs();
+      const last = inMemLogs[inMemLogs.length - 1];
+      expect(last.score).toBe(9.5);
+      expect(last.notes).toBe('Sciatica pain attack');
+      expect(last.locations).toEqual([
+        expect.objectContaining({ area: 'sciatica', weight: 100 })
+      ]);
+    });
+
+    it('handles Thoracic (7.5, 70% thoracic, 15% neck, 15% scapula) quick preset', async () => {
+      vi.spyOn(telegramBot, 'answerCallbackQuery').mockResolvedValue({ ok: true });
+      vi.spyOn(telegramBot, 'sendMessage').mockResolvedValue({ ok: true, result: {} });
+
+      const req = new Request('https://rumble.test/api/v1/telegram/webhook', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-telegram-bot-api-secret-token': 'test_secret_123',
+        },
+        body: JSON.stringify({
+          update_id: 1006,
+          callback_query: {
+            id: 'cb_thoracic_1',
+            from: { id: 999, is_bot: false, first_name: 'TestUser' },
+            data: 'pain_quick:thoracic',
+          },
+        }),
+      });
+
+      const res = await telegramWebhookPost(req as any);
+      expect(res.status).toBe(200);
+
+      const inMemLogs = getPainLogs();
+      const last = inMemLogs[inMemLogs.length - 1];
+      expect(last.score).toBe(7.5);
+      expect(last.locations).toEqual(expect.arrayContaining([
+        expect.objectContaining({ area: 'thoracic', weight: 70 }),
+        expect.objectContaining({ area: 'neck', weight: 15 }),
+        expect.objectContaining({ area: 'scapula', weight: 15 }),
+      ]));
+    });
+
+    it('handles Hydro (-1.5 delta from previous pain score) quick preset', async () => {
+      vi.spyOn(telegramBot, 'answerCallbackQuery').mockResolvedValue({ ok: true });
+      vi.spyOn(telegramBot, 'sendMessage').mockResolvedValue({ ok: true, result: {} });
+
+      // First log a baseline (e.g. 8.0)
+      const inMemLogsBefore = getPainLogs();
+      const baseScore = inMemLogsBefore.length > 0 ? inMemLogsBefore[inMemLogsBefore.length - 1].score : 7.5;
+
+      const req = new Request('https://rumble.test/api/v1/telegram/webhook', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-telegram-bot-api-secret-token': 'test_secret_123',
+        },
+        body: JSON.stringify({
+          update_id: 1007,
+          callback_query: {
+            id: 'cb_hydro_1',
+            from: { id: 999, is_bot: false, first_name: 'TestUser' },
+            data: 'pain_quick:hydro',
+          },
+        }),
+      });
+
+      const res = await telegramWebhookPost(req as any);
+      expect(res.status).toBe(200);
+
+      const inMemLogs = getPainLogs();
+      const last = inMemLogs[inMemLogs.length - 1];
+      const expectedScore = Math.max(1.0, Number((baseScore - 1.5).toFixed(1)));
+      expect(last.score).toBe(expectedScore);
+      expect(last.notes).toBe('Good hydrotherapy session, feeling slightly better');
+    });
+
+    it('handles Standard quick preset and rotates between Variant A (ankle/thoracic) and Variant B (knee/neck)', async () => {
+      vi.spyOn(telegramBot, 'answerCallbackQuery').mockResolvedValue({ ok: true });
+      vi.spyOn(telegramBot, 'sendMessage').mockResolvedValue({ ok: true, result: {} });
+
+      // Push 1: Variant A
+      const req1 = new Request('https://rumble.test/api/v1/telegram/webhook', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-telegram-bot-api-secret-token': 'test_secret_123',
+        },
+        body: JSON.stringify({
+          update_id: 1008,
+          callback_query: {
+            id: 'cb_std_1',
+            from: { id: 999, is_bot: false, first_name: 'TestUser' },
+            data: 'pain_quick:standard',
+          },
+        }),
+      });
+
+      const res1 = await telegramWebhookPost(req1 as any);
+      expect(res1.status).toBe(200);
+
+      const inMem1 = getPainLogs();
+      const log1 = inMem1[inMem1.length - 1];
+      expect(log1.locations.some(l => l.area === 'ankle')).toBe(true);
+      expect(log1.locations.some(l => l.area === 'thoracic')).toBe(true);
+
+      // Push 2: Variant B (rotates to knee and neck)
+      const req2 = new Request('https://rumble.test/api/v1/telegram/webhook', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-telegram-bot-api-secret-token': 'test_secret_123',
+        },
+        body: JSON.stringify({
+          update_id: 1009,
+          callback_query: {
+            id: 'cb_std_2',
+            from: { id: 999, is_bot: false, first_name: 'TestUser' },
+            data: 'pain_quick:standard',
+          },
+        }),
+      });
+
+      const res2 = await telegramWebhookPost(req2 as any);
+      expect(res2.status).toBe(200);
+
+      const inMem2 = getPainLogs();
+      const log2 = inMem2[inMem2.length - 1];
+      expect(log2.locations.some(l => l.area === 'knee')).toBe(true);
+      expect(log2.locations.some(l => l.area === 'neck')).toBe(true);
+    });
   });
 
   describe('2. Symptoms & Pain Logging Endpoint (/api/symptoms/log)', () => {
