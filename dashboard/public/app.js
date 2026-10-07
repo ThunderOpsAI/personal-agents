@@ -4118,6 +4118,13 @@ document.addEventListener('DOMContentLoaded', () => {
             return title.includes('log pain') || title.includes('pain log') || i.includes('pain_log') || t.includes('pain');
         }
 
+        function isConsultChecklist() {
+            const combined = `${id} ${type} ${(card.querySelector('.protocol-info p')?.innerText || '')}`.toLowerCase();
+            return combined.includes('clancy') || combined.includes('khan') || 
+                   combined.includes('solicitor') || combined.includes('lawyer') ||
+                   combined.includes('court prep') || combined.includes('doctor consult');
+        }
+
         if (showBtn) {
             showBtn.addEventListener('click', () => {
                 const title = card.querySelector('.protocol-info p')?.innerText || id;
@@ -4132,6 +4139,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     } else {
                         loadExerciseSuggestions();
                     }
+                } else if (isConsultChecklist()) {
+                    const combined = `${id} ${title}`.toLowerCase();
+                    const initialTab = (combined.includes('khan') || combined.includes('dr')) ? 'drkhan' : 'clancy';
+                    openConsultChecklistModal(initialTab);
                 } else {
                     rumbleChatModal.classList.remove('hidden');
                     sendRumbleChatMessage(`Show me details for: ${title}`);
@@ -8016,6 +8027,331 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (err) {
             console.error("Error loading pain analytics:", err);
         }
+    }
+
+    // --- Consult Action Checklist Modal (Solicitor & Doctor - High Stress / ADHD-Optimized) ---
+    const consultChecklistModal = document.getElementById('consultChecklistModal');
+    const tabClancy = document.getElementById('tabClancy');
+    const tabDrKhan = document.getElementById('tabDrKhan');
+    const btnCloseConsultChecklist = document.getElementById('btnCloseConsultChecklist');
+    const btnDoneConsultChecklist = document.getElementById('btnDoneConsultChecklist');
+    const btnResetChecklist = document.getElementById('btnResetChecklist');
+    const btnCopyVerbatim = document.getElementById('btnCopyVerbatim');
+    const verbatimLabel = document.getElementById('verbatimLabel');
+    const verbatimText = document.getElementById('verbatimText');
+    const consultChecklistTitle = document.getElementById('consultChecklistTitle');
+    const consultChecklistBadge = document.getElementById('consultChecklistBadge');
+    const consultChecklistSub = document.getElementById('consultChecklistSub');
+    const checklistProgressText = document.getElementById('checklistProgressText');
+    const checklistProgressBar = document.getElementById('checklistProgressBar');
+    const checklistItemsList = document.getElementById('checklistItemsList');
+    const inputNewChecklistItem = document.getElementById('inputNewChecklistItem');
+    const btnAddChecklistItem = document.getElementById('btnAddChecklistItem');
+    const consultLiveNotes = document.getElementById('consultLiveNotes');
+    const btnSaveToRumbleNotes = document.getElementById('btnSaveToRumbleNotes');
+    const notesSavedFeedback = document.getElementById('notesSavedFeedback');
+
+    let currentConsultTab = 'clancy';
+
+    const CONSULT_CHECKLIST_DATA = {
+        clancy: {
+            title: "Geoff Clancy - Solicitor Conference",
+            badge: "8:30 AM Legal",
+            sub: "Direct Custody Risk & R v Smith Hardship",
+            verbatimLabel: "Say This First to Clancy (Custody Check)",
+            verbatim: "Before we get into details, I need a direct, realistic assessment: Looking at these charges and my history, is immediate custody on the table, or are we looking at a CCO (Community Correction Order), fine, or adjourned undertaking?",
+            notesPlaceholder: "Write down Clancy's assessment, advice, required medical wording, and next court dates here...",
+            storageKey: "rumble_checklist_clancy_v1",
+            notesKey: "rumble_notes_clancy_v1",
+            defaultItems: [
+                { id: "c1", text: "Demand realistic sentence risk assessment immediately (custody vs CCO/fine).", sub: "Know the worst-case scenario in the first 2 minutes so you can plan the rest of the day." },
+                { id: "c2", text: "Present cervical fusion & active spinal cord risk under R v Smith principles.", sub: "Argue that imprisonment is disproportionately harsh and dangerous, warranting a non-custodial CCO." },
+                { id: "c3", text: "Request Magistrate Urgent Medical Alert endorsement on warrant if custody is threatened.", sub: "Instructs corrections and Justice Health for immediate intake triage regarding spinal cord vulnerability." },
+                { id: "c4", text: "Ask office to pre-lodge surgical & medical records with Justice Health (MAP) prior to court.", sub: "Ensures MAP reception has clinical records on file before any appearance." },
+                { id: "c5", text: "Get exact medical report requirements & wording to hand to Dr Khan at 3:00 PM.", sub: "Note down specific clinical tests, phrasing, or specialist attachments required by the court." }
+            ]
+        },
+        drkhan: {
+            title: "Dr Khan - Clinical Consult & Court Documentation",
+            badge: "3:00 PM Medical",
+            sub: "Reflex Assessment, Hardship Letters & Analgesic Review",
+            verbatimLabel: "Say This First to Dr Khan (Hardship & Reflexes)",
+            verbatim: "I need an urgent bedside neurological reflex check for hyperreflexia (knee kicking out) and two formal court letters today: one for remote AVL appearance, and one detailing custodial medical hardship under R v Smith.",
+            notesPlaceholder: "Write down Dr Khan's clinical reflex findings, script details, or specialist referrals here...",
+            storageKey: "rumble_checklist_drkhan_v1",
+            notesKey: "rumble_notes_drkhan_v1",
+            defaultItems: [
+                { id: "d1", text: "Bedside neurological check: Test patellar reflexes for hyperreflexia and ankle clonus.", sub: "Ensure Dr Khan notes down brisk reflexes/clonus with today's date in medical records." },
+                { id: "d2", text: "Court Medical Hardship Report (R v Smith): Letter to Presiding Magistrate.", sub: "Details 24 June 2026 fusion, active cord compression risk, fatal/paralysis danger in prison, lack of hydrotherapy." },
+                { id: "d3", text: "Remote Court Appearance Certificate (AVL / Webex).", sub: "States prolonged static sitting/standing causes disabling pain (8-9/10), making courtroom attendance unsafe." },
+                { id: "d4", text: "Printouts of RMH Surgical Summary & Signed Current Medication Chart.", sub: "Physical copies of Royal Melbourne Hospital fusion summary and scripts (Panadeine Forte) for Justice Health." },
+                { id: "d5", text: "Prescription repeat & neurosurgical follow-up referral.", sub: "PBS Authority repeat for Panadeine Forte and referral update to Prof. Greg Cunningham (RMH)." }
+            ]
+        }
+    };
+
+    function loadChecklistItems(tab) {
+        const conf = CONSULT_CHECKLIST_DATA[tab];
+        try {
+            const raw = localStorage.getItem(conf.storageKey);
+            if (raw) {
+                return JSON.parse(raw);
+            }
+        } catch (e) {
+            console.error("Error reading checklist from storage", e);
+        }
+        return conf.defaultItems.map(item => ({ ...item, checked: false }));
+    }
+
+    function saveChecklistItems(tab, items) {
+        const conf = CONSULT_CHECKLIST_DATA[tab];
+        try {
+            localStorage.setItem(conf.storageKey, JSON.stringify(items));
+        } catch (e) {
+            console.error("Error saving checklist to storage", e);
+        }
+    }
+
+    function renderConsultChecklist() {
+        const conf = CONSULT_CHECKLIST_DATA[currentConsultTab];
+        if (!conf) return;
+
+        // Header and Verbatim box
+        if (consultChecklistTitle) consultChecklistTitle.innerText = conf.title;
+        if (consultChecklistBadge) consultChecklistBadge.innerText = conf.badge;
+        if (consultChecklistSub) consultChecklistSub.innerText = conf.sub;
+        if (verbatimLabel) verbatimLabel.innerText = conf.verbatimLabel;
+        if (verbatimText) verbatimText.innerText = conf.verbatim;
+
+        // Tab styling
+        if (tabClancy && tabDrKhan) {
+            if (currentConsultTab === 'clancy') {
+                tabClancy.style.borderColor = 'var(--neon-purple)';
+                tabClancy.style.background = 'rgba(181, 0, 255, 0.15)';
+                tabClancy.style.opacity = '1';
+                tabDrKhan.style.borderColor = 'var(--glass-border)';
+                tabDrKhan.style.background = 'transparent';
+                tabDrKhan.style.opacity = '0.65';
+            } else {
+                tabDrKhan.style.borderColor = 'var(--neon-blue)';
+                tabDrKhan.style.background = 'rgba(0, 240, 255, 0.15)';
+                tabDrKhan.style.opacity = '1';
+                tabClancy.style.borderColor = 'var(--glass-border)';
+                tabClancy.style.background = 'transparent';
+                tabClancy.style.opacity = '0.65';
+            }
+        }
+
+        // Load items & notes
+        const items = loadChecklistItems(currentConsultTab);
+        
+        // Progress
+        const total = items.length;
+        const completed = items.filter(i => i.checked).length;
+        const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
+        if (checklistProgressText) checklistProgressText.innerText = `${completed} of ${total} actions completed (${pct}%)`;
+        if (checklistProgressBar) checklistProgressBar.style.width = `${pct}%`;
+
+        // Render items
+        if (checklistItemsList) {
+            checklistItemsList.innerHTML = '';
+            items.forEach((item, idx) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'glass-panel';
+                itemDiv.style.padding = '10px 12px';
+                itemDiv.style.display = 'flex';
+                itemDiv.style.alignItems = 'flex-start';
+                itemDiv.style.gap = '12px';
+                itemDiv.style.borderRadius = '8px';
+                itemDiv.style.border = item.checked ? '1px solid rgba(0, 255, 102, 0.3)' : '1px solid var(--glass-border)';
+                itemDiv.style.background = item.checked ? 'rgba(0, 255, 102, 0.04)' : 'rgba(255, 255, 255, 0.02)';
+                itemDiv.style.transition = 'all 0.2s ease';
+
+                itemDiv.innerHTML = `
+                    <input type="checkbox" id="chk_${currentConsultTab}_${idx}" data-idx="${idx}" ${item.checked ? 'checked' : ''} style="width: 20px; height: 20px; margin-top: 2px; accent-color: var(--neon-green); cursor: pointer; flex-shrink: 0;">
+                    <div style="flex: 1;">
+                        <label for="chk_${currentConsultTab}_${idx}" style="display: block; font-size: 0.92rem; font-weight: 600; color: ${item.checked ? 'var(--neon-green)' : '#fff'}; text-decoration: ${item.checked ? 'line-through' : 'none'}; opacity: ${item.checked ? '0.75' : '1'}; cursor: pointer;">
+                            <span style="display: inline-block; width: 18px; color: var(--neon-blue); font-size: 0.8rem; font-weight: 700;">${idx + 1}.</span> ${escapeHtml(item.text)}
+                        </label>
+                        ${item.sub ? `<div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 3px; line-height: 1.35; margin-left: 18px;">${escapeHtml(item.sub)}</div>` : ''}
+                    </div>
+                    <button type="button" class="btn-delete-checklist-item" data-idx="${idx}" title="Delete item" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1rem; padding: 0 4px; line-height: 1;">&times;</button>
+                `;
+
+                const checkbox = itemDiv.querySelector('input[type="checkbox"]');
+                if (checkbox) {
+                    checkbox.addEventListener('change', (e) => {
+                        items[idx].checked = e.target.checked;
+                        saveChecklistItems(currentConsultTab, items);
+                        renderConsultChecklist();
+                    });
+                }
+
+                const deleteBtn = itemDiv.querySelector('.btn-delete-checklist-item');
+                if (deleteBtn) {
+                    deleteBtn.addEventListener('click', () => {
+                        items.splice(idx, 1);
+                        saveChecklistItems(currentConsultTab, items);
+                        renderConsultChecklist();
+                    });
+                }
+
+                checklistItemsList.appendChild(itemDiv);
+            });
+        }
+
+        // Live Notes
+        if (consultLiveNotes) {
+            consultLiveNotes.placeholder = conf.notesPlaceholder;
+            const savedNotes = localStorage.getItem(conf.notesKey) || '';
+            consultLiveNotes.value = savedNotes;
+        }
+    }
+
+    function openConsultChecklistModal(initialTab = 'clancy') {
+        currentConsultTab = initialTab;
+        renderConsultChecklist();
+        if (consultChecklistModal) {
+            consultChecklistModal.classList.remove('hidden');
+        }
+    }
+
+    if (tabClancy) {
+        tabClancy.addEventListener('click', () => {
+            currentConsultTab = 'clancy';
+            renderConsultChecklist();
+        });
+    }
+
+    if (tabDrKhan) {
+        tabDrKhan.addEventListener('click', () => {
+            currentConsultTab = 'drkhan';
+            renderConsultChecklist();
+        });
+    }
+
+    if (btnCopyVerbatim) {
+        btnCopyVerbatim.addEventListener('click', async () => {
+            const conf = CONSULT_CHECKLIST_DATA[currentConsultTab];
+            if (!conf || !conf.verbatim) return;
+            try {
+                await navigator.clipboard.writeText(conf.verbatim);
+                const originalText = btnCopyVerbatim.innerText;
+                btnCopyVerbatim.innerText = 'Copied!';
+                btnCopyVerbatim.style.borderColor = 'var(--neon-green)';
+                btnCopyVerbatim.style.color = 'var(--neon-green)';
+                setTimeout(() => {
+                    btnCopyVerbatim.innerText = originalText;
+                    btnCopyVerbatim.style.borderColor = 'var(--neon-blue)';
+                    btnCopyVerbatim.style.color = 'var(--neon-blue)';
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy text', err);
+            }
+        });
+    }
+
+    if (btnAddChecklistItem && inputNewChecklistItem) {
+        const handleAdd = () => {
+            const val = inputNewChecklistItem.value.trim();
+            if (!val) return;
+            const items = loadChecklistItems(currentConsultTab);
+            items.push({
+                id: `custom_${Date.now()}`,
+                text: val,
+                sub: "Custom added during consult prep",
+                checked: false
+            });
+            saveChecklistItems(currentConsultTab, items);
+            inputNewChecklistItem.value = '';
+            renderConsultChecklist();
+        };
+
+        btnAddChecklistItem.addEventListener('click', handleAdd);
+        inputNewChecklistItem.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleAdd();
+            }
+        });
+    }
+
+    if (consultLiveNotes) {
+        consultLiveNotes.addEventListener('input', () => {
+            const conf = CONSULT_CHECKLIST_DATA[currentConsultTab];
+            if (conf) {
+                localStorage.setItem(conf.notesKey, consultLiveNotes.value);
+                if (notesSavedFeedback) {
+                    const now = new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
+                    notesSavedFeedback.innerText = `Auto-saved to device at ${now}`;
+                }
+            }
+        });
+    }
+
+    if (btnSaveToRumbleNotes) {
+        btnSaveToRumbleNotes.addEventListener('click', async () => {
+            const conf = CONSULT_CHECKLIST_DATA[currentConsultTab];
+            const content = consultLiveNotes ? consultLiveNotes.value.trim() : '';
+            if (!content) {
+                showToast('Type notes before saving to permanent notes', 'info');
+                return;
+            }
+            btnSaveToRumbleNotes.disabled = true;
+            btnSaveToRumbleNotes.innerText = 'Saving...';
+            try {
+                const noteTitle = currentConsultTab === 'clancy' ? 'Legal Consult Notes (Geoff Clancy)' : 'Medical Consult Notes (Dr Khan)';
+                const formattedContent = `# ${noteTitle}\nDate: ${new Date().toLocaleDateString('en-AU')}\n\n${content}`;
+                const res = await fetch(API_NOTES, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        content: formattedContent,
+                        author: 'user',
+                        pinned: true
+                    })
+                });
+                if (res.ok) {
+                    showToast('Saved to Rumble Notes & Neon DB', 'success');
+                    if (notesSavedFeedback) {
+                        notesSavedFeedback.innerText = 'Permanently saved to Rumble Notes database.';
+                    }
+                    loadNotes();
+                } else {
+                    showToast('Failed to save permanent note', 'error');
+                }
+            } catch (err) {
+                console.error('Error saving note', err);
+                showToast('Network error saving note', 'error');
+            } finally {
+                btnSaveToRumbleNotes.disabled = false;
+                btnSaveToRumbleNotes.innerText = 'Save to Permanent Notes';
+            }
+        });
+    }
+
+    if (btnResetChecklist) {
+        btnResetChecklist.addEventListener('click', () => {
+            const conf = CONSULT_CHECKLIST_DATA[currentConsultTab];
+            if (conf && confirm('Reset checklist items to default?')) {
+                const defaults = conf.defaultItems.map(i => ({ ...i, checked: false }));
+                saveChecklistItems(currentConsultTab, defaults);
+                renderConsultChecklist();
+                showToast('Checklist reset to defaults', 'info');
+            }
+        });
+    }
+
+    if (btnCloseConsultChecklist && consultChecklistModal) {
+        btnCloseConsultChecklist.addEventListener('click', () => {
+            consultChecklistModal.classList.add('hidden');
+        });
+    }
+
+    if (btnDoneConsultChecklist && consultChecklistModal) {
+        btnDoneConsultChecklist.addEventListener('click', () => {
+            consultChecklistModal.classList.add('hidden');
+        });
     }
 
 });
