@@ -90,7 +90,14 @@ export async function sendConversationalChat(
   history: any[] = [],
   attachment?: { data: string; mimeType: string; filename?: string }
 ): Promise<EveChatResult & { requires_confirmation?: boolean; preview?: any }> {
-  if (process.env.RUMBLE_EVE_CHAT_URL && !process.env.GEMINI_API_KEY) {
+  const eveChatUrl = process.env.RUMBLE_EVE_CHAT_URL?.trim();
+  const isSelfReferential = eveChatUrl && (
+    eveChatUrl.includes("/api/v1/rumble/chat") ||
+    eveChatUrl.includes("rumble-os.vercel.app") ||
+    eveChatUrl.includes("localhost")
+  );
+
+  if (eveChatUrl && !isSelfReferential && process.env.USE_EXTERNAL_EVE_CHAT === "true") {
     const result = await postLiveJson(
       configuredUrl("RUMBLE_EVE_CHAT_URL", "chat"),
       { message, mode: "conversation", safety: { medical_guardrail: MEDICAL_GUARDRAIL } },

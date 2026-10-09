@@ -83,4 +83,29 @@ describe("SMS Webhook Route: /api/v1/sms/webhook", () => {
     const data = await res.json();
     expect(data.status).toBe("error");
   });
+
+  it("handles urlencoded form payload from Twilio with secret in query param", async () => {
+    process.env.SMS_WEBHOOK_SECRET = "twilio_secret_123";
+
+    const formData = new URLSearchParams();
+    formData.append("From", "+61411222333");
+    formData.append("Body", "Hi James, this is Dr. Smith confirming your appointment");
+    formData.append("MessageSid", "SM1234567890");
+
+    const req = new Request("https://rumble.test/api/v1/sms/webhook?secret=twilio_secret_123", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: formData.toString(),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(201);
+
+    const messages = await getSmsMessages();
+    const stored = messages.find((m) => m.sender === "+61411222333");
+    expect(stored).toBeDefined();
+    expect(stored?.body).toBe("Hi James, this is Dr. Smith confirming your appointment");
+  });
 });

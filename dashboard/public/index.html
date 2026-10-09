@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/material_blue.css">
-    <link rel="stylesheet" href="/styles.css?v=15">
+    <link rel="stylesheet" href="/styles.css?v=18">
 </head>
 
 <body>
@@ -21,8 +21,11 @@
         <!-- Glass Header -->
         <header class="glass-header">
             <div class="header-content">
-                <div class="brand">
+                <div class="brand" style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
                     <h1>Rumble OS</h1>
+                    <div id="weatherWidget" style="font-size: 0.85rem; color: var(--text-secondary); background: rgba(0,0,0,0.15); padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05);">
+                        <span class="weather-text">Weather: Loading...</span>
+                    </div>
                 </div>
                 
                 <div class="header-actions">
@@ -38,6 +41,16 @@
             </div>
             
             <!-- Dynamic Alert Banner -->
+            <div class="alert-banner hidden" id="urgentTasksBanner" style="background: rgba(220, 38, 38, 0.2); border-left: 4px solid var(--neon-red); margin-top: 10px; padding: 12px 16px; border-radius: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="background: var(--neon-red); color: #fff; font-size: 0.75rem; font-weight: 800; padding: 2px 7px; border-radius: 4px; text-transform: uppercase;">Urgent</span>
+                        <span class="alert-text" id="urgentTasksBannerText" style="color: var(--neon-red); font-weight: bold;"></span>
+                    </div>
+                    <button class="btn btn-outline btn-sm" id="btnDismissUrgentBanner" style="font-size: 0.75rem; padding: 2px 8px; color: var(--text-secondary); border-color: rgba(255,255,255,0.2);" title="Dismiss banner">&times; Dismiss</button>
+                </div>
+                <div id="urgentTasksBannerList" style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;"></div>
+            </div>
             <div class="alert-banner hidden" id="alertBanner">
                 <span class="alert-text" id="alertBannerText">High Pain Alert: Lumbar at 8/10.</span>
             </div>
@@ -195,9 +208,22 @@
                 </div>
             </section>
 
-            <!-- Interactive Calendar -->
+            <!-- Interactive Calendar & Tasks Tabs -->
             <div class="agenda-grid-row" style="display: block;">
-                <section class="widget glass-panel agenda-panel" style="width: 100%;">
+                <!-- Tab Controls -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <div style="display: flex; gap: 8px;" role="tablist" aria-label="Schedule and Tasks">
+                        <button class="btn btn-sm btn-neon-blue active" id="tabBtnCalendar" role="tab" aria-selected="true" aria-controls="calendarSection">
+                            Calendar
+                        </button>
+                        <button class="btn btn-sm btn-outline" id="tabBtnTasks" role="tab" aria-selected="false" aria-controls="tasksSection">
+                            Tasks <span class="badge neon-blue" id="tasksTabBadge" style="margin-left: 6px; font-size: 0.75rem; padding: 2px 6px;">0</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Interactive Calendar -->
+                <section class="widget glass-panel agenda-panel" id="calendarSection" style="width: 100%;">
                     <div class="widget-header">
                         <div>
                             <h2>Calendar</h2>
@@ -206,6 +232,40 @@
                         <button class="btn btn-outline btn-sm" id="btnAddCalendarEvent">+ Add Event</button>
                     </div>
                     <div id="fullCalendar" style="min-height: 500px; margin-top: 15px;"></div>
+                </section>
+
+                <!-- Tasks Tab Section (identical visual layout, populated with Tasks) -->
+                <section class="widget glass-panel agenda-panel hidden" id="tasksSection" style="width: 100%;">
+                    <div class="widget-header">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <h2 style="margin: 0;">Tasks</h2>
+                            <span class="badge neon-blue" id="tasksActiveCountBadge">0 Pending</span>
+                            <span class="badge neon-green" id="tasksCompletedCountBadge" style="display: none;">0 Done</span>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn btn-outline btn-sm" id="btnSyncTasks" title="Synchronize with Google Tasks">🔄 Sync Tasks</button>
+                            <button class="btn btn-neon-blue btn-sm" id="btnAddTask">+ Add Task</button>
+                        </div>
+                    </div>
+                    <div id="tasksCalendar" style="min-height: 500px; margin-top: 15px;"></div>
+                </section>
+            </div>
+
+            <!-- Text Messages Widget -->
+            <div class="agenda-grid-row" style="display: block; margin-top: 24px;">
+                <section class="widget glass-panel sms-panel" id="smsWidget" style="width: 100%;">
+                    <div class="widget-header" style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <h2 style="margin: 0;">Text Messages</h2>
+                            <span class="badge neon-blue" id="smsUnreadBadge">0 Unread</span>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn btn-neon-blue btn-sm" id="btnComposeSms">Compose SMS</button>
+                        </div>
+                    </div>
+                    <div id="smsMessagesList" style="margin-top: 15px; display: flex; flex-direction: column; gap: 10px; max-height: 400px; overflow-y: auto;">
+                        <div style="color: var(--text-secondary); font-size: 0.88rem; text-align: center; padding: 20px;">Loading messages...</div>
+                    </div>
                 </section>
             </div>
 
@@ -405,6 +465,7 @@
                                 <div class="anatomy-chip-btn" data-area="Right Knee">Right Knee</div>
                                 <div class="anatomy-chip-btn" data-area="Left Knee">Left Knee</div>
                                 <div class="anatomy-chip-btn" data-area="Hip">Hip</div>
+                                <div class="anatomy-chip-btn" data-area="Scapula">Scapula</div>
                             </div>
                         </div>
 
@@ -426,17 +487,43 @@
                     <!-- RIGHT COLUMN: Combined Mood & Notes -->
                     <div class="pain-modal-right-col">
                         <div class="glass-card pain-rhs-combined">
+                            <!-- Quick Auto-Log Presets: Standard, Hydro, Thoracic, Sciatica -->
+                            <div class="form-group" style="margin-bottom: 8px;">
+                                <label style="font-size: 0.78rem; font-weight: bold; color: var(--neon-blue); display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                    <span>Quick Auto-Log Presets</span>
+                                    <span style="font-size: 0.7rem; color: var(--text-secondary); font-weight: normal;">1-Click Auto Log</span>
+                                </label>
+                                <div class="quick-pain-grid" id="quickPainButtonsGrid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px;">
+                                    <button type="button" class="btn btn-sm btn-outline quick-pain-btn" id="btnQuickStandard" data-preset="standard" style="padding: 6px 8px; text-align: left; border-color: var(--neon-blue); color: #38bdf8; display: flex; flex-direction: column;">
+                                        <strong style="font-size: 0.82rem;">Standard</strong>
+                                        <span style="font-size: 0.68rem; color: var(--text-secondary);">70% Lumbar 7.5 &bull; Rotates Ankle/Knee</span>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline quick-pain-btn" id="btnQuickHydro" data-preset="hydro" style="padding: 6px 8px; text-align: left; border-color: var(--neon-green); color: #00e676; display: flex; flex-direction: column;">
+                                        <strong style="font-size: 0.82rem;">Hydro</strong>
+                                        <span style="font-size: 0.68rem; color: var(--text-secondary);">-1.5 vs Prev &bull; Hydro relief</span>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline quick-pain-btn" id="btnQuickThoracic" data-preset="thoracic" style="padding: 6px 8px; text-align: left; border-color: #a855f7; color: #c084fc; display: flex; flex-direction: column;">
+                                        <strong style="font-size: 0.82rem;">Thoracic</strong>
+                                        <span style="font-size: 0.68rem; color: var(--text-secondary);">70% Thor, 15% Neck, 15% Scap @ 7.5</span>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline quick-pain-btn" id="btnQuickSciatica" data-preset="sciatica" style="padding: 6px 8px; text-align: left; border-color: var(--neon-red); color: #ff5252; display: flex; flex-direction: column;">
+                                        <strong style="font-size: 0.82rem;">Sciatica</strong>
+                                        <span style="font-size: 0.68rem; color: var(--text-secondary);">9.5 &bull; 100% Sciatica attack</span>
+                                    </button>
+                                </div>
+                            </div>
+
                             <!-- Mood Score -->
                             <div class="form-group">
-                                <label>Mood Level <span class="val-tag" id="moodValDisplay">5.0</span>/10 <span id="moodLabelDisplay" style="color: var(--neon-blue); margin-left: 4px;">(Calm)</span></label>
+                                <label>Mood Level <span class="val-tag" id="moodValDisplay">5.0</span>/10 <span id="moodLabelDisplay" style="color: var(--neon-blue); margin-left: 4px;">(Standard)</span></label>
                                 <div class="scale-buttons scale-buttons-modal" id="moodScaleButtons">
                                     <button type="button" class="btn-num mood-num" data-val="0">0</button><button type="button" class="btn-num mood-num" data-val="1">1</button><button type="button" class="btn-num mood-num" data-val="2">2</button><button type="button" class="btn-num mood-num" data-val="3">3</button><button type="button" class="btn-num mood-num" data-val="4">4</button><button type="button" class="btn-num mood-num active" data-val="5">5</button><button type="button" class="btn-num mood-num" data-val="6">6</button><button type="button" class="btn-num mood-num" data-val="7">7</button><button type="button" class="btn-num mood-num" data-val="8">8</button><button type="button" class="btn-num mood-num" data-val="9">9</button><button type="button" class="btn-num mood-num" data-val="10">10</button>
                                 </div>
                                 <div class="mood-emoji-selector" id="moodEmojiSelector" style="margin-top: 8px;">
-                                    <button type="button" class="mood-emoji" data-emoji="😌" data-label="Calm" aria-label="Calm mood">😌 Calm</button>
-                                    <button type="button" class="mood-emoji active" data-emoji="🙂" data-label="Good" aria-label="Good mood">🙂 Good</button>
-                                    <button type="button" class="mood-emoji" data-emoji="😴" data-label="Fatigued" aria-label="Fatigued mood">😴 Tired</button>
-                                    <button type="button" class="mood-emoji" data-emoji="😣" data-label="Stressed" aria-label="Stressed mood">😣 Flare</button>
+                                    <button type="button" class="mood-emoji" data-emoji="😌" data-label="Standard" aria-label="Standard mood">Standard</button>
+                                    <button type="button" class="mood-emoji active" data-emoji="🙂" data-label="Hydro" aria-label="Hydro mood">Hydro</button>
+                                    <button type="button" class="mood-emoji" data-emoji="😴" data-label="Thoracic" aria-label="Thoracic mood">Thoracic</button>
+                                    <button type="button" class="mood-emoji" data-emoji="😣" data-label="Sciatica" aria-label="Sciatica mood">Sciatica</button>
                                 </div>
                             </div>
 
@@ -631,7 +718,8 @@
                                     <label for="noteCameraInput" class="btn-icon" id="btnNoteCameraExpanded" title="Take photo with camera" style="background: none; border: none; color: rgba(255,255,255,0.7); cursor: pointer; padding: 4px; font-size: 1.1rem; display: inline-flex; align-items: center; justify-content: center;">📷</label>
                                     <label for="noteFileInput" class="btn-icon" id="btnNoteAttachExpanded" title="Attach file or photo" style="background: none; border: none; color: rgba(255,255,255,0.7); cursor: pointer; padding: 4px; font-size: 1.1rem; display: inline-flex; align-items: center; justify-content: center;">📎</label>
                                 </div>
-                                <div style="display: flex; gap: 10px;">
+                                <div style="display: flex; gap: 10px; align-items: center;">
+                                    <button class="btn btn-sm btn-outline" id="btnDeleteNoteEditor" style="color: #ff5252; border-color: rgba(255,82,82,0.4); display: none;">Delete</button>
                                     <button class="btn btn-sm btn-outline" id="btnCancelNoteEdit">Close</button>
                                 </div>
                             </div>
@@ -651,13 +739,24 @@
                     <!-- Notes Grids -->
                     <div id="standardNotesWorkspace">
                     <div id="notesSectionTitle" style="margin-bottom: 15px; font-weight: 500; color: rgba(255,255,255,0.5); display: none;">PINNED</div>
-                    <div class="notes-workspace" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 30px;" id="pinnedNotesGrid">
+                    <div class="notes-workspace" style="column-count: auto; column-width: 250px; column-gap: 15px; margin-bottom: 30px;" id="pinnedNotesGrid">
                         <!-- Pinned Notes will go here -->
                     </div>
                     
                     <div id="unpinnedNotesSectionTitle" style="margin-bottom: 15px; font-weight: 500; color: rgba(255,255,255,0.5); display: none;">OTHERS</div>
-                    <div class="notes-workspace" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;" id="notesGrid">
+                    <div class="notes-workspace" style="column-count: auto; column-width: 250px; column-gap: 15px;" id="notesGrid">
                         <!-- Unpinned Notes will go here -->
+                    </div>
+
+                    <!-- Designated Archive Section at Bottom -->
+                    <div id="archivedNotesSectionTitle" style="margin-top: 35px; margin-bottom: 15px; font-weight: 500; color: rgba(255,255,255,0.5); display: none; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+                        <span style="display: flex; align-items: center; gap: 8px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>
+                            ARCHIVED
+                        </span>
+                    </div>
+                    <div class="notes-workspace" style="column-count: auto; column-width: 250px; column-gap: 15px;" id="archivedNotesGrid">
+                        <!-- Archived Notes will go here -->
                     </div>
                     </div>
                 </div>
@@ -673,13 +772,38 @@
             </div>
         </div>
 
+        <!-- Compose SMS Modal -->
+        <div class="modal-overlay hidden" id="composeSmsModal">
+            <div class="modal-content glass-panel" style="max-width: 480px; width: 92%;">
+                <div class="modal-header">
+                    <h2>Compose Text Message</h2>
+                    <button class="btn-close" id="btnCloseComposeSms">&times;</button>
+                </div>
+                <div style="padding: 15px 0; display: flex; flex-direction: column; gap: 12px;">
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 6px;">To (Phone Number)</label>
+                        <input type="tel" id="smsToInput" class="glass-input" placeholder="+61400000000" style="width: 100%;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 6px;">Message Body</label>
+                        <textarea id="smsBodyInput" class="glass-input" rows="4" placeholder="Type your text message here..." style="width: 100%; resize: vertical;"></textarea>
+                    </div>
+                    <div id="smsSendError" style="color: var(--neon-red); font-size: 0.85rem; display: none;"></div>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px;">
+                    <button class="btn btn-outline btn-sm" id="btnCancelComposeSms">Cancel</button>
+                    <button class="btn btn-neon-blue btn-sm" id="btnSubmitSendSms">Send Message</button>
+                </div>
+            </div>
+        </div>
+
         <!-- RUMBLE AI Chat Modal Window -->
         <div class="modal-overlay hidden" id="rumbleChatModal">
             <div class="modal-content glass-panel chat-modal-content">
                 <div class="modal-header">
                     <h2>Chat with RUMBLE</h2>
-                    <div style="display: flex; gap: 8px;">
-                        <button class="btn-close" id="btnExportChat" title="Export Chat JSON">📋</button>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <button class="btn btn-outline btn-sm" id="btnExportChat" title="Export Chat as JSON">Export JSON</button>
                         <button class="btn-close" id="btnCloseRumbleChat">&times;</button>
                     </div>
                 </div>
@@ -712,12 +836,12 @@
         <!-- Upload Media Modal -->
         <!-- Briefing Modal -->
         <div class="modal-overlay hidden" id="briefingModal">
-            <div class="modal-content glass-panel" style="max-width: 600px;">
+            <div class="modal-content glass-panel briefing-modal-content" style="max-width: 820px; width: 95%; max-height: 85vh; display: flex; flex-direction: column;">
                 <div class="modal-header">
                     <h2>Morning Executive Briefing</h2>
                     <button class="btn-close" id="btnCloseBriefing">&times;</button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body" style="flex: 1; overflow-y: auto; padding: 16px 20px;">
                     <div id="briefingLoading" class="typing-indicator" style="margin: 20px auto;">
                         <span></span><span></span><span></span>
                     </div>
@@ -725,7 +849,8 @@
                         <!-- Briefing markdown injected here -->
                     </div>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+                    <button class="btn btn-neon-blue btn-sm" id="btnBriefingOpenChat">Discuss in Rumble Chat</button>
                     <button class="btn btn-outline btn-sm" id="btnDismissBriefing">Close</button>
                 </div>
             </div>
@@ -765,28 +890,58 @@
 
         <!-- Protocol Step Runner Modal -->
         <div class="modal-overlay hidden" id="runnerModal">
-            <div class="modal-content glass-panel" style="max-width: 500px;">
+            <div class="modal-content glass-panel" style="max-width: 540px;">
                 <div class="modal-header">
-                    <h2 id="runnerTitle">Protocol Runner</h2>
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <h2 id="runnerTitle" style="margin: 0;">Protocol Runner</h2>
+                            <span class="badge neon-purple" id="runnerTotalBadge">15 Min Routine</span>
+                        </div>
+                        <div id="runnerTotalTimeDisplay" style="font-size: 0.8rem; color: var(--neon-blue); font-weight: 600; margin-top: 3px;">Total Remaining: 15:00 / 15:00</div>
+                    </div>
                     <button class="btn-close" id="btnCancelRunner">&times;</button>
                 </div>
-                <div class="runner-visual" style="position: relative; width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px; overflow: hidden; margin: 15px 0; display: flex; align-items: center; justify-content: center;">
+                <div class="runner-visual" style="position: relative; width: 100%; aspect-ratio: 4/3; background: #000; border-radius: 12px; overflow: hidden; margin: 15px 0; display: flex; align-items: center; justify-content: center; cursor: pointer;">
                     <img id="runnerImg" alt="Exercise Demo" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; display: none; transition: opacity 0.4s ease;">
                     <video id="runnerVideo" playsinline autoplay muted loop style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; display: none;"></video>
                     <div class="visual-placeholder" id="runnerPlaceholder" style="z-index: 1;">START</div>
                 </div>
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-                    <div style="flex: 1; min-width: 0; padding-right: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: stretch; margin-bottom: 8px; gap: 15px;">
+                    <div style="flex: 1; min-width: 0;">
                         <h3 id="runnerStep" style="margin-bottom: 2px;">Step 1: Alignment & Position</h3>
-                        <p id="runnerCue" style="margin: 3px 0 6px 0; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.35;"></p>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <div class="timer" id="runnerTimer" style="cursor: pointer; margin: 0;" title="Click to Pause/Resume">00:30</div>
-                            <button class="btn btn-outline btn-sm" id="btnTogglePauseRunner">Pause</button>
+                        <p id="runnerCue" style="margin: 3px 0 8px 0; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.35;"></p>
+                        
+                        <div style="background: rgba(0,0,0,0.35); border: 1px solid rgba(0, 240, 255, 0.25); border-radius: 8px; padding: 10px 14px; margin-top: 6px;">
+                            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                                <div>
+                                    <span style="font-size: 0.72rem; color: var(--neon-blue); text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">Program Countdown</span>
+                                    <div class="timer" id="runnerTimer" style="cursor: pointer; margin: 2px 0 0 0; font-size: 1.2rem; font-weight: 800; color: var(--neon-purple); line-height: 1;" title="Click to Pause/Resume">15:00</div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <span style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Current Step Hold</span>
+                                    <div id="runnerStepTimer" style="font-size: 1.2rem; font-weight: 700; color: var(--neon-blue); font-family: var(--font-heading); margin-top: 2px;">03:45</div>
+                                </div>
+                            </div>
+                            
+                            <div style="display: flex; justify-content: space-between; font-size: 0.68rem; color: var(--text-muted); margin-top: 8px; margin-bottom: 2px;">
+                                <span>Step Hold Progress</span>
+                                <span id="runnerStepProgressPct" style="color: var(--text-secondary);">0%</span>
+                            </div>
+                            <div style="width: 100%; height: 4px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden;">
+                                <div id="runnerStepProgressBar" style="width: 0%; height: 100%; background: var(--neon-blue); transition: width 0.3s ease;"></div>
+                            </div>
+                            <span id="runnerTotalProgressPct" style="display: none;">0%</span>
                         </div>
                     </div>
-                    <button class="btn btn-outline btn-sm" id="btnSwapExercise" style="white-space: nowrap;">Swap Exercise</button>
+                    <div style="width: 12px; background: rgba(255,255,255,0.1); border-radius: 6px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; position: relative;">
+                        <div id="runnerTotalProgressBar" style="width: 100%; height: 0%; background: linear-gradient(0deg, var(--neon-blue), var(--neon-purple)); transition: height 0.3s ease;"></div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-end;">
+                        <button class="btn btn-outline btn-sm" id="btnSwapExercise" style="white-space: nowrap;">Swap Exercise</button>
+                        <button class="btn btn-outline btn-sm" id="btnTogglePauseRunner" style="white-space: nowrap; min-width: 75px;">Pause</button>
+                    </div>
                 </div>
-                <div class="runner-actions" style="display: flex; justify-content: space-between; margin-top: 10px;">
+                <div class="runner-actions" style="display: flex; justify-content: space-between; margin-top: 14px;">
                     <button class="btn btn-outline" id="btnPrevStep">Prev</button>
                     <button class="btn btn-neon-purple" id="btnNextStep">Next Step</button>
                 </div>
@@ -884,6 +1039,164 @@
                         <button type="submit" class="btn btn-neon-blue" id="btnSaveCalEvent">Save Event</button>
                     </div>
                 </form>
+            </div>
+        </div>
+
+        <!-- Task View Modal -->
+        <div class="modal-overlay hidden" id="taskViewModal">
+            <div class="modal-content glass-panel" style="max-width: 480px;">
+                <div class="modal-header">
+                    <h2 id="viewTaskTitle">Task Details</h2>
+                    <button class="btn-close" id="btnCloseTaskView">&times;</button>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 12px; margin: 15px 0;">
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <span class="badge neon-blue" id="viewTaskBadge">Pending</span>
+                        <span class="badge hidden" id="viewTaskUrgentBadge" style="background: rgba(255, 0, 60, 0.2); border: 1px solid var(--neon-red); color: var(--neon-red);">Urgent</span>
+                        <span class="badge" style="background: rgba(255,255,255,0.08); color: var(--text-secondary);" id="viewTaskSourceBadge">Google Tasks</span>
+                    </div>
+                    <div style="font-size: 0.95rem; color: var(--text-primary);">
+                        <strong style="color: var(--neon-blue);">Due Date: </strong>
+                        <span id="viewTaskDue">--</span>
+                    </div>
+                    <div style="font-size: 0.9rem; color: var(--text-secondary); background: rgba(0,0,0,0.25); padding: 10px; border-radius: 8px; border: 1px solid var(--glass-border);">
+                        <strong style="color: var(--text-primary); display: block; margin-bottom: 4px;">Notes:</strong>
+                        <div id="viewTaskNotes" style="white-space: pre-wrap;">No additional notes provided.</div>
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: space-between; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
+                    <button class="btn btn-neon-red btn-sm" id="btnDeleteTask">Delete Task</button>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-outline btn-sm" id="btnToggleTaskUrgent" style="border-color: var(--neon-red); color: var(--neon-red);">Mark Urgent</button>
+                        <button class="btn btn-outline btn-sm" id="btnToggleTaskComplete">Mark Complete</button>
+                        <button class="btn btn-outline btn-sm" id="btnEditTask">Edit Task</button>
+                        <button class="btn btn-neon-blue btn-sm" id="btnDoneTaskView">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add / Edit Task Modal -->
+        <div class="modal-overlay hidden" id="taskEditModal">
+            <div class="modal-content glass-panel" style="max-width: 500px;">
+                <div class="modal-header">
+                    <h2 id="editTaskModalTitle">Add Task</h2>
+                    <button class="btn-close" id="btnCloseTaskEdit">&times;</button>
+                </div>
+                <form id="taskForm" style="display: flex; flex-direction: column; gap: 12px; margin-top: 15px;">
+                    <input type="hidden" id="taskId" value="">
+                    <div>
+                        <label style="font-size: 0.85rem; color: var(--text-secondary); display: block; margin-bottom: 4px;">Task Title *</label>
+                        <input type="text" id="taskInputTitle" class="glass-input" placeholder="e.g., Review hydrotherapy exercise regimen" required style="width: 100%; padding: 8px 10px;">
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div>
+                            <label style="font-size: 0.85rem; color: var(--text-secondary); display: block; margin-bottom: 4px;">Due Date</label>
+                            <input type="date" id="taskInputDate" class="glass-input" style="width: 100%; padding: 8px 10px;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.85rem; color: var(--text-secondary); display: block; margin-bottom: 4px;">Time</label>
+                            <input type="time" id="taskInputTime" class="glass-input" value="09:00" style="width: 100%; padding: 8px 10px;">
+                        </div>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.85rem; color: var(--text-secondary); display: block; margin-bottom: 4px;">Status</label>
+                    <div style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                        <input type="checkbox" id="taskInputUrgent" style="accent-color: var(--neon-red); width: 16px; height: 16px;">
+                        <label for="taskInputUrgent" style="font-size: 0.9rem; color: var(--neon-red); font-weight: bold; cursor: pointer;">Mark as Urgent</label>
+                    </div>
+                        <select id="taskInputStatus" class="glass-select" style="width: 100%; padding: 8px 10px;">
+                            <option value="needsAction">Pending (Needs Action)</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.85rem; color: var(--text-secondary); display: block; margin-bottom: 4px;">Notes & Details</label>
+                        <textarea id="taskInputNotes" class="glass-input" placeholder="Actionable checklist, clinician instructions, or details..." rows="3" style="width: 100%; padding: 8px 10px; resize: vertical;"></textarea>
+                    </div>
+                    <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px;">
+                        <button type="button" class="btn btn-outline" id="btnCancelTaskEdit">Cancel</button>
+                        <button type="submit" class="btn btn-neon-blue" id="btnSaveTask">Save Task</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Consult Action Checklist Modal (Solicitor & Doctor - High Stress / ADHD-Optimized) -->
+        <div class="modal-overlay hidden" id="consultChecklistModal">
+            <div class="modal-content glass-panel" style="max-width: 680px; width: 94%; max-height: 92vh; overflow-y: auto; padding: 20px;">
+                <div class="modal-header" style="align-items: flex-start; padding-bottom: 12px; border-bottom: 1px solid var(--glass-border);">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                            <span class="badge neon-blue" id="consultChecklistBadge">High Priority</span>
+                            <span style="font-size: 0.78rem; color: var(--text-secondary);" id="consultChecklistSub">Interactive Action Guide</span>
+                        </div>
+                        <h2 id="consultChecklistTitle" style="font-size: 1.25rem; font-weight: 700; color: #fff;">Meeting Action Checklist</h2>
+                    </div>
+                    <button class="btn-close" id="btnCloseConsultChecklist">&times;</button>
+                </div>
+
+                <!-- Meeting Switcher Tabs (Instant 1-Click Toggle) -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px;" id="consultChecklistTabs">
+                    <button type="button" class="btn btn-outline" id="tabClancy" style="padding: 10px 12px; text-align: left; display: flex; flex-direction: column; gap: 2px; border-color: var(--neon-purple); background: rgba(181, 0, 255, 0.12);">
+                        <strong style="color: #fff; font-size: 0.92rem;">8:30 AM • Solicitor Clancy</strong>
+                        <span style="font-size: 0.75rem; color: var(--text-secondary);">Custody Risk & R v Smith Hardship</span>
+                    </button>
+                    <button type="button" class="btn btn-outline" id="tabDrKhan" style="padding: 10px 12px; text-align: left; display: flex; flex-direction: column; gap: 2px; border-color: var(--glass-border); opacity: 0.75;">
+                        <strong style="color: #fff; font-size: 0.92rem;">3:00 PM • Dr Khan</strong>
+                        <span style="font-size: 0.75rem; color: var(--text-secondary);">Reflex Check, Court Report & Scripts</span>
+                    </button>
+                </div>
+
+                <!-- Progress Bar & Count -->
+                <div style="margin-top: 14px; background: rgba(0,0,0,0.3); padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <span style="font-size: 0.8rem; font-weight: 600; color: var(--neon-green);" id="checklistProgressText">0 of 5 actions completed</span>
+                        <span style="font-size: 0.75rem; color: var(--text-secondary);" id="checklistAutoSaveStatus">Auto-saved</span>
+                    </div>
+                    <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
+                        <div id="checklistProgressBar" style="width: 0%; height: 100%; background: var(--neon-green); transition: width 0.3s ease;"></div>
+                    </div>
+                </div>
+
+                <!-- VERBATIM "SAY THIS FIRST" CALLOUT BOX -->
+                <div id="verbatimCalloutBox" style="margin-top: 14px; padding: 14px; border-radius: 10px; background: rgba(0, 240, 255, 0.08); border-left: 4px solid var(--neon-blue); border-top: 1px solid rgba(0,240,255,0.2); border-right: 1px solid rgba(0,240,255,0.2); border-bottom: 1px solid rgba(0,240,255,0.2);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--neon-blue);" id="verbatimLabel">Say This First (Exact Words)</span>
+                        <button type="button" class="btn btn-sm btn-outline" id="btnCopyVerbatim" style="padding: 3px 8px; font-size: 0.75rem; border-color: var(--neon-blue); color: var(--neon-blue);">Copy Words</button>
+                    </div>
+                    <p id="verbatimText" style="font-size: 0.95rem; font-weight: 600; line-height: 1.45; color: #fff; margin: 0;"></p>
+                </div>
+
+                <!-- CHECKLIST ITEMS CONTAINER -->
+                <div style="margin-top: 16px;">
+                    <div style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-secondary); margin-bottom: 8px; font-weight: 700;" id="checklistSectionHeading">Action Steps</div>
+                    <div id="checklistItemsList" style="display: flex; flex-direction: column; gap: 8px;">
+                        <!-- Rendered dynamically -->
+                    </div>
+
+                    <!-- Add Custom Checklist Item -->
+                    <div style="display: flex; gap: 8px; margin-top: 10px;">
+                        <input type="text" id="inputNewChecklistItem" class="glass-input" placeholder="+ Add a custom item or question..." style="flex: 1; padding: 8px 12px; font-size: 0.85rem;">
+                        <button type="button" class="btn btn-outline btn-sm" id="btnAddChecklistItem" style="white-space: nowrap;">Add</button>
+                    </div>
+                </div>
+
+                <!-- LIVE CONSULT NOTES / SCRATCHPAD -->
+                <div style="margin-top: 18px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <label style="font-size: 0.82rem; font-weight: 700; color: #fff;" id="notesSectionLabel">Live Meeting Notes (Auto-saved)</label>
+                        <button type="button" class="btn btn-sm btn-neon-blue" id="btnSaveToRumbleNotes" style="font-size: 0.75rem; padding: 3px 10px;">Save to Permanent Notes</button>
+                    </div>
+                    <textarea id="consultLiveNotes" class="glass-input" rows="4" placeholder="Type instructions, advice, dates, or clinician comments here during the meeting..." style="width: 100%; padding: 10px; font-size: 0.88rem; line-height: 1.4; resize: vertical;"></textarea>
+                    <div style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 4px;" id="notesSavedFeedback">Changes save automatically to your phone/device.</div>
+                </div>
+
+                <!-- FOOTER -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--glass-border);">
+                    <button type="button" class="btn btn-outline btn-sm" id="btnResetChecklist">Reset Checklist</button>
+                    <button type="button" class="btn btn-neon-blue" id="btnDoneConsultChecklist" style="padding: 8px 24px;">Close</button>
+                </div>
             </div>
         </div>
 
@@ -1062,6 +1375,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="app.js?v=25"></script>
+    <script src="app.js?v=20260925_0550"></script>
 </body>
 </html>

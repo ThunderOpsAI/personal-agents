@@ -48,6 +48,9 @@ const AREA_ALIAS_MAP: Record<string, string> = {
   'wrists': 'wrist',
   'elbow': 'elbow',
   'elbows': 'elbow',
+  'scapula': 'scapula',
+  'scapular': 'scapula',
+  'shoulder blade': 'scapula',
 };
 
 /**

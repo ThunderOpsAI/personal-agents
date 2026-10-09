@@ -16,7 +16,8 @@ export async function POST(request: Request) {
       instruction: r.instruction || r.description,
       description: r.description || r.instruction,
       precautions: r.precautions,
-      steps: r.steps
+      steps: r.steps,
+      video_url: r.video_url
     }));
     return NextResponse.json({
       status: "success",

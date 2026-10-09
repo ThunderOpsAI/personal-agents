@@ -189,6 +189,16 @@ export class TelegramBot {
       ]);
     }
 
+    // 4 Auto-Logging Quick Action Buttons
+    inline_keyboard.push([
+      { text: "Sciatica (9.5)", callback_data: "pain_quick:sciatica" },
+      { text: "Thoracic (7.5)", callback_data: "pain_quick:thoracic" },
+    ]);
+    inline_keyboard.push([
+      { text: "Hydro (-1.5)", callback_data: "pain_quick:hydro" },
+      { text: "Standard", callback_data: "pain_quick:standard" },
+    ]);
+
     inline_keyboard.push([
       { text: "🟢 Mild (5.5)", callback_data: "pain_preset:5.5" },
       { text: "🟡 Mod (7.0)", callback_data: "pain_preset:7.0" },

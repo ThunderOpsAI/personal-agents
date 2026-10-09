@@ -13,10 +13,10 @@ export async function POST(request: Request) {
       const result = await executeConfirmedAction(payload.confirm_action);
       await resolvePendingAction(payload.pending_action_id || payload.confirm_action.id);
       return NextResponse.json({
-        status: "success",
+        status: result.success === false ? "error" : "success",
         reply: result.message,
         data: result.result,
-        intent: payload.confirm_action.type === "pain_log" ? "LOG_PAIN" : payload.confirm_action.type === "note" ? "ADD_NOTE" : payload.confirm_action.type === "send_email" ? "SEND_EMAIL" : "ADD_TASK",
+        intent: payload.confirm_action.type === "pain_log" ? "LOG_PAIN" : payload.confirm_action.type === "note" ? "ADD_NOTE" : payload.confirm_action.type === "send_email" ? "SEND_EMAIL" : payload.confirm_action.type === "send_sms" ? "SEND_SMS" : "ADD_TASK",
       });
     } catch (error: any) {
       return NextResponse.json({ status: "error", error: error.message || "Failed to execute confirmed action" }, { status: 400 });

@@ -24,6 +24,33 @@ function isVideo(url: string): boolean {
   return /\.(mp4|webm|ogg)(?:$|[?#])/i.test(url);
 }
 
+function isYouTubeUrl(url: string): boolean {
+  return /youtube\.com|youtu\.be/i.test(url);
+}
+
+function toYouTubeEmbedUrl(url: string): string {
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname.includes("youtu.be")) {
+      const videoId = parsed.pathname.slice(1).split("/")[0];
+      return `https://www.youtube-nocookie.com/embed/${videoId}`;
+    }
+    const vParam = parsed.searchParams.get("v");
+    if (vParam) {
+      return `https://www.youtube-nocookie.com/embed/${vParam}`;
+    }
+    if (parsed.pathname.startsWith("/embed/")) {
+      const videoId = parsed.pathname.replace("/embed/", "").split("/")[0];
+      return `https://www.youtube-nocookie.com/embed/${videoId}`;
+    }
+  } catch {
+    // fallback regex if URL parsing fails
+  }
+  const match = /(?:watch\?v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/i.exec(url);
+  const videoId = match ? match[1] : url;
+  return `https://www.youtube-nocookie.com/embed/${videoId}`;
+}
+
 export function ExerciseDemoDialog({ exercise, onClose }: ExerciseDemoDialogProps) {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -58,7 +85,16 @@ export function ExerciseDemoDialog({ exercise, onClose }: ExerciseDemoDialogProp
         </div>
         {exercise.instruction ? <p id="exercise-demo-description">{exercise.instruction}</p> : null}
         {mediaUrl ? (
-          isVideo(mediaUrl) ? (
+          isYouTubeUrl(mediaUrl) ? (
+            <iframe
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              src={toYouTubeEmbedUrl(mediaUrl)}
+              style={{ width: "100%", aspectRatio: "16 / 9", border: 0 }}
+              title={`${exercise.name} demonstration`}
+              width="100%"
+            />
+          ) : isVideo(mediaUrl) ? (
             <video aria-label={`${exercise.name} demonstration`} controls src={mediaUrl} />
           ) : (
             // API-provided media is intentionally rendered directly; there are no bundled demo assets.

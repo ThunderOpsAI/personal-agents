@@ -34,3 +34,9 @@ Rumble OS is an orchestrator agent that manages the user's weekly agenda, emails
 - **Afternoon Checks**: Gmail and Calendar retrieval at 14:00 (02:00 PM) (Australia/Melbourne).
 - **Evening Meditation**: 09:00 PM and 12:00 AM.
 - **Washing Days**: Weekly agenda includes exactly two washing days selected from the live Wangaratta forecast using the lowest precipitation probabilities.
+
+## Active Monitoring: Fortunica Support Escalation
+- **Target**: `support@fortunica`
+- **Schedule**: Saturday 14:00 and Sunday 14:00 (Australia/Melbourne).
+- **Action on Reply**: If they reply by either check, immediately surface a GREEN URGENT banner/alert to the user indicating they have responded.
+- **Action on No Reply (Sunday 15:00)**: If no reply is received by Sunday 15:00 (3:00 PM), surface a RED URGENT banner/alert indicating no response, and automatically draft a follow-up email asking for a progress report (present for user approval).

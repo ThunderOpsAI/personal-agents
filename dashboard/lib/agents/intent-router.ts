@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { getAgendaItems, createAgendaItem, createNote, createPainLog, getNotes, getPainLogsFromDb } from '../db';
+import { getAgendaItems, createAgendaItem, createNote, createPainLog, getNotes, getPainLogsFromDb, getSmsMessages } from '../db';
 import { logPain, PainLocationWeight, validatePainLog } from '../rehab-learning';
 import { selectWashingDays, WashingDay } from '../agenda-engine';
 import { fetchLiveGmailMessages, fetchLiveCalendarEvents } from '../google-auth';
@@ -64,6 +64,7 @@ export type IntentType =
   | "ADD_NOTE"
   | "ADD_TASK"
   | "CHECK_EMAIL"
+  | "CHECK_SMS"
   | "AGENDA_QUERY"
   | "WEATHER_QUERY"
   | "MEDICAL_TRIAGE"
@@ -82,7 +83,7 @@ export interface ParsedPainLog {
 }
 
 export interface ActionPreview {
-  type: "pain_log" | "note" | "task" | "multi_action" | "calendar_event";
+  type: "pain_log" | "note" | "task" | "multi_action" | "calendar_event" | "send_email" | "send_sms";
   data: Record<string, any>;
 }
 
@@ -139,6 +140,11 @@ export function classifyIntent(message: string): IntentType {
   // 5. Emails Query (Read)
   if (/\b(?:check\s+(?:my\s+)?(?:emails?|inbox|gmail)|any\s+(?:new\s+)?emails?|urgent\s+emails?)\b/i.test(lowered)) {
     return "CHECK_EMAIL";
+  }
+
+  // 5b. SMS / Text Messages Query (Read)
+  if (/\b(?:check\s+(?:my\s+)?(?:texts?|sms|text\s+messages?|text\s+msgs?)|any\s+(?:new\s+)?(?:texts?|sms|text\s+messages?|text\s+msgs?)|read\s+(?:my\s+|the\s+)?(?:texts?|sms|text\s+messages?|text\s+msgs?)|unread\s+(?:texts?|sms|text\s+messages?|text\s+msgs?)|did\s+(?:i|you)\s+(?:get|receive)\s+any\s+(?:texts?|sms|text\s+messages?|text\s+msgs?)|who\s+(?:texted|sent\s+me\s+(?:an?\s+)?(?:sms|text))|what\s+did\s+.*(?:text|say\s+in\s+(?:sms|text))|latest\s+(?:texts?|sms)|show\s+(?:my\s+)?(?:texts?|sms))\b/i.test(lowered)) {
+    return "CHECK_SMS";
   }
 
   // 6. Agenda / Schedule Query (Read)
@@ -312,6 +318,12 @@ export async function callGemini(
 ): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
+    if (responseSchema) {
+      return JSON.stringify({
+        reply: `Rumble: I received your message: "${userMessage}". Let me know if you would like to log pain, create a note, or check your agenda.`,
+        actions: []
+      });
+    }
     return `Rumble: I received your message: "${userMessage}". Let me know if you would like to log pain, create a note, or check your agenda.`;
   }
 
@@ -341,6 +353,25 @@ export async function callGemini(
     });
   }
 
+  // Filter out prior assistant refusal pollution so model does not imitate obsolete limitations
+  const sanitizedHistory = (history || []).filter((h: any) => {
+    const text = (h.text || h.content || "").toLowerCase();
+    const isAssistant = h.role === "model" || h.role === "rumble" || h.role === "assistant";
+    if (isAssistant) {
+      if (
+        text.includes("do not have access to your text messages") ||
+        text.includes("don't have access to your text messages") ||
+        text.includes("lack access to texts") ||
+        text.includes("can't read the content of these messages directly") ||
+        text.includes("cannot read the content of these messages directly") ||
+        text.includes("do not have access to the actual text message bodies")
+      ) {
+        return false;
+      }
+    }
+    return true;
+  });
+
   let lastError: any = null;
 
   for (const model of modelPool) {
@@ -360,7 +391,7 @@ export async function callGemini(
               parts: [{ text: systemPrompt }],
             },
             contents: [
-              ...history.map((h: any) => ({ role: h.role === "user" ? "user" : "model", parts: [{ text: h.text || h.content || '' }] })),
+              ...sanitizedHistory.map((h: any) => ({ role: h.role === "user" ? "user" : "model", parts: [{ text: h.text || h.content || '' }] })),
               { role: "user", parts: userParts }
             ],
             ...(responseSchema ? { generationConfig: { responseMimeType: "application/json", responseSchema } } : {})
@@ -396,6 +427,27 @@ export async function callGemini(
 }
 
 /**
+ * Formats recent text messages from the database into a clean executive summary.
+ */
+export async function formatSmsMessagesSummary(limit: number = 10): Promise<string> {
+  const smsMessages = await getSmsMessages({ limit }).catch(() => []);
+  if (!smsMessages || smsMessages.length === 0) {
+    return "You don't have any text messages recorded yet in Rumble OS.";
+  }
+
+  const items = smsMessages.map((m: any) => {
+    const timeStr = new Date(m.received_at || m.created_at).toLocaleString("en-AU", { timeZone: "Australia/Melbourne" });
+    let body = m.body || "";
+    if (body === "{sms_body}" || body.includes("{sms_body}")) {
+      body = `${body} (⚠️ MacroDroid phone tag issue: your phone sent literal '{sms_body}'. Please configure [sms_message] instead of {sms_body} in your MacroDroid HTTP Request action)`;
+    }
+    return `• **From:** ${m.sender} | **Date:** ${timeStr} | **Status:** ${m.read ? "Read" : "Unread"}\n  **Message:** "${body}"`;
+  });
+
+  return `Here are your recent text messages:\n\n${items.join("\n\n")}`;
+}
+
+/**
  * Routes and handles incoming chat messages dynamically with multimodal support.
  */
 export async function routeChatMessage(
@@ -404,6 +456,7 @@ export async function routeChatMessage(
   attachment?: { data: string; mimeType: string; filename?: string }
 ): Promise<IntentRouteResult> {
   const lowered = message.toLowerCase();
+  const detectedIntent = classifyIntent(message);
 
   // Fast-path deterministic parsing for pure direct write commands without follow-up questions
   const hasQuestion = message.includes("?") || /\b(?:what|how|why|should|can you recommend|advice)\b/i.test(message);
@@ -564,6 +617,26 @@ export async function routeChatMessage(
     }
   } catch {}
 
+  let smsText = "No text messages received yet.";
+  try {
+    const smsMessages = await getSmsMessages({ limit: 15 });
+    if (smsMessages && smsMessages.length > 0) {
+      smsText = smsMessages
+        .map(
+          (m: any) => {
+            let bodyText = m.body;
+            if (bodyText === "{sms_body}" || bodyText?.startsWith("{sms_body}")) {
+              bodyText = `${bodyText} (⚠️ MacroDroid phone tag issue: configure [sms_message] instead of {sms_body} in HTTP Request body)`;
+            }
+            return `• From: ${m.sender} | Date: ${m.received_at || m.created_at} | Status: ${m.read ? "Read" : "Unread"}\n  Body: "${bodyText}"`;
+          }
+        )
+        .join("\n\n");
+    }
+  } catch (err) {
+    console.warn("[IntentRouter Warning] Could not fetch SMS messages:", err);
+  }
+
   const systemPrompt = `You are Rumble, the expert personal operations and rehabilitation AI assistant for Rumble OS.
 Current Time in Australia/Melbourne: ${nowMel}.
 Location: Wangaratta, Victoria, Australia.
@@ -585,12 +658,15 @@ ${calendarText}
 [LIVE GMAIL INBOX & ARCHIVE]
 ${emailText}
 
+[RECENT SMS / TEXT MESSAGES]
+${smsText}
+
 [WANGARATTA WEATHER & WASHING FORECAST]
 ${weatherText}
 
 === CRITICAL BEHAVIORAL & FORMATTING RULES ===
 1. MEDICAL DISCLAIMER: "${MEDICAL_GUARDRAIL}". Always append this to any medical, symptom, or treatment discussion.
-2. LIVE DATA ONLY: Strictly ground all responses in the real live emails, calendar events, agenda items, and notes provided above. NEVER hallucinate, invent, guess, or mock dummy details.
+2. LIVE DATA ONLY: Strictly ground all responses in the real live emails, calendar events, agenda items, notes, and SMS messages provided above. NEVER hallucinate, invent, guess, or mock dummy details. Note: User notes in [RECENT USER NOTES] represent personal notes or past user comments, NOT system capability restrictions.
 3. STRICT SUMMARIZATION & HUMAN-READABLE REPORTING:
    - Format outputs cleanly like an executive report with clean spacing, bold headers, and concise bullet points.
    - STRICT CONSTRAINT: Any medical, legal, or complex summary MUST be limited to a maximum of 3 concise bullet points unless the user explicitly requests more detail. This makes it faster to read.
@@ -617,7 +693,14 @@ ${weatherText}
    - If the user gives a direct write command (e.g. "log pain", "add to budget"), keep conversational chatter concise, but for email drafts ALWAYS include the full draft in the reply text.
 9. DATETIME PARSING:
    - For any action requiring a scheduled time (like 'task' or 'calendar_event'), you MUST calculate the exact ISO 8601 string based on the 'Current Time' provided above.
-   - NEVER output relative words like 'tomorrow' or 'next week' in the action data fields. ALWAYS output a valid ISO 8601 datetime (e.g., '2026-09-01T09:00:00+10:00').`;
+   - NEVER output relative words like 'tomorrow' or 'next week' in the action data fields. ALWAYS output a valid ISO 8601 datetime (e.g., '2026-09-01T09:00:00+10:00').
+10. TEXT MESSAGES (SMS):
+    - YOU HAVE FULL LIVE ACCESS to read SMS / text messages from [RECENT SMS / TEXT MESSAGES] above.
+    - NEVER claim that you lack access to text messages or cannot read text messages.
+    - Ignore any historical notes (such as old user notes saying "he still doesn't have access to texts") or past chat messages claiming you cannot read texts. Live SMS ingestion is active and real-time.
+    - When asked to read, check, or summarize texts, quote the sender, date/time, and actual body content for each message in [RECENT SMS / TEXT MESSAGES].
+    - If a message body contains "{sms_body}", inform the user that the SMS was received from that sender, but their phone's MacroDroid action was configured with "{sms_body}" instead of "[sms_message]" (or "{sms_message}"), so the phone didn't pass the actual message text.
+    - If asked to send an SMS or text message, draft the message and include a \`send_sms\` action with \`sms_to\` and \`sms_body\` for user confirmation.`;
 
   const responseSchema = {
     type: "OBJECT",
@@ -629,7 +712,7 @@ ${weatherText}
         items: {
           type: "OBJECT",
           properties: {
-            type: { type: "STRING", description: "One of: 'task', 'pain_log', 'note', 'calendar_event', 'budget_item', 'agent_report', 'send_email'" },
+            type: { type: "STRING", description: "One of: 'task', 'pain_log', 'note', 'calendar_event', 'budget_item', 'agent_report', 'send_email', 'send_sms'" },
             task_title: { type: "STRING" },
             task_scheduled_time: { type: "STRING", description: "Must be a valid ISO 8601 string in Australia/Melbourne timezone" },
             calendar_summary: { type: "STRING" },
@@ -639,6 +722,8 @@ ${weatherText}
             email_subject: { type: "STRING" },
             email_body: { type: "STRING" },
             email_thread_id: { type: "STRING" },
+            sms_to: { type: "STRING", description: "Recipient phone number for SMS" },
+            sms_body: { type: "STRING", description: "Text message body" },
             pain_score: { type: "INTEGER" },
             pain_locations: { type: "ARRAY", items: { type: "OBJECT", properties: { area: { type: "STRING" }, percentage: { type: "INTEGER" } } } },
             pain_mood: { type: "STRING" },
@@ -664,6 +749,23 @@ ${weatherText}
     let finalReply = parsed.reply;
     if (finalReply.includes("pain") || finalReply.includes("doctor")) {
         finalReply = finalReply.includes(MEDICAL_GUARDRAIL) ? finalReply : `${finalReply}\n\n${MEDICAL_GUARDRAIL}`;
+    }
+
+    // If intent was CHECK_SMS, verify the LLM didn't return an obsolete refusal hallucination or missing API key placeholder
+    if (detectedIntent === "CHECK_SMS") {
+      const loweredReply = finalReply.toLowerCase();
+      if (
+        !process.env.GEMINI_API_KEY ||
+        finalReply.startsWith("Rumble: I received your message") ||
+        loweredReply.includes("do not have access to your text messages") ||
+        loweredReply.includes("cannot read the content of these messages") ||
+        loweredReply.includes("can't read the content of these messages") ||
+        loweredReply.includes("don't have access to texts") ||
+        loweredReply.includes("lack access to texts") ||
+        loweredReply.includes("do not have access to the actual text message bodies")
+      ) {
+        finalReply = await formatSmsMessagesSummary();
+      }
     }
 
     if (parsed.actions && parsed.actions.length > 0) {
@@ -703,18 +805,21 @@ ${weatherText}
         if (a.type === "agent_report") data = { title: a.agent_report_title, content: a.agent_report_content };
         if (a.type === "budget_item") data = { description: a.budget_description, amount: a.budget_amount, category: a.budget_category, type: a.budget_type };
         if (a.type === "send_email") data = { to: a.email_to, subject: a.email_subject, body: a.email_body, threadId: a.email_thread_id };
+        if (a.type === "send_sms") data = { to: a.sms_to, body: a.sms_body };
         return { type: a.type, data };
       });
 
-      // If multiple actions, wrap them in multi_action so frontend can confirm all at once
-      const preview: ActionPreview = {
-        type: "multi_action",
-        data: { actions: mappedActions }
-      };
+      // If single action, present that action directly; if multiple, wrap in multi_action
+      const preview: ActionPreview = mappedActions.length === 1
+        ? mappedActions[0]
+        : {
+            type: "multi_action",
+            data: { actions: mappedActions }
+          };
       
       return {
         reply: finalReply,
-        intent: "GENERAL",
+        intent: detectedIntent === "CHECK_SMS" ? "CHECK_SMS" : "GENERAL",
         requires_confirmation: true,
         preview,
         disclaimer: MEDICAL_GUARDRAIL,
@@ -723,12 +828,25 @@ ${weatherText}
 
     return {
       reply: finalReply,
-      intent: "GENERAL",
+      intent: detectedIntent === "CHECK_SMS" ? "CHECK_SMS" : "GENERAL",
       requires_confirmation: false,
       disclaimer: MEDICAL_GUARDRAIL,
     };
   } catch (err: any) {
     console.error("[RouteChatMessage Error]:", err);
+
+    if (classifyIntent(message) === "CHECK_SMS") {
+      try {
+        const summary = await formatSmsMessagesSummary();
+        return {
+          reply: `${summary}\n\n${MEDICAL_GUARDRAIL}`,
+          intent: "CHECK_SMS",
+          disclaimer: MEDICAL_GUARDRAIL,
+        };
+      } catch (smsErr) {
+        console.error("[RouteChatMessage SMS fallback error]:", smsErr);
+      }
+    }
 
     if (classifyIntent(message) === "LOG_PAIN") {
       const parsedPain = parsePainLogDirective(message);
@@ -873,19 +991,45 @@ export async function executeConfirmedAction(action: ActionPreview | { type: str
     }
   }
 
+  if (action.type === "send_sms") {
+    const { to, body } = action.data;
+    try {
+      const { sendSms } = await import('../db');
+      const res = await sendSms(to, body);
+      return {
+        success: true,
+        message: `Rumble: Confirmed and sent SMS to ${to}. (SID: ${res.sid})`,
+        result: res,
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        message: `Failed to send SMS: ${err.message}`,
+      };
+    }
+  }
+
   if (action.type === "multi_action") {
-    const results = [];
+    const results: string[] = [];
+    let allSuccess = true;
     for (const subAction of action.data.actions) {
       try {
         const res = await executeConfirmedAction(subAction);
+        if (res && res.success === false) {
+          allSuccess = false;
+        }
         results.push(res.message);
       } catch (err: any) {
+        allSuccess = false;
         results.push(`Failed: ${err.message}`);
       }
     }
+    const header = allSuccess
+      ? "Rumble: Executed actions:"
+      : "Rumble: Action execution completed with errors/warnings:";
     return {
-      success: true,
-      message: `Rumble: Executed actions: Actions executed successfully.`,
+      success: allSuccess,
+      message: `${header}\n${results.map((r) => `• ${r.replace(/^Rumble:\s*/, "")}`).join("\n")}`,
       result: results,
     };
   }

@@ -105,6 +105,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const API_EXERCISE_SUGGEST = `${API_BASE}/api/v1/exercises/suggest`;
     const API_EXERCISE_RELIEF = `${API_BASE}/api/v1/rehab/complete`;
     const API_EXERCISE_REJECT = `${API_BASE}/api/v1/rehab/dismiss`;
+    const API_TASKS = `${API_BASE}/api/v1/tasks`;
+    const API_TASKS_SYNC = `${API_BASE}/api/v1/tasks/sync`;
 
 
     // --- DOM Elements ---
@@ -176,8 +178,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnCloseNotes = document.getElementById('btnCloseNotes');
     const notesGrid = document.getElementById('notesGrid');
     const pinnedNotesGrid = document.getElementById('pinnedNotesGrid');
+    const archivedNotesGrid = document.getElementById('archivedNotesGrid');
     const notesSectionTitle = document.getElementById('notesSectionTitle');
     const unpinnedNotesSectionTitle = document.getElementById('unpinnedNotesSectionTitle');
+    const archivedNotesSectionTitle = document.getElementById('archivedNotesSectionTitle');
     const btnToggleArchiveView = document.getElementById('btnToggleArchiveView');
     const btnToggleFollowUpView = document.getElementById('btnToggleFollowUpView');
     const followUpWorkspace = document.getElementById('followUpWorkspace');
@@ -186,6 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnSaveFollowUp = document.getElementById('btnSaveFollowUp');
     const followUpSaveStatus = document.getElementById('followUpSaveStatus');
     const inlineNoteEditorContainer = document.getElementById('inlineNoteEditorContainer');
+    const btnDeleteNoteEditor = document.getElementById('btnDeleteNoteEditor');
     let followUpNoteId = null;
     
     // Inline Note Editor
@@ -323,7 +328,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await res.json();
                 if (data.temp_c !== null && data.temp_c !== undefined) {
                     const washDays = (data.forecast || []).slice().sort((a, b) => a.precipitation_probability_pct - b.precipitation_probability_pct).slice(0, 2).map(day => day.date).join(' and ');
-                    weatherWidget.innerHTML = `<span class="weather-text">Wangaratta: ${data.temp_c}°C • Rain now ${data.rain_probability_pct}% • Wash: ${washDays || 'forecast unavailable'}</span>`;
+                    const maxTemp = data.max_temp_c !== null ? `${data.max_temp_c}°C` : '--';
+                    const rainDay = data.rain_probability_pct_day !== undefined ? data.rain_probability_pct_day : (data.rain_probability_pct || 0);
+                    weatherWidget.innerHTML = `<span class="weather-text">Wangaratta: ${data.temp_c}°C (Max: ${maxTemp}) • ${rainDay}% chance of rain today • Wash: ${washDays || 'forecast unavailable'}</span>`;
                 } else {
                     weatherWidget.innerHTML = `<span class="weather-text">Weather: Offline</span>`;
                 }
@@ -334,8 +341,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     loadWeather();
     loadAgenda();
-    // --- Agenda Auto-Refresh (picks up injected alerts) ---
+    loadTasks();
+    // --- Agenda & Tasks Auto-Refresh (picks up injected alerts and synced tasks) ---
     setInterval(loadAgenda, 60000);
+    setInterval(loadTasks, 120000);
 
     // --- Agenda Loader ---
     function showAgendaSkeleton() {
@@ -502,9 +511,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     `;
                 } else {
+                    const isOverdue = item.scheduled_time && !isNaN(new Date(item.scheduled_time).getTime()) && new Date(item.scheduled_time) < new Date();
+                    if (isOverdue) {
+                        card.style.borderLeft = '4px solid var(--neon-red)';
+                        card.style.background = 'rgba(255, 0, 60, 0.08)';
+                    }
                     card.innerHTML = `
                         <div class="protocol-info">
-                            <h3>${item.time}</h3>
+                            <h3${isOverdue ? ' style="color: var(--neon-red);"' : ''}>${item.time}${isOverdue ? ' <span class="badge" style="background: rgba(255,0,60,0.25); border: 1px solid var(--neon-red); color: var(--neon-red); font-size: 0.72rem; margin-left: 6px; padding: 1px 6px;">Overdue</span>' : ''}</h3>
                             <p>${escapeHtml(item.title)}</p>
                             ${item.choices ? `<small class="form-hint">Choices: ${item.choices.join(' · ')}</small>` : ''}
                         </div>
@@ -560,17 +574,39 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!calendarEl || typeof FullCalendar === 'undefined') return;
 
         if (!interactiveCalendar) {
-            interactiveCalendar = new FullCalendar.Calendar(calendarEl, {
+            const calendarConfig = {
                 initialView: 'dayGridMonth',
-                weekends: false,
+                weekends: true,
                 firstDay: 1,
+                dayHeaders: true,
+                nowIndicator: true,
+                selectable: true,
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                    right: 'dayGridMonth,listWeek'
+                },
+                buttonText: {
+                    today: 'Today',
+                    dayGridMonth: 'Month',
+                    listWeek: 'Week'
+                },
+                eventTimeFormat: {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    meridiem: 'short'
+                },
+                views: {
+                    dayGridMonth: {
+                        dayHeaderFormat: { weekday: 'short' },
+                        dayMaxEvents: 2
+                    },
+                    listWeek: {
+                        dayHeaderFormat: { weekday: 'long', month: 'short', day: 'numeric' },
+                        noEventsContent: 'No events scheduled this week'
+                    }
                 },
                 height: 'auto',
-                selectable: true,
                 dateClick: function(info) {
                     let datePart = info.dateStr;
                     let timePart = '09:00';
@@ -586,7 +622,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         openCalendarEventView(info.event.extendedProps.originalEvent);
                     }
                 }
-            });
+            };
+
+            interactiveCalendar = new FullCalendar.Calendar(calendarEl, calendarConfig);
             interactiveCalendar.render();
         }
 
@@ -929,6 +967,21 @@ document.addEventListener('DOMContentLoaded', () => {
             btnConfirmPostpone.innerText = 'Rescheduling...';
 
             try {
+                const taskMatch = (cachedTasks || []).find(x => x.id === itemToPostpone);
+                if (taskMatch) {
+                    const res = await fetch(`${API_TASKS}/${encodeURIComponent(itemToPostpone)}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ due: new Date(selectedDate).toISOString() })
+                    });
+                    if (!res.ok) throw new Error(`Status ${res.status}`);
+                    if (postponeModal) postponeModal.classList.add('hidden');
+                    showToast('Task delayed and rescheduled', 'success');
+                    itemToPostpone = null;
+                    await loadTasks();
+                    return;
+                }
+
                 const res = await fetch(API_AGENDA, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -967,6 +1020,21 @@ document.addEventListener('DOMContentLoaded', () => {
             if (dismissConfirmModal) dismissConfirmModal.classList.add('hidden');
             if (itemToDismiss) {
                 try {
+                    const taskMatch = (cachedTasks || []).find(x => x.id === itemToDismiss);
+                    if (taskMatch) {
+                        const res = await fetch(`${API_TASKS}/${encodeURIComponent(itemToDismiss)}`, {
+                            method: 'DELETE'
+                        });
+                        if (res.ok) {
+                            showToast(`Dismissed: ${taskMatch.title}`, 'info');
+                            await loadTasks();
+                        } else {
+                            showToast('Failed to dismiss task');
+                        }
+                        itemToDismiss = null;
+                        return;
+                    }
+
                     const currentCard = cardToDismiss || document.getElementById(`protocol-${itemToDismiss}`);
                     if (currentCard) {
                         currentCard.classList.add('dismissed');
@@ -1106,6 +1174,682 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (err) {
                 showToast('Network error saving calendar event');
                 console.error(err);
+            }
+        });
+    }
+
+    // --- Google Tasks Tab & Interactive Calendar Engine ---
+    let tasksCalendar = null;
+    let cachedTasks = [];
+    let activeTask = null;
+
+    const tabBtnCalendar = document.getElementById('tabBtnCalendar');
+    const tabBtnTasks = document.getElementById('tabBtnTasks');
+    const calendarSection = document.getElementById('calendarSection');
+    const tasksSection = document.getElementById('tasksSection');
+    const tasksTabBadge = document.getElementById('tasksTabBadge');
+    const tasksActiveCountBadge = document.getElementById('tasksActiveCountBadge');
+    const tasksCompletedCountBadge = document.getElementById('tasksCompletedCountBadge');
+    const btnSyncTasks = document.getElementById('btnSyncTasks');
+    const btnAddTask = document.getElementById('btnAddTask');
+
+    // Task View Modal elements
+    const taskViewModal = document.getElementById('taskViewModal');
+    const viewTaskTitle = document.getElementById('viewTaskTitle');
+    const btnCloseTaskView = document.getElementById('btnCloseTaskView');
+    const viewTaskBadge = document.getElementById('viewTaskBadge');
+    const viewTaskSourceBadge = document.getElementById('viewTaskSourceBadge');
+    const viewTaskDue = document.getElementById('viewTaskDue');
+    const viewTaskNotes = document.getElementById('viewTaskNotes');
+    const btnDeleteTask = document.getElementById('btnDeleteTask');
+    const btnToggleTaskComplete = document.getElementById('btnToggleTaskComplete');
+    const btnEditTask = document.getElementById('btnEditTask');
+    const btnDoneTaskView = document.getElementById('btnDoneTaskView');
+
+    // Task Edit Modal elements
+    const taskEditModal = document.getElementById('taskEditModal');
+    const editTaskModalTitle = document.getElementById('editTaskModalTitle');
+    const btnCloseTaskEdit = document.getElementById('btnCloseTaskEdit');
+    const btnCancelTaskEdit = document.getElementById('btnCancelTaskEdit');
+    const taskForm = document.getElementById('taskForm');
+    const taskId = document.getElementById('taskId');
+    const taskInputTitle = document.getElementById('taskInputTitle');
+    const taskInputDate = document.getElementById('taskInputDate');
+    const taskInputTime = document.getElementById('taskInputTime');
+    const taskInputStatus = document.getElementById('taskInputStatus');
+    const taskInputUrgent = document.getElementById('taskInputUrgent');
+    const taskInputNotes = document.getElementById('taskInputNotes');
+    const btnSaveTask = document.getElementById('btnSaveTask');
+
+    function switchScheduleTab(activeTab) {
+        if (activeTab === 'tasks') {
+            if (tabBtnTasks) {
+                tabBtnTasks.classList.add('btn-neon-blue', 'active');
+                tabBtnTasks.classList.remove('btn-outline');
+                tabBtnTasks.setAttribute('aria-selected', 'true');
+            }
+            if (tabBtnCalendar) {
+                tabBtnCalendar.classList.remove('btn-neon-blue', 'active');
+                tabBtnCalendar.classList.add('btn-outline');
+                tabBtnCalendar.setAttribute('aria-selected', 'false');
+            }
+            if (tasksSection) tasksSection.classList.remove('hidden');
+            if (calendarSection) calendarSection.classList.add('hidden');
+
+            if (tasksCalendar) {
+                setTimeout(() => tasksCalendar.updateSize(), 50);
+            } else {
+                renderTasksCalendar(cachedTasks);
+            }
+        } else {
+            if (tabBtnCalendar) {
+                tabBtnCalendar.classList.add('btn-neon-blue', 'active');
+                tabBtnCalendar.classList.remove('btn-outline');
+                tabBtnCalendar.setAttribute('aria-selected', 'true');
+            }
+            if (tabBtnTasks) {
+                tabBtnTasks.classList.remove('btn-neon-blue', 'active');
+                tabBtnTasks.classList.add('btn-outline');
+                tabBtnTasks.setAttribute('aria-selected', 'false');
+            }
+            if (calendarSection) calendarSection.classList.remove('hidden');
+            if (tasksSection) tasksSection.classList.add('hidden');
+
+            if (interactiveCalendar) {
+                setTimeout(() => interactiveCalendar.updateSize(), 50);
+            }
+        }
+    }
+
+    if (tabBtnCalendar) tabBtnCalendar.addEventListener('click', () => switchScheduleTab('calendar'));
+    if (tabBtnTasks) tabBtnTasks.addEventListener('click', () => switchScheduleTab('tasks'));
+
+    async function loadTasks(sync = false) {
+        try {
+            const url = sync ? `${API_TASKS}?sync=true` : API_TASKS;
+            const res = await fetch(url);
+            if (!res.ok) return;
+            const data = await res.json();
+            cachedTasks = data.tasks || [];
+            updateTaskBadges(cachedTasks);
+            renderTasksCalendar(cachedTasks);
+        } catch (err) {
+            console.error('Failed to load tasks:', err);
+        }
+    }
+
+    let urgentBannerDismissed = false;
+    const btnDismissUrgentBanner = document.getElementById('btnDismissUrgentBanner');
+    if (btnDismissUrgentBanner) {
+        btnDismissUrgentBanner.addEventListener('click', () => {
+            const urgentBanner = document.getElementById('urgentTasksBanner');
+            const now = new Date();
+            const persistentUrgent = (cachedTasks || []).some(t => t.status !== 'completed' && Boolean(t.isUrgent) && t.due && !isNaN(new Date(t.due).getTime()) && new Date(t.due) < now);
+            if (persistentUrgent) {
+                showToast('Overdue urgent tasks are persistent. Please resolve each task with Done, Delay, or Dismiss.', 'info');
+                return;
+            }
+            if (urgentBanner) urgentBanner.classList.add('hidden');
+            urgentBannerDismissed = true;
+        });
+    }
+
+    function updateTaskBadges(tasks) {
+        const pendingCount = tasks.filter(t => t.status !== 'completed').length;
+        const doneCount = tasks.filter(t => t.status === 'completed').length;
+
+        if (tasksTabBadge) tasksTabBadge.textContent = pendingCount.toString();
+        
+        const urgentBanner = document.getElementById('urgentTasksBanner');
+        const urgentText = document.getElementById('urgentTasksBannerText');
+        const urgentList = document.getElementById('urgentTasksBannerList');
+        const now = new Date();
+
+        const criticalOverdueTasks = tasks.filter(t => {
+            if (t.status === 'completed') return false;
+            const isOverdue = t.due && !isNaN(new Date(t.due).getTime()) && new Date(t.due) < now;
+            return Boolean(t.isUrgent) && isOverdue;
+        });
+
+        const allUrgentTasks = tasks.filter(t => {
+            if (t.status === 'completed') return false;
+            const isOverdue = t.due && !isNaN(new Date(t.due).getTime()) && new Date(t.due) < now;
+            return Boolean(t.isUrgent) || isOverdue;
+        });
+
+        // If there are critical overdue urgent tasks, banner is strictly PERSISTENT
+        const isPersistent = criticalOverdueTasks.length > 0;
+        if (isPersistent) {
+            urgentBannerDismissed = false;
+        }
+        
+        if (urgentBanner && urgentText) {
+            if (allUrgentTasks.length > 0 && (!urgentBannerDismissed || isPersistent)) {
+                urgentBanner.classList.remove('hidden');
+
+                if (isPersistent) {
+                    urgentBanner.style.background = 'rgba(255, 0, 60, 0.28)';
+                    urgentBanner.style.border = '2px solid var(--neon-red)';
+                    urgentBanner.style.borderLeft = '6px solid var(--neon-red)';
+                    urgentBanner.style.boxShadow = '0 0 18px rgba(255, 0, 60, 0.45)';
+                    urgentText.innerHTML = `<strong>PERSISTENT URGENT:</strong> ${criticalOverdueTasks.length} task${criticalOverdueTasks.length > 1 ? 's' : ''} overdue &mdash; action required`;
+                    if (btnDismissUrgentBanner) btnDismissUrgentBanner.style.display = 'none';
+                } else {
+                    urgentBanner.style.background = 'rgba(220, 38, 38, 0.2)';
+                    urgentBanner.style.border = '1px solid var(--neon-red)';
+                    urgentBanner.style.borderLeft = '4px solid var(--neon-red)';
+                    urgentBanner.style.boxShadow = 'none';
+                    urgentText.textContent = `${allUrgentTasks.length} urgent / overdue task${allUrgentTasks.length > 1 ? 's' : ''}`;
+                    if (btnDismissUrgentBanner) btnDismissUrgentBanner.style.display = 'inline-block';
+                }
+                
+                if (urgentList) {
+                    urgentList.innerHTML = allUrgentTasks.map(t => {
+                        const isOverdue = t.due && !isNaN(new Date(t.due).getTime()) && new Date(t.due) < now;
+                        const isCritical = Boolean(t.isUrgent) && isOverdue;
+                        let dueStr = '';
+                        if (t.due) {
+                            const d = new Date(t.due);
+                            dueStr = t.due.includes('T') && !t.due.endsWith('T00:00:00.000Z')
+                                ? d.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' })
+                                : d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short' });
+                        }
+                        return `
+                            <div class="urgent-task-item" style="display: flex; justify-content: space-between; align-items: center; background: ${isCritical ? 'rgba(0,0,0,0.55)' : 'rgba(0,0,0,0.35)'}; padding: 8px 12px; border-radius: 6px; border: ${isCritical ? '2px solid var(--neon-red)' : '1px solid rgba(255,0,60,0.3)'}; gap: 10px; flex-wrap: wrap;">
+                                <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 200px;">
+                                    <span style="color: var(--neon-red); font-size: 1.1rem; line-height: 1;">${isCritical ? '🚨' : '&#x25cf;'}</span>
+                                    <div>
+                                        <span class="urgent-task-title" data-id="${t.id}" style="color: var(--text-primary); font-weight: ${isCritical ? '700' : '500'}; cursor: pointer; text-decoration: underline;" title="Click to view task">${escapeHtml(t.title)}</span>
+                                        <div style="display: flex; gap: 6px; align-items: center; margin-top: 2px;">
+                                            ${isCritical ? '<span class="badge" style="background: var(--neon-red); color: #fff; font-size: 0.68rem; font-weight: 800; padding: 1px 6px;">OVERDUE URGENT</span>' : (isOverdue ? '<span class="badge" style="background: rgba(255,170,0,0.25); border: 1px solid var(--neon-orange, #ffaa00); color: var(--neon-orange, #ffaa00); font-size: 0.7rem; padding: 1px 5px;">Overdue</span>' : '<span class="badge" style="background: rgba(255,0,60,0.2); border: 1px solid var(--neon-red); color: var(--neon-red); font-size: 0.7rem; padding: 1px 5px;">Urgent</span>')}
+                                            ${dueStr ? `<small style="color: ${isOverdue ? 'var(--neon-red)' : 'var(--text-muted)'}; font-size: 0.75rem; font-weight: ${isOverdue ? '600' : 'normal'};">Due: ${dueStr}</small>` : ''}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                                    <button class="btn btn-neon-green btn-sm btn-done-urgent" data-id="${t.id}" style="padding: 4px 10px; font-size: 0.78rem; font-weight: 600;">✓ Done</button>
+                                    <button class="btn btn-neon-blue btn-sm btn-delay-urgent" data-id="${t.id}" style="padding: 4px 10px; font-size: 0.78rem;">🕒 Delay</button>
+                                    <button class="btn btn-outline btn-sm btn-dismiss-urgent" data-id="${t.id}" style="padding: 4px 10px; font-size: 0.78rem; border-color: rgba(255,0,60,0.5); color: var(--neon-red);" title="Dismiss task">✕ Dismiss</button>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+
+                    urgentList.querySelectorAll('.urgent-task-title').forEach(el => {
+                        el.addEventListener('click', () => {
+                            const taskId = el.getAttribute('data-id');
+                            const found = (cachedTasks || []).find(x => x.id === taskId);
+                            if (found) openTaskView(found);
+                        });
+                    });
+
+                    urgentList.querySelectorAll('.btn-done-urgent').forEach(btn => {
+                        btn.addEventListener('click', async (e) => {
+                            e.stopPropagation();
+                            const taskId = btn.getAttribute('data-id');
+                            btn.disabled = true;
+                            btn.innerText = 'Completing...';
+                            try {
+                                const res = await fetch(`${API_TASKS}/${encodeURIComponent(taskId)}`, {
+                                    method: 'PATCH',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ status: 'completed' })
+                                });
+                                if (res.ok) {
+                                    showToast('Urgent task marked complete!', 'info');
+                                    await loadTasks();
+                                } else {
+                                    showToast('Failed to complete task');
+                                    btn.disabled = false;
+                                    btn.innerText = '✓ Done';
+                                }
+                            } catch (err) {
+                                console.error(err);
+                                showToast('Network error completing task');
+                                btn.disabled = false;
+                                btn.innerText = '✓ Done';
+                            }
+                        });
+                    });
+
+                    urgentList.querySelectorAll('.btn-delay-urgent').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            const taskId = btn.getAttribute('data-id');
+                            const found = (cachedTasks || []).find(x => x.id === taskId);
+                            if (!found) return;
+
+                            itemToPostpone = taskId;
+                            activePostponeItemTitle = found.title;
+                            activePostponeItemType = 'task';
+
+                            if (postponeItemSummary) {
+                                postponeItemSummary.textContent = `Delay Urgent Task: "${found.title}"`;
+                            }
+
+                            const tmr = new Date();
+                            tmr.setHours(tmr.getHours() + 2);
+                            const tzOffset = tmr.getTimezoneOffset() * 60000;
+                            const localIso = new Date(tmr - tzOffset).toISOString().slice(0, 16);
+                            if (postponeDateInput) postponeDateInput.value = localIso;
+
+                            document.querySelectorAll('.btn-quick-postpone').forEach(b => b.classList.remove('selected'));
+                            const preset2h = document.querySelector('.btn-quick-postpone[data-hours="2"]');
+                            if (preset2h) preset2h.classList.add('selected');
+
+                            if (postponeModal) postponeModal.classList.remove('hidden');
+                        });
+                    });
+
+                    urgentList.querySelectorAll('.btn-dismiss-urgent').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            const taskId = btn.getAttribute('data-id');
+                            const found = (cachedTasks || []).find(x => x.id === taskId);
+                            if (!found) return;
+
+                            itemToDismiss = taskId;
+                            cardToDismiss = null;
+                            activeDismissItemTitle = found.title;
+                            activeDismissItemType = 'task';
+
+                            if (dismissConfirmItemTitle) {
+                                dismissConfirmItemTitle.textContent = `Are you sure you want to dismiss the urgent task: "${found.title}"?`;
+                            }
+                            if (dismissConfirmModal) {
+                                dismissConfirmModal.classList.remove('hidden');
+                            } else {
+                                if (confirm(`Dismiss urgent task "${found.title}"?`)) {
+                                    fetch(`${API_TASKS}/${encodeURIComponent(taskId)}`, { method: 'DELETE' })
+                                        .then(() => {
+                                            showToast('Task dismissed', 'info');
+                                            loadTasks();
+                                        }).catch(console.error);
+                                }
+                            }
+                        });
+                    });
+                }
+            } else {
+                urgentBanner.classList.add('hidden');
+                if (urgentList) urgentList.innerHTML = '';
+            }
+        }
+        if (tasksActiveCountBadge) tasksActiveCountBadge.textContent = `${pendingCount} Pending`;
+        if (tasksCompletedCountBadge) {
+            tasksCompletedCountBadge.textContent = `${doneCount} Done`;
+            tasksCompletedCountBadge.style.display = doneCount > 0 ? 'inline-block' : 'none';
+        }
+    }
+
+    function renderTasksCalendar(tasks) {
+        const tasksCalendarEl = document.getElementById('tasksCalendar');
+        if (!tasksCalendarEl || typeof FullCalendar === 'undefined') return;
+
+        if (!tasksCalendar) {
+            const tasksCalendarConfig = {
+                initialView: 'dayGridMonth',
+                weekends: true,
+                firstDay: 1,
+                dayHeaders: true,
+                nowIndicator: true,
+                selectable: true,
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,listWeek'
+                },
+                buttonText: {
+                    today: 'Today',
+                    dayGridMonth: 'Month',
+                    listWeek: 'Week'
+                },
+                eventTimeFormat: {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    meridiem: 'short'
+                },
+                views: {
+                    dayGridMonth: {
+                        dayHeaderFormat: { weekday: 'short' },
+                        dayMaxEvents: 2
+                    },
+                    listWeek: {
+                        dayHeaderFormat: { weekday: 'long', month: 'short', day: 'numeric' },
+                        noEventsContent: 'No tasks scheduled this week'
+                    }
+                },
+                height: 'auto',
+                dateClick: function(info) {
+                    let datePart = info.dateStr;
+                    let timePart = '09:00';
+                    if (info.dateStr.includes('T')) {
+                        const parts = info.dateStr.split('T');
+                        datePart = parts[0];
+                        timePart = parts[1].substring(0, 5);
+                    }
+                    openTaskEdit({ rawDate: datePart, startTime: timePart });
+                },
+                eventClick: function(info) {
+                    if (info.event.extendedProps.task) {
+                        openTaskView(info.event.extendedProps.task);
+                    }
+                }
+            };
+
+            tasksCalendar = new FullCalendar.Calendar(tasksCalendarEl, tasksCalendarConfig);
+            tasksCalendar.render();
+        }
+
+        const events = [];
+        (tasks || []).forEach(t => {
+            const isDone = t.status === 'completed';
+            const isOverdue = !isDone && t.due && !isNaN(new Date(t.due).getTime()) && new Date(t.due) < new Date();
+            const isUrgent = Boolean(t.isUrgent) || isOverdue;
+
+            let start = t.due ? t.due.slice(0, 19) : (t.created_at ? t.created_at.slice(0, 10) : new Date().toISOString().slice(0, 10));
+            const hasTime = t.due && t.due.includes('T') && !t.due.endsWith('T00:00:00.000Z');
+
+            let bg = isDone ? 'rgba(0, 255, 102, 0.15)' : 'rgba(0, 240, 255, 0.15)';
+            let border = isDone ? 'var(--neon-green)' : 'var(--neon-blue)';
+            let text = isDone ? 'rgba(255, 255, 255, 0.6)' : '#ffffff';
+
+            if (isUrgent && !isDone) {
+                bg = 'rgba(255, 0, 60, 0.25)';
+                border = 'var(--neon-red)';
+                text = '#ff6b8b';
+            }
+
+            events.push({
+                id: t.id,
+                title: `${isDone ? '✓ ' : (isOverdue ? '⚠️ ' : (t.isUrgent ? '❗ ' : '○ '))}${t.title}`,
+                start: start,
+                allDay: !hasTime,
+                backgroundColor: bg,
+                borderColor: border,
+                textColor: text,
+                className: isUrgent && !isDone ? 'task-event-urgent' : '',
+                extendedProps: { task: t, isUrgent, isOverdue }
+            });
+        });
+
+        tasksCalendar.getEvents().forEach(e => e.remove());
+        tasksCalendar.addEventSource(events);
+    }
+
+    function openTaskView(task) {
+        activeTask = task;
+        if (!taskViewModal) return;
+
+        if (viewTaskTitle) viewTaskTitle.innerText = task.title || 'Task Details';
+        const isDone = task.status === 'completed';
+        if (viewTaskBadge) {
+            viewTaskBadge.innerText = isDone ? 'Completed' : 'Pending';
+            viewTaskBadge.className = isDone ? 'badge neon-green' : 'badge neon-blue';
+        }
+        
+        const viewTaskUrgentBadge = document.getElementById('viewTaskUrgentBadge');
+        const btnToggleTaskUrgent = document.getElementById('btnToggleTaskUrgent');
+        const isOverdue = !isDone && task.due && !isNaN(new Date(task.due).getTime()) && new Date(task.due) < new Date();
+
+        if (viewTaskUrgentBadge) {
+            if (task.isUrgent || isOverdue) {
+                viewTaskUrgentBadge.classList.remove('hidden');
+                viewTaskUrgentBadge.innerText = isOverdue ? 'Overdue' : 'Urgent';
+            } else {
+                viewTaskUrgentBadge.classList.add('hidden');
+            }
+        }
+
+        if (btnToggleTaskUrgent) {
+            btnToggleTaskUrgent.innerText = task.isUrgent ? 'Unmark Urgent' : '! Mark Urgent';
+            btnToggleTaskUrgent.style.borderColor = task.isUrgent ? 'var(--text-muted)' : 'var(--neon-red)';
+            btnToggleTaskUrgent.style.color = task.isUrgent ? 'var(--text-secondary)' : 'var(--neon-red)';
+        }
+
+        if (viewTaskSourceBadge) {
+            viewTaskSourceBadge.innerText = task.google_task_id ? 'Google Tasks Synced' : 'Local Task';
+        }
+
+        let dueDisplay = 'No due date';
+        if (task.due) {
+            const d = new Date(task.due);
+            if (!isNaN(d.getTime())) {
+                const dateStr = d.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+                const timeStr = task.due.includes('T') && !task.due.endsWith('T00:00:00.000Z')
+                    ? ' • ' + d.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' })
+                    : '';
+                dueDisplay = `${dateStr}${timeStr}${isOverdue ? ' (Overdue)' : ''}`;
+            }
+        }
+        if (viewTaskDue) viewTaskDue.innerText = dueDisplay;
+
+        if (viewTaskNotes) {
+            viewTaskNotes.innerText = task.notes || 'No additional notes provided.';
+        }
+
+        if (btnToggleTaskComplete) {
+            btnToggleTaskComplete.innerText = isDone ? 'Mark Incomplete' : '✓ Mark Complete';
+        }
+
+        taskViewModal.classList.remove('hidden');
+    }
+
+    function openTaskEdit(taskOrPrefill) {
+        if (!taskEditModal) return;
+
+        const isEditing = Boolean(taskOrPrefill && taskOrPrefill.id);
+        const todayStr = new Date().toISOString().split('T')[0];
+
+        if (taskId) taskId.value = isEditing ? taskOrPrefill.id : '';
+        if (taskInputTitle) taskInputTitle.value = isEditing ? taskOrPrefill.title : '';
+        if (taskInputUrgent) taskInputUrgent.checked = isEditing ? Boolean(taskOrPrefill.isUrgent) : false;
+        
+        let dateVal = '';
+        let timeVal = '09:00';
+        if (isEditing && taskOrPrefill.due) {
+            const d = new Date(taskOrPrefill.due);
+            if (!isNaN(d.getTime())) {
+                dateVal = d.toISOString().split('T')[0];
+                if (taskOrPrefill.due.includes('T') && !taskOrPrefill.due.endsWith('T00:00:00.000Z')) {
+                    timeVal = d.toISOString().split('T')[1].substring(0, 5);
+                }
+            }
+        } else if (taskOrPrefill && taskOrPrefill.rawDate) {
+            dateVal = taskOrPrefill.rawDate;
+            timeVal = taskOrPrefill.startTime || '09:00';
+        } else {
+            dateVal = todayStr;
+        }
+
+        if (taskInputDate) taskInputDate.value = dateVal;
+        if (taskInputTime) taskInputTime.value = timeVal;
+        if (taskInputStatus) taskInputStatus.value = isEditing ? (taskOrPrefill.status || 'needsAction') : 'needsAction';
+        if (taskInputNotes) taskInputNotes.value = isEditing ? (taskOrPrefill.notes || '') : '';
+
+        if (editTaskModalTitle) {
+            editTaskModalTitle.innerText = isEditing ? 'Edit Task' : 'Add Task';
+        }
+
+        if (taskViewModal) taskViewModal.classList.add('hidden');
+        taskEditModal.classList.remove('hidden');
+    }
+
+    if (btnCloseTaskView) btnCloseTaskView.addEventListener('click', () => taskViewModal && taskViewModal.classList.add('hidden'));
+    if (btnDoneTaskView) btnDoneTaskView.addEventListener('click', () => taskViewModal && taskViewModal.classList.add('hidden'));
+
+    if (btnCloseTaskEdit) btnCloseTaskEdit.addEventListener('click', () => taskEditModal && taskEditModal.classList.add('hidden'));
+    if (btnCancelTaskEdit) btnCancelTaskEdit.addEventListener('click', () => taskEditModal && taskEditModal.classList.add('hidden'));
+
+    if (btnAddTask) {
+        btnAddTask.addEventListener('click', () => openTaskEdit(null));
+    }
+
+    if (btnEditTask) {
+        btnEditTask.addEventListener('click', () => {
+            if (activeTask) openTaskEdit(activeTask);
+        });
+    }
+
+    if (btnToggleTaskComplete) {
+        btnToggleTaskComplete.addEventListener('click', async () => {
+            if (!activeTask) return;
+            const newStatus = activeTask.status === 'completed' ? 'needsAction' : 'completed';
+            try {
+                const res = await fetch(`${API_TASKS}/${encodeURIComponent(activeTask.id)}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: newStatus })
+                });
+                if (res.ok) {
+                    const updated = await res.json();
+                    activeTask = updated.task || updated;
+                    showToast(newStatus === 'completed' ? 'Task marked complete!' : 'Task marked pending!', 'info');
+                    openTaskView(activeTask);
+                    urgentBannerDismissed = false;
+                    await loadTasks();
+                } else {
+                    showToast('Failed to update task status');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Network error updating task status');
+            }
+        });
+    }
+
+    const btnToggleTaskUrgent = document.getElementById('btnToggleTaskUrgent');
+    if (btnToggleTaskUrgent) {
+        btnToggleTaskUrgent.addEventListener('click', async () => {
+            if (!activeTask) return;
+            const newUrgent = !activeTask.isUrgent;
+            btnToggleTaskUrgent.disabled = true;
+            try {
+                const res = await fetch(`${API_TASKS}/${encodeURIComponent(activeTask.id)}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ isUrgent: newUrgent })
+                });
+                if (res.ok) {
+                    const updated = await res.json();
+                    activeTask = updated.task || { ...activeTask, isUrgent: newUrgent };
+                    showToast(newUrgent ? 'Task marked as Urgent!' : 'Task unmarked as urgent', 'info');
+                    openTaskView(activeTask);
+                    urgentBannerDismissed = false;
+                    await loadTasks();
+                } else {
+                    showToast('Failed to update urgent status');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Network error updating task');
+            } finally {
+                btnToggleTaskUrgent.disabled = false;
+            }
+        });
+    }
+
+    if (btnDeleteTask) {
+        btnDeleteTask.addEventListener('click', async () => {
+            if (!activeTask) return;
+            const confirmDelete = confirm(`Are you sure you want to delete the task: "${activeTask.title}"?`);
+            if (!confirmDelete) return;
+
+            try {
+                const res = await fetch(`${API_TASKS}/${encodeURIComponent(activeTask.id)}`, {
+                    method: 'DELETE'
+                });
+                if (res.ok) {
+                    showToast('Task deleted successfully', 'info');
+                    if (taskViewModal) taskViewModal.classList.add('hidden');
+                    activeTask = null;
+                    await loadTasks();
+                } else {
+                    showToast('Failed to delete task');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Network error deleting task');
+            }
+        });
+    }
+
+    if (btnSyncTasks) {
+        btnSyncTasks.addEventListener('click', async () => {
+            btnSyncTasks.disabled = true;
+            btnSyncTasks.innerHTML = '🔄 Syncing...';
+            try {
+                const res = await fetch(API_TASKS_SYNC, { method: 'POST' });
+                const result = await res.json();
+                if (res.ok && result.success) {
+                    showToast(`Synced with Google Tasks (${result.pulled} pulled, ${result.pushed} pushed)`, 'info');
+                    await loadTasks();
+                } else {
+                    showToast(result.error || 'Sync with Google Tasks failed');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Network error syncing tasks');
+            } finally {
+                btnSyncTasks.disabled = false;
+                btnSyncTasks.innerHTML = '🔄 Sync Tasks';
+            }
+        });
+    }
+
+    if (taskForm) {
+        taskForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = taskId ? taskId.value.trim() : '';
+            const title = taskInputTitle ? taskInputTitle.value.trim() : '';
+            const date = taskInputDate ? taskInputDate.value : '';
+            const time = taskInputTime ? taskInputTime.value : '';
+            const status = taskInputStatus ? taskInputStatus.value : 'needsAction';
+            const isUrgent = taskInputUrgent ? taskInputUrgent.checked : false;
+            const notes = taskInputNotes ? taskInputNotes.value.trim() : '';
+
+            if (!title) {
+                showToast('Please enter a task title');
+                return;
+            }
+
+            let dueIso = null;
+            if (date) {
+                if (time) {
+                    dueIso = `${date}T${time}:00+10:00`;
+                } else {
+                    dueIso = `${date}T09:00:00+10:00`;
+                }
+            }
+
+            const payload = {
+                title,
+                notes: notes || undefined,
+                due: dueIso || undefined,
+                status,
+                isUrgent
+            };
+
+            try {
+                const url = id ? `${API_TASKS}/${encodeURIComponent(id)}` : API_TASKS;
+                const method = id ? 'PATCH' : 'POST';
+                const res = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    showToast(id ? 'Task updated!' : 'Task created!', 'info');
+                    if (taskEditModal) taskEditModal.classList.add('hidden');
+                    await loadTasks();
+                } else {
+                    const errData = await res.json().catch(() => ({}));
+                    showToast(errData.error || 'Failed to save task');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Network error saving task');
             }
         });
     }
@@ -1693,6 +2437,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else if (data.intent === 'ADD_EXPENSE') {
                     if (typeof loadBudget === 'function') loadBudget();
                     showToast('Expense added', 'success');
+                } else if (data.intent === 'SEND_EMAIL' && actionToCommit) {
+                    if (data.status === 'success') {
+                        showToast('Email sent via Gmail', 'success');
+                    } else {
+                        showToast('Email could not be sent', 'error');
+                    }
                 }
             }
 
@@ -1998,7 +2748,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await res.json();
                 
                 if (data.html || data.markdown) {
-                    // Very simple markdown formatting just for display if needed
                     briefingContent.innerHTML = data.html || data.markdown.replace(/\n/g, '<br>');
                 } else {
                     briefingContent.innerHTML = 'Error loading briefing.';
@@ -2015,6 +2764,41 @@ document.addEventListener('DOMContentLoaded', () => {
         const closeBriefingModal = () => briefingModal.classList.add('hidden');
         if (btnCloseBriefing) btnCloseBriefing.addEventListener('click', closeBriefingModal);
         if (btnDismissBriefing) btnDismissBriefing.addEventListener('click', closeBriefingModal);
+
+        // Tab navigation within the briefing modal
+        if (briefingContent) {
+            briefingContent.addEventListener('click', (e) => {
+                const tabBtn = e.target.closest('.briefing-nav-tab');
+                if (!tabBtn) return;
+                const targetId = tabBtn.getAttribute('data-tab');
+                if (!targetId) return;
+
+                const container = tabBtn.closest('.briefing-container') || briefingContent;
+                container.querySelectorAll('.briefing-nav-tab').forEach(btn => {
+                    btn.classList.remove('active');
+                    btn.setAttribute('aria-selected', 'false');
+                });
+                container.querySelectorAll('.briefing-tab-pane').forEach(pane => {
+                    pane.classList.remove('active');
+                });
+
+                tabBtn.classList.add('active');
+                tabBtn.setAttribute('aria-selected', 'true');
+                const targetPane = document.getElementById(targetId);
+                if (targetPane) targetPane.classList.add('active');
+            });
+        }
+
+        const btnBriefingOpenChat = document.getElementById('btnBriefingOpenChat');
+        if (btnBriefingOpenChat) {
+            btnBriefingOpenChat.addEventListener('click', () => {
+                briefingModal.classList.add('hidden');
+                const rumbleChatModal = document.getElementById('rumbleChatModal');
+                if (rumbleChatModal) {
+                    rumbleChatModal.classList.remove('hidden');
+                }
+            });
+        }
     }
     
     if (btnDoneBriefing && executiveBriefingCard) {
@@ -2167,11 +2951,14 @@ document.addEventListener('DOMContentLoaded', () => {
                             </div>
                         </div>
                         <div>
-                            <label style="font-size: 0.75rem; color: var(--text-secondary); display: flex; justify-content: space-between; margin-bottom: 4px;">
+                            <label style="font-size: 0.75rem; color: var(--text-secondary); display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                                 <span>Pain Score</span>
-                                <strong style="color: var(--neon-red);" class="pain-score-val-label">${slot.score}/10</strong>
+                                <div style="display: flex; align-items: center; gap: 4px;">
+                                    <input type="number" class="pain-score-input-cell" data-area="${slot.area}" min="0" max="10" step="0.1" inputmode="decimal" value="${slot.score}" style="width: 52px; padding: 2px 4px; text-align: right; font-weight: bold; color: var(--neon-red); background: rgba(0,0,0,0.5); border: 1px solid rgba(255, 75, 75, 0.4); border-radius: 4px; font-size: 0.85rem;" title="Click to enter exact decimal score (e.g. 5.7, 8.3)">
+                                    <span style="font-size: 0.75rem; color: var(--text-secondary);">/10</span>
+                                </div>
                             </label>
-                            <input type="range" class="glass-input pain-slot-slider" data-area="${slot.area}" min="0" max="10" step="0.5" value="${slot.score}" style="width: 100%; height: 6px; padding: 0;">
+                            <input type="range" class="glass-input pain-slot-slider" data-area="${slot.area}" min="0" max="10" step="0.1" value="${slot.score}" style="width: 100%; height: 6px; padding: 0;">
                         </div>
                     </div>
                 </div>
@@ -2205,10 +2992,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 const area = slider.getAttribute('data-area');
                 const slot = selectedPainAreas.find(s => s.area === area);
                 if (slot) {
-                    slot.score = Number(e.target.value);
-                    const label = slider.parentElement.querySelector('.pain-score-val-label');
-                    if (label) label.innerText = `${slot.score}/10`;
+                    const parsed = parseFloat(e.target.value);
+                    slot.score = isNaN(parsed) ? 5.0 : Number(parsed.toFixed(1));
+                    const numInput = slider.closest('.pain-slot-controls')?.querySelector(`.pain-score-input-cell[data-area="${area}"]`);
+                    if (numInput && document.activeElement !== numInput) {
+                        numInput.value = slot.score;
+                    }
                 }
+            });
+        });
+
+        dynamicPainCardsContainer.querySelectorAll('.pain-score-input-cell').forEach(numInput => {
+            const handleScoreInput = (e) => {
+                const area = numInput.getAttribute('data-area');
+                const slot = selectedPainAreas.find(s => s.area === area);
+                if (slot) {
+                    let parsed = parseFloat(e.target.value);
+                    if (isNaN(parsed)) parsed = 0;
+                    parsed = Math.max(0, Math.min(10, parsed));
+                    slot.score = Number(parsed.toFixed(1));
+                    const slider = numInput.closest('.pain-slot-controls')?.querySelector(`.pain-slot-slider[data-area="${area}"]`);
+                    if (slider && document.activeElement !== slider) {
+                        slider.value = slot.score;
+                    }
+                }
+            };
+            numInput.addEventListener('input', handleScoreInput);
+            numInput.addEventListener('change', (e) => {
+                handleScoreInput(e);
+                numInput.value = slot?.score ?? numInput.value;
             });
         });
 
@@ -2257,6 +3069,126 @@ document.addEventListener('DOMContentLoaded', () => {
             moodLabelDisplay.innerText = `(${button.dataset.label})`;
         }
     }));
+
+    // Quick Pain Auto-Log Presets (Standard, Hydro, Thoracic, Sciatica)
+    async function autoLogQuickPreset(presetType) {
+        let score = 7.5;
+        let locations = [];
+        let notes = '';
+        let mood = 'neutral';
+        let mood_emoji = '😐';
+
+        if (presetType === 'sciatica') {
+            score = 9.5;
+            locations = [
+                { area: 'sciatica', side: 'unspecified', percentage: 100, weight: 100, pain_score: 9.5 }
+            ];
+            notes = 'Sciatica pain attack';
+            mood = 'stressed';
+            mood_emoji = '😫';
+        } else if (presetType === 'thoracic') {
+            score = 7.5;
+            locations = [
+                { area: 'thoracic', side: 'unspecified', percentage: 70, weight: 70, pain_score: 7.5 },
+                { area: 'cervical', side: 'unspecified', percentage: 15, weight: 15, pain_score: 7.5 },
+                { area: 'scapula', side: 'unspecified', percentage: 15, weight: 15, pain_score: 7.5 }
+            ];
+            notes = 'Thoracic strain & fatigue (70% thoracic, 15% neck, 15% scapula @ 7.5)';
+            mood = 'neutral';
+            mood_emoji = '😐';
+        } else if (presetType === 'hydro') {
+            let prevScore = 7.5;
+            let prevLocs = [
+                { area: 'lumbar', side: 'right', percentage: 75, weight: 75 },
+                { area: 'cervical', side: 'unspecified', percentage: 25, weight: 25 }
+            ];
+            try {
+                const res = await fetch('/api/v1/pain/log');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.logs && data.logs.length > 0) {
+                        const last = data.logs[0];
+                        prevScore = last.score ?? 7.5;
+                        if (Array.isArray(last.locations) && last.locations.length > 0) {
+                            prevLocs = last.locations.map(l => ({
+                                area: l.area,
+                                side: l.side || 'unspecified',
+                                percentage: l.percentage ?? l.weight ?? 100,
+                                weight: l.percentage ?? l.weight ?? 100
+                            }));
+                        }
+                    }
+                }
+            } catch (err) {
+                console.warn('Could not fetch last log for hydro delta:', err);
+            }
+            score = Math.max(1.0, Math.min(10.0, Number((prevScore - 1.5).toFixed(1))));
+            locations = prevLocs;
+            notes = 'Good hydrotherapy session, feeling slightly better';
+            mood = 'good';
+            mood_emoji = '😌';
+        } else if (presetType === 'standard') {
+            // Rotates between Variant A (ankle 15%, thoracic 15% @ 5) and Variant B (knee 15%, neck 15% @ 5)
+            const currentRotation = localStorage.getItem('rumble_standard_rotation') || 'B';
+            const nextRotation = currentRotation === 'A' ? 'B' : 'A';
+            localStorage.setItem('rumble_standard_rotation', nextRotation);
+
+            if (nextRotation === 'A') {
+                locations = [
+                    { area: 'lumbar', side: 'right', percentage: 70, weight: 70, pain_score: 7.5 },
+                    { area: 'ankle', side: 'right', percentage: 15, weight: 15, pain_score: 5.0 },
+                    { area: 'thoracic', side: 'unspecified', percentage: 15, weight: 15, pain_score: 5.0 }
+                ];
+                score = 6.8;
+                notes = 'Standard check-in (70% lumbar 7.5, 15% ankle 5.0, 15% thoracic 5.0)';
+            } else {
+                locations = [
+                    { area: 'lumbar', side: 'right', percentage: 70, weight: 70, pain_score: 7.5 },
+                    { area: 'knee', side: 'right', percentage: 15, weight: 15, pain_score: 5.0 },
+                    { area: 'cervical', side: 'unspecified', percentage: 15, weight: 15, pain_score: 5.0 }
+                ];
+                score = 6.8;
+                notes = 'Standard check-in (70% lumbar 7.5, 15% knee 5.0, 15% neck 5.0)';
+            }
+            mood = 'neutral';
+            mood_emoji = '😐';
+        }
+
+        try {
+            showToast(`Logging ${presetType.toUpperCase()} preset...`);
+            const res = await fetch(API_PAIN_LOG, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    score,
+                    pain_level: score,
+                    generators: locations,
+                    locations,
+                    pain_notes: notes,
+                    notes,
+                    mood,
+                    mood_notes: notes,
+                    mood_emoji
+                })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.detail || data.error || 'Quick log failed');
+            closePainLog();
+            showToast(`Auto-logged: ${presetType.toUpperCase()} (${score}/10)`, 'success');
+            if (typeof loadTodaysPainLogs === 'function') loadTodaysPainLogs();
+            if (typeof loadPainAnalytics === 'function') loadPainAnalytics();
+            if (typeof loadAgendaItems === 'function') loadAgendaItems();
+        } catch (e) {
+            showToast(e.message || 'Quick log failed');
+        }
+    }
+
+    document.querySelectorAll('.quick-pain-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const preset = btn.getAttribute('data-preset');
+            if (preset) autoLogQuickPreset(preset);
+        });
+    });
 
     // Initial render of pain modal
     renderPainModal();
@@ -2409,25 +3341,27 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!notesGrid || !pinnedNotesGrid) return;
         notesGrid.innerHTML = '';
         pinnedNotesGrid.innerHTML = '';
+        if (archivedNotesGrid) archivedNotesGrid.innerHTML = '';
         
-        const isArchiveView = currentNotesTab === 'archive';
-        const filteredNotes = currentNotes.filter(n => isArchiveView ? n.isArchived : !n.isArchived);
+        const activeNotes = currentNotes.filter(n => !n.isArchived);
+        const archivedNotes = currentNotes.filter(n => n.isArchived);
 
-        if (filteredNotes.length === 0) {
-            notesGrid.innerHTML = `<p style="color: var(--text-secondary); width: 100%; text-align: center; margin-top: 20px;">No notes found in ${isArchiveView ? 'Archive' : 'Active'}.</p>`;
+        if (activeNotes.length === 0 && archivedNotes.length === 0) {
+            notesGrid.innerHTML = `<p style="color: var(--text-secondary); width: 100%; text-align: center; margin-top: 20px;">No notes found.</p>`;
             notesSectionTitle.style.display = 'none';
             unpinnedNotesSectionTitle.style.display = 'none';
+            if (archivedNotesSectionTitle) archivedNotesSectionTitle.style.display = 'none';
             return;
         }
 
-        const pinnedNotes = filteredNotes.filter(n => n.pinned);
-        const unpinnedNotes = filteredNotes.filter(n => !n.pinned);
+        const pinnedNotes = activeNotes.filter(n => n.pinned);
+        const unpinnedNotes = activeNotes.filter(n => !n.pinned);
 
-        const showSections = !isArchiveView && pinnedNotes.length > 0;
+        const showSections = pinnedNotes.length > 0;
         notesSectionTitle.style.display = showSections ? 'block' : 'none';
         unpinnedNotesSectionTitle.style.display = showSections && unpinnedNotes.length > 0 ? 'block' : 'none';
         
-        const renderCard = (note, container) => {
+        const renderCard = (note, container, isArchived = false) => {
             let rawContent = note.content || '';
             
             // Check for image markdown
@@ -2470,47 +3404,71 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const card = document.createElement('div');
             card.className = 'keep-note glass-panel';
+            const cardBg = isArchived ? 'rgba(25, 25, 30, 0.5)' : 'rgba(30, 30, 30, 0.6)';
+            const cardBorder = isArchived ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.2)';
+            const cardOpacity = isArchived ? '0.85' : '1';
             card.style.cssText = `
                 break-inside: avoid; margin-bottom: 15px; 
-                background: rgba(30, 30, 30, 0.6); 
-                border: 1px solid rgba(255,255,255,0.2); 
+                background: ${cardBg}; 
+                border: 1px solid ${cardBorder}; 
                 padding: 16px; border-radius: 8px; 
                 position: relative; cursor: pointer; 
                 display: flex; flex-direction: column; 
                 min-height: 120px; transition: box-shadow 0.2s, background 0.2s, border-color 0.2s;
+                opacity: ${cardOpacity};
             `;
             
             card.addEventListener('mouseenter', () => {
                 card.style.boxShadow = '0 4px 12px rgba(0,0,0,0.6)';
                 card.style.borderColor = 'rgba(255,255,255,0.4)';
+                card.style.opacity = '1';
             });
             card.addEventListener('mouseleave', () => {
                 card.style.boxShadow = 'none';
-                card.style.borderColor = 'rgba(255,255,255,0.2)';
+                card.style.borderColor = cardBorder;
+                card.style.opacity = cardOpacity;
             });
 
             const pinIcon = `<svg width="20" height="20" viewBox="0 0 24 24" fill="${note.pinned ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"></line><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.68V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3v4.68a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path></svg>`;
-            const archiveIcon = note.isArchived 
-                ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="12" y1="12" x2="12" y2="16"></line><polyline points="10 14 12 12 14 14"></polyline></svg>` 
-                : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>`;
+            const archiveIcon = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>`;
+            const reinstateIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>`;
+            const trashIcon = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>`;
+
+            const actionButtonsHtml = isArchived ? `
+                <button class="btn-icon btn-reinstate-note" data-id="${note.id}" style="background: none; border: 1px solid rgba(0, 229, 255, 0.4); border-radius: 4px; color: var(--neon-blue); cursor: pointer; padding: 3px 8px; font-size: 0.76rem; display: inline-flex; align-items: center; gap: 4px;" title="Reinstate note to active">
+                    ${reinstateIcon} Reinstate
+                </button>
+                <button class="btn-icon btn-delete-note" data-id="${note.id}" style="background: none; border: none; color: rgba(255,100,100,0.75); cursor: pointer; padding: 4px;" title="Delete note permanently">
+                    ${trashIcon}
+                </button>
+            ` : `
+                <button class="btn-icon btn-archive-toggle" data-id="${note.id}" style="background: none; border: none; color: rgba(255,255,255,0.7); cursor: pointer; padding: 4px;" title="Archive Note">
+                    ${archiveIcon}
+                </button>
+                <button class="btn-icon btn-delete-note" data-id="${note.id}" style="background: none; border: none; color: rgba(255,100,100,0.75); cursor: pointer; padding: 4px;" title="Delete Note">
+                    ${trashIcon}
+                </button>
+            `;
 
             card.innerHTML = `
                 ${cardImageHtml}
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
                     <h4 style="margin: 0; font-size: 1.1em; font-weight: 500; color: var(--text-primary);">${escapeHtml(title)}</h4>
+                    ${!isArchived ? `
                     <button class="btn-icon btn-pin-toggle" data-id="${note.id}" style="background: none; border: none; color: ${note.pinned ? '#ffeb3b' : 'rgba(255,255,255,0.5)'}; cursor: pointer; padding: 4px;" title="${note.pinned ? 'Unpin' : 'Pin'}">
                         ${pinIcon}
                     </button>
+                    ` : ''}
                 </div>
                 <div style="flex-grow: 1;">
                     <p style="margin: 0; font-size: 0.95em; color: rgba(255,255,255,0.85); overflow-wrap: anywhere; line-height: 1.4;">${body}</p>
                     ${cardAttachmentHtml}
                 </div>
-                <div style="margin-top: 16px; display: flex; justify-content: space-between; align-items: center; opacity: 0.7;">
-                    <div style="font-size: 0.75em; color: rgba(255,255,255,0.5);">${new Date(note.created_at).toLocaleDateString()}</div>
-                    <button class="btn-icon btn-archive-toggle" data-id="${note.id}" style="background: none; border: none; color: rgba(255,255,255,0.7); cursor: pointer; padding: 4px;" title="${note.isArchived ? 'Restore' : 'Archive'}">
-                        ${archiveIcon}
-                    </button>
+                <div style="margin-top: 16px; display: flex; justify-content: space-between; align-items: center; opacity: 0.85;">
+                    <div style="font-size: 0.75em; color: rgba(255,255,255,0.5);">${new Date(note.created_at).toLocaleDateString()}${isArchived ? ' (Archived)' : ''}</div>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        ${actionButtonsHtml}
+                    </div>
                 </div>
             `;
 
@@ -2527,24 +3485,49 @@ document.addEventListener('DOMContentLoaded', () => {
                 openNoteEditor(note);
             });
 
-            card.querySelector('.btn-pin-toggle').addEventListener('click', (e) => {
-                e.stopPropagation();
-                toggleNotePin(note);
-            });
+            const pinBtn = card.querySelector('.btn-pin-toggle');
+            if (pinBtn) {
+                pinBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleNotePin(note);
+                });
+            }
 
-            card.querySelector('.btn-archive-toggle').addEventListener('click', (e) => {
-                e.stopPropagation();
-                toggleNoteArchive(note);
-            });
+            const archiveBtn = card.querySelector('.btn-archive-toggle');
+            if (archiveBtn) {
+                archiveBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleNoteArchive(note, true);
+                });
+            }
+
+            const reinstateBtn = card.querySelector('.btn-reinstate-note');
+            if (reinstateBtn) {
+                reinstateBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleNoteArchive(note, false);
+                });
+            }
+
+            const deleteBtn = card.querySelector('.btn-delete-note');
+            if (deleteBtn) {
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deleteNote(note.id);
+                });
+            }
 
             container.appendChild(card);
         };
 
-        if (!isArchiveView) {
-            pinnedNotes.forEach(note => renderCard(note, pinnedNotesGrid));
-            unpinnedNotes.forEach(note => renderCard(note, notesGrid));
-        } else {
-            filteredNotes.forEach(note => renderCard(note, notesGrid));
+        pinnedNotes.forEach(note => renderCard(note, pinnedNotesGrid, false));
+        unpinnedNotes.forEach(note => renderCard(note, notesGrid, false));
+
+        if (archivedNotes.length > 0 && archivedNotesGrid) {
+            if (archivedNotesSectionTitle) archivedNotesSectionTitle.style.display = 'block';
+            archivedNotes.forEach(note => renderCard(note, archivedNotesGrid, true));
+        } else if (archivedNotesSectionTitle) {
+            archivedNotesSectionTitle.style.display = 'none';
         }
     }
 
@@ -2617,16 +3600,46 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    async function toggleNoteArchive(note) {
+    async function toggleNoteArchive(note, forceState) {
+        const targetArchived = forceState !== undefined ? forceState : !note.isArchived;
         try {
-            await fetch(`\${API_NOTES}/\${note.id}`, {
+            const res = await fetch(`${API_NOTES}/${note.id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ isArchived: !note.isArchived })
+                body: JSON.stringify({ isArchived: targetArchived })
             });
-            loadNotes();
+            if (res.ok) {
+                showToast(targetArchived ? 'Note moved to Archive' : 'Note reinstated to active', 'success');
+                loadNotes();
+            } else {
+                showToast('Failed to update note archive status');
+            }
         } catch (e) {
             showToast('Failed to archive note');
+        }
+    }
+
+    async function deleteNote(noteId) {
+        if (!confirm('Are you sure you want to permanently delete this note?')) return;
+        try {
+            const res = await fetch(`${API_NOTES}/${noteId}`, {
+                method: 'DELETE'
+            });
+            if (res.ok) {
+                showToast('Note deleted', 'info');
+                if (editingNoteId === noteId) {
+                    noteEditorExpanded.classList.add('hidden');
+                    noteEditorCollapsed.classList.remove('hidden');
+                    editingNoteId = null;
+                    clearNoteAttachment();
+                }
+                loadNotes();
+            } else {
+                showToast('Failed to delete note');
+            }
+        } catch (e) {
+            showToast('Failed to delete note');
+            console.error(e);
         }
     }
 
@@ -2796,6 +3809,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (note) {
             editingNoteId = note.id;
+            if (btnDeleteNoteEditor) btnDeleteNoteEditor.style.display = 'inline-block';
             let content = note.content || '';
 
             // Extract any attached image markdown ![alt](src)
@@ -2866,6 +3880,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } else if (clearAttachment) {
             editingNoteId = null;
+            if (btnDeleteNoteEditor) btnDeleteNoteEditor.style.display = 'none';
             editNoteTitle.value = '';
             editNoteBody.value = '';
             btnPinNote.classList.remove('btn-neon-blue');
@@ -2924,6 +3939,7 @@ document.addEventListener('DOMContentLoaded', () => {
             noteEditorExpanded.classList.add('hidden');
             noteEditorCollapsed.classList.remove('hidden');
             editingNoteId = null;
+            if (btnDeleteNoteEditor) btnDeleteNoteEditor.style.display = 'none';
             clearNoteAttachment();
         }
         if (inlineNoteEditorContainer) {
@@ -2933,6 +3949,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     btnCancelNoteEdit.addEventListener('click', closeAndSaveNote);
+
+    if (btnDeleteNoteEditor) {
+        btnDeleteNoteEditor.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            if (editingNoteId) {
+                await deleteNote(editingNoteId);
+            }
+        });
+    }
     
     btnPinNote.addEventListener('click', () => {
         const isPinned = btnPinNote.dataset.pinned === "true";
@@ -2941,8 +3966,6 @@ document.addEventListener('DOMContentLoaded', () => {
         btnPinNote.querySelector('svg').setAttribute('fill', !isPinned ? 'currentColor' : 'none');
     });
 
-    if (btnToggleArchiveView) {
-        
     if (btnToggleFollowUpView) {
         btnToggleFollowUpView.addEventListener('click', () => {
             if (currentNotesTab === 'followup') {
@@ -2951,7 +3974,6 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 currentNotesTab = 'followup';
                 btnToggleFollowUpView.style.color = '#ff3c3c';
-                if (btnToggleArchiveView) btnToggleArchiveView.style.color = 'rgba(255,255,255,0.7)';
             }
             renderNotesGrid();
         });
@@ -2990,11 +4012,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    btnToggleArchiveView.addEventListener('click', () => {
-            currentNotesTab = currentNotesTab === 'archive' ? 'active' : 'archive';
-            if (btnToggleFollowUpView) btnToggleFollowUpView.style.color = 'rgba(255,255,255,0.7)';
-            btnToggleArchiveView.style.color = currentNotesTab === 'archive' ? '#2196f3' : 'rgba(255,255,255,0.7)';
-            renderNotesGrid();
+    if (btnToggleArchiveView) {
+        btnToggleArchiveView.addEventListener('click', () => {
+            if (archivedNotesSectionTitle && archivedNotesSectionTitle.style.display !== 'none') {
+                archivedNotesSectionTitle.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else {
+                showToast('No archived notes yet', 'info');
+            }
         });
     }
 
@@ -3094,6 +4118,13 @@ document.addEventListener('DOMContentLoaded', () => {
             return title.includes('log pain') || title.includes('pain log') || i.includes('pain_log') || t.includes('pain');
         }
 
+        function isConsultChecklist() {
+            const combined = `${id} ${type} ${(card.querySelector('.protocol-info p')?.innerText || '')}`.toLowerCase();
+            return combined.includes('clancy') || combined.includes('khan') || 
+                   combined.includes('solicitor') || combined.includes('lawyer') ||
+                   combined.includes('court prep') || combined.includes('doctor consult');
+        }
+
         if (showBtn) {
             showBtn.addEventListener('click', () => {
                 const title = card.querySelector('.protocol-info p')?.innerText || id;
@@ -3103,11 +4134,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     const cleanId = id ? id.toLowerCase().trim() : '';
                     if (cleanId.includes('meditation') || cleanId.startsWith('med_')) {
                         window.open('https://insighttimer.com', '_blank');
-                    } else if (YOGA_ROUTINES[cleanId] || cleanId.match(/^(y|p|s|r|h)\d+$/i)) {
+                    } else if (YOGA_ROUTINES[cleanId] || cleanId.match(/^(y|p|s|r|h)\d+$/i) || cleanId.includes('yoga') || cleanId.includes('rehab')) {
                         startRunnerModal(cleanId);
                     } else {
                         loadExerciseSuggestions();
                     }
+                } else if (isConsultChecklist()) {
+                    const combined = `${id} ${title}`.toLowerCase();
+                    const initialTab = (combined.includes('khan') || combined.includes('dr')) ? 'drkhan' : 'clancy';
+                    openConsultChecklistModal(initialTab);
                 } else {
                     rumbleChatModal.classList.remove('hidden');
                     sendRumbleChatMessage(`Show me details for: ${title}`);
@@ -3291,38 +4326,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 "steps": [
                         {
                                 "title": "Supine Pelvic Tilts",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Flatten lower back against the mat on exhale, gentle arch on inhale.",
                                 "frames": [
-                                        "/exercises/cat_cow_1.jpg",
-                                        "/exercises/cat_cow_2.jpg"
+                                        "/exercises/supine_pelvic_tilts.jpg"
                                 ]
                         },
                         {
                                 "title": "Supported Child's Pose",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Widen knees, rest torso forward on bolster, lengthen spine.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg",
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/exercises/supported_childs_pose.jpg"
                                 ]
                         },
                         {
                                 "title": "Supine Single Knee-to-Chest",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Gently hug right knee, then left knee. Keep sacrum grounded.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg",
-                                        "/exercises/cat_cow_2.jpg"
+                                        "/exercises/knee_to_chest_stretch.jpg"
                                 ]
                         },
                         {
                                 "title": "Restorative Savasana with Bolster",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Place bolster under knees to release psoas and lumbar pressure.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg",
-                                        "/exercises/cat_cow_1.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         }
                 ]
@@ -3345,36 +4376,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 "steps": [
                         {
                                 "title": "Seated Axial Retraction",
-                                "duration": 45,
+                                "duration": 150,
                                 "cue": "Gently draw chin backwards creating a double chin, lengthening back of neck.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg",
-                                        "/exercises/childs_pose_1.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Gentle Lateral Ear-to-Shoulder",
-                                "duration": 45,
+                                "duration": 150,
                                 "cue": "Drop right ear to right shoulder without lifting left shoulder. Repeat left.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg",
-                                        "/exercises/cat_cow_2.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Shoulder Shrug & Release",
-                                "duration": 45,
+                                "duration": 150,
                                 "cue": "Inhale lift shoulders to ears, exhale drop down with sigh.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Restorative Alignment Breathing",
-                                "duration": 60,
+                                "duration": 150,
                                 "cue": "Sit upright, focus on diaphragmatic 360 breathing relaxing neck muscles.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         }
                 ]
@@ -3397,35 +4426,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 "steps": [
                         {
                                 "title": "Supported Reclined Bound Angle",
-                                "duration": 90,
+                                "duration": 375,
                                 "cue": "Feet together, knees open supported by pillows, hands on lower abdomen.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         },
                         {
                                 "title": "Gentle Cat-Cow Spine Wave",
-                                "duration": 60,
+                                "duration": 375,
                                 "cue": "Flow gently with breath, avoiding end-range extremes.",
-                                "frames": [
-                                        "/exercises/cat_cow_1.jpg",
-                                        "/exercises/cat_cow_2.jpg"
-                                ]
-                        },
-                        {
-                                "title": "Supported Gentle Sphinx",
-                                "duration": 60,
-                                "cue": "Rest elbows on mat, gentle passive thoracic extension.",
                                 "frames": [
                                         "/lumbar_core_routine.jpg"
                                 ]
                         },
                         {
+                                "title": "Supported Gentle Sphinx",
+                                "duration": 375,
+                                "cue": "Rest elbows on mat, gentle passive thoracic extension.",
+                                "frames": [
+                                        "/exercises/thoracic_spine_mobility.jpg"
+                                ]
+                        },
+                        {
                                 "title": "Legs Up the Wall Relaxation",
-                                "duration": 120,
+                                "duration": 375,
                                 "cue": "Elevate legs against wall to facilitate venous return and spinal decompression.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         }
                 ]
@@ -3449,36 +4477,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 "steps": [
                         {
                                 "title": "Thread the Needle",
-                                "duration": 60,
+                                "duration": 300,
                                 "cue": "Slide right arm under torso, rest right shoulder and temple on mat.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Puppy Pose Thoracic Stretch",
-                                "duration": 60,
+                                "duration": 300,
                                 "cue": "Hips stay over knees, walk hands forward melting chest towards floor.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg",
-                                        "/exercises/cat_cow_2.jpg"
+                                        "/exercises/supported_childs_pose.jpg"
                                 ]
                         },
                         {
                                 "title": "Seated Cactus Arm Openers",
-                                "duration": 45,
+                                "duration": 300,
                                 "cue": "Draw elbows back and down, opening anterior chest wall.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg",
-                                        "/exercises/cat_cow_1.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Scapular Retraction & Rest",
-                                "duration": 60,
+                                "duration": 300,
                                 "cue": "Rest in prone or seated, focusing on mid-back breathing.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         }
                 ]
@@ -3502,7 +4528,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 "steps": [
                         {
                                 "title": "Low Kneeling Lunge",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Step right foot forward, tuck tailbone, feel stretch in left front hip.",
                                 "frames": [
                                         "/hip_mobility_routine.jpg"
@@ -3510,27 +4536,26 @@ document.addEventListener('DOMContentLoaded', () => {
                         },
                         {
                                 "title": "90/90 Seated Hip Flow",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Rotate knees side to side gently to mobilize internal and external rotation.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg",
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Gentle Reclined Figure-4",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Cross right ankle over left thigh, hold left hamstring gently.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/exercises/knee_to_chest_stretch.jpg"
                                 ]
                         },
                         {
                                 "title": "Savasana Psoas Rest",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Lie flat with gentle diaphragmatic expansion.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         }
                 ]
@@ -3553,36 +4578,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 "steps": [
                         {
                                 "title": "Cat-Cow Spine Awakening",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Coordinate slow spinal flexion and extension with deep breathing.",
                                 "frames": [
-                                        "/exercises/cat_cow_1.jpg",
-                                        "/exercises/cat_cow_2.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         },
                         {
                                 "title": "Gentle Side Body Lateral Stretch",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Walk hands to the right in child's pose, then left.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg"
+                                        "/exercises/supported_childs_pose.jpg"
                                 ]
                         },
                         {
                                 "title": "Gentle Supine Torso Twist",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Drop knees gently to right, look center or left. Keep shoulders relaxed.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg",
-                                        "/exercises/cat_cow_2.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Restorative Prone Rest",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Rest face down on hands, allowing spine to settle in neutral.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         }
                 ]
@@ -3606,34 +4629,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 "steps": [
                         {
                                 "title": "Seated Cat-Cow",
-                                "duration": 45,
+                                "duration": 150,
                                 "cue": "Hands on knees, inhale arch chest forward, exhale round mid-back.",
                                 "frames": [
-                                        "/exercises/cat_cow_1.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Seated Figure-4 Hip Opener",
-                                "duration": 60,
+                                "duration": 150,
                                 "cue": "Ankle on opposite knee, lean gently forward with straight back.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Seated Upper Trapezius Drop",
-                                "duration": 45,
+                                "duration": 150,
                                 "cue": "Hold chair base with right hand, tilt head to left.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Seated Chest Expansion",
-                                "duration": 45,
+                                "duration": 150,
                                 "cue": "Interlace hands behind lower back or chair frame, gently lift collarbones.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         }
                 ]
@@ -3656,34 +4679,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 "steps": [
                         {
                                 "title": "4-7-8 Parasympathetic Breathing",
-                                "duration": 90,
+                                "duration": 225,
                                 "cue": "Inhale 4 sec through nose, hold 7 sec, exhale 8 sec through pursed lips.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         },
                         {
                                 "title": "Suboccipital Massage with Towel",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Rest base of skull on rolled towel, gentle micro-turns of head.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Oculomotor Vagal Reset",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Keep head straight, look fully right for 30s until swallow/sigh, then left.",
                                 "frames": [
-                                        "/exercises/cat_cow_2.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         },
                         {
                                 "title": "Gentle Heart-Belly Grounding",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "One hand on heart, one on belly. Feel warmth and safety.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         }
                 ]
@@ -3707,34 +4730,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 "steps": [
                         {
                                 "title": "Supine Strap Leg Extension",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Loop strap under right foot, extend leg upward keeping pelvis flat.",
+                                "frames": [
+                                        "/exercises/knee_to_chest_stretch.jpg"
+                                ]
+                        },
+                        {
+                                "title": "Gentle IT Band Cross-Body",
+                                "duration": 225,
+                                "cue": "Draw straight leg slightly across midline (2-3 inches max).",
                                 "frames": [
                                         "/lumbar_core_routine.jpg"
                                 ]
                         },
                         {
-                                "title": "Gentle IT Band Cross-Body",
-                                "duration": 45,
-                                "cue": "Draw straight leg slightly across midline (2-3 inches max).",
-                                "frames": [
-                                        "/hip_mobility_routine.jpg"
-                                ]
-                        },
-                        {
                                 "title": "Reclined Hamstring Flutter",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Gentle micro-bends and straightening of knee to desensitize nerve.",
                                 "frames": [
-                                        "/exercises/cat_cow_2.jpg"
+                                        "/exercises/knee_to_chest_stretch.jpg"
                                 ]
                         },
                         {
                                 "title": "Restorative Leg Rest",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Rest legs long on mat, noticing length through lower back.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/lumbar_core_routine.jpg"
                                 ]
                         }
                 ]
@@ -3757,35 +4780,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 "steps": [
                         {
                                 "title": "Wide Knee Child's Pose",
-                                "duration": 90,
+                                "duration": 300,
                                 "cue": "Allow belly to soften between thighs, long slow exhales.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg",
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/exercises/supported_childs_pose.jpg"
                                 ]
                         },
                         {
                                 "title": "Supported Bridge Pose",
-                                "duration": 60,
+                                "duration": 300,
                                 "cue": "Block or pillow under sacrum, arms relaxed overhead.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/supine_pelvic_tilts.jpg"
                                 ]
                         },
                         {
                                 "title": "Supine Spinal Twist with Pillow",
-                                "duration": 60,
+                                "duration": 300,
                                 "cue": "Pillow between knees, slow gentle twist to each side.",
                                 "frames": [
-                                        "/exercises/cat_cow_1.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Corpse Pose Deep Relaxation",
-                                "duration": 120,
+                                "duration": 300,
                                 "cue": "Complete still surrender into mattress or mat.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         }
                 ]
@@ -3809,35 +4831,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 "steps": [
                         {
                                 "title": "Finding Neutral Spine",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "ASIS hips and pubic bone in a level flat plane.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/supine_pelvic_tilts.jpg"
                                 ]
                         },
                         {
                                 "title": "Transverse Abdominis Draw-In",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Exhale gently drawing navel toward spine without flattening lower back.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg",
-                                        "/exercises/cat_cow_2.jpg"
+                                        "/exercises/supine_pelvic_tilts.jpg"
                                 ]
                         },
                         {
                                 "title": "Supine Heel Slides",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Slide right heel forward along mat and return while keeping pelvis totally still.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/supine_pelvic_tilts.jpg"
                                 ]
                         },
                         {
                                 "title": "Restorative Pelvic Rest",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Soft belly breathing, releasing tension.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/exercises/supine_pelvic_tilts.jpg"
                                 ]
                         }
                 ]
@@ -3860,35 +4881,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 "steps": [
                         {
                                 "title": "Deadbug Level 1 (Arm Reach Only)",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Knees at tabletop (90 deg), reach right arm overhead and return.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/hip_mobility_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "Deadbug Level 2 (Heel Tap Only)",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Keep arms still, lower right heel to tap floor, return.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg",
-                                        "/exercises/cat_cow_1.jpg"
+                                        "/hip_mobility_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "Deadbug Level 3 (Opposite Arm & Leg)",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Extend opposite arm and leg simultaneously while maintaining rock-solid core.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/hip_mobility_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "Knees to Chest Neutral Reset",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Soft hold, resting hip flexors.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg"
+                                        "/exercises/knee_to_chest_stretch.jpg"
                                 ]
                         }
                 ]
@@ -3912,35 +4932,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 "steps": [
                         {
                                 "title": "Quadruped Neutral Alignment",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Hands under shoulders, knees under hips, neck in neutral line.",
                                 "frames": [
-                                        "/exercises/cat_cow_1.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Bird-Dog Reach (Right Arm, Left Leg)",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Reach straight out, thumb up, heel pushed back. Hold 6 seconds.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg",
-                                        "/exercises/cat_cow_2.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Bird-Dog Reach (Left Arm, Right Leg)",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Keep pelvis level like balancing a cup of water on lower back.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Child's Pose Decompression",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Sink hips back, lengthening spinal erectors.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg"
+                                        "/exercises/supported_childs_pose.jpg"
                                 ]
                         }
                 ]
@@ -3963,7 +4982,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 "steps": [
                         {
                                 "title": "Clamshell Level 1 (Right Side)",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Heels together, open top knee like a clamshell, squeeze outer glute.",
                                 "frames": [
                                         "/hip_mobility_routine.jpg"
@@ -3971,16 +4990,15 @@ document.addEventListener('DOMContentLoaded', () => {
                         },
                         {
                                 "title": "Side-Lying Leg Lift (Right Side)",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Straighten top leg, lift 6 inches with slight internal rotation.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg",
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Clamshell Level 1 (Left Side)",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Switch sides. Keep core engaged and hips stacked.",
                                 "frames": [
                                         "/hip_mobility_routine.jpg"
@@ -3988,10 +5006,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         },
                         {
                                 "title": "Side-Lying Leg Lift (Left Side)",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Lift top leg with control, avoiding hip rotation.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         }
                 ]
@@ -4014,35 +5032,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 "steps": [
                         {
                                 "title": "Basic Glute Bridge (Feet Flat)",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Exhale lift hips until straight line from knees to shoulders, hold 3s.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/hip_mobility_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "Bridge with Pelvic Squeeze",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Place small ball/block between knees, squeeze gently while bridging.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg",
-                                        "/exercises/cat_cow_2.jpg"
+                                        "/exercises/supine_pelvic_tilts.jpg"
                                 ]
                         },
                         {
                                 "title": "Single Leg Bridge Marching",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Hold bridge, lift right foot 1 inch off floor without dipping pelvis. Repeat left.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Spine Articulation Roll Down",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Lower spine down bone by bone, finishing in neutral.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/hip_mobility_routine.jpg"
                                 ]
                         }
                 ]
@@ -4065,35 +5082,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 "steps": [
                         {
                                 "title": "Arm Pump Preparation",
-                                "duration": 30,
+                                "duration": 150,
                                 "cue": "Arms long by side, legs in tabletop, head resting comfortably.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/shoulder_rehab_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "The Hundred: Set 1-50",
-                                "duration": 60,
+                                "duration": 150,
                                 "cue": "Inhale 5 arm pumps, exhale 5 arm pumps with abdominal brace.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg",
-                                        "/exercises/cat_cow_1.jpg"
+                                        "/shoulder_rehab_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "The Hundred: Set 51-100",
-                                "duration": 60,
+                                "duration": 150,
                                 "cue": "Maintain steady rhythmic breathing and flat lower abdomen.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         },
                         {
                                 "title": "Full Body Stretch Release",
-                                "duration": 45,
+                                "duration": 150,
                                 "cue": "Extend arms and legs long, releasing abdominal wall.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg"
+                                        "/shoulder_rehab_routine.jpg"
                                 ]
                         }
                 ]
@@ -4116,35 +5132,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 "steps": [
                         {
                                 "title": "Seated Spine Twist with Ball",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Sit upright, hug ball to chest, exhale rotate ribs 20 degrees right, then left.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Side-Lying Pinwheel Arm Flow",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Circle top arm overhead opening chest to ceiling, follow with eyes.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg",
-                                        "/exercises/cat_cow_2.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Opposite Side Pinwheel",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Switch sides. Feel opening through anterior shoulder and ribcage.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Restorative Prone Breath",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Feel posterior ribcage expand with every inhalation.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         }
                 ]
@@ -4167,35 +5182,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 "steps": [
                         {
                                 "title": "Single Leg Stretch (Head Down)",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Hug right knee, extend left leg at 45 deg angle, switch rhythmically.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/knee_to_chest_stretch.jpg"
                                 ]
                         },
                         {
                                 "title": "Double Leg Tap Adaptation",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Both knees bent, tap toes to mat and return with locked core.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg",
-                                        "/exercises/cat_cow_2.jpg"
+                                        "/hip_mobility_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "Single Leg Stretch Set 2",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Focus on smooth breathing and rock-steady pelvis.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         },
                         {
                                 "title": "Knees to Chest Reset",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Gentle rocking side to side.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg"
+                                        "/exercises/knee_to_chest_stretch.jpg"
                                 ]
                         }
                 ]
@@ -4218,35 +5232,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 "steps": [
                         {
                                 "title": "Pelvic Curl Preparation",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Tuck pelvis, lift only sacrum off mat, and roll back down.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/supine_pelvic_tilts.jpg"
                                 ]
                         },
                         {
                                 "title": "Full Segmental Bridge Roll",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Peel spine up vertebra by vertebra to upper thoracic, hold and roll down.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg",
-                                        "/exercises/cat_cow_2.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Bridge with Arm Reaches",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "At top of bridge, float arms back overhead, then roll spine down.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/hip_mobility_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "Supine Rest",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Neutral spine alignment rest.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/hip_mobility_routine.jpg"
                                 ]
                         }
                 ]
@@ -4270,35 +5283,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 "steps": [
                         {
                                 "title": "Prone Arm Float Only",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Lie prone, pillow under belly, float right arm 1 inch, then left.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/hip_mobility_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "Prone Leg Float Only",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Squeeze glute, float straight leg 1 inch, then opposite.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/hip_mobility_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "Slow Swimming Flutter",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Alternate opposite arm and leg fluttering rhythmically.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg",
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/knee_to_chest_stretch.jpg"
                                 ]
                         },
                         {
                                 "title": "Prone Relaxation & Breath",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Turn head to side, relax glutes and back completely.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/hip_mobility_routine.jpg"
                                 ]
                         }
                 ]
@@ -4322,7 +5334,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 "steps": [
                         {
                                 "title": "Supine Figure-4 (Right)",
-                                "duration": 60,
+                                "duration": 180,
                                 "cue": "Cross right ankle over left thigh, reach through and draw left leg in.",
                                 "frames": [
                                         "/hip_mobility_routine.jpg"
@@ -4330,27 +5342,26 @@ document.addEventListener('DOMContentLoaded', () => {
                         },
                         {
                                 "title": "Supine Figure-4 (Left)",
-                                "duration": 60,
+                                "duration": 180,
                                 "cue": "Repeat on left side, keeping shoulders and neck relaxed.",
+                                "frames": [
+                                        "/exercises/cervical_neck_mobility.jpg"
+                                ]
+                        },
+                        {
+                                "title": "Seated Chair Glute Stretch",
+                                "duration": 180,
+                                "cue": "Sit tall, cross ankle on knee, hinge forward from hips with flat back.",
                                 "frames": [
                                         "/hip_mobility_routine.jpg"
                                 ]
                         },
                         {
-                                "title": "Seated Chair Glute Stretch",
-                                "duration": 60,
-                                "cue": "Sit tall, cross ankle on knee, hinge forward from hips with flat back.",
-                                "frames": [
-                                        "/hip_mobility_routine.jpg",
-                                        "/exercises/childs_pose_2.jpg"
-                                ]
-                        },
-                        {
                                 "title": "Restorative Hip Shakes",
-                                "duration": 45,
+                                "duration": 180,
                                 "cue": "Gently shake legs to release residual muscle tone.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg"
+                                        "/hip_mobility_routine.jpg"
                                 ]
                         }
                 ]
@@ -4374,34 +5385,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 "steps": [
                         {
                                 "title": "Scalene Anterior Stretch",
-                                "duration": 45,
+                                "duration": 150,
                                 "cue": "Tilt head right, rotate chin 15 deg upward, feel stretch in front-left neck.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Levator Scapulae 'Nose to Armpit'",
-                                "duration": 45,
+                                "duration": 150,
                                 "cue": "Turn head 45 deg right, gently drop chin towards right armpit.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Opposite Side Scalene & Levator",
-                                "duration": 90,
+                                "duration": 150,
                                 "cue": "Repeat carefully on opposite side with relaxed shoulders.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Suboccipital Nod Release",
-                                "duration": 45,
+                                "duration": 150,
                                 "cue": "Tiny nodding motions like saying 'yes' without flexing lower neck.",
                                 "frames": [
-                                        "/exercises/cat_cow_2.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         }
                 ]
@@ -4424,7 +5435,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 "steps": [
                         {
                                 "title": "Doorframe Stretch (Right Leg)",
-                                "duration": 90,
+                                "duration": 225,
                                 "cue": "Right leg up doorframe, left leg flat on floor through doorway. Breathe deeply.",
                                 "frames": [
                                         "/lumbar_core_routine.jpg"
@@ -4432,26 +5443,26 @@ document.addEventListener('DOMContentLoaded', () => {
                         },
                         {
                                 "title": "Doorframe Stretch (Left Leg)",
-                                "duration": 90,
+                                "duration": 225,
                                 "cue": "Switch sides. Relax hips and sacrum flat against mat.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/supine_pelvic_tilts.jpg"
                                 ]
                         },
                         {
                                 "title": "Ankle Pumps in Stretch",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Point and flex toes gently while elevated to floss sciatic pathway.",
                                 "frames": [
-                                        "/exercises/cat_cow_2.jpg"
+                                        "/exercises/knee_to_chest_stretch.jpg"
                                 ]
                         },
                         {
                                 "title": "Supine Rest",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Both legs down, resting pelvis in neutral.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/lumbar_core_routine.jpg"
                                 ]
                         }
                 ]
@@ -4475,35 +5486,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 "steps": [
                         {
                                 "title": "Open Book (Right Arm Opening)",
-                                "duration": 60,
+                                "duration": 180,
                                 "cue": "Side-lying on left, sweep right arm open across body, look towards right hand.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Open Book Static Hold",
-                                "duration": 45,
+                                "duration": 180,
                                 "cue": "Hold open for 3 deep breaths into right chest wall.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg",
-                                        "/exercises/cat_cow_2.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Open Book (Left Arm Opening)",
-                                "duration": 60,
+                                "duration": 180,
                                 "cue": "Switch sides. Sweep left arm open, keeping knees glued together.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Open Book Static Hold Left",
-                                "duration": 45,
+                                "duration": 180,
                                 "cue": "Deep ribcage breathing.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         }
                 ]
@@ -4527,34 +5537,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 "steps": [
                         {
                                 "title": "Straight-Leg Gastrocnemius (Right)",
-                                "duration": 45,
+                                "duration": 150,
                                 "cue": "Hands on wall, step right leg back straight, press heel down.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/lumbar_core_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "Bent-Knee Soleus (Right)",
-                                "duration": 45,
+                                "duration": 150,
                                 "cue": "Bend back right knee slightly, shifting stretch deeper towards Achilles.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/lumbar_core_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "Straight-Leg Gastrocnemius (Left)",
-                                "duration": 45,
+                                "duration": 150,
                                 "cue": "Switch legs. Step left leg back straight, heel grounded.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/lumbar_core_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "Bent-Knee Soleus (Left)",
-                                "duration": 45,
+                                "duration": 150,
                                 "cue": "Bend left knee slightly, keeping heel pinned down.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/lumbar_core_routine.jpg"
                                 ]
                         }
                 ]
@@ -4578,7 +5588,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 "steps": [
                         {
                                 "title": "Side-Lying Quad Stretch (Right)",
-                                "duration": 60,
+                                "duration": 180,
                                 "cue": "Lie on left side, hold right ankle, gently draw heel toward glute.",
                                 "frames": [
                                         "/hip_mobility_routine.jpg"
@@ -4586,7 +5596,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         },
                         {
                                 "title": "Side-Lying Quad Stretch (Left)",
-                                "duration": 60,
+                                "duration": 180,
                                 "cue": "Switch sides, keeping knees aligned and hips stacked.",
                                 "frames": [
                                         "/hip_mobility_routine.jpg"
@@ -4594,18 +5604,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         },
                         {
                                 "title": "Prone Quad Stretch with Towel",
-                                "duration": 60,
+                                "duration": 180,
                                 "cue": "Lie prone, loop towel around ankle if reaching is difficult.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Prone Hip Rocking Reset",
-                                "duration": 45,
+                                "duration": 180,
                                 "cue": "Gently rock hips side to side to release hip flexors.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/hip_mobility_routine.jpg"
                                 ]
                         }
                 ]
@@ -4628,34 +5638,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 "steps": [
                         {
                                 "title": "Side-Reaching Child's Pose (Right)",
-                                "duration": 60,
+                                "duration": 180,
                                 "cue": "In child's pose, walk both hands to the left, feel stretch down right lat.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg"
+                                        "/exercises/supported_childs_pose.jpg"
                                 ]
                         },
                         {
                                 "title": "Side-Reaching Child's Pose (Left)",
-                                "duration": 60,
+                                "duration": 180,
                                 "cue": "Walk hands to the right, feel deep stretch through left ribcage and lat.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/exercises/supported_childs_pose.jpg"
                                 ]
                         },
                         {
                                 "title": "Doorframe Lat Hang",
-                                "duration": 45,
+                                "duration": 180,
                                 "cue": "Hold doorframe at shoulder height, sink hips back and away gently.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/hip_mobility_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "Restorative Center Breath",
-                                "duration": 45,
+                                "duration": 180,
                                 "cue": "Breathe into lateral ribcage.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg"
+                                        "/lumbar_core_routine.jpg"
                                 ]
                         }
                 ]
@@ -4679,7 +5689,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 "steps": [
                         {
                                 "title": "Wrist Flexor Stretch",
-                                "duration": 45,
+                                "duration": 150,
                                 "cue": "Arm straight, palm facing out fingers down, gently draw fingers back.",
                                 "frames": [
                                         "/shoulder_rehab_routine.jpg"
@@ -4687,7 +5697,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         },
                         {
                                 "title": "Wrist Extensor Stretch",
-                                "duration": 45,
+                                "duration": 150,
                                 "cue": "Palm facing in, gently press back of hand down and toward body.",
                                 "frames": [
                                         "/shoulder_rehab_routine.jpg"
@@ -4695,18 +5705,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         },
                         {
                                 "title": "Median Nerve Gliding Flow",
-                                "duration": 60,
+                                "duration": 150,
                                 "cue": "Extend arm out to side, extend wrist, tilt head away, then return.",
                                 "frames": [
-                                        "/exercises/cat_cow_2.jpg"
+                                        "/shoulder_rehab_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "Wrist Circles & Finger Shakes",
-                                "duration": 45,
+                                "duration": 150,
                                 "cue": "Gentle rolling circles and shaking out hands.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg"
+                                        "/shoulder_rehab_routine.jpg"
                                 ]
                         }
                 ]
@@ -4730,34 +5740,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 "steps": [
                         {
                                 "title": "90-Degree Doorway Stretch (Right)",
-                                "duration": 45,
+                                "duration": 150,
                                 "cue": "Elbow at 90 deg on doorframe, step right foot through doorway gently.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "120-Degree High Doorway Stretch (Right)",
-                                "duration": 45,
+                                "duration": 150,
                                 "cue": "Elbow slightly higher to target lower pec fibers.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Doorway Stretch (Left Side)",
-                                "duration": 90,
+                                "duration": 150,
                                 "cue": "Repeat 90 and 120 degree angles on left side with relaxed neck.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Shoulder Rolls & Posture Reset",
-                                "duration": 45,
+                                "duration": 150,
                                 "cue": "Roll shoulders back and down 5 times.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         }
                 ]
@@ -4781,34 +5791,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 "steps": [
                         {
                                 "title": "Half-Kneeling Ankle Rocking",
-                                "duration": 60,
+                                "duration": 150,
                                 "cue": "Half-kneeling, drive front knee forward over second toe keeping heel flat.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/lumbar_core_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "Opposite Ankle Rocking",
-                                "duration": 60,
+                                "duration": 150,
                                 "cue": "Switch sides, mobilizing left ankle dorsiflexion.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/lumbar_core_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "Tennis Ball Foot Roll",
-                                "duration": 60,
+                                "duration": 150,
                                 "cue": "Roll ball along arch of foot for 30s per foot, releasing fascia.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/lumbar_core_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "Seated Toe Spreading",
-                                "duration": 30,
+                                "duration": 150,
                                 "cue": "Wiggle and spread toes wide to activate intrinsic foot muscles.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg"
+                                        "/lumbar_core_routine.jpg"
                                 ]
                         }
                 ]
@@ -4832,36 +5842,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 "steps": [
                         {
                                 "title": "McGill Modified Curl-Up",
-                                "duration": 60,
+                                "duration": 300,
                                 "cue": "Hands under lower back, one knee bent, lift only head/shoulders 1 inch. Hold 6s.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/shoulder_rehab_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "McGill Side Bridge (From Knees)",
-                                "duration": 60,
+                                "duration": 300,
                                 "cue": "Prop on elbow and knees, lift hips into straight alignment. Hold 6s per rep.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg",
                                         "/hip_mobility_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "McGill Quadruped Bird-Dog",
-                                "duration": 60,
+                                "duration": 300,
                                 "cue": "Extend opposite arm and leg, hold 6s. Focus on neutral spine stability.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg",
-                                        "/exercises/cat_cow_1.jpg"
+                                        "/shoulder_rehab_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "Spine Decompression Rest",
-                                "duration": 60,
+                                "duration": 300,
                                 "cue": "Rest in prone or supported child's pose.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/exercises/supported_childs_pose.jpg"
                                 ]
                         }
                 ]
@@ -4885,35 +5893,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 "steps": [
                         {
                                 "title": "Seated Sciatic Slider Setup",
-                                "duration": 30,
+                                "duration": 180,
                                 "cue": "Sit on edge of chair with hands behind back, spine relaxed.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/knee_to_chest_stretch.jpg"
                                 ]
                         },
                         {
                                 "title": "Sciatic Slider (Right Leg)",
-                                "duration": 60,
+                                "duration": 180,
                                 "cue": "Extend right knee while looking UP at ceiling, bend knee while looking DOWN.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg",
-                                        "/exercises/cat_cow_2.jpg"
+                                        "/exercises/knee_to_chest_stretch.jpg"
                                 ]
                         },
                         {
                                 "title": "Sciatic Slider (Left Leg)",
-                                "duration": 60,
+                                "duration": 180,
                                 "cue": "Repeat smooth flossing motion on left leg for 10 slow reps.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/knee_to_chest_stretch.jpg"
                                 ]
                         },
                         {
                                 "title": "Supine Rest & Sensation Check",
-                                "duration": 45,
+                                "duration": 180,
                                 "cue": "Lie flat and observe reduction in nerve sensitivity.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/lumbar_core_routine.jpg"
                                 ]
                         }
                 ]
@@ -4936,35 +5943,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 "steps": [
                         {
                                 "title": "Supine Chin Tuck (Cranial Nod)",
-                                "duration": 60,
+                                "duration": 180,
                                 "cue": "Lie supine with small towel under neck, gently nod chin as if flattening back of neck.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Supine Chin Tuck with 5s Hold",
-                                "duration": 60,
+                                "duration": 180,
                                 "cue": "Nod chin gently, hold for 5 seconds breathing normally through nose.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg",
-                                        "/exercises/cat_cow_1.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         },
                         {
                                 "title": "Wall Retraction with Foam Roller",
-                                "duration": 60,
+                                "duration": 180,
                                 "cue": "Stand against wall, press back of head gently into small soft ball.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Postural Breathing Reset",
-                                "duration": 45,
+                                "duration": 180,
                                 "cue": "Sit tall, crown of head reaching toward ceiling.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         }
                 ]
@@ -4988,35 +5994,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 "steps": [
                         {
                                 "title": "Forearm Wall Slide Setup",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Forearms vertical on wall with foam roller or towel, step one foot forward.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Wall Slide Upward Sweep",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Slide forearms upward pushing into wall, shrug slightly at top, return with control.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg",
-                                        "/exercises/cat_cow_2.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Scapular Protraction Push-Plus (Wall)",
-                                "duration": 60,
+                                "duration": 225,
                                 "cue": "Hands on wall, push chest away rounding upper back without bending elbows.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Shoulder Roll Down",
-                                "duration": 45,
+                                "duration": 225,
                                 "cue": "Shake out arms and breathe deeply.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/exercises/thoracic_spine_mobility.jpg"
                                 ]
                         }
                 ]
@@ -5040,35 +6045,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 "steps": [
                         {
                                 "title": "First Rib Self-Depression with Strap",
-                                "duration": 60,
+                                "duration": 180,
                                 "cue": "Loop strap over right collarbone, pull down across left hip while tilting head right.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/hip_mobility_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "Brachial Plexus Tension-Free Glide",
-                                "duration": 60,
+                                "duration": 180,
                                 "cue": "Extend arm out, bend wrist up while tilting head towards arm, then alternate.",
-                                "frames": [
-                                        "/shoulder_rehab_routine.jpg",
-                                        "/exercises/cat_cow_1.jpg"
-                                ]
-                        },
-                        {
-                                "title": "Opposite Side TOS Release",
-                                "duration": 60,
-                                "cue": "Repeat first rib depression and gliding on left side.",
                                 "frames": [
                                         "/shoulder_rehab_routine.jpg"
                                 ]
                         },
                         {
+                                "title": "Opposite Side TOS Release",
+                                "duration": 180,
+                                "cue": "Repeat first rib depression and gliding on left side.",
+                                "frames": [
+                                        "/lumbar_core_routine.jpg"
+                                ]
+                        },
+                        {
                                 "title": "Diaphragmatic Rib Expansion",
-                                "duration": 45,
+                                "duration": 180,
                                 "cue": "Breathe deeply into lower ribcage, avoiding upper chest clavicular breathing.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         }
                 ]
@@ -5091,35 +6095,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 "steps": [
                         {
                                 "title": "Isometric Cervical Flexion",
-                                "duration": 45,
+                                "duration": 180,
                                 "cue": "Palm on forehead, gently press head forward into palm without moving head. Hold 6s.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Isometric Cervical Extension",
-                                "duration": 45,
+                                "duration": 180,
                                 "cue": "Hands behind head, gently press head backward into palms without tilting.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg",
-                                        "/exercises/cat_cow_2.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Isometric Lateral Flexion (Left & Right)",
-                                "duration": 60,
+                                "duration": 180,
                                 "cue": "Palm against side of head, press gently for 6s each side.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Restorative Alignment Rest",
-                                "duration": 45,
+                                "duration": 180,
                                 "cue": "Sit tall with relaxed jaw and dropped shoulders.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         }
                 ]
@@ -5143,34 +6146,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 "steps": [
                         {
                                 "title": "Buoyant Vertical Traction",
-                                "duration": 90,
+                                "duration": 375,
                                 "cue": "Noodle under arms in deep water, allow legs and spine to hang weightlessly.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Gentle Water Knee-to-Chest",
-                                "duration": 60,
+                                "duration": 375,
                                 "cue": "Slowly draw knees towards chest in water, feeling gentle lumbar opening.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/knee_to_chest_stretch.jpg"
                                 ]
                         },
                         {
                                 "title": "Aquatic Torso Pendulum",
-                                "duration": 60,
+                                "duration": 375,
                                 "cue": "Gentle sway of legs side to side in water column.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/cervical_neck_mobility.jpg"
                                 ]
                         },
                         {
                                 "title": "Supine Water Float with Head Support",
-                                "duration": 120,
+                                "duration": 375,
                                 "cue": "Full supine float supported by pillows, deep parasympathetic relaxation.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         }
                 ]
@@ -5194,23 +6197,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 "steps": [
                         {
                                 "title": "Forward Water Marching",
-                                "duration": 90,
+                                "duration": 300,
                                 "cue": "High knee marching forward in chest-deep water with normal arm swing.",
+                                "frames": [
+                                        "/exercises/cervical_neck_mobility.jpg"
+                                ]
+                        },
+                        {
+                                "title": "Backward Heel-to-Toe Walking",
+                                "duration": 300,
+                                "cue": "Walk backward with control, engaging glutes and posterior chain.",
                                 "frames": [
                                         "/hip_mobility_routine.jpg"
                                 ]
                         },
                         {
-                                "title": "Backward Heel-to-Toe Walking",
-                                "duration": 90,
-                                "cue": "Walk backward with control, engaging glutes and posterior chain.",
-                                "frames": [
-                                        "/lumbar_core_routine.jpg"
-                                ]
-                        },
-                        {
                                 "title": "Lateral Sidestepping",
-                                "duration": 90,
+                                "duration": 300,
                                 "cue": "Step sideways across lane, engaging glute medius against water drag.",
                                 "frames": [
                                         "/hip_mobility_routine.jpg"
@@ -5218,10 +6221,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         },
                         {
                                 "title": "Warm Water Calming Rest",
-                                "duration": 60,
+                                "duration": 300,
                                 "cue": "Stand against pool wall, enjoying warmth and hydrostatic pressure.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg"
+                                        "/hip_mobility_routine.jpg"
                                 ]
                         }
                 ]
@@ -5245,7 +6248,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 "steps": [
                         {
                                 "title": "Aquatic Standing Hip Abduction",
-                                "duration": 60,
+                                "duration": 300,
                                 "cue": "Hold pool wall, sweep right leg out to side against water resistance. Repeat left.",
                                 "frames": [
                                         "/hip_mobility_routine.jpg"
@@ -5253,27 +6256,26 @@ document.addEventListener('DOMContentLoaded', () => {
                         },
                         {
                                 "title": "Kickboard Core Press-Down",
-                                "duration": 60,
+                                "duration": 300,
                                 "cue": "Hold kickboard with both hands, push down into water, engage abs.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/hip_mobility_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "Aquatic Bicycle Pedaling",
-                                "duration": 60,
+                                "duration": 300,
                                 "cue": "Rest back on noodles, pedal legs smoothly like riding a bike.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg",
                                         "/hip_mobility_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "Floating Spine Rest",
-                                "duration": 90,
+                                "duration": 300,
                                 "cue": "Rest supported on water surface.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/hip_mobility_routine.jpg"
                                 ]
                         }
                 ]
@@ -5297,15 +6299,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 "steps": [
                         {
                                 "title": "Deep Water Submersion Breathing",
-                                "duration": 90,
+                                "duration": 300,
                                 "cue": "Chest submerged, feel hydrostatic pressure assist deep exhalations.",
                                 "frames": [
-                                        "/exercises/childs_pose_1.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         },
                         {
                                 "title": "Aquatic Arm Sweeps (Lymphatic Flow)",
-                                "duration": 60,
+                                "duration": 300,
                                 "cue": "Smooth sweeping circles with hands submerged in water.",
                                 "frames": [
                                         "/shoulder_rehab_routine.jpg"
@@ -5313,18 +6315,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         },
                         {
                                 "title": "Ankle & Foot Water Mobility",
-                                "duration": 60,
+                                "duration": 300,
                                 "cue": "Point, flex, and rotate ankles in warm water.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/shoulder_rehab_routine.jpg"
                                 ]
                         },
                         {
                                 "title": "Supported Supine Water Float",
-                                "duration": 120,
+                                "duration": 300,
                                 "cue": "Complete still surrender in warm hydro pool.",
                                 "frames": [
-                                        "/exercises/childs_pose_2.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         }
                 ]
@@ -5333,17 +6335,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Backlog of alternative exercises for swapping
     const exerciseBacklog = [
-        { title: "Cat-Cow Flow", duration: 45, frames: ["/exercises/cat_cow_1.jpg", "/exercises/cat_cow_2.jpg"] },
-        { title: "Child's Pose Decompression", duration: 60, frames: ["/exercises/childs_pose_1.jpg", "/exercises/childs_pose_2.jpg"] },
-        { title: "Lumbar & Core Stability", duration: 60, frames: ["/lumbar_core_routine.jpg", "/exercises/cat_cow_1.jpg"] },
-        { title: "Hip & Lower Body Mobility", duration: 60, frames: ["/hip_mobility_routine.jpg", "/exercises/childs_pose_2.jpg"] },
-        { title: "Shoulder & Scapular Rehab", duration: 45, frames: ["/shoulder_rehab_routine.jpg", "/exercises/childs_pose_1.jpg"] }
+        { title: "Lumbar & Core Stability", duration: 225, frames: ["/lumbar_core_routine.jpg"] },
+        { title: "Child's Pose Decompression", duration: 225, frames: ["/exercises/supported_childs_pose.jpg"] },
+        { title: "Pelvic Tilt & Spinal Alignment", duration: 225, frames: ["/exercises/supine_pelvic_tilts.jpg"] },
+        { title: "Hip & Lower Body Mobility", duration: 225, frames: ["/hip_mobility_routine.jpg"] },
+        { title: "Shoulder & Scapular Rehab", duration: 225, frames: ["/shoulder_rehab_routine.jpg"] }
     ];
 
     let currentRoutineRunning = null;
     let isRunnerPaused = false;
+    let totalTimeLeft = 0;
+    let totalRoutineDuration = 0;
 
-    function startRunnerModal(id) {
+    async function startRunnerModal(id) {
         const rawId = (id || '').toLowerCase().trim();
         if (rawId.includes('meditation') || rawId.startsWith('med_')) {
             window.open('https://insighttimer.com', '_blank');
@@ -5357,28 +6361,84 @@ document.addEventListener('DOMContentLoaded', () => {
         if (btnTogglePause) btnTogglePause.innerText = 'Pause';
         
         let foundRoutine = YOGA_ROUTINES[rawId];
+        
+        if (!foundRoutine && typeof cachedExerciseCatalog !== 'undefined') {
+            foundRoutine = cachedExerciseCatalog.find(r => (r.id || '').toLowerCase() === rawId || (r.title || '').toLowerCase().includes(rawId) || (r.name || '').toLowerCase().includes(rawId));
+        }
+
         if (!foundRoutine) {
             const matchingKey = Object.keys(YOGA_ROUTINES).find(k => k === rawId || rawId.includes(k) || (YOGA_ROUTINES[k].title || '').toLowerCase().includes(rawId));
             if (matchingKey) foundRoutine = YOGA_ROUTINES[matchingKey];
         }
 
-        if (foundRoutine) {
-            currentRoutineRunning = foundRoutine;
-            if (runnerTitleEl) runnerTitleEl.innerText = foundRoutine.title || foundRoutine.name;
-            currentProtocolSteps = (foundRoutine.steps || []).map(s => ({ ...s }));
-        } else {
-            currentRoutineRunning = { id: rawId || 'y1', title: "Adaptive Restorative Yoga Protocol" };
-            if (runnerTitleEl) runnerTitleEl.innerText = "Adaptive Restorative Yoga Protocol";
-            currentProtocolSteps = [
-                { title: "Supine Pelvic Tilts & Decompression", duration: 45, cue: "Flatten lower back against the mat on exhale, gentle arch on inhale.", frames: ["/exercises/cat_cow_1.jpg", "/exercises/cat_cow_2.jpg"] },
-                { title: "Supported Child's Pose", duration: 60, cue: "Widen knees, rest torso forward on bolster, lengthen spine.", frames: ["/exercises/childs_pose_1.jpg", "/exercises/childs_pose_2.jpg"] },
-                { title: "Lumbar Core Decompression", duration: 45, cue: "Gently hug knees to chest, relaxing sacrum and pelvic floor.", frames: ["/lumbar_core_routine.jpg", "/exercises/cat_cow_2.jpg"] },
-                { title: "Restorative Savasana Release", duration: 60, cue: "Complete still surrender into mat with diaphragmatic breathing.", frames: ["/exercises/childs_pose_2.jpg", "/exercises/cat_cow_1.jpg"] }
-            ];
+        if (!foundRoutine) {
+            // Intelligent fallback for agenda morning/evening yoga items
+            if (rawId.includes('yoga_am') || rawId.includes('morning')) {
+                foundRoutine = YOGA_ROUTINES['y1']; // Gentle Lumbar Release (15 min)
+            } else if (rawId.includes('yoga_pm') || rawId.includes('evening')) {
+                foundRoutine = YOGA_ROUTINES['y3']; // Full Body Restorative Yin (25 min)
+            }
         }
+
+        if (!foundRoutine) {
+            if (runnerTitleEl) runnerTitleEl.innerText = "Loading routine details...";
+            try {
+                const res = await fetch("/api/v1/exercises");
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.exercises && data.exercises.length > 0) {
+                        if (typeof cachedExerciseCatalog !== 'undefined') {
+                            cachedExerciseCatalog = data.exercises;
+                        }
+                        foundRoutine = data.exercises.find(r => (r.id || '').toLowerCase() === rawId || (r.title || '').toLowerCase().includes(rawId) || (r.name || '').toLowerCase().includes(rawId));
+                    }
+                }
+            } catch (e) {
+                console.warn("Failed to fetch exercise catalog fallback", e);
+            }
+        }
+
+        if (!foundRoutine) {
+            foundRoutine = YOGA_ROUTINES['y1'] || {
+                id: rawId || 'y1',
+                title: "Gentle Lumbar Release",
+                duration_minutes: 15,
+                steps: [
+                    { title: "Supine Pelvic Tilts", duration: 225, cue: "Flatten lower back against the mat on exhale, gentle arch on inhale.", frames: ["/exercises/supine_pelvic_tilts.jpg"] },
+                    { title: "Supported Child's Pose", duration: 225, cue: "Widen knees, rest torso forward on bolster, lengthen spine.", frames: ["/exercises/supported_childs_pose.jpg"] },
+                    { title: "Supine Single Knee-to-Chest", duration: 225, cue: "Gently hug right knee, then left knee. Keep sacrum grounded.", frames: ["/exercises/knee_to_chest_stretch.jpg"] },
+                    { title: "Restorative Savasana with Bolster", duration: 225, cue: "Place bolster under knees to release psoas and lumbar pressure.", frames: ["/exercises/restorative_savasana.jpg"] }
+                ]
+            };
+        }
+
+        currentRoutineRunning = foundRoutine;
+        const routineMins = foundRoutine.duration_minutes || 15;
+        totalRoutineDuration = routineMins * 60;
         
+        currentProtocolSteps = (foundRoutine.steps || []).map(s => ({ ...s }));
+        
+        // Calibrate step durations so they strictly add up to the routine's declared duration
+        if (currentProtocolSteps.length > 0) {
+            const currentSum = currentProtocolSteps.reduce((acc, step) => acc + (step.duration || 45), 0);
+            if (currentSum !== totalRoutineDuration && totalRoutineDuration > 0) {
+                const factor = totalRoutineDuration / currentSum;
+                let allocated = 0;
+                currentProtocolSteps.forEach((s, idx) => {
+                    if (idx === currentProtocolSteps.length - 1) {
+                        s.duration = totalRoutineDuration - allocated;
+                    } else {
+                        s.duration = Math.round((s.duration || 45) * factor);
+                        allocated += s.duration;
+                    }
+                });
+            }
+        }
+
         currentStepIndex = 0;
-        timeLeft = (currentProtocolSteps[currentStepIndex] && currentProtocolSteps[currentStepIndex].duration) || 45;
+        timeLeft = currentProtocolSteps[0].duration;
+        totalTimeLeft = totalRoutineDuration;
+
         updateStepUI();
         startRunnerTimer();
     }
@@ -5392,9 +6452,61 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateStepUI() {
         if (currentStepIndex >= currentProtocolSteps.length) return;
         const step = currentProtocolSteps[currentStepIndex];
-        if (runnerStep) runnerStep.innerText = `Step ${currentStepIndex + 1} of ${currentProtocolSteps.length}: ${step.title}`;
-        if (runnerTimer) runnerTimer.innerText = formatTime(timeLeft);
         
+        // Calculate remaining total time across remaining steps + current step's remaining time
+        let remainingAfter = 0;
+        for (let i = currentStepIndex + 1; i < currentProtocolSteps.length; i++) {
+            remainingAfter += currentProtocolSteps[i].duration;
+        }
+        totalTimeLeft = timeLeft + remainingAfter;
+
+        const runnerTitleEl = document.getElementById('runnerTitle');
+        if (runnerTitleEl && currentRoutineRunning) {
+            runnerTitleEl.innerText = currentRoutineRunning.title || currentRoutineRunning.name;
+        }
+
+        const runnerTotalBadge = document.getElementById('runnerTotalBadge');
+        if (runnerTotalBadge && currentRoutineRunning) {
+            runnerTotalBadge.innerText = `${currentRoutineRunning.duration_minutes || 15} Min Routine`;
+        }
+
+        const runnerTotalTimeDisplay = document.getElementById('runnerTotalTimeDisplay');
+        if (runnerTotalTimeDisplay) {
+            runnerTotalTimeDisplay.innerText = `Total Remaining: ${formatTime(totalTimeLeft)} / ${formatTime(totalRoutineDuration)}`;
+        }
+
+        // Primary Program Countdown (e.g. 15:00)
+        if (runnerTimer) {
+            runnerTimer.innerText = formatTime(totalTimeLeft);
+        }
+
+        // Current Step Hold Countdown (e.g. 03:45)
+        const runnerStepTimer = document.getElementById('runnerStepTimer');
+        if (runnerStepTimer) {
+            runnerStepTimer.innerText = formatTime(timeLeft);
+        }
+
+        if (runnerStep) runnerStep.innerText = `Step ${currentStepIndex + 1} of ${currentProtocolSteps.length}: ${step.title}`;
+        
+        // Total routine progress bar and percentage
+        const progressBar = document.getElementById('runnerTotalProgressBar');
+        const progressPct = document.getElementById('runnerTotalProgressPct');
+        if (totalRoutineDuration > 0) {
+            const pct = Math.min(100, Math.max(0, Math.round(((totalRoutineDuration - totalTimeLeft) / totalRoutineDuration) * 100)));
+            if (progressBar) progressBar.style.height = `${pct}%`;
+            if (progressPct) progressPct.innerText = `${pct}%`;
+        }
+
+        // Step hold progress bar and percentage
+        const stepProgressBar = document.getElementById('runnerStepProgressBar');
+        const stepProgressPct = document.getElementById('runnerStepProgressPct');
+        const stepDuration = step.duration || 45;
+        if (stepDuration > 0) {
+            const stepPct = Math.min(100, Math.max(0, Math.round(((stepDuration - timeLeft) / stepDuration) * 100)));
+            if (stepProgressBar) stepProgressBar.style.width = `${stepPct}%`;
+            if (stepProgressPct) stepProgressPct.innerText = `${stepPct}%`;
+        }
+
         const runnerCueEl = document.getElementById('runnerCue');
         if (runnerCueEl) {
             runnerCueEl.innerText = step.cue || step.instruction || 'Follow gentle diaphragmatic breath rhythm.';
@@ -5414,7 +6526,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (imgEl) {
                 imgEl.style.display = 'block';
-                let fIdx = 0;
+                imgEl.style.opacity = '1';
                 imgEl.src = step.frames[0];
                 imgEl.onerror = () => {
                     imgEl.style.display = 'none';
@@ -5429,17 +6541,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         `;
                     }
                 };
-                if (step.frames.length > 1) {
-                    frameInterval = setInterval(() => {
-                        if (isRunnerPaused) return;
-                        fIdx = (fIdx + 1) % step.frames.length;
-                        imgEl.style.opacity = '0.7';
-                        setTimeout(() => {
-                            imgEl.src = step.frames[fIdx];
-                            imgEl.style.opacity = '1';
-                        }, 150);
-                    }, 2000);
-                }
             }
         } else if (step.video) {
             if (placeholderEl) placeholderEl.style.display = 'none';
@@ -5510,6 +6611,9 @@ document.addEventListener('DOMContentLoaded', () => {
         runnerInterval = setInterval(() => {
             if (isRunnerPaused) return;
             timeLeft--;
+            totalTimeLeft--;
+            if (totalTimeLeft < 0) totalTimeLeft = 0;
+
             if (timeLeft < 0) {
                 currentStepIndex++;
                 if (currentStepIndex >= currentProtocolSteps.length) {
@@ -5517,9 +6621,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     clearInterval(frameInterval);
                     if (runnerStep) runnerStep.innerText = "Routine Complete!";
                     if (runnerTimer) runnerTimer.innerText = "00:00";
+                    const runnerStepTimer = document.getElementById('runnerStepTimer');
+                    if (runnerStepTimer) runnerStepTimer.innerText = "00:00";
+                    const runnerTotalTimeDisplay = document.getElementById('runnerTotalTimeDisplay');
+                    if (runnerTotalTimeDisplay) runnerTotalTimeDisplay.innerText = `Total Remaining: 00:00 / ${formatTime(totalRoutineDuration)}`;
+                    const progressBar = document.getElementById('runnerTotalProgressBar');
+                    if (progressBar) progressBar.style.height = "100%";
+                    const progressPct = document.getElementById('runnerTotalProgressPct');
+                    if (progressPct) progressPct.innerText = "100%";
+                    const stepProgressBar = document.getElementById('runnerStepProgressBar');
+                    if (stepProgressBar) stepProgressBar.style.width = "100%";
+                    const stepProgressPct = document.getElementById('runnerStepProgressPct');
+                    if (stepProgressPct) stepProgressPct.innerText = "100%";
                     setTimeout(() => {
                         closeRunnerModal();
-                        // Seamlessly prompt to log relief delta
                         const routineName = currentRoutineRunning?.title || "Yoga Routine";
                         if (reliefExerciseName) reliefExerciseName.innerText = routineName;
                         if (afterPainScore) afterPainScore.value = currentPainLevel || 5;
@@ -5527,11 +6642,41 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (reliefModal) reliefModal.classList.remove('hidden');
                     }, 1200);
                 } else {
-                    timeLeft = (currentProtocolSteps[currentStepIndex] && currentProtocolSteps[currentStepIndex].duration) || 45;
+                    timeLeft = (currentProtocolSteps[currentStepIndex] && currentProtocolSteps[currentStepIndex].duration) || 225;
                     updateStepUI();
                 }
             } else {
-                if (runnerTimer) runnerTimer.innerText = formatTime(timeLeft);
+                // Update primary routine timer (e.g. 15:00 countdown)
+                if (runnerTimer) runnerTimer.innerText = formatTime(totalTimeLeft);
+                
+                // Update step timer (e.g. 03:45 hold countdown)
+                const runnerStepTimer = document.getElementById('runnerStepTimer');
+                if (runnerStepTimer) runnerStepTimer.innerText = formatTime(timeLeft);
+                
+                const runnerTotalTimeDisplay = document.getElementById('runnerTotalTimeDisplay');
+                if (runnerTotalTimeDisplay) {
+                    runnerTotalTimeDisplay.innerText = `Total Remaining: ${formatTime(totalTimeLeft)} / ${formatTime(totalRoutineDuration)}`;
+                }
+                
+                // Total progress bar and percentage
+                const progressBar = document.getElementById('runnerTotalProgressBar');
+                const progressPct = document.getElementById('runnerTotalProgressPct');
+                if (progressBar && totalRoutineDuration > 0) {
+                    const pct = Math.min(100, Math.max(0, Math.round(((totalRoutineDuration - totalTimeLeft) / totalRoutineDuration) * 100)));
+                    progressBar.style.height = `${pct}%`;
+                    if (progressPct) progressPct.innerText = `${pct}%`;
+                }
+
+                // Step hold progress bar and percentage
+                const stepProgressBar = document.getElementById('runnerStepProgressBar');
+                const stepProgressPct = document.getElementById('runnerStepProgressPct');
+                const curStep = currentProtocolSteps[currentStepIndex];
+                const stepDuration = (curStep && curStep.duration) || 45;
+                if (stepProgressBar && stepDuration > 0) {
+                    const stepPct = Math.min(100, Math.max(0, Math.round(((stepDuration - timeLeft) / stepDuration) * 100)));
+                    stepProgressBar.style.width = `${stepPct}%`;
+                    if (stepProgressPct) stepProgressPct.innerText = `${stepPct}%`;
+                }
             }
         }, 1000);
     }
@@ -5543,7 +6688,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btnPrevStep.addEventListener('click', () => {
             if (currentStepIndex > 0) {
                 currentStepIndex--;
-                timeLeft = (currentProtocolSteps[currentStepIndex] && currentProtocolSteps[currentStepIndex].duration) || 45;
+                timeLeft = (currentProtocolSteps[currentStepIndex] && currentProtocolSteps[currentStepIndex].duration) || 225;
                 updateStepUI();
             }
         });
@@ -5560,7 +6705,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 pendingProtocol = { id: currentRoutineRunning?.id || 'y1', name: routineName, beforePain: currentPainLevel || 5 };
                 if (reliefModal) reliefModal.classList.remove('hidden');
             } else {
-                timeLeft = (currentProtocolSteps[currentStepIndex] && currentProtocolSteps[currentStepIndex].duration) || 45;
+                timeLeft = (currentProtocolSteps[currentStepIndex] && currentProtocolSteps[currentStepIndex].duration) || 225;
                 updateStepUI();
             }
         });
@@ -5700,7 +6845,9 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (lower.includes('left')) side = 'left';
         
         let area = 'lumbar';
-        if (lower.includes('lumbar')) area = 'lumbar';
+        if (lower.includes('sciatica')) area = 'sciatica';
+        else if (lower.includes('scapula')) area = 'scapula';
+        else if (lower.includes('lumbar')) area = 'lumbar';
         else if (lower.includes('cervical') || lower.includes('neck')) area = 'cervical';
         else if (lower.includes('thoracic') || lower.includes('mid-back')) area = 'thoracic';
         else if (lower.includes('ankle')) area = 'ankle';
@@ -6502,6 +7649,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     const timeStr = msg.received_at ? new Date(msg.received_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' }) : '';
                     const bodyPreview = escapeHtml(msg.body || '');
+                    const isUnresolvedTag = msg.body && (msg.body === '{sms_body}' || msg.body.includes('{sms_body}'));
+                    const tagWarning = isUnresolvedTag
+                        ? `<div style="margin-top: 6px; padding: 4px 8px; border-radius: 4px; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.35); color: #fca5a5; font-size: 0.76rem;">
+                            ⚠️ <strong>Tag Issue:</strong> Phone sent <code>{sms_body}</code>. In MacroDroid HTTP Request body, change <code>{sms_body}</code> to <code>[sms_message]</code>.
+                           </div>`
+                        : '';
 
                     item.innerHTML = `
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
@@ -6512,6 +7665,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <span style="color: var(--text-muted); font-size: 0.75rem; white-space: nowrap;">${timeStr}</span>
                         </div>
                         <div style="color: var(--text-secondary); font-size: 0.88rem; line-height: 1.4;">${bodyPreview}</div>
+                        ${tagWarning}
                         <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px;">
                             ${!msg.read ? '<button class="btn btn-outline btn-sm btn-mark-read" style="font-size: 0.75rem; padding: 2px 8px;">Mark Read</button>' : ''}
                             <button class="btn btn-neon-blue btn-sm btn-reply-sms" style="font-size: 0.75rem; padding: 2px 8px;">Reply</button>
@@ -6595,6 +7749,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     loadSmsMessages();
+    setInterval(loadSmsMessages, 20000);
 
     // --- 12. Pain Analytics & GP Report Logic ---
     const btnOpenPainAnalytics = document.getElementById('btnOpenPainAnalytics');
@@ -6872,6 +8027,331 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (err) {
             console.error("Error loading pain analytics:", err);
         }
+    }
+
+    // --- Consult Action Checklist Modal (Solicitor & Doctor - High Stress / ADHD-Optimized) ---
+    const consultChecklistModal = document.getElementById('consultChecklistModal');
+    const tabClancy = document.getElementById('tabClancy');
+    const tabDrKhan = document.getElementById('tabDrKhan');
+    const btnCloseConsultChecklist = document.getElementById('btnCloseConsultChecklist');
+    const btnDoneConsultChecklist = document.getElementById('btnDoneConsultChecklist');
+    const btnResetChecklist = document.getElementById('btnResetChecklist');
+    const btnCopyVerbatim = document.getElementById('btnCopyVerbatim');
+    const verbatimLabel = document.getElementById('verbatimLabel');
+    const verbatimText = document.getElementById('verbatimText');
+    const consultChecklistTitle = document.getElementById('consultChecklistTitle');
+    const consultChecklistBadge = document.getElementById('consultChecklistBadge');
+    const consultChecklistSub = document.getElementById('consultChecklistSub');
+    const checklistProgressText = document.getElementById('checklistProgressText');
+    const checklistProgressBar = document.getElementById('checklistProgressBar');
+    const checklistItemsList = document.getElementById('checklistItemsList');
+    const inputNewChecklistItem = document.getElementById('inputNewChecklistItem');
+    const btnAddChecklistItem = document.getElementById('btnAddChecklistItem');
+    const consultLiveNotes = document.getElementById('consultLiveNotes');
+    const btnSaveToRumbleNotes = document.getElementById('btnSaveToRumbleNotes');
+    const notesSavedFeedback = document.getElementById('notesSavedFeedback');
+
+    let currentConsultTab = 'clancy';
+
+    const CONSULT_CHECKLIST_DATA = {
+        clancy: {
+            title: "Geoff Clancy - Solicitor Conference",
+            badge: "8:30 AM Legal",
+            sub: "Direct Custody Risk & R v Smith Hardship",
+            verbatimLabel: "Say This First to Clancy (Custody Check)",
+            verbatim: "Before we get into details, I need a direct, realistic assessment: Looking at these charges and my history, is immediate custody on the table, or are we looking at a CCO (Community Correction Order), fine, or adjourned undertaking?",
+            notesPlaceholder: "Write down Clancy's assessment, advice, required medical wording, and next court dates here...",
+            storageKey: "rumble_checklist_clancy_v1",
+            notesKey: "rumble_notes_clancy_v1",
+            defaultItems: [
+                { id: "c1", text: "Demand realistic sentence risk assessment immediately (custody vs CCO/fine).", sub: "Know the worst-case scenario in the first 2 minutes so you can plan the rest of the day." },
+                { id: "c2", text: "Present cervical fusion & active spinal cord risk under R v Smith principles.", sub: "Argue that imprisonment is disproportionately harsh and dangerous, warranting a non-custodial CCO." },
+                { id: "c3", text: "Request Magistrate Urgent Medical Alert endorsement on warrant if custody is threatened.", sub: "Instructs corrections and Justice Health for immediate intake triage regarding spinal cord vulnerability." },
+                { id: "c4", text: "Ask office to pre-lodge surgical & medical records with Justice Health (MAP) prior to court.", sub: "Ensures MAP reception has clinical records on file before any appearance." },
+                { id: "c5", text: "Get exact medical report requirements & wording to hand to Dr Khan at 3:00 PM.", sub: "Note down specific clinical tests, phrasing, or specialist attachments required by the court." }
+            ]
+        },
+        drkhan: {
+            title: "Dr Khan - Clinical Consult & Court Documentation",
+            badge: "3:00 PM Medical",
+            sub: "Reflex Assessment, Hardship Letters & Analgesic Review",
+            verbatimLabel: "Say This First to Dr Khan (Hardship & Reflexes)",
+            verbatim: "I need an urgent bedside neurological reflex check for hyperreflexia (knee kicking out) and two formal court letters today: one for remote AVL appearance, and one detailing custodial medical hardship under R v Smith.",
+            notesPlaceholder: "Write down Dr Khan's clinical reflex findings, script details, or specialist referrals here...",
+            storageKey: "rumble_checklist_drkhan_v1",
+            notesKey: "rumble_notes_drkhan_v1",
+            defaultItems: [
+                { id: "d1", text: "Bedside neurological check: Test patellar reflexes for hyperreflexia and ankle clonus.", sub: "Ensure Dr Khan notes down brisk reflexes/clonus with today's date in medical records." },
+                { id: "d2", text: "Court Medical Hardship Report (R v Smith): Letter to Presiding Magistrate.", sub: "Details 24 June 2026 fusion, active cord compression risk, fatal/paralysis danger in prison, lack of hydrotherapy." },
+                { id: "d3", text: "Remote Court Appearance Certificate (AVL / Webex).", sub: "States prolonged static sitting/standing causes disabling pain (8-9/10), making courtroom attendance unsafe." },
+                { id: "d4", text: "Printouts of RMH Surgical Summary & Signed Current Medication Chart.", sub: "Physical copies of Royal Melbourne Hospital fusion summary and scripts (Panadeine Forte) for Justice Health." },
+                { id: "d5", text: "Prescription repeat & neurosurgical follow-up referral.", sub: "PBS Authority repeat for Panadeine Forte and referral update to Prof. Greg Cunningham (RMH)." }
+            ]
+        }
+    };
+
+    function loadChecklistItems(tab) {
+        const conf = CONSULT_CHECKLIST_DATA[tab];
+        try {
+            const raw = localStorage.getItem(conf.storageKey);
+            if (raw) {
+                return JSON.parse(raw);
+            }
+        } catch (e) {
+            console.error("Error reading checklist from storage", e);
+        }
+        return conf.defaultItems.map(item => ({ ...item, checked: false }));
+    }
+
+    function saveChecklistItems(tab, items) {
+        const conf = CONSULT_CHECKLIST_DATA[tab];
+        try {
+            localStorage.setItem(conf.storageKey, JSON.stringify(items));
+        } catch (e) {
+            console.error("Error saving checklist to storage", e);
+        }
+    }
+
+    function renderConsultChecklist() {
+        const conf = CONSULT_CHECKLIST_DATA[currentConsultTab];
+        if (!conf) return;
+
+        // Header and Verbatim box
+        if (consultChecklistTitle) consultChecklistTitle.innerText = conf.title;
+        if (consultChecklistBadge) consultChecklistBadge.innerText = conf.badge;
+        if (consultChecklistSub) consultChecklistSub.innerText = conf.sub;
+        if (verbatimLabel) verbatimLabel.innerText = conf.verbatimLabel;
+        if (verbatimText) verbatimText.innerText = conf.verbatim;
+
+        // Tab styling
+        if (tabClancy && tabDrKhan) {
+            if (currentConsultTab === 'clancy') {
+                tabClancy.style.borderColor = 'var(--neon-purple)';
+                tabClancy.style.background = 'rgba(181, 0, 255, 0.15)';
+                tabClancy.style.opacity = '1';
+                tabDrKhan.style.borderColor = 'var(--glass-border)';
+                tabDrKhan.style.background = 'transparent';
+                tabDrKhan.style.opacity = '0.65';
+            } else {
+                tabDrKhan.style.borderColor = 'var(--neon-blue)';
+                tabDrKhan.style.background = 'rgba(0, 240, 255, 0.15)';
+                tabDrKhan.style.opacity = '1';
+                tabClancy.style.borderColor = 'var(--glass-border)';
+                tabClancy.style.background = 'transparent';
+                tabClancy.style.opacity = '0.65';
+            }
+        }
+
+        // Load items & notes
+        const items = loadChecklistItems(currentConsultTab);
+        
+        // Progress
+        const total = items.length;
+        const completed = items.filter(i => i.checked).length;
+        const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
+        if (checklistProgressText) checklistProgressText.innerText = `${completed} of ${total} actions completed (${pct}%)`;
+        if (checklistProgressBar) checklistProgressBar.style.width = `${pct}%`;
+
+        // Render items
+        if (checklistItemsList) {
+            checklistItemsList.innerHTML = '';
+            items.forEach((item, idx) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'glass-panel';
+                itemDiv.style.padding = '10px 12px';
+                itemDiv.style.display = 'flex';
+                itemDiv.style.alignItems = 'flex-start';
+                itemDiv.style.gap = '12px';
+                itemDiv.style.borderRadius = '8px';
+                itemDiv.style.border = item.checked ? '1px solid rgba(0, 255, 102, 0.3)' : '1px solid var(--glass-border)';
+                itemDiv.style.background = item.checked ? 'rgba(0, 255, 102, 0.04)' : 'rgba(255, 255, 255, 0.02)';
+                itemDiv.style.transition = 'all 0.2s ease';
+
+                itemDiv.innerHTML = `
+                    <input type="checkbox" id="chk_${currentConsultTab}_${idx}" data-idx="${idx}" ${item.checked ? 'checked' : ''} style="width: 20px; height: 20px; margin-top: 2px; accent-color: var(--neon-green); cursor: pointer; flex-shrink: 0;">
+                    <div style="flex: 1;">
+                        <label for="chk_${currentConsultTab}_${idx}" style="display: block; font-size: 0.92rem; font-weight: 600; color: ${item.checked ? 'var(--neon-green)' : '#fff'}; text-decoration: ${item.checked ? 'line-through' : 'none'}; opacity: ${item.checked ? '0.75' : '1'}; cursor: pointer;">
+                            <span style="display: inline-block; width: 18px; color: var(--neon-blue); font-size: 0.8rem; font-weight: 700;">${idx + 1}.</span> ${escapeHtml(item.text)}
+                        </label>
+                        ${item.sub ? `<div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 3px; line-height: 1.35; margin-left: 18px;">${escapeHtml(item.sub)}</div>` : ''}
+                    </div>
+                    <button type="button" class="btn-delete-checklist-item" data-idx="${idx}" title="Delete item" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1rem; padding: 0 4px; line-height: 1;">&times;</button>
+                `;
+
+                const checkbox = itemDiv.querySelector('input[type="checkbox"]');
+                if (checkbox) {
+                    checkbox.addEventListener('change', (e) => {
+                        items[idx].checked = e.target.checked;
+                        saveChecklistItems(currentConsultTab, items);
+                        renderConsultChecklist();
+                    });
+                }
+
+                const deleteBtn = itemDiv.querySelector('.btn-delete-checklist-item');
+                if (deleteBtn) {
+                    deleteBtn.addEventListener('click', () => {
+                        items.splice(idx, 1);
+                        saveChecklistItems(currentConsultTab, items);
+                        renderConsultChecklist();
+                    });
+                }
+
+                checklistItemsList.appendChild(itemDiv);
+            });
+        }
+
+        // Live Notes
+        if (consultLiveNotes) {
+            consultLiveNotes.placeholder = conf.notesPlaceholder;
+            const savedNotes = localStorage.getItem(conf.notesKey) || '';
+            consultLiveNotes.value = savedNotes;
+        }
+    }
+
+    function openConsultChecklistModal(initialTab = 'clancy') {
+        currentConsultTab = initialTab;
+        renderConsultChecklist();
+        if (consultChecklistModal) {
+            consultChecklistModal.classList.remove('hidden');
+        }
+    }
+
+    if (tabClancy) {
+        tabClancy.addEventListener('click', () => {
+            currentConsultTab = 'clancy';
+            renderConsultChecklist();
+        });
+    }
+
+    if (tabDrKhan) {
+        tabDrKhan.addEventListener('click', () => {
+            currentConsultTab = 'drkhan';
+            renderConsultChecklist();
+        });
+    }
+
+    if (btnCopyVerbatim) {
+        btnCopyVerbatim.addEventListener('click', async () => {
+            const conf = CONSULT_CHECKLIST_DATA[currentConsultTab];
+            if (!conf || !conf.verbatim) return;
+            try {
+                await navigator.clipboard.writeText(conf.verbatim);
+                const originalText = btnCopyVerbatim.innerText;
+                btnCopyVerbatim.innerText = 'Copied!';
+                btnCopyVerbatim.style.borderColor = 'var(--neon-green)';
+                btnCopyVerbatim.style.color = 'var(--neon-green)';
+                setTimeout(() => {
+                    btnCopyVerbatim.innerText = originalText;
+                    btnCopyVerbatim.style.borderColor = 'var(--neon-blue)';
+                    btnCopyVerbatim.style.color = 'var(--neon-blue)';
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy text', err);
+            }
+        });
+    }
+
+    if (btnAddChecklistItem && inputNewChecklistItem) {
+        const handleAdd = () => {
+            const val = inputNewChecklistItem.value.trim();
+            if (!val) return;
+            const items = loadChecklistItems(currentConsultTab);
+            items.push({
+                id: `custom_${Date.now()}`,
+                text: val,
+                sub: "Custom added during consult prep",
+                checked: false
+            });
+            saveChecklistItems(currentConsultTab, items);
+            inputNewChecklistItem.value = '';
+            renderConsultChecklist();
+        };
+
+        btnAddChecklistItem.addEventListener('click', handleAdd);
+        inputNewChecklistItem.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleAdd();
+            }
+        });
+    }
+
+    if (consultLiveNotes) {
+        consultLiveNotes.addEventListener('input', () => {
+            const conf = CONSULT_CHECKLIST_DATA[currentConsultTab];
+            if (conf) {
+                localStorage.setItem(conf.notesKey, consultLiveNotes.value);
+                if (notesSavedFeedback) {
+                    const now = new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
+                    notesSavedFeedback.innerText = `Auto-saved to device at ${now}`;
+                }
+            }
+        });
+    }
+
+    if (btnSaveToRumbleNotes) {
+        btnSaveToRumbleNotes.addEventListener('click', async () => {
+            const conf = CONSULT_CHECKLIST_DATA[currentConsultTab];
+            const content = consultLiveNotes ? consultLiveNotes.value.trim() : '';
+            if (!content) {
+                showToast('Type notes before saving to permanent notes', 'info');
+                return;
+            }
+            btnSaveToRumbleNotes.disabled = true;
+            btnSaveToRumbleNotes.innerText = 'Saving...';
+            try {
+                const noteTitle = currentConsultTab === 'clancy' ? 'Legal Consult Notes (Geoff Clancy)' : 'Medical Consult Notes (Dr Khan)';
+                const formattedContent = `# ${noteTitle}\nDate: ${new Date().toLocaleDateString('en-AU')}\n\n${content}`;
+                const res = await fetch(API_NOTES, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        content: formattedContent,
+                        author: 'user',
+                        pinned: true
+                    })
+                });
+                if (res.ok) {
+                    showToast('Saved to Rumble Notes & Neon DB', 'success');
+                    if (notesSavedFeedback) {
+                        notesSavedFeedback.innerText = 'Permanently saved to Rumble Notes database.';
+                    }
+                    loadNotes();
+                } else {
+                    showToast('Failed to save permanent note', 'error');
+                }
+            } catch (err) {
+                console.error('Error saving note', err);
+                showToast('Network error saving note', 'error');
+            } finally {
+                btnSaveToRumbleNotes.disabled = false;
+                btnSaveToRumbleNotes.innerText = 'Save to Permanent Notes';
+            }
+        });
+    }
+
+    if (btnResetChecklist) {
+        btnResetChecklist.addEventListener('click', () => {
+            const conf = CONSULT_CHECKLIST_DATA[currentConsultTab];
+            if (conf && confirm('Reset checklist items to default?')) {
+                const defaults = conf.defaultItems.map(i => ({ ...i, checked: false }));
+                saveChecklistItems(currentConsultTab, defaults);
+                renderConsultChecklist();
+                showToast('Checklist reset to defaults', 'info');
+            }
+        });
+    }
+
+    if (btnCloseConsultChecklist && consultChecklistModal) {
+        btnCloseConsultChecklist.addEventListener('click', () => {
+            consultChecklistModal.classList.add('hidden');
+        });
+    }
+
+    if (btnDoneConsultChecklist && consultChecklistModal) {
+        btnDoneConsultChecklist.addEventListener('click', () => {
+            consultChecklistModal.classList.add('hidden');
+        });
     }
 
 });

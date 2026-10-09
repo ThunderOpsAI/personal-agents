@@ -17,7 +17,7 @@ interface FormState {
 
 const ALL_ANATOMY = [
   'Right Lumbar', 'Left Lumbar', 'Neck / Cervical', 'Right Shoulder', 'Sciatica', 'Thoracic',
-  'Right Ankle', 'Right Knee', 'Left Knee', 'Right Hip'
+  'Scapula', 'Right Ankle', 'Right Knee', 'Left Knee', 'Right Hip'
 ];
 
 const INITIAL_STATE: FormState = {
@@ -32,6 +32,7 @@ const INITIAL_STATE: FormState = {
 
 export default function TelegramPainFormPrototypePage() {
   const [formState, setFormState] = useState<FormState>(INITIAL_STATE);
+  const [standardRotation, setStandardRotation] = useState<'A' | 'B'>('A');
 
   const totalPercent = formState.selectedAreas.reduce((sum, s) => sum + Number(s.percent), 0);
 
@@ -198,20 +199,53 @@ export default function TelegramPainFormPrototypePage() {
                     </div>
 
                     <div>
-                      <label style={{ fontSize: '0.78rem', color: '#94a3b8', display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                      <label style={{ fontSize: '0.78rem', color: '#94a3b8', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                         <span>Pain Score (0–10)</span>
-                        <strong style={{ color: '#ff3d00' }}>{slot.score}/10</strong>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <input
+                            type="number"
+                            min="0"
+                            max="10"
+                            step="0.1"
+                            inputMode="decimal"
+                            value={slot.score}
+                            onChange={(e) => {
+                              const val = parseFloat(e.target.value);
+                              const clamped = isNaN(val) ? 0 : Math.max(0, Math.min(10, Number(val.toFixed(1))));
+                              setFormState((prev) => ({
+                                ...prev,
+                                selectedAreas: prev.selectedAreas.map((s) => (s.area === slot.area ? { ...s, score: clamped } : s)),
+                              }));
+                            }}
+                            style={{
+                              width: '52px',
+                              padding: '2px 4px',
+                              textAlign: 'right',
+                              fontWeight: 'bold',
+                              color: '#ff3d00',
+                              background: 'rgba(0,0,0,0.5)',
+                              border: '1px solid rgba(255,61,0,0.4)',
+                              borderRadius: '4px',
+                              fontSize: '0.85rem',
+                            }}
+                            title="Click cell to enter decimal (e.g. 5.7, 8.3)"
+                          />
+                          <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>/10</span>
+                        </div>
                       </label>
                       <input
                         type="range"
                         min="0"
                         max="10"
-                        step="0.5"
+                        step="0.1"
                         value={slot.score}
-                        onChange={(e) => setFormState((prev) => ({
-                          ...prev,
-                          selectedAreas: prev.selectedAreas.map((s) => (s.area === slot.area ? { ...s, score: Number(e.target.value) } : s)),
-                        }))}
+                        onChange={(e) => {
+                          const val = Number(parseFloat(e.target.value).toFixed(1));
+                          setFormState((prev) => ({
+                            ...prev,
+                            selectedAreas: prev.selectedAreas.map((s) => (s.area === slot.area ? { ...s, score: val } : s)),
+                          }));
+                        }}
                         style={{ width: '100%' }}
                       />
                     </div>
@@ -243,11 +277,151 @@ export default function TelegramPainFormPrototypePage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <div style={{ background: 'rgba(15, 23, 42, 0.75)', borderTop: '3px solid #00f0ff', borderRadius: '14px', padding: '16px', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', gap: '16px', height: '100%' }}>
               
-              {/* 1. Mood Score Section */}
+              {/* 1. Quick Presets Section */}
               <div>
-                <div style={{ fontSize: '0.78rem', fontWeight: 'bold', color: '#00f0ff', marginBottom: '6px' }}>
-                  🧠 MOOD SCORE & TONE
+                <div style={{ fontSize: '0.78rem', fontWeight: 'bold', color: '#00f0ff', marginBottom: '6px', display: 'flex', justifyContent: 'space-between' }}>
+                  <span>⚡ QUICK PRESETS</span>
+                  <span style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 'normal' }}>1-Tap Presets</span>
                 </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px', marginBottom: '12px' }}>
+                  {/* Standard */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const nextRot = standardRotation === 'A' ? 'B' : 'A';
+                      setStandardRotation(nextRot);
+                      if (nextRot === 'A') {
+                        setFormState((prev) => ({
+                          ...prev,
+                          selectedAreas: [
+                            { area: 'Right Lumbar', percent: 70, score: 7.5 },
+                            { area: 'Right Ankle', percent: 15, score: 5.0 },
+                            { area: 'Thoracic', percent: 15, score: 5.0 },
+                          ],
+                          moodScore: 6.0,
+                          moodLabel: 'Calm',
+                          notes: 'Standard check-in (70% lumbar 7.5, 15% ankle 5.0, 15% thoracic 5.0)',
+                        }));
+                      } else {
+                        setFormState((prev) => ({
+                          ...prev,
+                          selectedAreas: [
+                            { area: 'Right Lumbar', percent: 70, score: 7.5 },
+                            { area: 'Right Knee', percent: 15, score: 5.0 },
+                            { area: 'Neck / Cervical', percent: 15, score: 5.0 },
+                          ],
+                          moodScore: 6.0,
+                          moodLabel: 'Calm',
+                          notes: 'Standard check-in (70% lumbar 7.5, 15% knee 5.0, 15% neck 5.0)',
+                        }));
+                      }
+                    }}
+                    style={{
+                      padding: '8px',
+                      background: 'rgba(56, 189, 248, 0.1)',
+                      border: '1px solid #38bdf8',
+                      borderRadius: '8px',
+                      color: '#38bdf8',
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <div style={{ fontWeight: 'bold', fontSize: '0.82rem' }}>Standard</div>
+                    <div style={{ fontSize: '0.68rem', color: '#94a3b8' }}>70% Lumbar 7.5 &bull; Rotates Ankle/Knee</div>
+                  </button>
+
+                  {/* Hydro */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFormState((prev) => {
+                        const weightedSum = prev.selectedAreas.reduce((sum, s) => sum + (s.score * s.percent), 0);
+                        const curScore = totalPercent > 0 ? (weightedSum / totalPercent) : 7.5;
+                        return {
+                          ...prev,
+                          selectedAreas: prev.selectedAreas.map((s) => ({
+                            ...s,
+                            score: Math.max(1.0, Math.min(10.0, Number((s.score - 1.5).toFixed(1)))),
+                          })),
+                          moodScore: 7.5,
+                          moodLabel: 'Good',
+                          notes: 'Good hydrotherapy session, feeling slightly better',
+                        };
+                      });
+                    }}
+                    style={{
+                      padding: '8px',
+                      background: 'rgba(0, 230, 118, 0.1)',
+                      border: '1px solid #00e676',
+                      borderRadius: '8px',
+                      color: '#00e676',
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <div style={{ fontWeight: 'bold', fontSize: '0.82rem' }}>Hydro</div>
+                    <div style={{ fontSize: '0.68rem', color: '#94a3b8' }}>-1.5 vs Prev &bull; Hydro relief</div>
+                  </button>
+
+                  {/* Thoracic */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFormState((prev) => ({
+                        ...prev,
+                        selectedAreas: [
+                          { area: 'Thoracic', percent: 70, score: 7.5 },
+                          { area: 'Neck / Cervical', percent: 15, score: 7.5 },
+                          { area: 'Scapula', percent: 15, score: 7.5 },
+                        ],
+                        moodScore: 5.0,
+                        moodLabel: 'Fatigued',
+                        notes: 'Thoracic strain & fatigue (70% thoracic, 15% neck, 15% scapula @ 7.5)',
+                      }));
+                    }}
+                    style={{
+                      padding: '8px',
+                      background: 'rgba(168, 85, 247, 0.1)',
+                      border: '1px solid #a855f7',
+                      borderRadius: '8px',
+                      color: '#c084fc',
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <div style={{ fontWeight: 'bold', fontSize: '0.82rem' }}>Thoracic</div>
+                    <div style={{ fontSize: '0.68rem', color: '#94a3b8' }}>70% Thor, 15% Neck, 15% Scap @ 7.5</div>
+                  </button>
+
+                  {/* Sciatica */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFormState((prev) => ({
+                        ...prev,
+                        selectedAreas: [
+                          { area: 'Sciatica', percent: 100, score: 9.5 },
+                        ],
+                        moodScore: 2.0,
+                        moodLabel: 'Stressed',
+                        notes: 'Sciatica pain attack',
+                      }));
+                    }}
+                    style={{
+                      padding: '8px',
+                      background: 'rgba(255, 61, 0, 0.15)',
+                      border: '1px solid #ff3d00',
+                      borderRadius: '8px',
+                      color: '#ff6e40',
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <div style={{ fontWeight: 'bold', fontSize: '0.82rem' }}>Sciatica</div>
+                    <div style={{ fontSize: '0.68rem', color: '#94a3b8' }}>9.5 &bull; 100% Sciatica attack</div>
+                  </button>
+                </div>
+
                 <div style={{ marginBottom: '8px' }}>
                   <label style={{ fontSize: '0.8rem', color: '#94a3b8', display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
                     <span>Mood Score (0–10)</span>
@@ -332,7 +506,9 @@ export default function TelegramPainFormPrototypePage() {
                     else if (lower.includes('left')) side = 'left';
 
                     let area = 'lumbar';
-                    if (lower.includes('lumbar')) area = 'lumbar';
+                    if (lower.includes('sciatica')) area = 'sciatica';
+                    else if (lower.includes('scapula')) area = 'scapula';
+                    else if (lower.includes('lumbar')) area = 'lumbar';
                     else if (lower.includes('cervical') || lower.includes('neck')) area = 'cervical';
                     else if (lower.includes('thoracic') || lower.includes('mid-back')) area = 'thoracic';
                     else if (lower.includes('ankle')) area = 'ankle';
