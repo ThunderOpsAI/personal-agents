@@ -169,7 +169,7 @@ export class TelegramBot {
       throw new Error("sendCheckInPrompt requires chatId or TELEGRAM_CHAT_ID environment variable");
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : '');
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://rumble-os.vercel.app');
     const webAppUrl = baseUrl ? `${baseUrl}/prototype/telegram-pain-form` : '';
 
     const message = [
@@ -178,7 +178,7 @@ export class TelegramBot {
       "Time for your pain tracking log.",
       "",
       "👉 *Ways to log:*",
-      webAppUrl ? "1️⃣ Tap *Open Pain Form* to launch the interactive slider & stepper form.\n2️⃣ Tap a *Quick Preset* below for instant 1-tap logging.\n3️⃣ Reply in chat with custom score & areas (e.g. `7.5 75% right lumbar 25% neck`)." : "1️⃣ Tap a *Quick Preset* below for instant 1-tap logging.\n2️⃣ Reply in chat with custom score & areas (e.g. `7.5 75% right lumbar 25% neck`)."
+      webAppUrl ? "1️⃣ Tap *Open Interactive Pain Form* to launch the slider & stepper form.\n2️⃣ Tap a *Quick Preset* below for instant 1-tap logging.\n3️⃣ Reply in chat with custom score & areas (e.g. `7.5 75% right lumbar 25% neck`)." : "1️⃣ Tap a *Quick Preset* below for instant 1-tap logging.\n2️⃣ Reply in chat with custom score & areas (e.g. `7.5 75% right lumbar 25% neck`)."
     ].join('\n');
 
     const inline_keyboard: any[][] = [];
@@ -189,31 +189,14 @@ export class TelegramBot {
       ]);
     }
 
-    // 4 Auto-Logging Quick Action Buttons
+    // 4 Auto-Logging Quick Presets matching Rumble pain log screen
     inline_keyboard.push([
-      { text: "Sciatica (9.5)", callback_data: "pain_quick:sciatica" },
-      { text: "Thoracic (7.5)", callback_data: "pain_quick:thoracic" },
-    ]);
-    inline_keyboard.push([
-      { text: "Hydro (-1.5)", callback_data: "pain_quick:hydro" },
       { text: "Standard", callback_data: "pain_quick:standard" },
+      { text: "Hydro (-1.5)", callback_data: "pain_quick:hydro" },
     ]);
-
     inline_keyboard.push([
-      { text: "🟢 Mild (5.5)", callback_data: "pain_preset:5.5" },
-      { text: "🟡 Mod (7.0)", callback_data: "pain_preset:7.0" },
-      { text: "🟠 Avg (7.5)", callback_data: "pain_preset:7.5" },
-      { text: "🔴 High (8.5)", callback_data: "pain_preset:8.5" },
-    ]);
-
-    inline_keyboard.push([
-      { text: "⚡ Lumbar Flare (9.0)", callback_data: "pain_lumbar_flare:9.0" },
-      { text: "💆 Neck Tension (6.5)", callback_data: "pain_neck_focus:6.5" },
-    ]);
-
-    inline_keyboard.push([
-      { text: "🦶 Ankle/Gait Strain (7.0)", callback_data: "pain_ankle_focus:7.0" },
-      { text: "📋 Custom Reply Guide", callback_data: "pain_help" },
+      { text: "Thoracic (7.5)", callback_data: "pain_quick:thoracic" },
+      { text: "Sciatica (9.5)", callback_data: "pain_quick:sciatica" },
     ]);
 
     return this.sendMessage(targetChatId, message, {

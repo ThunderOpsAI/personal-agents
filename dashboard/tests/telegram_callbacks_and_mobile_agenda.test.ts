@@ -415,8 +415,12 @@ describe('Telegram Bot Inline Callbacks & Symptoms Logging & Mobile Agenda', () 
         reply_markup: expect.objectContaining({
           inline_keyboard: expect.arrayContaining([
             expect.arrayContaining([
-              expect.objectContaining({ callback_data: 'pain_preset:5.5' }),
-              expect.objectContaining({ callback_data: 'pain_preset:7.0' }),
+              expect.objectContaining({ callback_data: 'pain_quick:standard' }),
+              expect.objectContaining({ callback_data: 'pain_quick:hydro' }),
+            ]),
+            expect.arrayContaining([
+              expect.objectContaining({ callback_data: 'pain_quick:thoracic' }),
+              expect.objectContaining({ callback_data: 'pain_quick:sciatica' }),
             ]),
           ]),
         }),
