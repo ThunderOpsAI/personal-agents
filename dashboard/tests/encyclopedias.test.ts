@@ -8,15 +8,22 @@ import { GET as getNews } from "../app/api/v1/news/route";
 import fs from "fs/promises";
 import path from "path";
 
-describe("3 Encyclopedias (Pain, AI, Tech) & News Suite", () => {
-  it("contains all 3 encyclopedias with structured chapters", () => {
+describe("Encyclopedias & Learning Suite (October Refresh)", () => {
+  it("contains all encyclopedias with structured chapters and archival flags", () => {
     expect(ENCYCLOPEDIAS.pain).toBeDefined();
+    expect(ENCYCLOPEDIAS.cbt).toBeDefined();
+    expect(ENCYCLOPEDIAS.nerves).toBeDefined();
+    expect(ENCYCLOPEDIAS.nutrition).toBeDefined();
+    expect(ENCYCLOPEDIAS.business).toBeDefined();
     expect(ENCYCLOPEDIAS.ai).toBeDefined();
     expect(ENCYCLOPEDIAS.tech).toBeDefined();
 
-    expect(ENCYCLOPEDIAS.pain.chapters.length).toBeGreaterThanOrEqual(6);
-    expect(ENCYCLOPEDIAS.ai.chapters.length).toBeGreaterThanOrEqual(6);
-    expect(ENCYCLOPEDIAS.tech.chapters.length).toBeGreaterThanOrEqual(6);
+    expect(ENCYCLOPEDIAS.ai.archived).toBe(true);
+    expect(ENCYCLOPEDIAS.tech.archived).toBe(true);
+
+    expect(ENCYCLOPEDIAS.nerves.chapters.length).toBeGreaterThanOrEqual(8);
+    expect(ENCYCLOPEDIAS.nutrition.chapters.length).toBeGreaterThanOrEqual(8);
+    expect(ENCYCLOPEDIAS.business.chapters.length).toBeGreaterThanOrEqual(10);
 
     for (const enc of Object.values(ENCYCLOPEDIAS)) {
       for (const ch of enc.chapters) {
@@ -28,16 +35,27 @@ describe("3 Encyclopedias (Pain, AI, Tech) & News Suite", () => {
     }
   });
 
-  it("GET /api/v1/learn/encyclopedias returns all 4 encyclopedias with progress metadata", async () => {
+  it("GET /api/v1/learn/encyclopedias returns the 5 active encyclopedias with progress metadata", async () => {
     const res = await getEncyclopedias();
     expect(res.status).toBe(200);
     const data = await res.json();
-    expect(data.encyclopedias).toHaveLength(4);
+    expect(data.encyclopedias).toHaveLength(5);
     const ids = data.encyclopedias.map((e: any) => e.id);
     expect(ids).toContain("pain");
-    expect(ids).toContain("ai");
-    expect(ids).toContain("tech");
     expect(ids).toContain("cbt");
+    expect(ids).toContain("nerves");
+    expect(ids).toContain("nutrition");
+    expect(ids).toContain("business");
+    expect(ids).not.toContain("ai");
+    expect(ids).not.toContain("tech");
+  });
+
+  it("GET /api/v1/learn/encyclopedias?include_archived=true returns all 7 encyclopedias", async () => {
+    const req = new Request("http://localhost:3000/api/v1/learn/encyclopedias?include_archived=true");
+    const res = await getEncyclopedias(req);
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.encyclopedias).toHaveLength(7);
   });
 
   it("GET /api/v1/learn/encyclopedias/[id] returns chapter details and navigation", async () => {

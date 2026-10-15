@@ -18,6 +18,15 @@
 
     <div class="app-container">
         
+        <!-- Pinned MacroDroid Weekly Reminder Banner -->
+        <div class="macrodroid-banner hidden" id="macrodroidBanner">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="background: rgba(0,0,0,0.3); font-size: 0.72rem; font-weight: 800; padding: 3px 8px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em;">MacroDroid</span>
+                <span>Watch 3 MacroDroid ads (+9 days)</span>
+            </div>
+            <button class="btn btn-sm" id="btnDoneMacroDroid" style="background: #ffffff; color: #dc2626; border: none; font-weight: 700; padding: 5px 16px; border-radius: 4px; cursor: pointer;">Done</button>
+        </div>
+
         <!-- Glass Header -->
         <header class="glass-header">
             <div class="header-content">
@@ -151,7 +160,7 @@
                             </div>
                             <p style="margin: 0 0 10px 0; font-size: 0.88rem; color: var(--text-secondary);">Pick a topic to resume where you left off. Every session saves a summary to <code style="color: var(--neon-blue); font-size: 0.8rem;">learning/</code>.</p>
                             
-                            <div class="encyclopedia-quick-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+                            <div class="encyclopedia-quick-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px;">
                                 <button class="btn btn-outline encyclopedia-btn" data-enc="pain" style="flex-direction: column; align-items: flex-start; padding: 10px 12px; text-align: left; border-color: rgba(255, 60, 60, 0.3); background: rgba(255, 60, 60, 0.04);">
                                     <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
                                         <span class="badge neon-red" style="font-size: 0.7rem; padding: 2px 6px;">PAIN</span>
@@ -161,30 +170,39 @@
                                     <span style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 2px;">Resume reading &rarr;</span>
                                 </button>
 
-                                <button class="btn btn-outline encyclopedia-btn" data-enc="ai" style="flex-direction: column; align-items: flex-start; padding: 10px 12px; text-align: left; border-color: rgba(168, 85, 247, 0.3); background: rgba(168, 85, 247, 0.04);">
-                                    <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
-                                        <span class="badge neon-purple" style="font-size: 0.7rem; padding: 2px 6px;">AI</span>
-                                        <span class="enc-progress-pill" id="aiProgressBadge" style="font-size: 0.7rem; color: var(--text-muted);">Ch. 1/20</span>
-                                    </div>
-                                    <strong style="color: #fff; font-size: 0.85rem; margin-top: 6px; display: block;" id="aiCurrentTitle">Transformers & Attention</strong>
-                                    <span style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 2px;">Resume reading &rarr;</span>
-                                </button>
-
-                                <button class="btn btn-outline encyclopedia-btn" data-enc="tech" style="flex-direction: column; align-items: flex-start; padding: 10px 12px; text-align: left; border-color: rgba(0, 229, 255, 0.3); background: rgba(0, 229, 255, 0.04);">
-                                    <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
-                                        <span class="badge neon-blue" style="font-size: 0.7rem; padding: 2px 6px;">TECH</span>
-                                        <span class="enc-progress-pill" id="techProgressBadge" style="font-size: 0.7rem; color: var(--text-muted);">Ch. 1/20</span>
-                                    </div>
-                                    <strong style="color: #fff; font-size: 0.85rem; margin-top: 6px; display: block;" id="techCurrentTitle">Serverless & Edge Runtimes</strong>
-                                    <span style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 2px;">Resume reading &rarr;</span>
-                                </button>
-
                                 <button class="btn btn-outline encyclopedia-btn" data-enc="cbt" style="flex-direction: column; align-items: flex-start; padding: 10px 12px; text-align: left; border-color: rgba(76, 175, 80, 0.3); background: rgba(76, 175, 80, 0.04);">
                                     <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
                                         <span class="badge neon-green" style="font-size: 0.7rem; padding: 2px 6px;">MINDSET</span>
                                         <span class="enc-progress-pill" id="cbtProgressBadge" style="font-size: 0.7rem; color: var(--text-muted);">Ch. 1/20</span>
                                     </div>
                                     <strong style="color: #fff; font-size: 0.85rem; margin-top: 6px; display: block;" id="cbtCurrentTitle">Cognitive Behavioral Therapy</strong>
+                                    <span style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 2px;">Resume reading &rarr;</span>
+                                </button>
+
+                                <button class="btn btn-outline encyclopedia-btn" data-enc="nerves" style="flex-direction: column; align-items: flex-start; padding: 10px 12px; text-align: left; border-color: rgba(168, 85, 247, 0.3); background: rgba(168, 85, 247, 0.04);">
+                                    <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+                                        <span class="badge neon-purple" style="font-size: 0.7rem; padding: 2px 6px;">NERVES</span>
+                                        <span class="enc-progress-pill" id="nervesProgressBadge" style="font-size: 0.7rem; color: var(--text-muted);">Ch. 1/9</span>
+                                    </div>
+                                    <strong style="color: #fff; font-size: 0.85rem; margin-top: 6px; display: block;" id="nervesCurrentTitle">Upper vs Lower Motor Neuron</strong>
+                                    <span style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 2px;">Resume reading &rarr;</span>
+                                </button>
+
+                                <button class="btn btn-outline encyclopedia-btn" data-enc="nutrition" style="flex-direction: column; align-items: flex-start; padding: 10px 12px; text-align: left; border-color: rgba(0, 229, 255, 0.3); background: rgba(0, 229, 255, 0.04);">
+                                    <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+                                        <span class="badge neon-blue" style="font-size: 0.7rem; padding: 2px 6px;">NUTRITION</span>
+                                        <span class="enc-progress-pill" id="nutritionProgressBadge" style="font-size: 0.7rem; color: var(--text-muted);">Ch. 1/8</span>
+                                    </div>
+                                    <strong style="color: #fff; font-size: 0.85rem; margin-top: 6px; display: block;" id="nutritionCurrentTitle">Neuro-Immunology & Inflammation</strong>
+                                    <span style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 2px;">Resume reading &rarr;</span>
+                                </button>
+
+                                <button class="btn btn-outline encyclopedia-btn" data-enc="business" style="flex-direction: column; align-items: flex-start; padding: 10px 12px; text-align: left; border-color: rgba(234, 179, 8, 0.3); background: rgba(234, 179, 8, 0.04);">
+                                    <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+                                        <span class="badge neon-yellow" style="font-size: 0.7rem; padding: 2px 6px; background: rgba(234, 179, 8, 0.15); color: #eab308; border: 1px solid rgba(234, 179, 8, 0.3); border-radius: 4px;">FINANCE</span>
+                                        <span class="enc-progress-pill" id="businessProgressBadge" style="font-size: 0.7rem; color: var(--text-muted);">Ch. 1/13</span>
+                                    </div>
+                                    <strong style="color: #fff; font-size: 0.85rem; margin-top: 6px; display: block;" id="businessCurrentTitle">Victorian Trade Compliance & BAS</strong>
                                     <span style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 2px;">Resume reading &rarr;</span>
                                 </button>
                             </div>
@@ -483,32 +501,135 @@
                     <!-- RIGHT COLUMN: Combined Mood & Notes -->
                     <div class="pain-modal-right-col">
                         <div class="glass-card pain-rhs-combined">
-                            <!-- Mood Score -->
-                            <div class="form-group">
-                                <label>Mood Level <span class="val-tag" id="moodValDisplay">5.0</span>/10 <span id="moodLabelDisplay" style="color: var(--neon-blue); margin-left: 4px;">(Calm)</span></label>
-                                <div class="scale-buttons scale-buttons-modal" id="moodScaleButtons">
-                                    <button type="button" class="btn-num mood-num" data-val="0">0</button><button type="button" class="btn-num mood-num" data-val="1">1</button><button type="button" class="btn-num mood-num" data-val="2">2</button><button type="button" class="btn-num mood-num" data-val="3">3</button><button type="button" class="btn-num mood-num" data-val="4">4</button><button type="button" class="btn-num mood-num active" data-val="5">5</button><button type="button" class="btn-num mood-num" data-val="6">6</button><button type="button" class="btn-num mood-num" data-val="7">7</button><button type="button" class="btn-num mood-num" data-val="8">8</button><button type="button" class="btn-num mood-num" data-val="9">9</button><button type="button" class="btn-num mood-num" data-val="10">10</button>
-                                </div>
-                                <div class="mood-emoji-selector" id="moodEmojiSelector" style="margin-top: 8px;">
-                                    <button type="button" class="mood-emoji" data-emoji="😌" data-label="Calm" aria-label="Calm mood">😌 Calm</button>
-                                    <button type="button" class="mood-emoji active" data-emoji="🙂" data-label="Good" aria-label="Good mood">🙂 Good</button>
-                                    <button type="button" class="mood-emoji" data-emoji="😴" data-label="Fatigued" aria-label="Fatigued mood">😴 Tired</button>
-                                    <button type="button" class="mood-emoji" data-emoji="😣" data-label="Stressed" aria-label="Stressed mood">😣 Flare</button>
+                            <!-- Quick Presets (9 Staging Presets - Loads Form, Click Save below) -->
+                            <div class="form-group" style="margin-bottom: 10px;">
+                                <label style="font-size: 0.78rem; font-weight: bold; color: var(--neon-blue); display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                    <span>Staging Presets (Loads Form - Click Save below)</span>
+                                    <span style="font-size: 0.7rem; color: var(--text-secondary); font-weight: normal;">9 Clinical Presets</span>
+                                </label>
+                                <div class="quick-pain-grid" id="quickPainButtonsGrid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;">
+                                    <button type="button" class="btn btn-sm btn-outline quick-pain-btn" data-preset="standard" style="padding: 5px 6px; border-color: var(--neon-blue); color: #38bdf8; display: flex; flex-direction: column;">
+                                        <strong style="font-size: 0.78rem;">Standard</strong>
+                                        <span style="font-size: 0.65rem; color: var(--text-secondary);">70% Lumbar &bull; Rotates Joint</span>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline quick-pain-btn" data-preset="hydro" style="padding: 5px 6px; border-color: var(--neon-green); color: #00e676; display: flex; flex-direction: column;">
+                                        <strong style="font-size: 0.78rem;">Hydro</strong>
+                                        <span style="font-size: 0.65rem; color: var(--text-secondary);">Relief &bull; Water Decomp</span>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline quick-pain-btn" data-preset="thoracic" style="padding: 5px 6px; border-color: #a855f7; color: #c084fc; display: flex; flex-direction: column;">
+                                        <strong style="font-size: 0.78rem;">Thoracic</strong>
+                                        <span style="font-size: 0.65rem; color: var(--text-secondary);">70% Thoracic &bull; 7.5 Pain</span>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline quick-pain-btn" data-preset="sciatica" style="padding: 5px 6px; border-color: var(--neon-red); color: #ff5252; display: flex; flex-direction: column;">
+                                        <strong style="font-size: 0.78rem;">Sciatica</strong>
+                                        <span style="font-size: 0.65rem; color: var(--text-secondary);">9.5 Pain &bull; 100% Flare</span>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline quick-pain-btn" data-preset="post_walk" style="padding: 5px 6px; border-color: #f59e0b; color: #fbbf24; display: flex; flex-direction: column;">
+                                        <strong style="font-size: 0.78rem;">Post-Walk</strong>
+                                        <span style="font-size: 0.65rem; color: var(--text-secondary);">Loading Flare &bull; Sore -2</span>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline quick-pain-btn" data-preset="morning_stiffness" style="padding: 5px 6px; border-color: #06b6d4; color: #22d3ee; display: flex; flex-direction: column;">
+                                        <strong style="font-size: 0.78rem;">Morning Stiff</strong>
+                                        <span style="font-size: 0.65rem; color: var(--text-secondary);">Lumbar/Thoracic &bull; Sore -2</span>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline quick-pain-btn" data-preset="neck_shoulder" style="padding: 5px 6px; border-color: #ec4899; color: #f472b6; display: flex; flex-direction: column;">
+                                        <strong style="font-size: 0.78rem;">Neck/Shoulder</strong>
+                                        <span style="font-size: 0.65rem; color: var(--text-secondary);">Cervical/Trap &bull; 7.0 Pain</span>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline quick-pain-btn" data-preset="white_fingers" style="padding: 5px 6px; border-color: #94a3b8; color: #cbd5e1; display: flex; flex-direction: column;">
+                                        <strong style="font-size: 0.78rem;">White Fingers</strong>
+                                        <span style="font-size: 0.65rem; color: var(--text-secondary);">Cold Triggered &bull; Pallor</span>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline quick-pain-btn" data-preset="rest_day" style="padding: 5px 6px; border-color: #10b981; color: #34d399; display: flex; flex-direction: column;">
+                                        <strong style="font-size: 0.78rem;">Rest Day</strong>
+                                        <span style="font-size: 0.65rem; color: var(--text-secondary);">Baseline 3.5 &bull; Calm</span>
+                                    </button>
                                 </div>
                             </div>
 
-                            <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.08); margin: 10px 0;" />
+                            <!-- Mood Score (0-10) with Manual Override & Calculated Model -->
+                            <div class="form-group" style="margin-bottom: 8px;">
+                                <label style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                    <span style="font-size: 0.82rem;">Mood Level <span class="val-tag" id="moodValDisplay">5.0</span>/10 <span id="moodLabelDisplay" style="color: var(--neon-blue); margin-left: 4px;">(Calm)</span></span>
+                                    <span id="moodFormulaTag" style="font-size: 0.7rem; color: var(--text-secondary);">Base 5.0</span>
+                                </label>
+                                <div class="scale-buttons scale-buttons-modal" id="moodScaleButtons">
+                                    <button type="button" class="btn-num mood-num" data-val="0">0</button><button type="button" class="btn-num mood-num" data-val="1">1</button><button type="button" class="btn-num mood-num" data-val="2">2</button><button type="button" class="btn-num mood-num" data-val="3">3</button><button type="button" class="btn-num mood-num" data-val="4">4</button><button type="button" class="btn-num mood-num active" data-val="5">5</button><button type="button" class="btn-num mood-num" data-val="6">6</button><button type="button" class="btn-num mood-num" data-val="7">7</button><button type="button" class="btn-num mood-num" data-val="8">8</button><button type="button" class="btn-num mood-num" data-val="9">9</button><button type="button" class="btn-num mood-num" data-val="10">10</button>
+                                </div>
+                            </div>
+
+                            <!-- Core Emotional Mood Tags -->
+                            <div class="form-group" style="margin-bottom: 8px;">
+                                <label style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 4px; display: block;">Emotional State (Multi-Select Tags)</label>
+                                <div class="mood-tags-row" id="moodTagsRow" style="display: flex; gap: 4px; flex-wrap: wrap;">
+                                    <button type="button" class="mood-tag-chip" data-mood="Happy" data-weight="2">😊 Happy (+2)</button>
+                                    <button type="button" class="mood-tag-chip" data-mood="OK" data-weight="1">🙂 OK (+1)</button>
+                                    <button type="button" class="mood-tag-chip active" data-mood="Calm" data-weight="1">😌 Calm (+1)</button>
+                                    <button type="button" class="mood-tag-chip" data-mood="Frustrated" data-weight="-1">😤 Frustrated (-1)</button>
+                                    <button type="button" class="mood-tag-chip" data-mood="Sad" data-weight="-2">😔 Sad (-2)</button>
+                                    <button type="button" class="mood-tag-chip" data-mood="Anxious" data-weight="-2">😰 Anxious (-2)</button>
+                                </div>
+                            </div>
+
+                            <!-- Soreness Severity (0 to -4) -->
+                            <div class="form-group" style="margin-bottom: 8px;">
+                                <label style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 4px; display: block;">Physical Soreness Severity</label>
+                                <div class="soreness-chips-row" id="sorenessChipsRow" style="display: flex; gap: 4px; flex-wrap: wrap;">
+                                    <button type="button" class="soreness-chip active" data-soreness="None" data-weight="0">None (0)</button>
+                                    <button type="button" class="soreness-chip" data-soreness="Mild" data-weight="-1">Mild (-1)</button>
+                                    <button type="button" class="soreness-chip" data-soreness="Moderate" data-weight="-2">Moderate (-2)</button>
+                                    <button type="button" class="soreness-chip" data-soreness="Severe" data-weight="-3">Severe (-3)</button>
+                                    <button type="button" class="soreness-chip" data-soreness="Extreme" data-weight="-4">Extreme (-4)</button>
+                                </div>
+                            </div>
+
+                            <!-- Activities, Therapies & Aggravators -->
+                            <div class="form-group" style="margin-bottom: 8px;">
+                                <label style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 4px; display: block;">Relief Therapies &amp; Exertion Modifiers</label>
+                                <div class="modifiers-chips-row" id="modifiersChipsRow" style="display: flex; gap: 4px; flex-wrap: wrap;">
+                                    <!-- Positive Therapies -->
+                                    <button type="button" class="modifier-chip therapy" data-mod="Hydrotherapy" data-weight="2" style="border-color: rgba(0, 230, 118, 0.4); color: #00e676;">Hydro (+2)</button>
+                                    <button type="button" class="modifier-chip therapy" data-mod="TENS Machine" data-weight="2" style="border-color: rgba(0, 230, 118, 0.4); color: #00e676;">TENS (+2)</button>
+                                    <button type="button" class="modifier-chip therapy" data-mod="Meditate" data-weight="1" style="border-color: rgba(0, 230, 118, 0.4); color: #00e676;">Meditate (+1)</button>
+                                    <button type="button" class="modifier-chip therapy" data-mod="Yoga" data-weight="1" style="border-color: rgba(0, 230, 118, 0.4); color: #00e676;">Yoga (+1)</button>
+                                    <button type="button" class="modifier-chip therapy" data-mod="Heat Pack" data-weight="1" style="border-color: rgba(0, 230, 118, 0.4); color: #00e676;">Heat Pack (+1)</button>
+                                    <button type="button" class="modifier-chip therapy" data-mod="Cupping" data-weight="1" style="border-color: rgba(0, 230, 118, 0.4); color: #00e676;">Cupping (+1)</button>
+                                    <button type="button" class="modifier-chip therapy" data-mod="Massage Gun" data-weight="1" style="border-color: rgba(0, 230, 118, 0.4); color: #00e676;">Massage Gun (+1)</button>
+                                    <button type="button" class="modifier-chip therapy" data-mod="Chiro" data-weight="1" style="border-color: rgba(0, 230, 118, 0.4); color: #00e676;">Chiro (+1)</button>
+                                    <!-- Aggravators -->
+                                    <button type="button" class="modifier-chip aggravator" data-mod="Walking" data-weight="-2" style="border-color: rgba(255, 82, 82, 0.4); color: #ff5252;">Walking (-2)</button>
+                                    <button type="button" class="modifier-chip aggravator" data-mod="Chores" data-weight="-2" style="border-color: rgba(255, 82, 82, 0.4); color: #ff5252;">Chores (-2)</button>
+                                    <button type="button" class="modifier-chip aggravator" data-mod="Big Day" data-weight="-3" style="border-color: rgba(255, 82, 82, 0.4); color: #ff5252;">Big Day (-3)</button>
+                                </div>
+                            </div>
+
+                            <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.08); margin: 8px 0;" />
 
                             <!-- Notes -->
                             <div class="form-group" style="flex: 1; display: flex; flex-direction: column;">
-                                <label>Clinical Notes</label>
+                                <label style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 4px;">Clinical Notes &amp; Quick Chips</label>
                                 <div class="quick-note-chips-row" style="display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 8px;">
-                                    <span class="quick-note-chip" data-text="Morning lumbar stiffness">Morning stiffness</span>
-                                    <span class="quick-note-chip" data-text="Post-hydrotherapy relief">Post-hydro</span>
-                                    <span class="quick-note-chip" data-text="Desk work fatigue">Desk fatigue</span>
+                                    <!-- State / Triggers -->
+                                    <span class="quick-note-chip" data-text="Morning stiffness">Morning stiffness</span>
+                                    <span class="quick-note-chip" data-text="Desk fatigue">Desk fatigue</span>
                                     <span class="quick-note-chip" data-text="Weather flare">Weather flare</span>
+                                    <span class="quick-note-chip" data-text="Post-walk">Post-walk</span>
+                                    <span class="quick-note-chip" data-text="Cold exposure">Cold exposure</span>
+                                    <span class="quick-note-chip" data-text="Long drive">Long drive</span>
+                                    <span class="quick-note-chip" data-text="Overexertion">Overexertion</span>
+                                    <span class="quick-note-chip" data-text="Rested well">Rested well</span>
+                                    <span class="quick-note-chip" data-text="Poor sleep">Poor sleep</span>
+                                    <!-- Therapies / Relief -->
+                                    <span class="quick-note-chip" data-text="Post-hydro">Post-hydro</span>
+                                    <span class="quick-note-chip" data-text="TENS active">TENS active</span>
+                                    <span class="quick-note-chip" data-text="Heat pack applied">Heat pack applied</span>
+                                    <span class="quick-note-chip" data-text="Cupping">Cupping</span>
+                                    <span class="quick-note-chip" data-text="Massage gun">Massage gun</span>
+                                    <span class="quick-note-chip" data-text="Chiro visit">Chiro visit</span>
+                                    <span class="quick-note-chip" data-text="Stretches/Yoga done">Stretches/Yoga done</span>
+                                    <span class="quick-note-chip" data-text="Meditated">Meditated</span>
                                 </div>
-                                <textarea id="unifiedNotesInput" class="glass-input notes-textarea" style="flex: 1; min-height: 110px;" placeholder="Notes, triggers, relief observations..."></textarea>
+                                <textarea id="unifiedNotesInput" class="glass-input notes-textarea" style="flex: 1; min-height: 80px;" placeholder="Notes, triggers, relief observations..."></textarea>
                             </div>
 
                             <div class="modal-footer" style="padding: 0; margin-top: 10px; display: flex; gap: 8px;">

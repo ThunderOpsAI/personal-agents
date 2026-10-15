@@ -1871,19 +1871,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const badgeText = `Ch. ${(enc.currentChapterIndex || 0) + 1}/${enc.totalChapters}`;
                 const titleText = enc.currentChapter ? enc.currentChapter.title : 'Loading...';
                 
-                if (enc.id === 'pain') {
-                    if (painProgressBadge) painProgressBadge.innerText = badgeText;
-                    if (painCurrentTitle) painCurrentTitle.innerText = titleText;
-                } else if (enc.id === 'ai') {
-                    if (aiProgressBadge) aiProgressBadge.innerText = badgeText;
-                    if (aiCurrentTitle) aiCurrentTitle.innerText = titleText;
-                } else if (enc.id === 'tech') {
-                    if (techProgressBadge) techProgressBadge.innerText = badgeText;
-                    if (techCurrentTitle) techCurrentTitle.innerText = titleText;
-                } else if (enc.id === 'cbt') {
-                    if (cbtProgressBadge) cbtProgressBadge.innerText = badgeText;
-                    if (cbtCurrentTitle) cbtCurrentTitle.innerText = titleText;
-                }
+                const badgeEl = document.getElementById(`${enc.id}ProgressBadge`);
+                const titleEl = document.getElementById(`${enc.id}CurrentTitle`);
+                if (badgeEl) badgeEl.innerText = badgeText;
+                if (titleEl) titleEl.innerText = titleText;
             });
         } catch (e) {
             console.error('Failed to load encyclopedias summary:', e);
@@ -2825,6 +2816,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function closePainLog() { painLogModal.classList.add('hidden'); }
     if (btnOpenPainLog) btnOpenPainLog.addEventListener('click', () => {
         renderPainModal();
+        if (typeof recalculateMood === 'function') recalculateMood();
         if (typeof loadTodaysPainLogs === 'function') loadTodaysPainLogs();
         painLogModal.classList.remove('hidden');
     });
@@ -3051,144 +3043,266 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Quick Note Chips
-    document.querySelectorAll('.pain-rhs-combined .quick-note-chip').forEach(chip => {
-        chip.addEventListener('click', () => {
-            const text = chip.getAttribute('data-text');
-            if (unifiedNotesInput) {
-                unifiedNotesInput.value = unifiedNotesInput.value ? `${unifiedNotesInput.value}; ${text}` : text;
+        // --- Pain Presets, Mood Model & Clinical Notes ---
+    let manualMoodOverride = null;
+
+    function appendNoteChipText(text) {
+        if (!unifiedNotesInput || !text) return;
+        const cur = unifiedNotesInput.value.trim();
+        if (!cur) {
+            unifiedNotesInput.value = text;
+        } else if (!cur.toLowerCase().includes(text.toLowerCase())) {
+            unifiedNotesInput.value = `${cur}; ${text}`;
+        }
+    }
+
+    function recalculateMood() {
+        if (manualMoodOverride !== null) {
+            currentMoodLevel = Number(manualMoodOverride.toFixed(1));
+        } else {
+            let score = 5.0; // Base 5.0
+
+            // Emotional mood tags
+            document.querySelectorAll('#moodTagsRow .mood-tag-chip.active').forEach(chip => {
+                const w = parseFloat(chip.getAttribute('data-weight') || '0');
+                score += w;
+            });
+
+            // Physical soreness severity (single select)
+            const activeSoreness = document.querySelector('#sorenessChipsRow .soreness-chip.active');
+            if (activeSoreness) {
+                const w = parseFloat(activeSoreness.getAttribute('data-weight') || '0');
+                score += w;
+            }
+
+            // Therapy and exertion modifiers
+            document.querySelectorAll('#modifiersChipsRow .modifier-chip.active').forEach(chip => {
+                const w = parseFloat(chip.getAttribute('data-weight') || '0');
+                score += w;
+            });
+
+            // Clamp strictly to [0, 10]
+            currentMoodLevel = Math.max(0, Math.min(10, Number(score.toFixed(1))));
+        }
+
+        // Update displays
+        if (moodValDisplay) moodValDisplay.innerText = currentMoodLevel.toFixed(1);
+
+        let label = 'Calm';
+        if (currentMoodLevel >= 8) label = 'Happy';
+        else if (currentMoodLevel >= 6) label = 'Good';
+        else if (currentMoodLevel >= 4) label = 'Calm';
+        else if (currentMoodLevel >= 2) label = 'Tired';
+        else label = 'Flare';
+
+        if (moodLabelDisplay) moodLabelDisplay.innerText = `(${label})`;
+
+        const formulaTag = document.getElementById('moodFormulaTag');
+        if (formulaTag) {
+            formulaTag.innerText = manualMoodOverride !== null ? 'Manual Override' : `Calculated: ${currentMoodLevel.toFixed(1)}`;
+        }
+
+        // Highlight corresponding integer button in scale
+        const roundInt = Math.round(currentMoodLevel);
+        document.querySelectorAll('#moodScaleButtons .mood-num').forEach(btn => {
+            const val = parseInt(btn.getAttribute('data-val'), 10);
+            btn.classList.toggle('active', val === roundInt);
+        });
+    }
+
+    // Wire Mood Scale Manual Number Clicks
+    document.querySelectorAll('#moodScaleButtons .mood-num').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const val = parseFloat(btn.getAttribute('data-val'));
+            manualMoodOverride = isNaN(val) ? 5.0 : val;
+            recalculateMood();
+        });
+    });
+
+    // Wire Emotional State Multi-Select Tags
+    document.querySelectorAll('#moodTagsRow .mood-tag-chip').forEach(btn => {
+        btn.addEventListener('click', () => {
+            btn.classList.toggle('active');
+            manualMoodOverride = null;
+            recalculateMood();
+            if (btn.classList.contains('active')) {
+                const moodName = btn.getAttribute('data-mood');
+                appendNoteChipText(moodName);
             }
         });
     });
 
-    moodEmojiButtons.forEach(button => button.addEventListener('click', () => {
-        moodEmojiButtons.forEach(item => item.classList.remove('active'));
-        button.classList.add('active');
-        selectedMoodEmoji = button.dataset.emoji;
-        if (moodLabelDisplay && button.dataset.label) {
-            moodLabelDisplay.innerText = `(${button.dataset.label})`;
-        }
-    }));
-
-    // Quick Pain Auto-Log Presets (Standard, Hydro, Thoracic, Sciatica)
-    async function autoLogQuickPreset(presetType) {
-        let score = 7.5;
-        let locations = [];
-        let notes = '';
-        let mood = 'neutral';
-        let mood_emoji = '😐';
-
-        if (presetType === 'sciatica') {
-            score = 9.5;
-            locations = [
-                { area: 'sciatica', side: 'unspecified', percentage: 100, weight: 100, pain_score: 9.5 }
-            ];
-            notes = 'Sciatica pain attack';
-            mood = 'stressed';
-            mood_emoji = '😫';
-        } else if (presetType === 'thoracic') {
-            score = 7.5;
-            locations = [
-                { area: 'thoracic', side: 'unspecified', percentage: 70, weight: 70, pain_score: 7.5 },
-                { area: 'cervical', side: 'unspecified', percentage: 15, weight: 15, pain_score: 7.5 },
-                { area: 'scapula', side: 'unspecified', percentage: 15, weight: 15, pain_score: 7.5 }
-            ];
-            notes = 'Thoracic strain & fatigue (70% thoracic, 15% neck, 15% scapula @ 7.5)';
-            mood = 'neutral';
-            mood_emoji = '😐';
-        } else if (presetType === 'hydro') {
-            let prevScore = 7.5;
-            let prevLocs = [
-                { area: 'lumbar', side: 'right', percentage: 75, weight: 75 },
-                { area: 'cervical', side: 'unspecified', percentage: 25, weight: 25 }
-            ];
-            try {
-                const res = await fetch('/api/v1/pain/log');
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data.logs && data.logs.length > 0) {
-                        const last = data.logs[0];
-                        prevScore = last.score ?? 7.5;
-                        if (Array.isArray(last.locations) && last.locations.length > 0) {
-                            prevLocs = last.locations.map(l => ({
-                                area: l.area,
-                                side: l.side || 'unspecified',
-                                percentage: l.percentage ?? l.weight ?? 100,
-                                weight: l.percentage ?? l.weight ?? 100
-                            }));
-                        }
-                    }
-                }
-            } catch (err) {
-                console.warn('Could not fetch last log for hydro delta:', err);
+    // Wire Soreness Severity Chips (Single-Select)
+    document.querySelectorAll('#sorenessChipsRow .soreness-chip').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('#sorenessChipsRow .soreness-chip').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            manualMoodOverride = null;
+            recalculateMood();
+            const soreness = btn.getAttribute('data-soreness');
+            if (soreness && soreness !== 'None') {
+                appendNoteChipText(`Soreness: ${soreness}`);
             }
-            score = Math.max(1.0, Math.min(10.0, Number((prevScore - 1.5).toFixed(1))));
-            locations = prevLocs;
-            notes = 'Good hydrotherapy session, feeling slightly better';
-            mood = 'good';
-            mood_emoji = '😌';
-        } else if (presetType === 'standard') {
-            // Rotates between Variant A (ankle 15%, thoracic 15% @ 5) and Variant B (knee 15%, neck 15% @ 5)
+        });
+    });
+
+    // Wire Therapies & Aggravators Chips
+    document.querySelectorAll('#modifiersChipsRow .modifier-chip').forEach(btn => {
+        btn.addEventListener('click', () => {
+            btn.classList.toggle('active');
+            manualMoodOverride = null;
+            recalculateMood();
+            if (btn.classList.contains('active')) {
+                const mod = btn.getAttribute('data-mod');
+                appendNoteChipText(mod);
+            }
+        });
+    });
+
+    // Wire Expanded Clinical Note Quick Chips
+    document.querySelectorAll('.pain-rhs-combined .quick-note-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            const text = chip.getAttribute('data-text') || chip.innerText.trim();
+            appendNoteChipText(text);
+        });
+    });
+
+    // Staging Presets (Loads Form State, No Auto-Commit, Explicit Save Required)
+    function stagePainPreset(presetKey) {
+        let targetAreas = [];
+        let noteText = '';
+        let sorenessLevel = 'None';
+        let activeMoodTags = [];
+        let activeModifiers = [];
+
+        if (presetKey === 'standard') {
             const currentRotation = localStorage.getItem('rumble_standard_rotation') || 'B';
             const nextRotation = currentRotation === 'A' ? 'B' : 'A';
             localStorage.setItem('rumble_standard_rotation', nextRotation);
 
             if (nextRotation === 'A') {
-                locations = [
-                    { area: 'lumbar', side: 'right', percentage: 70, weight: 70, pain_score: 7.5 },
-                    { area: 'ankle', side: 'right', percentage: 15, weight: 15, pain_score: 5.0 },
-                    { area: 'thoracic', side: 'unspecified', percentage: 15, weight: 15, pain_score: 5.0 }
+                targetAreas = [
+                    { area: 'Right Lumbar', percent: 70, score: 7.5 },
+                    { area: 'Right Ankle', percent: 15, score: 5.0 },
+                    { area: 'Thoracic', percent: 15, score: 5.0 }
                 ];
-                score = 6.8;
-                notes = 'Standard check-in (70% lumbar 7.5, 15% ankle 5.0, 15% thoracic 5.0)';
+                noteText = 'Standard check-in (70% lumbar 7.5, 15% ankle 5.0, 15% thoracic 5.0)';
             } else {
-                locations = [
-                    { area: 'lumbar', side: 'right', percentage: 70, weight: 70, pain_score: 7.5 },
-                    { area: 'knee', side: 'right', percentage: 15, weight: 15, pain_score: 5.0 },
-                    { area: 'cervical', side: 'unspecified', percentage: 15, weight: 15, pain_score: 5.0 }
+                targetAreas = [
+                    { area: 'Right Lumbar', percent: 70, score: 7.5 },
+                    { area: 'Right Knee', percent: 15, score: 5.0 },
+                    { area: 'Neck / Cervical', percent: 15, score: 5.0 }
                 ];
-                score = 6.8;
-                notes = 'Standard check-in (70% lumbar 7.5, 15% knee 5.0, 15% neck 5.0)';
+                noteText = 'Standard check-in (70% lumbar 7.5, 15% knee 5.0, 15% neck 5.0)';
             }
-            mood = 'neutral';
-            mood_emoji = '😐';
+            sorenessLevel = 'Mild';
+            activeMoodTags = ['OK'];
+        } else if (presetKey === 'hydro') {
+            targetAreas = [
+                { area: 'Right Lumbar', percent: 75, score: 6.0 },
+                { area: 'Neck / Cervical', percent: 25, score: 4.5 }
+            ];
+            sorenessLevel = 'Mild';
+            activeMoodTags = ['Calm'];
+            activeModifiers = ['Hydrotherapy'];
+            noteText = 'Good hydrotherapy session, water decompression relief';
+        } else if (presetKey === 'thoracic') {
+            targetAreas = [
+                { area: 'Thoracic', percent: 70, score: 7.5 },
+                { area: 'Neck / Cervical', percent: 15, score: 7.5 },
+                { area: 'Scapula', percent: 15, score: 7.5 }
+            ];
+            sorenessLevel = 'Moderate';
+            activeMoodTags = ['OK'];
+            noteText = 'Thoracic strain & fatigue (70% thoracic, 15% neck, 15% scapula @ 7.5)';
+        } else if (presetKey === 'sciatica') {
+            targetAreas = [
+                { area: 'Sciatica', percent: 100, score: 9.5 }
+            ];
+            sorenessLevel = 'Extreme';
+            activeMoodTags = ['Frustrated'];
+            noteText = 'Sciatica pain attack flare, sharp radiating nerve pain';
+        } else if (presetKey === 'post_walk') {
+            targetAreas = [
+                { area: 'Right Lumbar', percent: 70, score: 7.5 },
+                { area: 'Right Knee', percent: 30, score: 6.5 }
+            ];
+            sorenessLevel = 'Moderate';
+            activeMoodTags = ['Frustrated'];
+            activeModifiers = ['Walking'];
+            noteText = 'Post-walk loading flare, lumbar and lower extremity fatigue';
+        } else if (presetKey === 'morning_stiffness') {
+            targetAreas = [
+                { area: 'Right Lumbar', percent: 60, score: 7.0 },
+                { area: 'Thoracic', percent: 40, score: 6.5 }
+            ];
+            sorenessLevel = 'Moderate';
+            activeMoodTags = ['OK'];
+            noteText = 'Severe morning stiffness, slow mobility';
+        } else if (presetKey === 'neck_shoulder') {
+            targetAreas = [
+                { area: 'Neck / Cervical', percent: 60, score: 7.5 },
+                { area: 'Right Shoulder', percent: 40, score: 6.5 }
+            ];
+            sorenessLevel = 'Moderate';
+            activeMoodTags = ['Frustrated'];
+            noteText = 'Cervical/trapezius spasm, guarding';
+        } else if (presetKey === 'white_fingers') {
+            targetAreas = [
+                { area: 'Neck / Cervical', percent: 50, score: 7.5 },
+                { area: 'Sciatica', percent: 50, score: 7.0 }
+            ];
+            sorenessLevel = 'Moderate';
+            activeMoodTags = ['Anxious'];
+            noteText = 'Index fingertip pallor and numbness on cold exposure, radicular flare';
+        } else if (presetKey === 'rest_day') {
+            targetAreas = [
+                { area: 'Right Lumbar', percent: 100, score: 3.5 }
+            ];
+            sorenessLevel = 'None';
+            activeMoodTags = ['Calm', 'Happy'];
+            noteText = 'Rest day, managed baseline pain';
         }
 
-        try {
-            showToast(`Logging ${presetType.toUpperCase()} preset...`);
-            const res = await fetch(API_PAIN_LOG, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    score,
-                    pain_level: score,
-                    generators: locations,
-                    locations,
-                    pain_notes: notes,
-                    notes,
-                    mood,
-                    mood_notes: notes,
-                    mood_emoji
-                })
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.detail || data.error || 'Quick log failed');
-            closePainLog();
-            showToast(`Auto-logged: ${presetType.toUpperCase()} (${score}/10)`, 'success');
-            if (typeof loadTodaysPainLogs === 'function') loadTodaysPainLogs();
-            if (typeof loadPainAnalytics === 'function') loadPainAnalytics();
-            if (typeof loadAgendaItems === 'function') loadAgendaItems();
-        } catch (e) {
-            showToast(e.message || 'Quick log failed');
+        // Stage into form state
+        selectedPainAreas = targetAreas;
+        renderPainModal();
+
+        // Update soreness chips
+        document.querySelectorAll('#sorenessChipsRow .soreness-chip').forEach(btn => {
+            btn.classList.toggle('active', btn.getAttribute('data-soreness') === sorenessLevel);
+        });
+
+        // Update mood tags
+        document.querySelectorAll('#moodTagsRow .mood-tag-chip').forEach(btn => {
+            btn.classList.toggle('active', activeMoodTags.includes(btn.getAttribute('data-mood')));
+        });
+
+        // Update modifier chips
+        document.querySelectorAll('#modifiersChipsRow .modifier-chip').forEach(btn => {
+            btn.classList.toggle('active', activeModifiers.includes(btn.getAttribute('data-mod')));
+        });
+
+        // Recalculate mood
+        manualMoodOverride = null;
+        recalculateMood();
+
+        // Stage notes
+        if (noteText) {
+            appendNoteChipText(noteText);
         }
+
+        showToast(`Staged preset: ${presetKey.replace(/_/g, ' ').toUpperCase()} (tap "Save pain log" when ready)`, 'info');
     }
 
     document.querySelectorAll('.quick-pain-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const preset = btn.getAttribute('data-preset');
-            if (preset) autoLogQuickPreset(preset);
+            if (preset) stagePainPreset(preset);
         });
     });
+
+});
 
     // Initial render of pain modal
     renderPainModal();
@@ -4379,7 +4493,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Gently draw chin backwards creating a double chin, lengthening back of neck.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/cervical_chin_tuck.jpg"
                                 ]
                         },
                         {
@@ -4387,7 +4501,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Drop right ear to right shoulder without lifting left shoulder. Repeat left.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/cervical_lateral_ear_shoulder.jpg"
                                 ]
                         },
                         {
@@ -4395,7 +4509,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Inhale lift shoulders to ears, exhale drop down with sigh.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/cervical_shoulder_shrug.jpg"
                                 ]
                         },
                         {
@@ -4403,7 +4517,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Sit upright, focus on diaphragmatic 360 breathing relaxing neck muscles.",
                                 "frames": [
-                                        "/exercises/restorative_savasana.jpg"
+                                        "/exercises/diaphragmatic-breathing.svg"
                                 ]
                         }
                 ]
@@ -4429,7 +4543,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 375,
                                 "cue": "Feet together, knees open supported by pillows, hands on lower abdomen.",
                                 "frames": [
-                                        "/exercises/restorative_savasana.jpg"
+                                        "/exercises/constructive-rest.svg"
                                 ]
                         },
                         {
@@ -4437,7 +4551,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 375,
                                 "cue": "Flow gently with breath, avoiding end-range extremes.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/core_cat_cow.jpg"
                                 ]
                         },
                         {
@@ -4445,7 +4559,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 375,
                                 "cue": "Rest elbows on mat, gentle passive thoracic extension.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/supported-sphinx-micro-lifts.svg"
                                 ]
                         },
                         {
@@ -4453,7 +4567,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 375,
                                 "cue": "Elevate legs against wall to facilitate venous return and spinal decompression.",
                                 "frames": [
-                                        "/exercises/restorative_savasana.jpg"
+                                        "/exercises/legs-elevated-relaxation.svg"
                                 ]
                         }
                 ]
@@ -4480,7 +4594,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 300,
                                 "cue": "Slide right arm under torso, rest right shoulder and temple on mat.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/thoracic_thread_needle.jpg"
                                 ]
                         },
                         {
@@ -4496,7 +4610,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 300,
                                 "cue": "Draw elbows back and down, opening anterior chest wall.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/thoracic_cactus_expansion.jpg"
                                 ]
                         },
                         {
@@ -4504,7 +4618,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 300,
                                 "cue": "Rest in prone or seated, focusing on mid-back breathing.",
                                 "frames": [
-                                        "/exercises/restorative_savasana.jpg"
+                                        "/exercises/constructive-rest.svg"
                                 ]
                         }
                 ]
@@ -4531,7 +4645,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Step right foot forward, tuck tailbone, feel stretch in left front hip.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/hip_kneeling_lunge.jpg"
                                 ]
                         },
                         {
@@ -4539,7 +4653,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Rotate knees side to side gently to mobilize internal and external rotation.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/hip_ninety_ninety.jpg"
                                 ]
                         },
                         {
@@ -4547,7 +4661,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Cross right ankle over left thigh, hold left hamstring gently.",
                                 "frames": [
-                                        "/exercises/knee_to_chest_stretch.jpg"
+                                        "/exercises/hip_figure_four.jpg"
                                 ]
                         },
                         {
@@ -4581,7 +4695,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Coordinate slow spinal flexion and extension with deep breathing.",
                                 "frames": [
-                                        "/exercises/restorative_savasana.jpg"
+                                        "/exercises/core_cat_cow.jpg"
                                 ]
                         },
                         {
@@ -4597,7 +4711,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Drop knees gently to right, look center or left. Keep shoulders relaxed.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/thoracic_supine_twist.jpg"
                                 ]
                         },
                         {
@@ -4605,7 +4719,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Rest face down on hands, allowing spine to settle in neutral.",
                                 "frames": [
-                                        "/exercises/restorative_savasana.jpg"
+                                        "/exercises/constructive-rest.svg"
                                 ]
                         }
                 ]
@@ -4632,7 +4746,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Hands on knees, inhale arch chest forward, exhale round mid-back.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/chair_seated_cat_cow.svg"
                                 ]
                         },
                         {
@@ -4640,7 +4754,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Ankle on opposite knee, lean gently forward with straight back.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/chair_seated_figure_four.svg"
                                 ]
                         },
                         {
@@ -4648,7 +4762,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Hold chair base with right hand, tilt head to left.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/chair_upper_trapezius_drop.svg"
                                 ]
                         },
                         {
@@ -4656,7 +4770,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Interlace hands behind lower back or chair frame, gently lift collarbones.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/chair_seated_chest_expansion.svg"
                                 ]
                         }
                 ]
@@ -4682,7 +4796,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Inhale 4 sec through nose, hold 7 sec, exhale 8 sec through pursed lips.",
                                 "frames": [
-                                        "/exercises/restorative_savasana.jpg"
+                                        "/exercises/diaphragmatic-breathing.svg"
                                 ]
                         },
                         {
@@ -4690,7 +4804,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Rest base of skull on rolled towel, gentle micro-turns of head.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/cervical_chin_tuck.jpg"
                                 ]
                         },
                         {
@@ -4706,7 +4820,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "One hand on heart, one on belly. Feel warmth and safety.",
                                 "frames": [
-                                        "/exercises/restorative_savasana.jpg"
+                                        "/exercises/diaphragmatic-breathing.svg"
                                 ]
                         }
                 ]
@@ -4733,7 +4847,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Loop strap under right foot, extend leg upward keeping pelvis flat.",
                                 "frames": [
-                                        "/exercises/knee_to_chest_stretch.jpg"
+                                        "/exercises/supine-strap-hamstring-calf.svg"
                                 ]
                         },
                         {
@@ -4741,7 +4855,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Draw straight leg slightly across midline (2-3 inches max).",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/hip_figure_four.jpg"
                                 ]
                         },
                         {
@@ -4749,7 +4863,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Gentle micro-bends and straightening of knee to desensitize nerve.",
                                 "frames": [
-                                        "/exercises/knee_to_chest_stretch.jpg"
+                                        "/exercises/supine-strap-hamstring-calf.svg"
                                 ]
                         },
                         {
@@ -4757,7 +4871,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Rest legs long on mat, noticing length through lower back.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         }
                 ]
@@ -4791,7 +4905,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 300,
                                 "cue": "Block or pillow under sacrum, arms relaxed overhead.",
                                 "frames": [
-                                        "/exercises/supine_pelvic_tilts.jpg"
+                                        "/exercises/supported-bridge-block.svg"
                                 ]
                         },
                         {
@@ -4799,7 +4913,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 300,
                                 "cue": "Pillow between knees, slow gentle twist to each side.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/thoracic_supine_twist.jpg"
                                 ]
                         },
                         {
@@ -6453,7 +6567,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentStepIndex >= currentProtocolSteps.length) return;
         const step = currentProtocolSteps[currentStepIndex];
         
-        // Calculate remaining total time across remaining steps + current step's remaining time
+        // Calculate remaining total time
         let remainingAfter = 0;
         for (let i = currentStepIndex + 1; i < currentProtocolSteps.length; i++) {
             remainingAfter += currentProtocolSteps[i].duration;
@@ -6475,36 +6589,18 @@ document.addEventListener('DOMContentLoaded', () => {
             runnerTotalTimeDisplay.innerText = `Total Remaining: ${formatTime(totalTimeLeft)} / ${formatTime(totalRoutineDuration)}`;
         }
 
-        // Primary Program Countdown (e.g. 15:00)
-        if (runnerTimer) {
-            runnerTimer.innerText = formatTime(totalTimeLeft);
-        }
-
-        // Current Step Hold Countdown (e.g. 03:45)
-        const runnerStepTimer = document.getElementById('runnerStepTimer');
-        if (runnerStepTimer) {
-            runnerStepTimer.innerText = formatTime(timeLeft);
+        const runnerTotalTimer = document.getElementById('runnerTotalTimer');
+        if (runnerTotalTimer) {
+            runnerTotalTimer.innerText = formatTime(totalTimeLeft);
         }
 
         if (runnerStep) runnerStep.innerText = `Step ${currentStepIndex + 1} of ${currentProtocolSteps.length}: ${step.title}`;
+        if (runnerTimer) runnerTimer.innerText = formatTime(timeLeft);
         
-        // Total routine progress bar and percentage
         const progressBar = document.getElementById('runnerTotalProgressBar');
-        const progressPct = document.getElementById('runnerTotalProgressPct');
-        if (totalRoutineDuration > 0) {
-            const pct = Math.min(100, Math.max(0, Math.round(((totalRoutineDuration - totalTimeLeft) / totalRoutineDuration) * 100)));
-            if (progressBar) progressBar.style.height = `${pct}%`;
-            if (progressPct) progressPct.innerText = `${pct}%`;
-        }
-
-        // Step hold progress bar and percentage
-        const stepProgressBar = document.getElementById('runnerStepProgressBar');
-        const stepProgressPct = document.getElementById('runnerStepProgressPct');
-        const stepDuration = step.duration || 45;
-        if (stepDuration > 0) {
-            const stepPct = Math.min(100, Math.max(0, Math.round(((stepDuration - timeLeft) / stepDuration) * 100)));
-            if (stepProgressBar) stepProgressBar.style.width = `${stepPct}%`;
-            if (stepProgressPct) stepProgressPct.innerText = `${stepPct}%`;
+        if (progressBar && totalRoutineDuration > 0) {
+            const pct = Math.min(100, Math.max(0, ((totalRoutineDuration - totalTimeLeft) / totalRoutineDuration) * 100));
+            progressBar.style.width = `${pct}%`;
         }
 
         const runnerCueEl = document.getElementById('runnerCue');
@@ -6790,10 +6886,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     moodNumButtons.forEach(btn => {
         btn.addEventListener('click', () => {
-            moodNumButtons.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentMoodLevel = parseInt(btn.getAttribute('data-val'), 10);
-            moodValDisplay.innerText = currentMoodLevel;
+            const val = parseFloat(btn.getAttribute('data-val'));
+            manualMoodOverride = isNaN(val) ? 5.0 : val;
+            if (typeof recalculateMood === 'function') {
+                recalculateMood();
+            } else {
+                currentMoodLevel = manualMoodOverride;
+                if (moodValDisplay) moodValDisplay.innerText = currentMoodLevel;
+            }
         });
     });
 
@@ -8353,5 +8453,79 @@ document.addEventListener('DOMContentLoaded', () => {
             consultChecklistModal.classList.add('hidden');
         });
     }
+
+
+    // --- MacroDroid Weekly Thursday Banner Check ---
+    function checkMacroDroidBanner() {
+        const banner = document.getElementById('macrodroidBanner');
+        const doneBtn = document.getElementById('btnDoneMacroDroid');
+        if (!banner) return;
+
+        // Current time in Australia/Melbourne
+        const now = new Date();
+        const melbourneFormatter = new Intl.DateTimeFormat('en-AU', {
+            timeZone: 'Australia/Melbourne',
+            year: 'numeric',
+            month: 'numeric',
+            day: 'numeric',
+            weekday: 'short',
+            hour: 'numeric',
+            minute: 'numeric',
+            hour12: false
+        });
+
+        const parts = melbourneFormatter.formatToParts(now);
+        let melbYear = now.getFullYear();
+        let melbMonth = now.getMonth() + 1;
+        let melbDay = now.getDate();
+        let melbWeekday = '';
+        let melbHour = 0;
+
+        parts.forEach(p => {
+            if (p.type === 'year') melbYear = parseInt(p.value, 10);
+            if (p.type === 'month') melbMonth = parseInt(p.value, 10);
+            if (p.type === 'day') melbDay = parseInt(p.value, 10);
+            if (p.type === 'weekday') melbWeekday = p.value;
+            if (p.type === 'hour') melbHour = parseInt(p.value, 10);
+        });
+
+        // Compute ISO Week
+        const melbDate = new Date(Date.UTC(melbYear, melbMonth - 1, melbDay));
+        const dayNr = (melbDate.getUTCDay() + 6) % 7; // Mon=0, Thu=3, Sun=6
+        melbDate.setUTCDate(melbDate.getUTCDate() - dayNr + 3);
+        const firstThu = melbDate.valueOf();
+        melbDate.setUTCMonth(0, 1);
+        if (melbDate.getUTCDay() !== 4) {
+            melbDate.setUTCMonth(0, 1 + ((4 - melbDate.getUTCDay()) + 7) % 7);
+        }
+        const isoWeekNum = 1 + Math.ceil((firstThu - melbDate.valueOf()) / 604800000);
+        const isoWeekKey = `${melbYear}-W${String(isoWeekNum).padStart(2, '0')}`;
+
+        // Active starting Thursday 10:00 AM Australia/Melbourne through end of ISO week
+        const isThuActive = (melbWeekday.startsWith('Thu') || melbWeekday.startsWith('Thur')) && melbHour >= 10;
+        const isLaterDayActive = melbWeekday.startsWith('Fri') || melbWeekday.startsWith('Sat') || melbWeekday.startsWith('Sun');
+        const isTriggerTime = isThuActive || isLaterDayActive;
+
+        const dismissedWeek = localStorage.getItem('macrodroid_banner_dismissed_week') || localStorage.getItem('macrodroid_dismissed_week');
+
+        if (isTriggerTime && dismissedWeek !== isoWeekKey) {
+            banner.classList.remove('hidden');
+        } else {
+            banner.classList.add('hidden');
+        }
+
+        if (doneBtn && !doneBtn.dataset.wired) {
+            doneBtn.dataset.wired = 'true';
+            doneBtn.addEventListener('click', () => {
+                localStorage.setItem('macrodroid_banner_dismissed_week', isoWeekKey);
+                localStorage.setItem('macrodroid_dismissed_week', isoWeekKey);
+                banner.classList.add('hidden');
+                showToast('MacroDroid reminder marked Done for this week', 'success');
+            });
+        }
+    }
+
+    checkMacroDroidBanner();
+    setInterval(checkMacroDroidBanner, 60000);
 
 });

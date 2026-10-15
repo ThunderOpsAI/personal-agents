@@ -3,11 +3,20 @@ import { ENCYCLOPEDIAS } from "../../../../../lib/encyclopedias";
 import { getAllLearningProgress } from "../../../../../lib/db";
 import { EncyclopediaProgress } from "../../../../../lib/schema";
 
-export async function GET() {
+export async function GET(request?: Request) {
   try {
+    let includeArchived = false;
+    if (request && request.url) {
+      try {
+        const url = new URL(request.url);
+        includeArchived = url.searchParams.get("include_archived") === "true";
+      } catch (_) {}
+    }
     const progressMap: Record<string, EncyclopediaProgress> = await getAllLearningProgress().catch(() => ({} as Record<string, EncyclopediaProgress>));
     
-    const items = Object.values(ENCYCLOPEDIAS).map((enc) => {
+    const items = Object.values(ENCYCLOPEDIAS)
+      .filter((enc) => includeArchived || !enc.archived)
+      .map((enc) => {
       const prog = progressMap[enc.id];
       const currentIndex = prog ? prog.current_chapter_index : 0;
       const currentChapter = enc.chapters[currentIndex] || enc.chapters[0];
