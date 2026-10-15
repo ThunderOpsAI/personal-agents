@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 240" width="500" height="240">
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="1" stdDeviation="1.5" flood-color="#000000" flood-opacity="0.06"/>
+    </filter>
+  </defs>
+  <!-- Card Background -->
+  <rect width="500" height="240" fill="#ffffff" rx="8" stroke="#e2e8f0" stroke-width="1.5"/>
+  <!-- Panel Divider -->
+  <line x1="250" y1="12" x2="250" y2="228" stroke="#f1f5f9" stroke-width="2" stroke-dasharray="4,4"/>
+  <!-- Panel Labels -->
+  <text x="24" y="24" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10" font-weight="700" fill="#64748b" letter-spacing="1">START</text>
+  <text x="274" y="24" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10" font-weight="700" fill="#64748b" letter-spacing="1">END</text>
+<line x1="20" y1="205" x2="230" y2="205" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/><line x1="270" y1="205" x2="480" y2="205" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/><line x1="45" y1="80" x2="45" y2="205" stroke="#0f766e" stroke-width="4" stroke-linecap="round"/><text x="45" y="72" font-family="Helvetica, Arial, sans-serif" font-size="7.5" font-weight="bold" fill="#0f766e" text-anchor="middle">[RAIL]</text><line x1="295" y1="80" x2="295" y2="205" stroke="#0f766e" stroke-width="4" stroke-linecap="round"/><text x="295" y="72" font-family="Helvetica, Arial, sans-serif" font-size="7.5" font-weight="bold" fill="#0f766e" text-anchor="middle">[RAIL]</text><circle cx="110" cy="90" r="10" fill="#4a6b82" stroke="#334e68" stroke-width="1.5"/><line x1="110" y1="101" x2="110" y2="155" stroke="#4a6b82" stroke-width="7" stroke-linecap="round"/><line x1="106" y1="155" x2="106" y2="205" stroke="#4a6b82" stroke-width="6" stroke-linecap="round"/><line x1="114" y1="155" x2="114" y2="205" stroke="#4a6b82" stroke-width="6" stroke-linecap="round"/>
+  <rect x="102" y="175" width="8" height="10" rx="2" fill="#3b82f6" stroke="#1d4ed8" stroke-width="1"/>
+  
+
+  <rect x="110" y="192" width="8" height="10" rx="2" fill="#3b82f6" stroke="#1d4ed8" stroke-width="1"/>
+  
+<line x1="110" y1="107" x2="45" y2="125" stroke="#4a6b82" stroke-width="4.5" stroke-linecap="round"/><polyline points="110,107 128,140 138,142" fill="none" stroke="#4a6b82" stroke-width="4.5" stroke-linecap="round"/>
+  <line x1="100" y1="107" x2="145" y2="107" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="3,3"/>
+  <text x="149" y="110" font-family="Helvetica, Arial, sans-serif" font-size="7.5" font-weight="bold" fill="#dc2626">80° LIMIT</text>
+<circle cx="360" cy="90" r="10" fill="#4a6b82" stroke="#334e68" stroke-width="1.5"/><line x1="360" y1="101" x2="360" y2="155" stroke="#4a6b82" stroke-width="7" stroke-linecap="round"/><line x1="356" y1="155" x2="340" y2="205" stroke="#4a6b82" stroke-width="6" stroke-linecap="round"/><line x1="364" y1="155" x2="380" y2="205" stroke="#4a6b82" stroke-width="6" stroke-linecap="round"/>
+  <rect x="336" y="175" width="8" height="10" rx="2" fill="#3b82f6" stroke="#1d4ed8" stroke-width="1"/>
+  
+
+  <rect x="376" y="192" width="8" height="10" rx="2" fill="#3b82f6" stroke="#1d4ed8" stroke-width="1"/>
+  
+<line x1="360" y1="107" x2="295" y2="125" stroke="#4a6b82" stroke-width="4.5" stroke-linecap="round"/><polyline points="360,107 378,120 388,122" fill="none" stroke="#4a6b82" stroke-width="4.5" stroke-linecap="round"/>
+  <line x1="350" y1="107" x2="395" y2="107" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="3,3"/>
+  <text x="399" y="110" font-family="Helvetica, Arial, sans-serif" font-size="7.5" font-weight="bold" fill="#dc2626">80° LIMIT</text>
+
+  <path d="M 150 115 Q 260.0 105.0 370 115" fill="none" stroke="#d9531e" stroke-width="2.5" stroke-linecap="round"/>
+  <polygon points="370,115 363.39089053889614,110.38267695183156 362.666604570556,118.34982260357317" fill="#d9531e"/>
+<text x="250" y="232" font-family="Helvetica, Arial, sans-serif" font-size="8.5" font-weight="bold" fill="#0f766e" text-anchor="middle">HOLD RAIL FOR STABILITY | PROTECT KNEE & ANKLE ALIGNMENT</text></svg>

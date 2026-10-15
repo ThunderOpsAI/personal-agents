@@ -1,0 +1,1544 @@
+[
+  {
+    "slug": "aqua-warmup-gait",
+    "name": "Warm-Up",
+    "source_routine_ids": [
+      "H-MED1"
+    ],
+    "source_descriptions": [
+      "Forward/backward water walking (heel-to-toe), side-stepping holding pool rail."
+    ],
+    "dosages": [
+      "H-MED1: 5 mins"
+    ],
+    "cues": [
+      "Heel-to-toe stride",
+      "Hold pool rail for balance",
+      "Chest-depth water support"
+    ],
+    "safety": "Keep spine upright; avoid twisting at knees or ankles.",
+    "category": "02_Hydrotherapy_Protocols",
+    "image_brief": "Side-by-side start and end position panels showing Warm-Up. Chest-depth water line shown in blue, pool rail anchor point in teal. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "submerged-banded-hip-abduction-extension",
+    "name": "Submerged Banded Hip Abduction & Extension",
+    "source_routine_ids": [
+      "H-MED1"
+    ],
+    "source_descriptions": [
+      "Band looped around pool rail and ankle. 3 sets x 12 reps per leg, slow 2-second outward sweep against water drag."
+    ],
+    "dosages": [
+      "H-MED1: 8 mins (3 sets x 12 reps per leg)"
+    ],
+    "cues": [
+      "Slow 2-second outward sweep",
+      "Resist water drag",
+      "Keep torso upright and stable"
+    ],
+    "safety": "Loop band securely to solid pool rail only; do not hyperextend lumbar spine.",
+    "category": "02_Hydrotherapy_Protocols",
+    "image_brief": "Side-by-side start and end position panels showing Submerged Banded Hip Abduction & Extension. Chest-depth water line shown in blue, pool rail anchor point in teal. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "rail-supported-hydro-pelvic-tilts",
+    "name": "Rail-Supported Hydro Pelvic Tilts & Core Neutral Holds",
+    "source_routine_ids": [
+      "H-MED1"
+    ],
+    "source_descriptions": [
+      "Back to pool wall, engage deep core and flatten lumbar curve into wall. Hold 10s x 6 reps."
+    ],
+    "dosages": [
+      "H-MED1: 7 mins (Hold 10s x 6 reps)"
+    ],
+    "cues": [
+      "Back flat against pool wall",
+      "Engage deep transverse core",
+      "Hold 10 seconds per rep"
+    ],
+    "safety": "Preserve neutral cervical posture against pool wall; no straining.",
+    "category": "02_Hydrotherapy_Protocols",
+    "image_brief": "Side-by-side start and end position panels showing Rail-Supported Hydro Pelvic Tilts & Core Neutral Holds. Chest-depth water line shown in blue, pool rail anchor point in teal. Spine and neck locked in neutral alignment. Support apparatus (chair or pool rail) clearly depicted with firm hand placement. "
+  },
+  {
+    "slug": "noodle-supported-knee-drives",
+    "name": "Noodle Supported Knee Drives",
+    "source_routine_ids": [
+      "H-MED1"
+    ],
+    "source_descriptions": [
+      "Float with noodle under axillae, drive knees toward chest against water resistance (no lumbar flexion). 3 sets x 15 reps."
+    ],
+    "dosages": [
+      "H-MED1: 6 mins (3 sets x 15 reps)"
+    ],
+    "cues": [
+      "Noodle under armpits",
+      "Drive knees up smoothly",
+      "Engage lower abdominals"
+    ],
+    "safety": "Strictly no lumbar flexion during knee drive; maintain neutral spinal posture.",
+    "category": "02_Hydrotherapy_Protocols",
+    "image_brief": "Side-by-side start and end position panels showing Noodle Supported Knee Drives. Chest-depth water line shown in blue, pool rail anchor point in teal. Spine and neck locked in neutral alignment. Support apparatus (chair or pool rail) clearly depicted with firm hand placement. "
+  },
+  {
+    "slug": "aqua-cooldown-walking",
+    "name": "Cool-Down",
+    "source_routine_ids": [
+      "H-MED1"
+    ],
+    "source_descriptions": [
+      "Water walking with deep diaphragmatic breathing."
+    ],
+    "dosages": [
+      "H-MED1: 4 mins"
+    ],
+    "cues": [
+      "Gentle water walking",
+      "Deep diaphragmatic breathing",
+      "Downregulate heart rate"
+    ],
+    "safety": "Maintain calm, rhythmic breathing without breath holding.",
+    "category": "02_Hydrotherapy_Protocols",
+    "image_brief": "Side-by-side start and end position panels showing Cool-Down. Chest-depth water line shown in blue, pool rail anchor point in teal. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "aquatic-gait-scapular-activation",
+    "name": "Aquatic Gait & Scapular Activation",
+    "source_routine_ids": [
+      "H-MED2"
+    ],
+    "source_descriptions": [
+      "Forward/backward gait drills, submerged water sweeps and chin retractions."
+    ],
+    "dosages": [
+      "H-MED2: 10 mins"
+    ],
+    "cues": [
+      "Submerged arm sweeps",
+      "Isometric chin retractions",
+      "Forward/backward gait"
+    ],
+    "safety": "Cervical spine strictly in neutral; chin tucks in small pain-free range.",
+    "category": "02_Hydrotherapy_Protocols",
+    "image_brief": "Side-by-side start and end position panels showing Aquatic Gait & Scapular Activation. Chest-depth water line shown in blue, pool rail anchor point in teal. Dashed 80-degree limit line on shoulder; elbows tucked below shoulder line. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "submerged-banded-low-rows",
+    "name": "Submerged Banded Low Rows & W-Rows",
+    "source_routine_ids": [
+      "H-MED2"
+    ],
+    "source_descriptions": [
+      "Band anchored to pool rail at waist level. Elbows tucked low, squeeze scapulae back into water. 3 sets x 12 reps."
+    ],
+    "dosages": [
+      "H-MED2: 10 mins (3 sets x 12 reps)"
+    ],
+    "cues": [
+      "Elbows tucked low",
+      "Squeeze scapulae back into water",
+      "Waist-height band anchor"
+    ],
+    "safety": "Keep elbows below shoulder line; do not elevate shoulders or trigger C7-T1 burning.",
+    "category": "02_Hydrotherapy_Protocols",
+    "image_brief": "Side-by-side start and end position panels showing Submerged Banded Low Rows & W-Rows. Chest-depth water line shown in blue, pool rail anchor point in teal. Dashed 80-degree limit line on shoulder; elbows tucked below shoulder line. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "rail-supported-banded-shallow-squat-presses",
+    "name": "Rail-Supported Banded Shallow Squat Presses",
+    "source_routine_ids": [
+      "H-MED2"
+    ],
+    "source_descriptions": [
+      "Band around waist anchored to rail. Shallow supported mini-squats (max 45\u00b0 knee flexion), driving through glutes."
+    ],
+    "dosages": [
+      "H-MED2: 10 mins"
+    ],
+    "cues": [
+      "Max 45\u00b0 knee flexion",
+      "Drive through glutes",
+      "Band around waist anchored to rail"
+    ],
+    "safety": "Strict limit of 45\u00b0 knee bend; no deep crouching or knee shearing.",
+    "category": "02_Hydrotherapy_Protocols",
+    "image_brief": "Side-by-side start and end position panels showing Rail-Supported Banded Shallow Squat Presses. Chest-depth water line shown in blue, pool rail anchor point in teal. Dashed 80-degree limit line on shoulder; elbows tucked below shoulder line. Spine and neck locked in neutral alignment. Shallow knee bend limited to max 45 degrees; zero deep crouching. Support apparatus (chair or pool rail) clearly depicted with firm hand placement. "
+  },
+  {
+    "slug": "kickboard-aquatic-press-downs",
+    "name": "Kickboard Aquatic Press-Downs",
+    "source_routine_ids": [
+      "H-MED2"
+    ],
+    "source_descriptions": [
+      "Submerge kickboard with both hands at chest level, pressing downward to engage lats and anterior core. 3 sets x 10 reps."
+    ],
+    "dosages": [
+      "H-MED2: 10 mins (3 sets x 10 reps)"
+    ],
+    "cues": [
+      "Submerge kickboard at chest level",
+      "Press downward engaging lats",
+      "Brace anterior core"
+    ],
+    "safety": "Keep wrists neutral; maintain shoulder elevation strictly below 80\u00b0.",
+    "category": "02_Hydrotherapy_Protocols",
+    "image_brief": "Side-by-side start and end position panels showing Kickboard Aquatic Press-Downs. Chest-depth water line shown in blue, pool rail anchor point in teal. Dashed 80-degree limit line on shoulder; elbows tucked below shoulder line. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "buoyancy-decompression",
+    "name": "Buoyancy Decompression",
+    "source_routine_ids": [
+      "H-MED2"
+    ],
+    "source_descriptions": [
+      "Supported supine float with neck roll and knee bolster."
+    ],
+    "dosages": [
+      "H-MED2: 5 mins"
+    ],
+    "cues": [
+      "Neck roll supporting cervical curve",
+      "Bolster under knees",
+      "Full buoyant floating"
+    ],
+    "safety": "Ensure full cervical support; neck completely relaxed in neutral.",
+    "category": "02_Hydrotherapy_Protocols",
+    "image_brief": "Side-by-side start and end position panels showing Buoyancy Decompression. Chest-depth water line shown in blue, pool rail anchor point in teal. Dashed 80-degree limit line on shoulder; elbows tucked below shoulder line. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "dynamic-thermal-gait-warmup",
+    "name": "Dynamic Thermal & Gait Warm-Up",
+    "source_routine_ids": [
+      "H-EXP1"
+    ],
+    "source_descriptions": [
+      "High-knee water marching, multi-planar lateral walk-outs, gentle submerged arm pendulum sweeps."
+    ],
+    "dosages": [
+      "H-EXP1: 10 mins"
+    ],
+    "cues": [
+      "High-knee water marching",
+      "Multi-planar lateral steps",
+      "Submerged pendulum sweeps"
+    ],
+    "safety": "Arm sweeps kept below 80\u00b0 shoulder elevation; controlled foot placement.",
+    "category": "02_Hydrotherapy_Protocols",
+    "image_brief": "Side-by-side start and end position panels showing Dynamic Thermal & Gait Warm-Up. Chest-depth water line shown in blue, pool rail anchor point in teal. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "banded-pool-rail-power-squat-pulses",
+    "name": "Banded Pool-Rail Power Squat Pulses",
+    "source_routine_ids": [
+      "H-EXP1"
+    ],
+    "source_descriptions": [
+      "Heavy band anchored to pool rail and pelvis. Controlled shallow squat pulses against band tension and water buoyancy. 4 sets x 12 reps."
+    ],
+    "dosages": [
+      "H-EXP1: 10 mins (4 sets x 12 reps)"
+    ],
+    "cues": [
+      "Heavy band at pelvis",
+      "Controlled shallow pulses",
+      "Push against band resistance"
+    ],
+    "safety": "Shallow pulses only (max 45\u00b0 knee flexion); protect left osteotomy site.",
+    "category": "02_Hydrotherapy_Protocols",
+    "image_brief": "Side-by-side start and end position panels showing Banded Pool-Rail Power Squat Pulses. Chest-depth water line shown in blue, pool rail anchor point in teal. Spine and neck locked in neutral alignment. Shallow knee bend limited to max 45 degrees; zero deep crouching. Support apparatus (chair or pool rail) clearly depicted with firm hand placement. "
+  },
+  {
+    "slug": "submerged-unilateral-band-rows",
+    "name": "Submerged Unilateral Band Rows & Chest Press",
+    "source_routine_ids": [
+      "H-EXP1"
+    ],
+    "source_descriptions": [
+      "Left arm heavy explosive rows; right arm controlled micro-range pulls to tolerance below 80\u00b0. 3 sets x 12 reps."
+    ],
+    "dosages": [
+      "H-EXP1: 10 mins (3 sets x 12 reps)"
+    ],
+    "cues": [
+      "Left arm powerful rows",
+      "Right arm micro-pulls below 80\u00b0",
+      "Torso square to rail"
+    ],
+    "safety": "Right shoulder limited below 80\u00b0; stop immediately if C7-T1 burning occurs.",
+    "category": "02_Hydrotherapy_Protocols",
+    "image_brief": "Side-by-side start and end position panels showing Submerged Unilateral Band Rows & Chest Press. Chest-depth water line shown in blue, pool rail anchor point in teal. Dashed 80-degree limit line on shoulder; elbows tucked below shoulder line. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "banded-submerged-leg-extensions-lateral-kicks",
+    "name": "Banded Submerged Leg Extensions & Lateral Kicks",
+    "source_routine_ids": [
+      "H-EXP1"
+    ],
+    "source_descriptions": [
+      "Heavy ankle band anchored to rail. Resist water turbulence through full quad and glute contraction. 3 sets x 12 reps per side."
+    ],
+    "dosages": [
+      "H-EXP1: 12 mins (3 sets x 12 reps per side)"
+    ],
+    "cues": [
+      "Heavy band on ankle",
+      "Full quad & glute contraction",
+      "Resist water turbulence"
+    ],
+    "safety": "Anchor securely to solid pool rail; avoid knee hyperextension or twisting.",
+    "category": "02_Hydrotherapy_Protocols",
+    "image_brief": "Side-by-side start and end position panels showing Banded Submerged Leg Extensions & Lateral Kicks. Chest-depth water line shown in blue, pool rail anchor point in teal. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "deep-water-core-suspensions",
+    "name": "Deep Water Core Suspensions",
+    "source_routine_ids": [
+      "H-EXP1"
+    ],
+    "source_descriptions": [
+      "Flotation belt on, deep-water bicycle sprints and alternating knee-to-chest tucks. 4 rounds of 45s work / 45s rest."
+    ],
+    "dosages": [
+      "H-EXP1: 10 mins (4 rounds of 45s work / 45s rest)"
+    ],
+    "cues": [
+      "Flotation belt fastened",
+      "Deep-water bicycle sprints",
+      "Alternating knee tucks"
+    ],
+    "safety": "Maintain vertical spinal alignment; no lumbar hyperextension.",
+    "category": "02_Hydrotherapy_Protocols",
+    "image_brief": "Side-by-side start and end position panels showing Deep Water Core Suspensions. Chest-depth water line shown in blue, pool rail anchor point in teal. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "hydro-decompression-stretches",
+    "name": "Hydro Decompression & Stretches",
+    "source_routine_ids": [
+      "H-EXP1"
+    ],
+    "source_descriptions": [
+      "Calf and hamstring pool-wall stretches, passive buoyant traction."
+    ],
+    "dosages": [
+      "H-EXP1: 8 mins"
+    ],
+    "cues": [
+      "Calf stretch against pool wall",
+      "Gentle hamstring elongation",
+      "Passive buoyant traction"
+    ],
+    "safety": "Gentle stretch only; do not bounce or force joint ranges.",
+    "category": "02_Hydrotherapy_Protocols",
+    "image_brief": "Side-by-side start and end position panels showing Hydro Decompression & Stretches. Chest-depth water line shown in blue, pool rail anchor point in teal. Dashed 80-degree limit line on shoulder; elbows tucked below shoulder line. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "hydrodynamic-mobilization-circuit",
+    "name": "Warm-Up & Hydrodynamic Mobilization",
+    "source_routine_ids": [
+      "H-EXP2"
+    ],
+    "source_descriptions": [
+      "400m water stride circuit (forward, backward, carioca/side-step) holding rail for ankle stability."
+    ],
+    "dosages": [
+      "H-EXP2: 12 mins"
+    ],
+    "cues": [
+      "Forward, backward, carioca strides",
+      "Hold rail for ankle stability",
+      "Chest-depth water resistance"
+    ],
+    "safety": "Hold pool rail for right ankle stability; avoid sudden direction changes.",
+    "category": "02_Hydrotherapy_Protocols",
+    "image_brief": "Side-by-side start and end position panels showing Warm-Up & Hydrodynamic Mobilization. Chest-depth water line shown in blue, pool rail anchor point in teal. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "banded-lateral-monster-walks",
+    "name": "Banded Lateral Walk-Outs & Monster Walks",
+    "source_routine_ids": [
+      "H-EXP2"
+    ],
+    "source_descriptions": [
+      "Loop band around ankles in chest-deep water. Step against band tension and water resistance. 4 sets x 15 steps per direction."
+    ],
+    "dosages": [
+      "H-EXP2: 15 mins (4 sets x 15 steps per direction)"
+    ],
+    "cues": [
+      "Loop band around ankles",
+      "Chest-deep water",
+      "Step against band tension"
+    ],
+    "safety": "Keep feet pointing straight ahead; prevent knees caving inward.",
+    "category": "02_Hydrotherapy_Protocols",
+    "image_brief": "Side-by-side start and end position panels showing Banded Lateral Walk-Outs & Monster Walks. Chest-depth water line shown in blue, pool rail anchor point in teal. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "hydro-dumbbell-torso-rotations",
+    "name": "Hydro Dumbbell Torso Rotations & Submerged Presses",
+    "source_routine_ids": [
+      "H-EXP2"
+    ],
+    "source_descriptions": [
+      "Hold hydro dumbbells at chest depth. Rotate torso within safe thoracic limits while cervical spine remains strictly locked. 3 sets x 12 reps."
+    ],
+    "dosages": [
+      "H-EXP2: 13 mins (3 sets x 12 reps)"
+    ],
+    "cues": [
+      "Dumbbells submerged at chest depth",
+      "Thoracic rotation only",
+      "Cervical spine strictly locked"
+    ],
+    "safety": "Strictly no cervical rotation; neck moves as one unit with sternum.",
+    "category": "02_Hydrotherapy_Protocols",
+    "image_brief": "Side-by-side start and end position panels showing Hydro Dumbbell Torso Rotations & Submerged Presses. Chest-depth water line shown in blue, pool rail anchor point in teal. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "rail-supported-explosive-glute-kickbacks",
+    "name": "Rail-Supported Explosive Glute Kickbacks",
+    "source_routine_ids": [
+      "H-EXP2"
+    ],
+    "source_descriptions": [
+      "Band anchored to pool rail. Drive hip back into terminal glute extension without lumbar hyperextension. 4 sets x 12 reps per leg."
+    ],
+    "dosages": [
+      "H-EXP2: 12 mins (4 sets x 12 reps per leg)"
+    ],
+    "cues": [
+      "Band anchored to rail",
+      "Drive hip into glute extension",
+      "Brace core wall"
+    ],
+    "safety": "Zero lumbar hyperextension; movement isolated purely to hip extension.",
+    "category": "02_Hydrotherapy_Protocols",
+    "image_brief": "Side-by-side start and end position panels showing Rail-Supported Explosive Glute Kickbacks. Chest-depth water line shown in blue, pool rail anchor point in teal. Spine and neck locked in neutral alignment. Support apparatus (chair or pool rail) clearly depicted with firm hand placement. "
+  },
+  {
+    "slug": "deep-water-interval-treading",
+    "name": "Deep Water Interval Treading & Core Stabilization",
+    "source_routine_ids": [
+      "H-EXP2"
+    ],
+    "source_descriptions": [
+      "Flotation belt, 1-minute high-cadence treading, 1-minute recovery hold. 5 intervals."
+    ],
+    "dosages": [
+      "H-EXP2: 13 mins (5 intervals: 1-min work / 1-min hold)"
+    ],
+    "cues": [
+      "Flotation belt support",
+      "High-cadence treading 1 min",
+      "Recovery hold 1 min"
+    ],
+    "safety": "Maintain upright posture; stop if extreme fatigue compromises core stability.",
+    "category": "02_Hydrotherapy_Protocols",
+    "image_brief": "Side-by-side start and end position panels showing Deep Water Interval Treading & Core Stabilization. Chest-depth water line shown in blue, pool rail anchor point in teal. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "full-hydro-decompression-recovery",
+    "name": "Full Hydro Decompression & Active Recovery",
+    "source_routine_ids": [
+      "H-EXP2"
+    ],
+    "source_descriptions": [
+      "Floating supine elongation, gentle ankle pumps and diaphragmatic breathing."
+    ],
+    "dosages": [
+      "H-EXP2: 10 mins"
+    ],
+    "cues": [
+      "Supine flotation elongation",
+      "Gentle rhythmic ankle pumps",
+      "Diaphragmatic breathing"
+    ],
+    "safety": "Complete relaxation; ensure head and neck are supported by float.",
+    "category": "02_Hydrotherapy_Protocols",
+    "image_brief": "Side-by-side start and end position panels showing Full Hydro Decompression & Active Recovery. Chest-depth water line shown in blue, pool rail anchor point in teal. Dashed 80-degree limit line on shoulder; elbows tucked below shoulder line. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "phase1-dynamic-hydro-activation",
+    "name": "Phase 1: Dynamic Hydrodynamic Activation",
+    "source_routine_ids": [
+      "H-EXP3"
+    ],
+    "source_descriptions": [
+      "Progressive multi-speed water walking, gentle submerged scapular sweeps, active ankle dorsiflexion against water drag."
+    ],
+    "dosages": [
+      "H-EXP3: 15 mins"
+    ],
+    "cues": [
+      "Progressive multi-speed walking",
+      "Submerged scapular sweeps",
+      "Active ankle dorsiflexion"
+    ],
+    "safety": "Monitor right shoulder range (<80\u00b0); support right ankle stability.",
+    "category": "02_Hydrotherapy_Protocols",
+    "image_brief": "Side-by-side start and end position panels showing Phase 1: Dynamic Hydrodynamic Activation. Chest-depth water line shown in blue, pool rail anchor point in teal. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "phase2-heavy-band-upper-body",
+    "name": "Phase 2: Heavy Band Upper-Body Kinetic Chain",
+    "source_routine_ids": [
+      "H-EXP3"
+    ],
+    "source_descriptions": [
+      "Rail-anchored banded low rows, W-rows, internal/external rotation complexes (10 reps each, 3 cycles)."
+    ],
+    "dosages": [
+      "H-EXP3: 20 mins (3 cycles of 10 reps each)"
+    ],
+    "cues": [
+      "Rail-anchored banded low rows",
+      "W-rows below shoulder height",
+      "Rotator cuff rotation complexes"
+    ],
+    "safety": "Elbows strictly below shoulder line; verify heavy band anchor to pool rail.",
+    "category": "02_Hydrotherapy_Protocols",
+    "image_brief": "Side-by-side start and end position panels showing Phase 2: Heavy Band Upper-Body Kinetic Chain. Chest-depth water line shown in blue, pool rail anchor point in teal. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "phase3-lower-kinetic-pelvic-power",
+    "name": "Phase 3: Lower Kinetic Chain & Pelvic Power",
+    "source_routine_ids": [
+      "H-EXP3"
+    ],
+    "source_descriptions": [
+      "Banded rail squats, banded submerged knee extensions, side-stepping against heavy band tension."
+    ],
+    "dosages": [
+      "H-EXP3: 20 mins"
+    ],
+    "cues": [
+      "Banded rail squats (max 45\u00b0)",
+      "Submerged knee extensions",
+      "Heavy band side-stepping"
+    ],
+    "safety": "Max 45\u00b0 knee flexion; do not allow left knee valgus collapse.",
+    "category": "02_Hydrotherapy_Protocols",
+    "image_brief": "Side-by-side start and end position panels showing Phase 3: Lower Kinetic Chain & Pelvic Power. Chest-depth water line shown in blue, pool rail anchor point in teal. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "phase4-deep-water-core-crucible",
+    "name": "Phase 4: Deep-Water Aquatic Core Crucible",
+    "source_routine_ids": [
+      "H-EXP3"
+    ],
+    "source_descriptions": [
+      "Flotation belt suspended deep-water knee drives, scissor kicks, and isometric kickboard presses under water."
+    ],
+    "dosages": [
+      "H-EXP3: 18 mins"
+    ],
+    "cues": [
+      "Flotation belt suspension",
+      "Knee drives and scissor kicks",
+      "Isometric kickboard downward press"
+    ],
+    "safety": "Neutral spine locked; no cervical straining or lumbar extension.",
+    "category": "02_Hydrotherapy_Protocols",
+    "image_brief": "Side-by-side start and end position panels showing Phase 4: Deep-Water Aquatic Core Crucible. Chest-depth water line shown in blue, pool rail anchor point in teal. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "phase5-neuromuscular-gait-retraining",
+    "name": "Phase 5: Neuromuscular Gait Retraining",
+    "source_routine_ids": [
+      "H-EXP3"
+    ],
+    "source_descriptions": [
+      "High-step walking with focused heel-to-toe push-off and contralateral arm swings."
+    ],
+    "dosages": [
+      "H-EXP3: 10 mins"
+    ],
+    "cues": [
+      "High-step water marching",
+      "Focused heel-to-toe push-off",
+      "Contralateral arm swings"
+    ],
+    "safety": "Arms swing naturally below shoulder level; smooth controlled cadence.",
+    "category": "02_Hydrotherapy_Protocols",
+    "image_brief": "Side-by-side start and end position panels showing Phase 5: Neuromuscular Gait Retraining. Chest-depth water line shown in blue, pool rail anchor point in teal. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "phase6-passive-decompression-float",
+    "name": "Phase 6: Passive Decompression & Thermal Surrender",
+    "source_routine_ids": [
+      "H-EXP3"
+    ],
+    "source_descriptions": [
+      "Cervical-supported noodle float, total muscular downregulation."
+    ],
+    "dosages": [
+      "H-EXP3: 7 mins"
+    ],
+    "cues": [
+      "Noodle supporting cervical spine",
+      "Full buoyant floating",
+      "Complete nervous system downregulation"
+    ],
+    "safety": "Full cervical support; allow hydrostatic pressure to unload axial spine.",
+    "category": "02_Hydrotherapy_Protocols",
+    "image_brief": "Side-by-side start and end position panels showing Phase 6: Passive Decompression & Thermal Surrender. Chest-depth water line shown in blue, pool rail anchor point in teal. Dashed 80-degree limit line on shoulder; elbows tucked below shoulder line. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "wall-angels-partial-range",
+    "name": "Wall Angels (Partial Range)",
+    "source_routine_ids": [
+      "Y-MED1"
+    ],
+    "source_descriptions": [
+      "Elbows below shoulder line, chin tucked."
+    ],
+    "dosages": [
+      "Y-MED1: 2 mins"
+    ],
+    "cues": [
+      "Elbows below shoulder line",
+      "Chin tucked in neutral",
+      "Back flat against wall"
+    ],
+    "safety": "Do not elevate arms above 80\u00b0; keep chin tucked and cervical spine neutral.",
+    "category": "03_Floor_Yoga_Medium_and_Expert",
+    "image_brief": "Side-by-side start and end position panels showing Wall Angels (Partial Range). Dashed 80-degree limit line on shoulder; elbows tucked below shoulder line. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "scapular-retractions-prone",
+    "name": "Scapular Retractions in Prone/Supported",
+    "source_routine_ids": [
+      "Y-MED1"
+    ],
+    "source_descriptions": [
+      "Squeeze shoulder blades, keep neck neutral."
+    ],
+    "dosages": [
+      "Y-MED1: 3 mins"
+    ],
+    "cues": [
+      "Squeeze shoulder blades together",
+      "Neck neutral aligned with spine",
+      "Forehead supported on pad"
+    ],
+    "safety": "Forehead grounded on pad; zero cervical extension or neck craning.",
+    "category": "03_Floor_Yoga_Medium_and_Expert",
+    "image_brief": "Side-by-side start and end position panels showing Scapular Retractions in Prone/Supported. Dashed 80-degree limit line on shoulder; elbows tucked below shoulder line. Spine and neck locked in neutral alignment. Forehead rested on thin cushion; no neck craning. "
+  },
+  {
+    "slug": "dead-bug-basic",
+    "name": "Dead Bug (Arms Only or Heel Slides)",
+    "source_routine_ids": [
+      "Y-MED1"
+    ],
+    "source_descriptions": [
+      "Supine, brace abdominal wall, no lumbar arching."
+    ],
+    "dosages": [
+      "Y-MED1: 3 mins"
+    ],
+    "cues": [
+      "Supine with spine grounded",
+      "Brace abdominal wall",
+      "No lumbar arching during movement"
+    ],
+    "safety": "Head supported on mat; no cervical flexion or Pilates head curls.",
+    "category": "03_Floor_Yoga_Medium_and_Expert",
+    "image_brief": "Side-by-side start and end position panels showing Dead Bug (Arms Only or Heel Slides). Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "glute-bridges",
+    "name": "Glute Bridges",
+    "source_routine_ids": [
+      "Y-MED1"
+    ],
+    "source_descriptions": [
+      "Squeeze glutes at top, align knees over braced ankles."
+    ],
+    "dosages": [
+      "Y-MED1: 3 sets of 10 reps (4 mins)"
+    ],
+    "cues": [
+      "Squeeze glutes at top",
+      "Align knees over ankles",
+      "Drive through heels"
+    ],
+    "safety": "Do not hyperextend lumbar spine; ensure right ankle and left knee alignment.",
+    "category": "03_Floor_Yoga_Medium_and_Expert",
+    "image_brief": "Side-by-side start and end position panels showing Glute Bridges. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "heel-slides",
+    "name": "Heel Slides",
+    "source_routine_ids": [
+      "Y-MED1",
+      "Y-BEG1"
+    ],
+    "source_descriptions": [
+      "Alternating slow controlled sliding.",
+      "Slow sliding without knee rotation."
+    ],
+    "dosages": [
+      "Y-MED1: 3 mins",
+      "Y-BEG1: 2 mins"
+    ],
+    "cues": [
+      "Slow controlled slide",
+      "Maintain core brace",
+      "Keep heel on floor"
+    ],
+    "safety": "No knee twisting; keep toes pointing vertical to protect left osteotomy.",
+    "category": "03_Floor_Yoga_Medium_and_Expert",
+    "image_brief": "Side-by-side start and end position panels showing Heel Slides. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "constructive-rest",
+    "name": "Constructive Rest",
+    "source_routine_ids": [
+      "Y-MED1",
+      "Y-MED3",
+      "Y-BEG1",
+      "Y-BEG3"
+    ],
+    "source_descriptions": [
+      "Bolster under knees, diaphragmatic breathing.",
+      "Constructive Rest & Diaphragmatic Breathwork: 8 mins.",
+      "Bolster under knees.",
+      "Constructive Rest with Deep Breathing (6 mins)."
+    ],
+    "dosages": [
+      "Y-MED1: 5 mins",
+      "Y-MED3: 8 mins",
+      "Y-BEG1: 3 mins",
+      "Y-BEG3: 6 mins"
+    ],
+    "cues": [
+      "Bolster under knees",
+      "Diaphragmatic breathing",
+      "Spine unloaded on mat"
+    ],
+    "safety": "Ensure cervical spine is fully supported in neutral.",
+    "category": "03_Floor_Yoga_Medium_and_Expert",
+    "image_brief": "Side-by-side start and end position panels showing Constructive Rest. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "pelvic-tilts-transverse-holds",
+    "name": "Pelvic Tilts & Deep Transverse Holds",
+    "source_routine_ids": [
+      "Y-MED2",
+      "Y-BEG1"
+    ],
+    "source_descriptions": [
+      "Pelvic Tilts & Deep Transverse Holds: 5 mins.",
+      "Inhale gentle arch, exhale flatten."
+    ],
+    "dosages": [
+      "Y-MED2: 5 mins",
+      "Y-BEG1: 3 mins"
+    ],
+    "cues": [
+      "Flatten lumbar curve gently into mat",
+      "Engage transverse abdominis",
+      "Rhythmic pelvic rocking"
+    ],
+    "safety": "Pain-free arc only; keep head grounded without neck tension.",
+    "category": "03_Floor_Yoga_Medium_and_Expert",
+    "image_brief": "Side-by-side start and end position panels showing Pelvic Tilts & Deep Transverse Holds. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "open-book-thoracic",
+    "name": "Open Book Thoracic Mobilization",
+    "source_routine_ids": [
+      "Y-MED2",
+      "Y-BEG3"
+    ],
+    "source_descriptions": [
+      "Side-lying with bolster between knees, rotate thoracic cage without twisting cervical spine.",
+      "Bolster under knees, smooth sweeping movement."
+    ],
+    "dosages": [
+      "Y-MED2: 5 mins",
+      "Y-BEG3: 7 mins"
+    ],
+    "cues": [
+      "Bolster between knees",
+      "Rotate thoracic cage only",
+      "Keep cervical spine locked neutral"
+    ],
+    "safety": "Cervical spine strictly locked neutral; head supported on pillow/block.",
+    "category": "03_Floor_Yoga_Medium_and_Expert",
+    "image_brief": "Side-by-side start and end position panels showing Open Book Thoracic Mobilization. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "thread-the-needle-modified",
+    "name": "Thread the Needle (Modified)",
+    "source_routine_ids": [
+      "Y-MED2"
+    ],
+    "source_descriptions": [
+      "Forearm-supported, slide arm through within shoulder tolerance."
+    ],
+    "dosages": [
+      "Y-MED2: 5 mins"
+    ],
+    "cues": [
+      "Forearm-supported on pad",
+      "Slide arm through within tolerance",
+      "Padded knee cushion"
+    ],
+    "safety": "Never kneel on hard floor; slide arm only within right shoulder tolerance (<80\u00b0).",
+    "category": "03_Floor_Yoga_Medium_and_Expert",
+    "image_brief": "Side-by-side start and end position panels showing Thread the Needle (Modified). Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "supported-bridge-block",
+    "name": "Supported Bridge Holds",
+    "source_routine_ids": [
+      "Y-MED2",
+      "Y-BEG3"
+    ],
+    "source_descriptions": [
+      "Yoga block under sacrum, resting lumbar spine.",
+      "Supported Bridge with Yoga Block (6 mins)."
+    ],
+    "dosages": [
+      "Y-MED2: 5 mins",
+      "Y-BEG3: 6 mins"
+    ],
+    "cues": [
+      "Yoga block under sacrum",
+      "Rest lumbar spine passively",
+      "Shoulders relaxed on mat"
+    ],
+    "safety": "Block positioned under sacrum, NOT lumbar vertebrae; neck neutral.",
+    "category": "03_Floor_Yoga_Medium_and_Expert",
+    "image_brief": "Side-by-side start and end position panels showing Supported Bridge Holds. Spine and neck locked in neutral alignment. Support apparatus (chair or pool rail) clearly depicted with firm hand placement. "
+  },
+  {
+    "slug": "supine-strap-hamstring-calf",
+    "name": "Supine Strap Hamstring & Calf Release",
+    "source_routine_ids": [
+      "Y-MED2"
+    ],
+    "source_descriptions": [
+      "Strap around midfoot, avoid pulling hard on right shoulder."
+    ],
+    "dosages": [
+      "Y-MED2: 5 mins"
+    ],
+    "cues": [
+      "Strap around midfoot",
+      "Gentle hamstring release",
+      "Relax right shoulder"
+    ],
+    "safety": "Hold strap loosely; avoid pulling hard with right shoulder.",
+    "category": "03_Floor_Yoga_Medium_and_Expert",
+    "image_brief": "Side-by-side start and end position panels showing Supine Strap Hamstring & Calf Release. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "supported-savasana",
+    "name": "Supported Savasana",
+    "source_routine_ids": [
+      "Y-MED2",
+      "Y-BEG2"
+    ],
+    "source_descriptions": [
+      "Supported Savasana: 5 mins.",
+      "Supported Savasana (5 mins)."
+    ],
+    "dosages": [
+      "Y-MED2: 5 mins",
+      "Y-BEG2: 5 mins"
+    ],
+    "cues": [
+      "Bolster under knees",
+      "Small head support",
+      "Complete muscular release"
+    ],
+    "safety": "Full spine support; neutral cervical alignment.",
+    "category": "03_Floor_Yoga_Medium_and_Expert",
+    "image_brief": "Side-by-side start and end position panels showing Supported Savasana. Spine and neck locked in neutral alignment. Support apparatus (chair or pool rail) clearly depicted with firm hand placement. "
+  },
+  {
+    "slug": "supine-arom-neck-rotation-chin-tuck",
+    "name": "Supine AROM Cervical Rotation & Deep Neck Flexor Tucks",
+    "source_routine_ids": [
+      "Y-MED3",
+      "Y-BEG3"
+    ],
+    "source_descriptions": [
+      "Micro-retractions, smooth gentle turns within pain-free arc.",
+      "Supine AROM Neck Rotation & Chin Tucks (5 mins)."
+    ],
+    "dosages": [
+      "Y-MED3: 6 mins",
+      "Y-BEG3: 5 mins"
+    ],
+    "cues": [
+      "Micro chin tucks",
+      "Gentle turns within pain-free arc",
+      "Head rested on thin pad"
+    ],
+    "safety": "Small pain-free arc only; zero forced end-range rotation or extension.",
+    "category": "03_Floor_Yoga_Medium_and_Expert",
+    "image_brief": "Side-by-side start and end position panels showing Supine AROM Cervical Rotation & Deep Neck Flexor Tucks. Cervical spine strictly in neutral; chin tuck in small pain-free range with head grounded/supported. "
+  },
+  {
+    "slug": "median-ulnar-nerve-sliders",
+    "name": "Median & Ulnar Nerve Sliders",
+    "source_routine_ids": [
+      "Y-MED3"
+    ],
+    "source_descriptions": [
+      "Gentle non-tension nerve flossing, keeping shoulder below 80\u00b0."
+    ],
+    "dosages": [
+      "Y-MED3: 6 mins"
+    ],
+    "cues": [
+      "Gentle sliding movement",
+      "Non-tension nerve flossing",
+      "Shoulder below 80\u00b0"
+    ],
+    "safety": "Keep shoulder strictly below 80\u00b0; stop immediately if tingling or burning develops.",
+    "category": "03_Floor_Yoga_Medium_and_Expert",
+    "image_brief": "Side-by-side start and end position panels showing Median & Ulnar Nerve Sliders. Dashed 80-degree limit line on shoulder; elbows tucked below shoulder line. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "supine-figure-four-strap",
+    "name": "Supine Figure-Four with Strap Assistance",
+    "source_routine_ids": [
+      "Y-MED3",
+      "Y-BEG2"
+    ],
+    "source_descriptions": [
+      "4 mins per side, offloading piriformis tension.",
+      "Gentle piriformis stretch."
+    ],
+    "dosages": [
+      "Y-MED3: 8 mins (4 mins per side)",
+      "Y-BEG2: 5 mins"
+    ],
+    "cues": [
+      "Strap around thigh",
+      "Ankle resting over opposite knee",
+      "Offload piriformis tension"
+    ],
+    "safety": "Use strap to avoid arm pulling; protect braced left knee from twisting.",
+    "category": "03_Floor_Yoga_Medium_and_Expert",
+    "image_brief": "Side-by-side start and end position panels showing Supine Figure-Four with Strap Assistance. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "supported-sphinx-micro-lifts",
+    "name": "Supported Sphinx Micro-Lifts (Prone on Forearms)",
+    "source_routine_ids": [
+      "Y-MED3"
+    ],
+    "source_descriptions": [
+      "Only if cleared; neck strictly locked in neutral."
+    ],
+    "dosages": [
+      "Y-MED3: 5 mins"
+    ],
+    "cues": [
+      "Forearms flat on mat",
+      "Gentle thoracic extension",
+      "Neck strictly locked in neutral"
+    ],
+    "safety": "Perform ONLY if cleared; neck locked neutral; no cervical extension.",
+    "category": "03_Floor_Yoga_Medium_and_Expert",
+    "image_brief": "Side-by-side start and end position panels showing Supported Sphinx Micro-Lifts (Prone on Forearms). Spine and neck locked in neutral alignment. Support apparatus (chair or pool rail) clearly depicted with firm hand placement. "
+  },
+  {
+    "slug": "acupressure-mat-bolster-wind-down",
+    "name": "Acupressure Mat or Bolster Wind-Down",
+    "source_routine_ids": [
+      "Y-MED3"
+    ],
+    "source_descriptions": [
+      "Acupressure Mat or Bolster Wind-Down: 7 mins."
+    ],
+    "dosages": [
+      "Y-MED3: 7 mins"
+    ],
+    "cues": [
+      "Passive back unloading",
+      "Deep slow breaths",
+      "Nervous system relaxation"
+    ],
+    "safety": "Do not foam roll neck or lower back; passive decompression only.",
+    "category": "03_Floor_Yoga_Medium_and_Expert",
+    "image_brief": "Side-by-side start and end position panels showing Acupressure Mat or Bolster Wind-Down. Dashed 80-degree limit line on shoulder; elbows tucked below shoulder line. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "supine-isometric-core-pelvic-clocks",
+    "name": "Supine Isometric Core Bracing & Pelvic Clocks",
+    "source_routine_ids": [
+      "Y-EXP1"
+    ],
+    "source_descriptions": [
+      "Supine Isometric Core Bracing & Pelvic Clocks: 8 mins."
+    ],
+    "dosages": [
+      "Y-EXP1: 8 mins"
+    ],
+    "cues": [
+      "Isometric abdominal wall brace",
+      "Micro-movements around pelvic clock",
+      "Head flat on mat"
+    ],
+    "safety": "Head grounded; no neck craning or abdominal distension.",
+    "category": "03_Floor_Yoga_Medium_and_Expert",
+    "image_brief": "Side-by-side start and end position panels showing Supine Isometric Core Bracing & Pelvic Clocks. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "dead-bug-complex-band",
+    "name": "Dead Bug Complex with Resistance Band",
+    "source_routine_ids": [
+      "Y-EXP1"
+    ],
+    "source_descriptions": [
+      "Band looped on feet; alternate heel pushdowns with rigid lumbar stabilization."
+    ],
+    "dosages": [
+      "Y-EXP1: 10 mins"
+    ],
+    "cues": [
+      "Band looped on feet",
+      "Alternate heel pushdowns",
+      "Rigid lumbar stabilization"
+    ],
+    "safety": "Keep lumbar spine flat against mat; head completely grounded.",
+    "category": "03_Floor_Yoga_Medium_and_Expert",
+    "image_brief": "Side-by-side start and end position panels showing Dead Bug Complex with Resistance Band. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "supine-pilates-bar-leg-press",
+    "name": "Supine Pilates Bar Leg Press",
+    "source_routine_ids": [
+      "Y-EXP1"
+    ],
+    "source_descriptions": [
+      "Bar hooked into resistance cords, drive through heels to build quad strength without knee shearing."
+    ],
+    "dosages": [
+      "Y-EXP1: 10 mins"
+    ],
+    "cues": [
+      "Bar hooked into resistance cords",
+      "Drive through heels",
+      "Build quad strength safely"
+    ],
+    "safety": "Knees do not bend past 45\u00b0-60\u00b0; no shearing force on left knee.",
+    "category": "03_Floor_Yoga_Medium_and_Expert",
+    "image_brief": "Side-by-side start and end position panels showing Supine Pilates Bar Leg Press. Dashed 80-degree limit line on shoulder; elbows tucked below shoulder line. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "seated-wall-rows-band",
+    "name": "Seated Wall Rows with Band",
+    "source_routine_ids": [
+      "Y-EXP1"
+    ],
+    "source_descriptions": [
+      "Back against wall, neck neutral, row band into lower ribs."
+    ],
+    "dosages": [
+      "Y-EXP1: 8 mins"
+    ],
+    "cues": [
+      "Back against wall",
+      "Row band into lower ribs",
+      "Neck neutral against wall"
+    ],
+    "safety": "Elbows tucked low below shoulder line; do not flare right elbow.",
+    "category": "03_Floor_Yoga_Medium_and_Expert",
+    "image_brief": "Side-by-side start and end position panels showing Seated Wall Rows with Band. Dashed 80-degree limit line on shoulder; elbows tucked below shoulder line. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "isometric-bridge-adductor-block",
+    "name": "Isometric Glute Bridge Holds with Adductor Block Squeeze",
+    "source_routine_ids": [
+      "Y-EXP1"
+    ],
+    "source_descriptions": [
+      "Isometric Glute Bridge Holds with Adductor Block Squeeze: 5 mins."
+    ],
+    "dosages": [
+      "Y-EXP1: 5 mins"
+    ],
+    "cues": [
+      "Squeeze yoga block between knees",
+      "Hold bridge at top",
+      "Activate glutes and adductors"
+    ],
+    "safety": "Keep knees aligned over braced ankles; no lumbar hyperextension.",
+    "category": "03_Floor_Yoga_Medium_and_Expert",
+    "image_brief": "Side-by-side start and end position panels showing Isometric Glute Bridge Holds with Adductor Block Squeeze. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "final-supine-spinal-decompression",
+    "name": "Final Supine Spinal Decompression",
+    "source_routine_ids": [
+      "Y-EXP1"
+    ],
+    "source_descriptions": [
+      "Final Supine Spinal Decompression: 4 mins."
+    ],
+    "dosages": [
+      "Y-EXP1: 4 mins"
+    ],
+    "cues": [
+      "Passive spinal elongation",
+      "Bolster under knees",
+      "Deep diaphragmatic breathing"
+    ],
+    "safety": "Full cervical and lumbar support; completely relaxed posture.",
+    "category": "03_Floor_Yoga_Medium_and_Expert",
+    "image_brief": "Side-by-side start and end position panels showing Final Supine Spinal Decompression. Dashed 80-degree limit line on shoulder; elbows tucked below shoulder line. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "phase1-centering-deep-neck-flexor",
+    "name": "Phase 1: Centering & Deep Neck Flexor Conditioning",
+    "source_routine_ids": [
+      "Y-EXP2"
+    ],
+    "source_descriptions": [
+      "Supine chin tucks against light resistance, pelvic tilting, breath coordination."
+    ],
+    "dosages": [
+      "Y-EXP2: 10 mins"
+    ],
+    "cues": [
+      "Supine chin tucks against light band",
+      "Pelvic tilting coordination",
+      "Deep neck flexor hold"
+    ],
+    "safety": "Light resistance only; head stays grounded; no neck flexion or straining.",
+    "category": "03_Floor_Yoga_Medium_and_Expert",
+    "image_brief": "Side-by-side start and end position panels showing Phase 1: Centering & Deep Neck Flexor Conditioning. Cervical spine strictly in neutral; chin tuck in small pain-free range with head grounded/supported. "
+  },
+  {
+    "slug": "phase2-scapulothoracic-complex",
+    "name": "Phase 2: Scapulothoracic Complex",
+    "source_routine_ids": [
+      "Y-EXP2"
+    ],
+    "source_descriptions": [
+      "Prone W-raises, scapula protraction/retraction drills, band pull-aparts below shoulder height."
+    ],
+    "dosages": [
+      "Y-EXP2: 12 mins"
+    ],
+    "cues": [
+      "Prone W-raises",
+      "Scapular protraction/retraction",
+      "Band pull-aparts below shoulder height"
+    ],
+    "safety": "Arms strictly below shoulder height; forehead grounded on pad.",
+    "category": "03_Floor_Yoga_Medium_and_Expert",
+    "image_brief": "Side-by-side start and end position panels showing Phase 2: Scapulothoracic Complex. Dashed 80-degree limit line on shoulder; elbows tucked below shoulder line. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "phase3-core-lumbopelvic-crucible",
+    "name": "Phase 3: Core & Lumbopelvic Crucible",
+    "source_routine_ids": [
+      "Y-EXP2"
+    ],
+    "source_descriptions": [
+      "Banded dead bug variations, supported knee hovers (hands on elevated blocks), single-leg bridge pulses."
+    ],
+    "dosages": [
+      "Y-EXP2: 15 mins"
+    ],
+    "cues": [
+      "Banded dead bug",
+      "Supported knee hovers on blocks",
+      "Single-leg bridge pulses"
+    ],
+    "safety": "Hands elevated on yoga blocks for wrist/shoulder relief; knee hovers 1-inch max.",
+    "category": "03_Floor_Yoga_Medium_and_Expert",
+    "image_brief": "Side-by-side start and end position panels showing Phase 3: Core & Lumbopelvic Crucible. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "phase4-hip-lower-kinetic-chain",
+    "name": "Phase 4: Hip & Lower Kinetic Chain Integration",
+    "source_routine_ids": [
+      "Y-EXP2"
+    ],
+    "source_descriptions": [
+      "Side-lying banded clamshells and straight-leg abductions (braced knee/ankle)."
+    ],
+    "dosages": [
+      "Y-EXP2: 12 mins"
+    ],
+    "cues": [
+      "Side-lying banded clamshells",
+      "Straight-leg abductions",
+      "Braced knee and ankle"
+    ],
+    "safety": "Left knee and right ankle braced; do not roll pelvis backward.",
+    "category": "03_Floor_Yoga_Medium_and_Expert",
+    "image_brief": "Side-by-side start and end position panels showing Phase 4: Hip & Lower Kinetic Chain Integration. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "phase5-passive-decompression-bound-angle",
+    "name": "Phase 5: Passive Decompression & Myofascial Unloading",
+    "source_routine_ids": [
+      "Y-EXP2"
+    ],
+    "source_descriptions": [
+      "Reclined bound angle with blocks under thighs, constructive rest with bolster."
+    ],
+    "dosages": [
+      "Y-EXP2: 11 mins"
+    ],
+    "cues": [
+      "Blocks supporting outer thighs",
+      "Bolster under spine/knees",
+      "Total myofascial unloading"
+    ],
+    "safety": "Fully supported thighs prevents groin strain; cervical spine aligned.",
+    "category": "03_Floor_Yoga_Medium_and_Expert",
+    "image_brief": "Side-by-side start and end position panels showing Phase 5: Passive Decompression & Myofascial Unloading. Dashed 80-degree limit line on shoulder; elbows tucked below shoulder line. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "diaphragmatic-breathing",
+    "name": "Diaphragmatic Breathing",
+    "source_routine_ids": [
+      "Y-BEG1"
+    ],
+    "source_descriptions": [
+      "Diaphragmatic Breathing (2 mins)."
+    ],
+    "dosages": [
+      "Y-BEG1: 2 mins"
+    ],
+    "cues": [
+      "Inhale into lower ribs and belly",
+      "Slow passive exhalation",
+      "Relax jaw and neck"
+    ],
+    "safety": "Do not tense neck or shoulder muscles during inhalation.",
+    "category": "04_Beginner_Yoga_Flows",
+    "image_brief": "Side-by-side start and end position panels showing Diaphragmatic Breathing. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "supported-childs-pose-bolster",
+    "name": "Supported Child's Pose over Bolster",
+    "source_routine_ids": [
+      "Y-BEG2"
+    ],
+    "source_descriptions": [
+      "Knees wide, chest supported, neck neutral."
+    ],
+    "dosages": [
+      "Y-BEG2: 5 mins"
+    ],
+    "cues": [
+      "Knees wide on cushioned mat",
+      "Torso rested on lengthwise bolster",
+      "Neck neutral"
+    ],
+    "safety": "Knees cushioned on pad; chest fully supported; neck neutral without turn.",
+    "category": "04_Beginner_Yoga_Flows",
+    "image_brief": "Side-by-side start and end position panels showing Supported Child's Pose over Bolster. Spine and neck locked in neutral alignment. Torso supported over lengthwise bolster; knees wide on padded mat. Support apparatus (chair or pool rail) clearly depicted with firm hand placement. "
+  },
+  {
+    "slug": "supine-single-knee-to-chest",
+    "name": "Supine Single Knee-to-Chest",
+    "source_routine_ids": [
+      "Y-BEG2"
+    ],
+    "source_descriptions": [
+      "Gently hug one knee, opposite foot flat."
+    ],
+    "dosages": [
+      "Y-BEG2: 5 mins"
+    ],
+    "cues": [
+      "Gently hug one knee toward chest",
+      "Opposite foot resting flat",
+      "Relax head and neck"
+    ],
+    "safety": "Hug behind thigh if knee flexion is sensitive; head grounded.",
+    "category": "04_Beginner_Yoga_Flows",
+    "image_brief": "Side-by-side start and end position panels showing Supine Single Knee-to-Chest. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "legs-elevated-relaxation",
+    "name": "Legs-Elevated Relaxation",
+    "source_routine_ids": [
+      "Y-BEG3"
+    ],
+    "source_descriptions": [
+      "Legs-Elevated Relaxation (6 mins)."
+    ],
+    "dosages": [
+      "Y-BEG3: 6 mins"
+    ],
+    "cues": [
+      "Calves resting on chair or bolster",
+      "Knees bent at 90\u00b0",
+      "Full venous drainage and rest"
+    ],
+    "safety": "Head supported; neutral neck; lower back completely rested.",
+    "category": "04_Beginner_Yoga_Flows",
+    "image_brief": "Side-by-side start and end position panels showing Legs-Elevated Relaxation. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "taichi-commencing-form-seated",
+    "name": "Commencing Form (Opening the Chest)",
+    "source_routine_ids": [
+      "TC-BEG1"
+    ],
+    "source_descriptions": [
+      "Seated upright, inhale float hands to chest height, exhale press down."
+    ],
+    "dosages": [
+      "TC-BEG1: 3 mins"
+    ],
+    "cues": [
+      "Seated tall in chair",
+      "Inhale float hands to chest height",
+      "Exhale press palms gently down"
+    ],
+    "safety": "Hands stay below chest level; keep elbows soft and below shoulder height.",
+    "category": "05_Tai_Chi_Beginner",
+    "image_brief": "Side-by-side start and end position panels showing Commencing Form (Opening the Chest). Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "taichi-cloud-hands-seated",
+    "name": "Wave Hands Like Clouds (Seated)",
+    "source_routine_ids": [
+      "TC-BEG1"
+    ],
+    "source_descriptions": [
+      "Gentle rotational sweep across midline using thoracic spine; head stays aligned with breastbone."
+    ],
+    "dosages": [
+      "TC-BEG1: 4 mins"
+    ],
+    "cues": [
+      "Rotational sweep across midline",
+      "Rotate thoracic spine only",
+      "Head stays aligned with breastbone"
+    ],
+    "safety": "Strictly no cervical rotation independently; head moves locked with sternum.",
+    "category": "05_Tai_Chi_Beginner",
+    "image_brief": "Side-by-side start and end position panels showing Wave Hands Like Clouds (Seated). Dashed 80-degree limit line on shoulder; elbows tucked below shoulder line. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "taichi-closing-circle-seated",
+    "name": "Closing the Circle (Harmonizing Qi)",
+    "source_routine_ids": [
+      "TC-BEG1"
+    ],
+    "source_descriptions": [
+      "Inhale gather energy overhead (within shoulder comfort), exhale settle hands onto lap."
+    ],
+    "dosages": [
+      "TC-BEG1: 3 mins"
+    ],
+    "cues": [
+      "Gather arms within shoulder comfort",
+      "Exhale settle hands onto lap",
+      "Calm even breaths"
+    ],
+    "safety": "Keep arm sweep strictly within comfortable shoulder height (<80\u00b0 for right arm).",
+    "category": "05_Tai_Chi_Beginner",
+    "image_brief": "Side-by-side start and end position panels showing Closing the Circle (Harmonizing Qi). Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "taichi-weight-shifting-rail",
+    "name": "Stance Alignment & Weight Shifting (Holding Chair/Rail)",
+    "source_routine_ids": [
+      "TC-BEG2"
+    ],
+    "source_descriptions": [
+      "Gentle weight shift from left to right foot without twisting knees or ankles."
+    ],
+    "dosages": [
+      "TC-BEG2: 6 mins"
+    ],
+    "cues": [
+      "Hold chair or rail for stability",
+      "Shift weight smoothly foot to foot",
+      "Maintain tall posture"
+    ],
+    "safety": "Zero twisting at left knee or right ankle; keep joints tracking forward.",
+    "category": "05_Tai_Chi_Beginner",
+    "image_brief": "Side-by-side start and end position panels showing Stance Alignment & Weight Shifting (Holding Chair/Rail). Spine and neck locked in neutral alignment. Support apparatus (chair or pool rail) clearly depicted with firm hand placement. "
+  },
+  {
+    "slug": "taichi-repulse-monkey-supported",
+    "name": "Repulse the Monkey (Modified Minimal Arm Reach)",
+    "source_routine_ids": [
+      "TC-BEG2"
+    ],
+    "source_descriptions": [
+      "Slow arm sweeps below shoulder height coordinated with weight shifts."
+    ],
+    "dosages": [
+      "TC-BEG2: 6 mins"
+    ],
+    "cues": [
+      "Slow arm sweeps below shoulder height",
+      "Coordinate with weight shift",
+      "Keep knees unlocked"
+    ],
+    "safety": "Arm reaches kept strictly below shoulder level; right shoulder protected.",
+    "category": "05_Tai_Chi_Beginner",
+    "image_brief": "Side-by-side start and end position panels showing Repulse the Monkey (Modified Minimal Arm Reach). Dashed 80-degree limit line on shoulder; elbows tucked below shoulder line. Spine and neck locked in neutral alignment. Support apparatus (chair or pool rail) clearly depicted with firm hand placement. "
+  },
+  {
+    "slug": "taichi-brush-knee-push-supported",
+    "name": "Brush Knee & Push (Supported Stance)",
+    "source_routine_ids": [
+      "TC-BEG2"
+    ],
+    "source_descriptions": [
+      "Shallow step forward, gentle push with left arm, smooth breath."
+    ],
+    "dosages": [
+      "TC-BEG2: 5 mins"
+    ],
+    "cues": [
+      "Shallow step forward",
+      "Gentle push with left arm",
+      "Smooth rhythmic breathing"
+    ],
+    "safety": "Shallow stance only (no deep lunging); maintain firm support with rail/chair.",
+    "category": "05_Tai_Chi_Beginner",
+    "image_brief": "Side-by-side start and end position panels showing Brush Knee & Push (Supported Stance). Spine and neck locked in neutral alignment. Support apparatus (chair or pool rail) clearly depicted with firm hand placement. "
+  },
+  {
+    "slug": "taichi-standing-meditation-supported",
+    "name": "Standing Meditation (Zhan Zhuang) Supported",
+    "source_routine_ids": [
+      "TC-BEG2"
+    ],
+    "source_descriptions": [
+      "Spine long, knees slightly unlocked, calm breath."
+    ],
+    "dosages": [
+      "TC-BEG2: 3 mins"
+    ],
+    "cues": [
+      "Spine elongated",
+      "Knees slightly soft and unlocked",
+      "Calm diaphragmatic breath"
+    ],
+    "safety": "Hold rail/chair lightly for balance; do not lock knees into hyperextension.",
+    "category": "05_Tai_Chi_Beginner",
+    "image_brief": "Side-by-side start and end position panels showing Standing Meditation (Zhan Zhuang) Supported. Spine and neck locked in neutral alignment. Support apparatus (chair or pool rail) clearly depicted with firm hand placement. "
+  },
+  {
+    "slug": "taichi-joint-loosening",
+    "name": "Gentle Joint Loosening (Neck Neutral, Wrist/Ankle Circles)",
+    "source_routine_ids": [
+      "TC-BEG3"
+    ],
+    "source_descriptions": [
+      "Gentle Joint Loosening (Neck Neutral, Wrist/Ankle Circles) (6 mins)."
+    ],
+    "dosages": [
+      "TC-BEG3: 6 mins"
+    ],
+    "cues": [
+      "Neck strictly neutral",
+      "Smooth wrist circles",
+      "Gentle non-weightbearing ankle circles"
+    ],
+    "safety": "Zero neck rolling; cervical spine stays neutral while extremities move.",
+    "category": "05_Tai_Chi_Beginner",
+    "image_brief": "Side-by-side start and end position panels showing Gentle Joint Loosening (Neck Neutral, Wrist/Ankle Circles). Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "taichi-six-harmonies-flow",
+    "name": "Six Harmonies Upper Body Flow",
+    "source_routine_ids": [
+      "TC-BEG3"
+    ],
+    "source_descriptions": [
+      "Controlled arm arcs below shoulder height focusing on diaphragmatic inhalation and abdominal exhalation."
+    ],
+    "dosages": [
+      "TC-BEG3: 8 mins"
+    ],
+    "cues": [
+      "Controlled arm arcs below shoulder height",
+      "Diaphragmatic inhale",
+      "Abdominal exhale"
+    ],
+    "safety": "Arm movement strictly below shoulder height; no strain on right shoulder.",
+    "category": "05_Tai_Chi_Beginner",
+    "image_brief": "Side-by-side start and end position panels showing Six Harmonies Upper Body Flow. Dashed 80-degree limit line on shoulder; elbows tucked below shoulder line. Spine and neck locked in neutral alignment. "
+  },
+  {
+    "slug": "taichi-walking-rail-support",
+    "name": "Tai Chi Walking with Rail Support",
+    "source_routine_ids": [
+      "TC-BEG3"
+    ],
+    "source_descriptions": [
+      "Slow, deliberate heel-to-toe rolling steps, maintaining center of gravity."
+    ],
+    "dosages": [
+      "TC-BEG3: 8 mins"
+    ],
+    "cues": [
+      "Slow deliberate heel-to-toe rolling",
+      "Maintain center of gravity",
+      "Light grip on support rail"
+    ],
+    "safety": "Use rail support; deliberate foot placement to protect right ankle stability.",
+    "category": "05_Tai_Chi_Beginner",
+    "image_brief": "Side-by-side start and end position panels showing Tai Chi Walking with Rail Support. Spine and neck locked in neutral alignment. Support apparatus (chair or pool rail) clearly depicted with firm hand placement. "
+  },
+  {
+    "slug": "taichi-parting-wild-horse-supported",
+    "name": "Parting the Wild Horse\u2019s Mane (Modified Seated/Supported)",
+    "source_routine_ids": [
+      "TC-BEG3"
+    ],
+    "source_descriptions": [
+      "Smooth diagonal expansion."
+    ],
+    "dosages": [
+      "TC-BEG3: 5 mins"
+    ],
+    "cues": [
+      "Smooth diagonal arm expansion",
+      "Seated or rail-supported",
+      "Keep chest relaxed"
+    ],
+    "safety": "Diagonal reach kept low and comfortable; no torso twisting past neutral.",
+    "category": "05_Tai_Chi_Beginner",
+    "image_brief": "Side-by-side start and end position panels showing Parting the Wild Horse\u2019s Mane (Modified Seated/Supported). Dashed 80-degree limit line on shoulder; elbows tucked below shoulder line. Spine and neck locked in neutral alignment. Support apparatus (chair or pool rail) clearly depicted with firm hand placement. "
+  },
+  {
+    "slug": "taichi-calming-waters-closing",
+    "name": "Calming the Waters (Closing Meditation)",
+    "source_routine_ids": [
+      "TC-BEG3"
+    ],
+    "source_descriptions": [
+      "Seated mindful still breathing."
+    ],
+    "dosages": [
+      "TC-BEG3: 3 mins"
+    ],
+    "cues": [
+      "Seated upright comfortably",
+      "Hands resting softly on lap",
+      "Mindful still breathing"
+    ],
+    "safety": "Spine balanced against chair back; complete mental and physical calm.",
+    "category": "05_Tai_Chi_Beginner",
+    "image_brief": "Side-by-side start and end position panels showing Calming the Waters (Closing Meditation). Spine and neck locked in neutral alignment. "
+  }
+]
