@@ -36,7 +36,7 @@ describe("Encyclopedias & Learning Suite (October Refresh)", () => {
   });
 
   it("GET /api/v1/learn/encyclopedias returns the 5 active encyclopedias with progress metadata", async () => {
-    const res = await getEncyclopedias();
+    const res = await getEncyclopedias(new Request("http://localhost:3000/api/v1/learn/encyclopedias"));
     expect(res.status).toBe(200);
     const data = await res.json();
     expect(data.encyclopedias).toHaveLength(5);

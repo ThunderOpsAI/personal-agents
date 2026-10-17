@@ -3,7 +3,7 @@ import { ENCYCLOPEDIAS } from "../../../../../lib/encyclopedias";
 import { getAllLearningProgress } from "../../../../../lib/db";
 import { EncyclopediaProgress } from "../../../../../lib/schema";
 
-export async function GET(request?: Request) {
+export async function GET(request: Request) {
   try {
     let includeArchived = false;
     if (request && request.url) {
