@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Rumble OS - Hydrotherapy Clinical Protocols (A4 Laminated Series)</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 6mm 8mm;
+    }
+    * {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f8fafc;
+      color: #0f172a;
+      font-size: 10px;
+      line-height: 1.3;
+    }
+    .page {
+      width: 194mm;
+      height: 284mm;
+      max-height: 284mm;
+      margin: 0 auto 10mm auto;
+      padding: 6mm 8mm;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      page-break-after: always;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+    }
+    @media print {
+      body {
+        background: none;
+      }
+      .page {
+        margin: 0;
+        border: none;
+        border-radius: 0;
+        width: 100%;
+        height: 100%;
+        max-height: 100%;
+        padding: 0;
+      }
+    }
+
+    /* Header styling */
+    .header {
+      border-bottom: 2px solid #0284c7;
+      padding-bottom: 4px;
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+    .header-title-box h1 {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 800;
+      color: #0369a1;
+      letter-spacing: -0.3px;
+      text-transform: uppercase;
+    }
+    .header-title-box p {
+      margin: 2px 0 0 0;
+      font-size: 9px;
+      color: #64748b;
+      font-weight: 600;
+    }
+    .header-badge {
+      background: #0284c7;
+      color: #ffffff;
+      font-size: 8.5px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Clinical Rules Bar */
+    .clinical-bar {
+      background: #f0f9ff;
+      border: 1px solid #bae6fd;
+      border-left: 4px solid #0284c7;
+      padding: 4px 8px;
+      border-radius: 4px;
+      margin-bottom: 6px;
+      display: flex;
+      gap: 10px;
+      font-size: 8.5px;
+    }
+    .clinical-bar strong {
+      color: #0369a1;
+    }
+    .clinical-item {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    /* Cards */
+    .routine-card {
+      background: #ffffff;
+      border: 1.5px solid #0284c7;
+      border-radius: 5px;
+      padding: 6px 8px;
+      margin-bottom: 6px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+    }
+    .routine-card.secondary {
+      border-color: #0d9488;
+    }
+    .routine-card.amber {
+      border-color: #d97706;
+    }
+    .routine-card.purple {
+      border-color: #7c3aed;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #f1f5f9;
+      padding-bottom: 3px;
+      margin-bottom: 4px;
+    }
+    .card-title-group {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+    .routine-id {
+      font-size: 11px;
+      font-weight: 900;
+      padding: 1px 5px;
+      border-radius: 3px;
+      color: #ffffff;
+      background: #0284c7;
+    }
+    .routine-id.secondary { background: #0d9488; }
+    .routine-id.amber { background: #d97706; }
+    .routine-id.purple { background: #7c3aed; }
+
+    .routine-title {
+      font-size: 12px;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 0;
+    }
+    .routine-meta {
+      font-size: 9px;
+      font-weight: 700;
+      color: #475569;
+    }
+
+    .meta-tags {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 5px;
+      font-size: 8px;
+      color: #334155;
+    }
+    .meta-tag {
+      background: #f1f5f9;
+      padding: 1px 4px;
+      border-radius: 3px;
+      border: 1px solid #e2e8f0;
+    }
+    .meta-tag strong { color: #0f172a; }
+
+    /* Steps grid */
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 5px;
+    }
+    .step-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 3px;
+      padding: 4px 6px;
+    }
+    .step-box.full-width {
+      grid-column: span 2;
+    }
+    .step-header {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 1px;
+      font-size: 9.5px;
+    }
+    .step-time {
+      color: #0284c7;
+      font-weight: 700;
+      font-size: 8.5px;
+    }
+    .step-cue {
+      font-size: 8.5px;
+      color: #334155;
+      line-height: 1.25;
+    }
+    .step-cue strong {
+      color: #0f172a;
+    }
+
+    /* Visual Infographic Strip at bottom */
+    .visual-strip {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 5px;
+      padding: 5px 6px;
+      margin: 5px 0 3px 0;
+    }
+    .visual-strip-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+    .visual-strip-title {
+      font-size: 9px;
+      font-weight: 800;
+      color: #0f172a;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .visual-strip-sub {
+      font-size: 7.5px;
+      color: #64748b;
+      font-weight: 600;
+    }
+    .visual-grid {
+      display: grid;
+      gap: 6px;
+    }
+    .visual-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+    .visual-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+    .visual-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+    .visual-item {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      padding: 3px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+    .visual-img {
+      width: 100%;
+      height: 38mm;
+      object-fit: contain;
+      background: #ffffff;
+      border-radius: 2px;
+    }
+    .visual-caption {
+      font-size: 8px;
+      font-weight: 700;
+      color: #1e293b;
+      margin-top: 2px;
+      text-align: center;
+      line-height: 1.15;
+    }
+    .visual-subtext {
+      font-size: 7px;
+      color: #64748b;
+      text-align: center;
+    }
+
+    /* Table styles for Express Resets */
+    .express-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 8.5px;
+      margin-top: 3px;
+    }
+    .express-table th {
+      background: #0f172a;
+      color: #ffffff;
+      padding: 3px 5px;
+      text-align: left;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 7.5px;
+    }
+    .express-table td {
+      padding: 3px 5px;
+      border-bottom: 1px solid #e2e8f0;
+      vertical-align: middle;
+    }
+    .express-table tr:nth-child(even) {
+      background-color: #f8fafc;
+    }
+    .table-code {
+      font-weight: 800;
+      color: #0284c7;
+    }
+
+    /* Footer styling */
+    .footer {
+      border-top: 1px solid #cbd5e1;
+      padding-top: 3px;
+      margin-top: 3px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 7.5px;
+      color: #64748b;
+    }
+    .disclaimer-box {
+      background: #fff1f2;
+      border: 1px solid #fecdd3;
+      border-left: 3px solid #e11d48;
+      padding: 3px 6px;
+      border-radius: 3px;
+      font-size: 7px;
+      color: #9f1239;
+      line-height: 1.2;
+      margin-top: 3px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ======================================================== -->
+  <!-- PAGE 1: CLINICAL RULES & FOUNDATIONS (h1 & h2)            -->
+  <!-- ======================================================== -->
+  <div class="page">
+    <div>
+      <div class="header">
+        <div class="header-title-box">
+          <h1>Rumble OS • Clinical Hydrotherapy</h1>
+          <p>Poolside Laminated Reference • Sheet 1: Foundational Decompression & Multi-Planar Gait</p>
+        </div>
+        <div class="header-badge">Sheet 1 of 5 • Foundations</div>
+      </div>
+
+      <div class="clinical-bar">
+        <div class="clinical-item"><strong>Cervical Fusion (C4–C7):</strong> Neutral spine strictly locked; no head thrusting.</div>
+        <div class="clinical-item"><strong>Shoulder:</strong> Below 80° abduction.</div>
+        <div class="clinical-item"><strong>Knee:</strong> Max 45° flexion.</div>
+        <div class="clinical-item"><strong>Water:</strong> 32°C–34°C ideal.</div>
+      </div>
+
+      <!-- Routine h1 -->
+      <div class="routine-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="routine-id">h1</span>
+            <span class="routine-title">Buoyancy Spinal Decompression</span>
+          </div>
+          <span class="routine-meta">25 MIN • RESTORATIVE DECOMPRESSION</span>
+        </div>
+        <div class="meta-tags">
+          <span class="meta-tag"><strong>Target:</strong> Lumbar disc & facet offload, C4–C7 axial decompression</span>
+          <span class="meta-tag"><strong>Equipment:</strong> Deep water noodle, cervical flotation collar</span>
+          <span class="meta-tag"><strong>Mechanism:</strong> Eliminates 90% gravity compression</span>
+        </div>
+        <div class="steps-grid">
+          <div class="step-box">
+            <div class="step-header"><span>1. Buoyant Vertical Traction</span><span class="step-time">6m 15s</span></div>
+            <div class="step-cue">Place noodle under armpits in chest/deep water so feet hang completely suspended. Relax abdominal wall and let legs dangle. <strong>Zero foot contact.</strong> Breathe deeply into diaphragm.</div>
+          </div>
+          <div class="step-box">
+            <div class="step-header"><span>2. Gentle Water Knee-to-Chest</span><span class="step-time">6m 15s</span></div>
+            <div class="step-cue">While vertically suspended, slowly draw both knees towards chest. Hold 3s to open posterior facet joints. Lower with control. <strong>3 sets x 10 smooth reps.</strong></div>
+          </div>
+          <div class="step-box">
+            <div class="step-header"><span>3. Aquatic Torso Pendulum</span><span class="step-time">6m 15s</span></div>
+            <div class="step-cue">Holding noodle securely, let legs and pelvis sway smoothly side to side like a gentle pendulum. Keep head and cervical spine completely still and aligned.</div>
+          </div>
+          <div class="step-box">
+            <div class="step-header"><span>4. Supine Water Float & Reset</span><span class="step-time">6m 15s</span></div>
+            <div class="step-cue">Transition onto back with cervical pillow and knee noodle bolster. Complete passive floating surrender. Slow 4s inhale, 6s exhale to extinguish autonomic pain loops.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Routine h2 -->
+      <div class="routine-card secondary">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="routine-id secondary">h2</span>
+            <span class="routine-title">Aquatic Multi-Planar Gait & Walking</span>
+          </div>
+          <span class="routine-meta">20 MIN • ADAPTIVE MOBILITY & GAIT RETRAINING</span>
+        </div>
+        <div class="meta-tags">
+          <span class="meta-tag"><strong>Target:</strong> Symmetrical stride length, gluteus medius, hip flexor activation</span>
+          <span class="meta-tag"><strong>Equipment:</strong> Chest-deep pool lane, pool rail</span>
+          <span class="meta-tag"><strong>Focus:</strong> Upright posture, no forward trunk flexion</span>
+        </div>
+        <div class="steps-grid">
+          <div class="step-box">
+            <div class="step-header"><span>1. Forward Water Marching</span><span class="step-time">5m 00s</span></div>
+            <div class="step-cue">Chest-deep water. Drive knee upward smoothly (max 70° hip flexion) with conscious heel-to-toe rolling push-off. Maintain upright chest and natural reciprocal arm swing submerged.</div>
+          </div>
+          <div class="step-box">
+            <div class="step-header"><span>2. Backward Heel-to-Toe Walking</span><span class="step-time">5m 00s</span></div>
+            <div class="step-cue">Step backward toe-to-heel. Feel the drag of water fire hamstrings and glutes without lumbar hyperextension. Maintain level pelvis throughout stride.</div>
+          </div>
+          <div class="step-box">
+            <div class="step-header"><span>3. Lateral Sidestepping</span><span class="step-time">5m 00s</span></div>
+            <div class="step-cue">Face pool edge. Step sideways across lane, pushing against water column with outer hip. Step wide, close slowly. <strong>Fires gluteus medius to stabilize pelvis & SI joint.</strong></div>
+          </div>
+          <div class="step-box">
+            <div class="step-header"><span>4. Warm Water Calming Wall Rest</span><span class="step-time">5m 00s</span></div>
+            <div class="step-cue">Stand supported with back against pool wall. Hands on rail. Feel hydrostatic pressure support venous return. Gentle deep breathing before exiting.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Visual Form Strip: Sheet 1 -->
+      <div class="visual-strip">
+        <div class="visual-strip-header">
+          <span class="visual-strip-title">Visual Exercise Infographics & Biomechanical Form</span>
+          <span class="visual-strip-sub">Start & Finish Positions • Chest-Deep Fluid Resistance</span>
+        </div>
+        <div class="visual-grid cols-3">
+          <div class="visual-item">
+            <img class="visual-img" src="file:///Users/thunderopsai/Documents/Workspace/01_Projects/personal-agents/clinical_exercise_library/images/buoyancy-decompression.png" alt="Buoyancy Decompression">
+            <div class="visual-caption">Buoyancy Spinal Decompression (h1)</div>
+            <div class="visual-subtext">Weightless Noodle Traction • Head Supported</div>
+          </div>
+          <div class="visual-item">
+            <img class="visual-img" src="file:///Users/thunderopsai/Documents/Workspace/01_Projects/personal-agents/clinical_exercise_library/images/aqua-warmup-gait.png" alt="Water Walking Gait">
+            <div class="visual-caption">Aquatic Forward Marching (h2)</div>
+            <div class="visual-subtext">Chest-Deep High Knees • Heel-Toe Drive</div>
+          </div>
+          <div class="visual-item">
+            <img class="visual-img" src="file:///Users/thunderopsai/Documents/Workspace/01_Projects/personal-agents/clinical_exercise_library/images/aquatic-gait-scapular-activation.png" alt="Scapular Activation">
+            <div class="visual-caption">Multi-Planar Gait & Retraction (h2)</div>
+            <div class="visual-subtext">Submerged Arm Sweeps • Chin Retraction</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="disclaimer-box">
+        <strong>CLINICAL NOTE:</strong> Hydrotherapy allows high muscular recruitment without land gravity impact. If sharp radicular nerve pain or dizziness occurs, exit pool immediately. Keep right shoulder below 80° plane.
+      </div>
+      <div class="footer">
+        <span>Rumble OS • Rehabilitation Protocols Library • 2026 Edition</span>
+        <span>Laminated Poolside Card #1</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- PAGE 2: STABILIZATION, FLUSH & EXPRESS RESETS (h3, h4, A1-A6) -->
+  <!-- ======================================================== -->
+  <div class="page">
+    <div>
+      <div class="header">
+        <div class="header-title-box">
+          <h1>Rumble OS • Clinical Hydrotherapy</h1>
+          <p>Poolside Laminated Reference • Sheet 2: Hip/Core Stabilization, Lymphatic Flush & Express Resets</p>
+        </div>
+        <div class="header-badge" style="background:#0d9488;">Sheet 2 of 5 • Core & Express</div>
+      </div>
+
+      <!-- Routine h3 -->
+      <div class="routine-card secondary">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="routine-id secondary">h3</span>
+            <span class="routine-title">Aquatic Hip & Core Stabilization</span>
+          </div>
+          <span class="routine-meta">20 MIN • TARGETED STRENGTHENING</span>
+        </div>
+        <div class="steps-grid">
+          <div class="step-box">
+            <div class="step-header"><span>1. Aquatic Standing Hip Abduction</span><span class="step-time">5m 00s</span></div>
+            <div class="step-cue">Stand holding pool rail for balance. Keep torso tall and sweep leg laterally out against water resistance. 3 sets x 12 reps per leg. Controlled tempo; avoid pelvic hiking.</div>
+          </div>
+          <div class="step-box">
+            <div class="step-header"><span>2. Kickboard Core Press-Down</span><span class="step-time">5m 00s</span></div>
+            <div class="step-cue">Hold kickboard flat with both hands at chest level. Engage deep transversus abdominis and push board straight down into water column. 3 sets x 10 reps (3s hold at bottom).</div>
+          </div>
+          <div class="step-box">
+            <div class="step-header"><span>3. Aquatic Bicycle Pedaling</span><span class="step-time">5m 00s</span></div>
+            <div class="step-cue">Lean back resting upper back on noodle across armpits. Smoothly pedal legs through water column like riding a bicycle. Maintain rhythmic cadence without knee shear.</div>
+          </div>
+          <div class="step-box">
+            <div class="step-header"><span>4. Floating Spine Rest & Elongation</span><span class="step-time">5m 00s</span></div>
+            <div class="step-cue">Supported supine float with noodle under knees. Lengthen spine, relax pelvic floor and deep hip rotators.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Routine h4 -->
+      <div class="routine-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="routine-id">h4</span>
+            <span class="routine-title">Warm Water Relaxation & Lymphatic Flush</span>
+          </div>
+          <span class="routine-meta">20 MIN • LYMPHATIC & AUTONOMIC FLUSH</span>
+        </div>
+        <div class="steps-grid">
+          <div class="step-box">
+            <div class="step-header"><span>1. Deep Water Submersion Breathing</span><span class="step-time">5m 00s</span></div>
+            <div class="step-cue">Submerged to clavicles. Inhale 4s through nose; let water hydrostatic pressure assist full, effortless 6s exhalation. Lowers systemic vascular resistance.</div>
+          </div>
+          <div class="step-box">
+            <div class="step-header"><span>2. Aquatic Arm Sweeps (Lymphatic Flow)</span><span class="step-time">5m 00s</span></div>
+            <div class="step-cue">Slow figure-eight arm sweeps submerged below chest line. Elbows soft, hands relaxed. Drives axillary lymphatic drainage without shoulder impingement.</div>
+          </div>
+          <div class="step-box">
+            <div class="step-header"><span>3. Ankle & Foot Water Mobility</span><span class="step-time">5m 00s</span></div>
+            <div class="step-cue">Rest hands on rail at pool steps. Point, flex, and rotate ankles through full fluid range. Activates calf venous muscle pump to clear peripheral fluid.</div>
+          </div>
+          <div class="step-box">
+            <div class="step-header"><span>4. Supported Supine Water Float</span><span class="step-time">5m 00s</span></div>
+            <div class="step-cue">Complete stillness on water surface with neck pillow and knee noodle. Deep parasympathetic reset to downregulate dorsal horn pain gating.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Express Aqua Library A1 - A6 -->
+      <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:5px; padding:4px 6px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
+          <strong style="color:#0369a1; font-size:9.5px; text-transform:uppercase;">Short & Express Aqua Resets (A1–A6 Library)</strong>
+          <span style="font-size:7.5px; color:#64748b; font-weight:600;">For busy days or quick mid-day decompression</span>
+        </div>
+        <table class="express-table">
+          <thead>
+            <tr>
+              <th style="width:10%;">Code</th>
+              <th style="width:24%;">Routine Name</th>
+              <th style="width:10%;">Time</th>
+              <th style="width:56%;">Protocol Circuit Sequence</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="table-code">A1</td>
+              <td><strong>Water Reset</strong></td>
+              <td>6 min</td>
+              <td>Forward/backward walking (2m) &bull; Rail knee lifts (1m) &bull; Torso pendulum (1m) &bull; Supported rest (2m)</td>
+            </tr>
+            <tr>
+              <td class="table-code">A2</td>
+              <td><strong>Side-Step Reset</strong></td>
+              <td>6 min</td>
+              <td>Lateral side walking (2m) &bull; Wall knee drives (1m) &bull; Hip abductions (1m) &bull; Edge relaxation (2m)</td>
+            </tr>
+            <tr>
+              <td class="table-code">A3</td>
+              <td><strong>Balanced Aqua</strong></td>
+              <td>14 min</td>
+              <td>Water walking (3m) &bull; Supported kicks (2m) &bull; Rail abductions (2m) &bull; Low arm sweeps (2m) &bull; Float (3m)</td>
+            </tr>
+            <tr>
+              <td class="table-code">A4</td>
+              <td><strong>Low-Impact Aqua</strong></td>
+              <td>14 min</td>
+              <td>Forward/back strides (3m) &bull; Lateral walk (2m) &bull; Leg pendulums (2m) &bull; Chest presses (2m) &bull; Rest (3m)</td>
+            </tr>
+            <tr>
+              <td class="table-code">A5</td>
+              <td><strong>Full Aqua Session</strong></td>
+              <td>25 min</td>
+              <td>Water walking (5m) &bull; Cycling motion (3m) &bull; Wall flutter kicks (3m) &bull; Side raises (3m) &bull; Float (5m)</td>
+            </tr>
+            <tr>
+              <td class="table-code">A6</td>
+              <td><strong>Aqua Variety</strong></td>
+              <td>25 min</td>
+              <td>Multi-speed walking (5m) &bull; Side strides (3m) &bull; Knee lifts (3m) &bull; Kicks (3m) &bull; Arm scull (3m) &bull; Float (5m)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Visual Form Strip: Sheet 2 -->
+      <div class="visual-strip">
+        <div class="visual-strip-header">
+          <span class="visual-strip-title">Visual Exercise Infographics & Biomechanical Form</span>
+          <span class="visual-strip-sub">Pelvic Stability • Kickboard Press • Noodle Suspension</span>
+        </div>
+        <div class="visual-grid cols-3">
+          <div class="visual-item">
+            <img class="visual-img" src="file:///Users/thunderopsai/Documents/Workspace/01_Projects/personal-agents/clinical_exercise_library/images/submerged-banded-hip-abduction-extension.png" alt="Hip Abduction">
+            <div class="visual-caption">Standing Hip Abduction & Extension (h3)</div>
+            <div class="visual-subtext">Rail-Anchored Sweep • Glute Stabilization</div>
+          </div>
+          <div class="visual-item">
+            <img class="visual-img" src="file:///Users/thunderopsai/Documents/Workspace/01_Projects/personal-agents/clinical_exercise_library/images/kickboard-aquatic-press-downs.png" alt="Kickboard Press">
+            <div class="visual-caption">Kickboard Core Press-Down (h3)</div>
+            <div class="visual-subtext">Downward Fluid Resistance • Transversus Bracing</div>
+          </div>
+          <div class="visual-item">
+            <img class="visual-img" src="file:///Users/thunderopsai/Documents/Workspace/01_Projects/personal-agents/clinical_exercise_library/images/noodle-supported-knee-drives.png" alt="Noodle Knee Drives">
+            <div class="visual-caption">Suspended Knee Drives & Pedaling (h3/A5)</div>
+            <div class="visual-subtext">Noodle Axillae Support • Zero Knee Shear</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <span>Rumble OS • Rehabilitation Protocols Library • 2026 Edition</span>
+      <span>Laminated Poolside Card #2</span>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- PAGE 3: MEDIUM INTENSITY BAND PROTOCOLS (H-MED1 & H-MED2) -->
+  <!-- ======================================================== -->
+  <div class="page">
+    <div>
+      <div class="header">
+        <div class="header-title-box">
+          <h1>Rumble OS • Clinical Hydrotherapy</h1>
+          <p>Poolside Laminated Reference • Sheet 3: Medium-Intensity Band-Resisted Protocols</p>
+        </div>
+        <div class="header-badge" style="background:#0284c7;">Sheet 3 of 5 • Band Conditioning</div>
+      </div>
+
+      <div class="clinical-bar">
+        <div class="clinical-item"><strong>Theraband Setup:</strong> Anchor securely to stainless pool rail with slip-knot.</div>
+        <div class="clinical-item"><strong>Speed:</strong> 2s pull / 3s return against water drag.</div>
+        <div class="clinical-item"><strong>C4–C7:</strong> Cervical chin tuck.</div>
+      </div>
+
+      <!-- H-MED1 -->
+      <div class="routine-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="routine-id">H-MED1</span>
+            <span class="routine-title">Dynamic Aqua Balance & Banded Core</span>
+          </div>
+          <span class="routine-meta">30 MIN • MEDIUM RESISTANCE</span>
+        </div>
+        <div class="meta-tags">
+          <span class="meta-tag"><strong>Equipment:</strong> Medium Theraband (Green), Pool Rail, Noodle</span>
+          <span class="meta-tag"><strong>Focus:</strong> Pelvic stability, anti-shear core bracing, gait power</span>
+        </div>
+        <div class="steps-grid">
+          <div class="step-box">
+            <div class="step-header"><span>Phase 1: Dynamic Aquatic Warm-Up</span><span class="step-time">5m 00s</span></div>
+            <div class="step-cue">Forward walking (heel-to-toe) in chest-deep water (2m) &bull; Backward walking engaging hamstrings/glutes (2m) &bull; Lateral side-stepping holding pool rail (1m).</div>
+          </div>
+          <div class="step-box">
+            <div class="step-header"><span>Phase 2: Banded Hip Abduction & Extension</span><span class="step-time">8m 00s</span></div>
+            <div class="step-cue">Anchor band to rail; loop to ankle. Stand tall holding rail. <strong>Abduction:</strong> sweep leg out against band/water tension (3x12/leg). <strong>Extension:</strong> sweep straight back into glutes without arching lumbar spine (3x12/leg).</div>
+          </div>
+          <div class="step-box">
+            <div class="step-header"><span>Phase 3: Pool Wall Pelvic Neutral & Wall Press</span><span class="step-time">7m 00s</span></div>
+            <div class="step-cue">Back flat against wall. Flatten lower spine into wall by bracing deep core (hold 10s x 6 reps). Submerge noodle at chest level; press downward engaging lats without flexing neck (3x10 reps).</div>
+          </div>
+          <div class="step-box">
+            <div class="step-header"><span>Phase 4: Noodle Deep Water Core Suspensions</span><span class="step-time">6m 00s</span></div>
+            <div class="step-cue">Noodle under axillae in deep water. Alternate slow knee lifts toward chest against water resistance (3 sets x 15 reps). Keep torso completely vertical; no swinging.</div>
+          </div>
+          <div class="step-box full-width">
+            <div class="step-header"><span>Phase 5: Buoyancy Decompression Cool-Down</span><span class="step-time">4m 00s</span></div>
+            <div class="step-cue">Supported supine float with noodle under knees and neck collar. Parasympathetic reset: diaphragmatic breathing, feeling warm water drain tension from spine.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- H-MED2 -->
+      <div class="routine-card secondary">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="routine-id secondary">H-MED2</span>
+            <span class="routine-title">Total Body Aquatic Conditioning & Scapular Rowing</span>
+          </div>
+          <span class="routine-meta">45 MIN • MEDIUM RESISTANCE</span>
+        </div>
+        <div class="meta-tags">
+          <span class="meta-tag"><strong>Equipment:</strong> Heavy Theraband, Pool Rail, Kickboard, Water Dumbbells</span>
+          <span class="meta-tag"><strong>Focus:</strong> Upper back scapular stabilization, shallow squats without knee shear</span>
+        </div>
+        <div class="steps-grid">
+          <div class="step-box">
+            <div class="step-header"><span>Phase 1: Hydrodynamic Gait & Scapular Prep</span><span class="step-time">10m 00s</span></div>
+            <div class="step-cue">Forward, backward, and lateral water strides (5m). Submerged arm sweeps and aquatic chin retractions in chest-deep water (5m). Activates deep cervical flexors safely.</div>
+          </div>
+          <div class="step-box">
+            <div class="step-header"><span>Phase 2: Submerged Rail Band Rows & W-Rows</span><span class="step-time">10m 00s</span></div>
+            <div class="step-cue">Anchor heavy band to rail at waist height. <strong>Low Row:</strong> Pull handles back, squeezing shoulder blades together (elbows strictly below shoulder) (3x12). <strong>W-Row:</strong> Flare hands slightly, squeeze lower traps (3x10).</div>
+          </div>
+          <div class="step-box">
+            <div class="step-header"><span>Phase 3: Banded Pool-Rail Shallow Squat Presses</span><span class="step-time">10m 00s</span></div>
+            <div class="step-cue">Heavy band around rail and pelvis. Facing rail, sink into shallow water squat (max 45° knee bend). Drive up forcefully through heels and glutes against band pull. <strong>4 sets x 10 reps.</strong></div>
+          </div>
+          <div class="step-box">
+            <div class="step-header"><span>Phase 4: Kickboard Aquatic Core Presses & Twists</span><span class="step-time">10m 00s</span></div>
+            <div class="step-cue">Submerge kickboard vertically with both hands; press down into water column (3x12). Gentle torso rotations with board submerged (eyes strictly forward, cervical locked) (3x10).</div>
+          </div>
+          <div class="step-box full-width">
+            <div class="step-header"><span>Phase 5: Decompression & Ankle Flushes</span><span class="step-time">5m 00s</span></div>
+            <div class="step-cue">Hold rail at pool step. Perform slow ankle circles, calf stretches on pool step edge, and passive buoyant decompression float.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Visual Form Strip: Sheet 3 -->
+      <div class="visual-strip">
+        <div class="visual-strip-header">
+          <span class="visual-strip-title">Visual Exercise Infographics & Biomechanical Form</span>
+          <span class="visual-strip-sub">Rail Band Rowing • 45° Shallow Squats • Decompression Float</span>
+        </div>
+        <div class="visual-grid cols-3">
+          <div class="visual-item">
+            <img class="visual-img" src="file:///Users/thunderopsai/Documents/Workspace/01_Projects/personal-agents/clinical_exercise_library/images/submerged-banded-low-rows.png" alt="Submerged Band Low Rows">
+            <div class="visual-caption">Submerged Band Low Rows (H-MED2)</div>
+            <div class="visual-subtext">Waist-Height Rail Anchor • Elbows Tucked Low</div>
+          </div>
+          <div class="visual-item">
+            <img class="visual-img" src="file:///Users/thunderopsai/Documents/Workspace/01_Projects/personal-agents/clinical_exercise_library/images/rail-supported-banded-shallow-squat-presses.png" alt="Shallow Squat Presses">
+            <div class="visual-caption">Banded Shallow Squats (H-MED2)</div>
+            <div class="visual-subtext">Max 45° Knee Bend • Glute Drive</div>
+          </div>
+          <div class="visual-item">
+            <img class="visual-img" src="file:///Users/thunderopsai/Documents/Workspace/01_Projects/personal-agents/clinical_exercise_library/images/aqua-cooldown-walking.png" alt="Aqua Cooldown">
+            <div class="visual-caption">Buoyancy Cool-Down Float (H-MED1)</div>
+            <div class="visual-subtext">Noodle Under Knees • Parasympathetic Reset</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <span>Rumble OS • Rehabilitation Protocols Library • 2026 Edition</span>
+      <span>Laminated Poolside Card #3</span>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- PAGE 4: ADVANCED HEAVY HYDRO PROTOCOLS (H-EXP1 & H-EXP2)  -->
+  <!-- ======================================================== -->
+  <div class="page">
+    <div>
+      <div class="header">
+        <div class="header-title-box">
+          <h1>Rumble OS • Clinical Hydrotherapy</h1>
+          <p>Poolside Laminated Reference • Sheet 4: Advanced Heavy Resistance & Kinetic Chain Overhaul</p>
+        </div>
+        <div class="header-badge" style="background:#d97706;">Sheet 4 of 5 • Heavy Resistance</div>
+      </div>
+
+      <div class="clinical-bar">
+        <div class="clinical-item"><strong>Equipment:</strong> Silver/Black Theraband, Heavy Ankle Loop, Hydro Dumbbells, Flotation Belt.</div>
+        <div class="clinical-item"><strong>Core Rule:</strong> Power comes from glutes & core, never lumbar spine.</div>
+      </div>
+
+      <!-- H-EXP1 -->
+      <div class="routine-card amber">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="routine-id amber">H-EXP1</span>
+            <span class="routine-title">Heavy Hydro Resistance & Power Protocol</span>
+          </div>
+          <span class="routine-meta">60 MIN • EXPERT / HIGH RESISTANCE</span>
+        </div>
+        <div class="steps-grid">
+          <div class="step-box">
+            <div class="step-header"><span>1. Dynamic Thermal & Gait Warm-Up</span><span class="step-time">10m 00s</span></div>
+            <div class="step-cue">High-knee marching (3m) &bull; Multi-planar lateral walk-outs holding rail (3m) &bull; Submerged rotator cuff pendulum sweeps (4m).</div>
+          </div>
+          <div class="step-box">
+            <div class="step-header"><span>2. Banded Rail Power Squat Pulses</span><span class="step-time">10m 00s</span></div>
+            <div class="step-cue">Heavy Theraband around waist anchored to rail. Perform shallow explosive pulses (30°–45° knee flexion), driving forcefully through glutes against band tension. <strong>4 sets x 12 reps (60s rest).</strong></div>
+          </div>
+          <div class="step-box">
+            <div class="step-header"><span>3. Submerged Unilateral Rows & Press</span><span class="step-time">10m 00s</span></div>
+            <div class="step-cue">Anchor band to rail. <strong>Left arm:</strong> Heavy powerful rows against band & water drag (4x12). <strong>Right arm:</strong> Controlled micro-range pulls below 80° shoulder elevation (4x8).</div>
+          </div>
+          <div class="step-box">
+            <div class="step-header"><span>4. Banded Knee Extensions & Kicks</span><span class="step-time">12m 00s</span></div>
+            <div class="step-cue">Heavy band on ankle anchored to rail. Facing away: extend knee against band (4x12/leg). Facing side: heavy hip abductions against band (4x12/leg). Builds quad strength without knee shear.</div>
+          </div>
+          <div class="step-box">
+            <div class="step-header"><span>5. Deep Water Core Crucible</span><span class="step-time">10m 00s</span></div>
+            <div class="step-cue">Flotation belt on, deep water. Alternate 45s high-cadence bicycle pedaling with 45s double knee-to-chest tucks. <strong>5 continuous cycles.</strong></div>
+          </div>
+          <div class="step-box">
+            <div class="step-header"><span>6. Thermal Decompression & Stretch</span><span class="step-time">8m 00s</span></div>
+            <div class="step-cue">Buoyancy-assisted hamstring stretches, pool wall calf decompressions, passive traction hanging vertically from noodle.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- H-EXP2 -->
+      <div class="routine-card amber">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="routine-id amber">H-EXP2</span>
+            <span class="routine-title">Multi-Planar Hydro Endurance & Kinetic Chain Overhaul</span>
+          </div>
+          <span class="routine-meta">75 MIN • EXPERT / HIGH ENDURANCE</span>
+        </div>
+        <div class="steps-grid">
+          <div class="step-box">
+            <div class="step-header"><span>1. Hydrodynamic Activation Circuit</span><span class="step-time">12m 00s</span></div>
+            <div class="step-cue">400m water stride combination: forward walking, backward walking, and carioca crossover steps holding rail for stability.</div>
+          </div>
+          <div class="step-box">
+            <div class="step-header"><span>2. Banded Lateral & Monster Walks</span><span class="step-time">15m 00s</span></div>
+            <div class="step-cue">Heavy loop band around ankles in chest-deep water. Side-step across pool against band/drag (4x15 steps L/R). Monster walks (wide zig-zag strides forward/back) (4x12 strides).</div>
+          </div>
+          <div class="step-box">
+            <div class="step-header"><span>3. Heavy Dumbbell Upper Body Matrix</span><span class="step-time">13m 00s</span></div>
+            <div class="step-cue">Water dumbbells submerged at mid-chest. Submerged bicep curls to low-punches (elbows low) (3x12). Torso turns with dumbbells at ribs (thoracic only, neck locked) (3x12).</div>
+          </div>
+          <div class="step-box">
+            <div class="step-header"><span>4. Explosive Glute Kickbacks with Band</span><span class="step-time">12m 00s</span></div>
+            <div class="step-cue">Band anchored to rail, looped to ankle. Drive straight back into terminal glute extension. Hold 2s peak contraction. <strong>4 sets x 12 reps per leg.</strong></div>
+          </div>
+          <div class="step-box">
+            <div class="step-header"><span>5. Deep Water Interval Treading</span><span class="step-time">13m 00s</span></div>
+            <div class="step-cue">Flotation belt, deep water. 1-minute maximum effort water treading / high-knee churn, followed by 1-minute slow recovery sculling. <strong>6 rounds.</strong></div>
+          </div>
+          <div class="step-box">
+            <div class="step-header"><span>6. Buoyancy Elongation & Lymphatic Flush</span><span class="step-time">10m 00s</span></div>
+            <div class="step-cue">Full supine float with noodles under head and knees. Passive hydrostatic lymphatic return and complete nervous system downregulation.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Visual Form Strip: Sheet 4 -->
+      <div class="visual-strip">
+        <div class="visual-strip-header">
+          <span class="visual-strip-title">Visual Exercise Infographics & Biomechanical Form</span>
+          <span class="visual-strip-sub">Power Squat Pulses • Monster Walks • Deep Water Treading Intervals</span>
+        </div>
+        <div class="visual-grid cols-3">
+          <div class="visual-item">
+            <img class="visual-img" src="file:///Users/thunderopsai/Documents/Workspace/01_Projects/personal-agents/clinical_exercise_library/images/banded-pool-rail-power-squat-pulses.png" alt="Power Squat Pulses">
+            <div class="visual-caption">Power Squat Pulses (H-EXP1)</div>
+            <div class="visual-subtext">Heavy Rail Band • 45° Explosive Glute Drive</div>
+          </div>
+          <div class="visual-item">
+            <img class="visual-img" src="file:///Users/thunderopsai/Documents/Workspace/01_Projects/personal-agents/clinical_exercise_library/images/banded-lateral-monster-walks.png" alt="Monster Walks">
+            <div class="visual-caption">Banded Monster Walks (H-EXP2)</div>
+            <div class="visual-subtext">Heavy Ankle Loops • Multi-Planar Strides</div>
+          </div>
+          <div class="visual-item">
+            <img class="visual-img" src="file:///Users/thunderopsai/Documents/Workspace/01_Projects/personal-agents/clinical_exercise_library/images/deep-water-interval-treading.png" alt="Deep Water Treading">
+            <div class="visual-caption">Deep Water Treading (H-EXP2)</div>
+            <div class="visual-subtext">Flotation Belt Sprints • High-Knee Churn</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <span>Rumble OS • Rehabilitation Protocols Library • 2026 Edition</span>
+      <span>Laminated Poolside Card #4</span>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- PAGE 5: MASTER HYDRO ATHLETE PROTOCOL (H-EXP3) & GOVERNANCE -->
+  <!-- ======================================================== -->
+  <div class="page">
+    <div>
+      <div class="header">
+        <div class="header-title-box">
+          <h1>Rumble OS • Clinical Hydrotherapy</h1>
+          <p>Poolside Laminated Reference • Sheet 5: Master Hydro Athlete Protocol & Clinical Governance</p>
+        </div>
+        <div class="header-badge" style="background:#7c3aed;">Sheet 5 of 5 • Master Protocol</div>
+      </div>
+
+      <!-- H-EXP3 -->
+      <div class="routine-card purple">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="routine-id purple">H-EXP3</span>
+            <span class="routine-title">Master Hydro Athlete Rehabilitation Protocol</span>
+          </div>
+          <span class="routine-meta">90 MIN • EXPERT / MAXIMUM RESISTANCE</span>
+        </div>
+        <div class="meta-tags">
+          <span class="meta-tag"><strong>Equipment:</strong> Full Hydro Resistance Kit (Heavy bands, Hydro paddles, Flotation belt, Noodles, Rail)</span>
+          <span class="meta-tag"><strong>Target:</strong> Complete athletic performance overhaul bypassing all land gravity limitations</span>
+        </div>
+        <div class="steps-grid">
+          <div class="step-box">
+            <div class="step-header"><span>Phase 1: Multi-Speed Gait & Thermal Prep</span><span class="step-time">15m 00s</span></div>
+            <div class="step-cue">Progressive speed water walking (slow &rarr; moderate &rarr; fast athletic stride). Submerged shoulder sculling and scapular retractions. Active ankle dorsiflexion against water drag.</div>
+          </div>
+          <div class="step-box">
+            <div class="step-header"><span>Phase 2: Heavy Band Upper Kinetic Chain</span><span class="step-time">20m 00s</span></div>
+            <div class="step-cue">Rail-anchored Low Rows (3x12) &bull; Heavy W-Rows (3x10) &bull; External/Internal shoulder rotation complexes with band (3x10/arm, keeping right arm low) &bull; Scapular protraction/retraction holds (3x12).</div>
+          </div>
+          <div class="step-box">
+            <div class="step-header"><span>Phase 3: Lower Kinetic Chain & Pelvic Power</span><span class="step-time">20m 00s</span></div>
+            <div class="step-cue">Heavy banded rail squats with 3s isometric pause at 45° (4x10) &bull; Banded submerged knee extensions for quadriceps hypertrophy (4x12/leg) &bull; Banded lateral walk-outs and glute kickbacks (4x12/leg).</div>
+          </div>
+          <div class="step-box">
+            <div class="step-header"><span>Phase 4: Deep Water Aquatic Core Crucible</span><span class="step-time">18m 00s</span></div>
+            <div class="step-cue">Suspended scissor kicks against water resistance (4x45s) &bull; Submerged kickboard presses into water column (4x12) &bull; Deep water high-knees interval sprints (flotation belt on): 5 rounds of 1 min on / 1 min off.</div>
+          </div>
+          <div class="step-box">
+            <div class="step-header"><span>Phase 5: Neuromuscular Gait Balance</span><span class="step-time">10m 00s</span></div>
+            <div class="step-cue">Single-leg balance holds in chest-deep water (holding rail as needed) (2m/leg) &bull; Heel-to-toe tightrope water walking with contralateral arm sweeps (6m). Retrains proprioception without fall injury risk.</div>
+          </div>
+          <div class="step-box">
+            <div class="step-header"><span>Phase 6: Passive Decompression & Surrender</span><span class="step-time">7m 00s</span></div>
+            <div class="step-cue">Noodle-supported vertical spinal traction. Supine float with deep diaphragmatic parasympathetic breathwork. Complete systemic downregulation and mental integration.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Visual Form Strip: Sheet 5 (4-column athlete matrix) -->
+      <div class="visual-strip">
+        <div class="visual-strip-header">
+          <span class="visual-strip-title">Master Athlete 4-Phase Progression Infographics</span>
+          <span class="visual-strip-sub">Upper Chain • Lower Power • Core Crucible • Gait Balance</span>
+        </div>
+        <div class="visual-grid cols-4">
+          <div class="visual-item">
+            <img class="visual-img" src="file:///Users/thunderopsai/Documents/Workspace/01_Projects/personal-agents/clinical_exercise_library/images/phase2-heavy-band-upper-body.png" alt="Phase 2 Upper Body">
+            <div class="visual-caption">Phase 2: Upper Chain</div>
+            <div class="visual-subtext">Heavy Rail Rows & Rotations</div>
+          </div>
+          <div class="visual-item">
+            <img class="visual-img" src="file:///Users/thunderopsai/Documents/Workspace/01_Projects/personal-agents/clinical_exercise_library/images/phase3-lower-kinetic-pelvic-power.png" alt="Phase 3 Lower Power">
+            <div class="visual-caption">Phase 3: Lower Power</div>
+            <div class="visual-subtext">Banded 45° Squats & Kicks</div>
+          </div>
+          <div class="visual-item">
+            <img class="visual-img" src="file:///Users/thunderopsai/Documents/Workspace/01_Projects/personal-agents/clinical_exercise_library/images/phase4-deep-water-core-crucible.png" alt="Phase 4 Core Crucible">
+            <div class="visual-caption">Phase 4: Core Crucible</div>
+            <div class="visual-subtext">Deep Water Sprints & Scissor Kicks</div>
+          </div>
+          <div class="visual-item">
+            <img class="visual-img" src="file:///Users/thunderopsai/Documents/Workspace/01_Projects/personal-agents/clinical_exercise_library/images/phase5-neuromuscular-gait-retraining.png" alt="Phase 5 Gait Balance">
+            <div class="visual-caption">Phase 5: Balance & Gait</div>
+            <div class="visual-subtext">Proprioception & Tightrope Stride</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Clinical Governance & Safety Matrix -->
+      <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:5px; padding:5px 8px; margin-top:2px;">
+        <strong style="color:#0f172a; font-size:9.5px; text-transform:uppercase; display:block; margin-bottom:2px;">
+          Poolside Safety Rules & Biomechanical Restrictions
+        </strong>
+        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:6px; font-size:7.5px; line-height:1.25;">
+          <div style="background:#ffffff; border:1px solid #e2e8f0; padding:4px 6px; border-radius:3px;">
+            <strong style="color:#0284c7; display:block; margin-bottom:1px;">1. Cervical Neutrality</strong>
+            C4–C7 anterior fusion hardware requires zero cervical flexion or extension during exertion. Never thrust chin forward against water resistance. Keep gaze locked forward on the horizon.
+          </div>
+          <div style="background:#ffffff; border:1px solid #e2e8f0; padding:4px 6px; border-radius:3px;">
+            <strong style="color:#0d9488; display:block; margin-bottom:1px;">2. Shoulder Protection</strong>
+            Right shoulder exercises must remain below 80° abduction/flexion. Zero overhead presses or wide flyes. Keep elbows tucked low near ribcage during all pulling and pushing movements.
+          </div>
+          <div style="background:#ffffff; border:1px solid #e2e8f0; padding:4px 6px; border-radius:3px;">
+            <strong style="color:#d97706; display:block; margin-bottom:1px;">3. Knee Joint Care</strong>
+            Left knee meniscal preservation: max 45° knee flexion during squats and marches. Avoid sudden pivoting or twisting on a planted foot. Smooth fluid transitions only.
+          </div>
+        </div>
+      </div>
+
+      <!-- Emergency Red Flags -->
+      <div style="background:#fef2f2; border:1px solid #fecaca; border-left:3px solid #ef4444; padding:4px 8px; border-radius:3px; margin-top:3px; font-size:7.5px;">
+        <strong style="color:#b91c1c;">EMERGENCY STOP & EXIT CRITERIA:</strong>
+        Stop session immediately and safely exit pool if you experience: (1) Sudden electric or shooting pain down either arm or leg; (2) Dizziness, lightheadedness, or overheating from pool warmth; (3) Chest tightness or shortness of breath; (4) Numbness in hands or feet. Hydrate with electrolytes post-pool.
+      </div>
+    </div>
+
+    <div>
+      <div class="disclaimer-box">
+        <strong>MANDATORY MEDICAL DISCLAIMER:</strong> This hydrotherapy compilation is synthesized for personal physical therapy execution and decision support under clinical guidance. It is not an independent medical diagnosis. Consult your neurosurgeon and physiotherapist before advancing resistance levels.
+      </div>
+      <div class="footer">
+        <span>Rumble OS • Rehabilitation Protocols Library • 2026 Edition</span>
+        <span>Laminated Poolside Card #5</span>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

@@ -20,7 +20,8 @@ medical/records/Rehab_Protocols_Library/
 ├── 03_YOGA_ROUTINES_20_TO_60_MIN.md                     <-- Medium & Expert neutral spine floor routines
 ├── 04_BEGINNER_MINDFUL_FLOWS_YOGA_AND_TAI_CHI.md        <-- 10–30 min beginner flows & Tai Chi
 ├── 05_MOVEHEALTH_AND_PHYSIO_INTEGRATED_ROUTINES.md      <-- Movehealth+ app routines (shoulder band, 4-point, neck)
-└── 06_SYSTEM_REHAB_AND_EXERCISE_DATABASE_CATALOG.md     <-- Catalog of all 40 core system routines (y1-y10, p1-p10, s1-s10, r1-r6, h1-h4)
+├── 06_SYSTEM_REHAB_AND_EXERCISE_DATABASE_CATALOG.md     <-- Catalog of all 40 core system routines (y1-y10, p1-p10, s1-s10, r1-r6, h1-h4)
+└── 07_COMPILED_HYDROTHERAPY_ROUTINES_A4_PRINT.md        <-- Complete 5-Page A4 Laminated Print Edition & PDF Guide
 ```
 
 ---
