@@ -3302,8 +3302,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-});
-
     // Initial render of pain modal
     renderPainModal();
 
