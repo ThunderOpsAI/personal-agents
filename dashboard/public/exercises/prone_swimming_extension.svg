@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 240" width="500" height="240">
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="1" stdDeviation="1.5" flood-color="#000000" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+  <!-- Card Background -->
+  <rect width="500" height="240" fill="#0f172a" rx="8" stroke="#334155" stroke-width="1.5"/>
+  <line x1="250" y1="12" x2="250" y2="228" stroke="#1e293b" stroke-width="2" stroke-dasharray="4,4"/>
+  <text x="24" y="26" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="700" fill="#94a3b8" letter-spacing="1">SETUP</text>
+  <text x="274" y="26" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="700" fill="#00e5ff" letter-spacing="1">ACTIVE MOVEMENT</text>
+  
+  <!-- Title Badge -->
+  <rect x="24" y="38" width="210" height="22" rx="4" fill="rgba(14, 165, 233, 0.15)"/>
+  <text x="32" y="53" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10" font-weight="600" fill="#38bdf8">PRONE SWIMMING EXTENSION</text>
+  
+  <!-- Left Panel: Prone Neutral Alignment -->
+  <line x1="35" y1="172" x2="215" y2="172" stroke="#64748b" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="95" cy="158" r="8" fill="#f8fafc"/>
+  <line x1="52" y1="164" x2="90" y2="162" stroke="#f8fafc" stroke-width="4" stroke-linecap="round"/>
+  <line x1="103" y1="162" x2="152" y2="162" stroke="#f8fafc" stroke-width="5" stroke-linecap="round"/>
+  <line x1="152" y1="162" x2="202" y2="164" stroke="#f8fafc" stroke-width="5" stroke-linecap="round"/>
+  <text x="125" y="215" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" fill="#94a3b8" text-anchor="middle">Prone on mat, forehead resting, pubic bone anchored</text>
+
+  <!-- Right Panel: Alternating Contralateral Lift -->
+  <line x1="285" y1="172" x2="465" y2="172" stroke="#64748b" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="345" cy="152" r="8" fill="#00e5ff"/>
+  <!-- Lifted arm -->
+  <line x1="300" y1="142" x2="340" y2="156" stroke="#00e5ff" stroke-width="4" stroke-linecap="round"/>
+  <!-- Grounded arm -->
+  <line x1="304" y1="166" x2="340" y2="162" stroke="#64748b" stroke-width="3.5" stroke-linecap="round"/>
+  <line x1="353" y1="158" x2="402" y2="162" stroke="#00e5ff" stroke-width="5" stroke-linecap="round"/>
+  <!-- Lifted contralateral leg -->
+  <line x1="402" y1="162" x2="452" y2="144" stroke="#00e5ff" stroke-width="5" stroke-linecap="round"/>
+  <!-- Grounded leg -->
+  <line x1="402" y1="162" x2="452" y2="166" stroke="#64748b" stroke-width="4" stroke-linecap="round"/>
+  <text x="375" y="215" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" fill="#cbd5e1" text-anchor="middle">Reach long and float opposite arm and leg 2 inches</text>
+</svg>

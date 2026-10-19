@@ -261,9 +261,9 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
     precautions: ["Lower limb only as far as you can maintain neutral lower back."],
     contraindications: ["acute abdominal tear"],
     steps: [
-      { title: "Deadbug Level 1 (Arm Reach Only)", duration: 225, cue: "Knees at tabletop (90 deg), reach right arm overhead and return.", frames: ["/hip_mobility_routine.jpg"] },
-      { title: "Deadbug Level 2 (Heel Tap Only)", duration: 225, cue: "Keep arms still, lower right heel to tap floor, return.", frames: ["/hip_mobility_routine.jpg"] },
-      { title: "Deadbug Level 3 (Opposite Arm & Leg)", duration: 225, cue: "Extend opposite arm and leg simultaneously while maintaining rock-solid core.", frames: ["/hip_mobility_routine.jpg"] },
+      { title: "Deadbug Level 1 (Arm Reach Only)", duration: 225, cue: "Knees at tabletop (90 deg), reach right arm overhead and return.", frames: ["/exercises/core_dead_bug.jpg"] },
+      { title: "Deadbug Level 2 (Heel Tap Only)", duration: 225, cue: "Keep arms still, lower right heel to tap floor, return.", frames: ["/exercises/core_dead_bug.jpg"] },
+      { title: "Deadbug Level 3 (Opposite Arm & Leg)", duration: 225, cue: "Extend opposite arm and leg simultaneously while maintaining rock-solid core.", frames: ["/exercises/core_dead_bug.jpg"] },
       { title: "Knees to Chest Neutral Reset", duration: 225, cue: "Soft hold, resting hip flexors.", frames: ["/exercises/knee_to_chest_stretch.jpg"] }
     ]
   },
@@ -280,9 +280,9 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
     precautions: ["Do not lift leg above hip level to avoid lumbar extension arching."],
     contraindications: ["severe wrist arthritis (use fists or forearms)"],
     steps: [
-      { title: "Quadruped Neutral Alignment", duration: 225, cue: "Hands under shoulders, knees under hips, neck in neutral line.", frames: ["/exercises/cervical_neck_mobility.jpg"] },
-      { title: "Bird-Dog Reach (Right Arm, Left Leg)", duration: 225, cue: "Reach straight out, thumb up, heel pushed back. Hold 6 seconds.", frames: ["/exercises/thoracic_spine_mobility.jpg"] },
-      { title: "Bird-Dog Reach (Left Arm, Right Leg)", duration: 225, cue: "Keep pelvis level like balancing a cup of water on lower back.", frames: ["/exercises/thoracic_spine_mobility.jpg"] },
+      { title: "Quadruped Neutral Alignment", duration: 225, cue: "Hands under shoulders, knees under hips, neck in neutral line.", frames: ["/exercises/core_bird_dog.jpg"] },
+      { title: "Bird-Dog Reach (Right Arm, Left Leg)", duration: 225, cue: "Reach straight out, thumb up, heel pushed back. Hold 6 seconds.", frames: ["/exercises/core_bird_dog.jpg"] },
+      { title: "Bird-Dog Reach (Left Arm, Right Leg)", duration: 225, cue: "Keep pelvis level like balancing a cup of water on lower back.", frames: ["/exercises/core_bird_dog.jpg"] },
       { title: "Child's Pose Decompression", duration: 225, cue: "Sink hips back, lengthening spinal erectors.", frames: ["/exercises/supported_childs_pose.jpg"] }
     ]
   },
@@ -299,10 +299,10 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
     precautions: ["Do not roll top hip backwards; keep hips stacked perpendicularly."],
     contraindications: ["acute trochanteric bursitis"],
     steps: [
-      { title: "Clamshell Level 1 (Right Side)", duration: 225, cue: "Heels together, open top knee like a clamshell, squeeze outer glute.", frames: ["/hip_mobility_routine.jpg"] },
-      { title: "Side-Lying Leg Lift (Right Side)", duration: 225, cue: "Straighten top leg, lift 6 inches with slight internal rotation.", frames: ["/exercises/thoracic_spine_mobility.jpg"] },
-      { title: "Clamshell Level 1 (Left Side)", duration: 225, cue: "Switch sides. Keep core engaged and hips stacked.", frames: ["/hip_mobility_routine.jpg"] },
-      { title: "Side-Lying Leg Lift (Left Side)", duration: 225, cue: "Lift top leg with control, avoiding hip rotation.", frames: ["/exercises/thoracic_spine_mobility.jpg"] }
+      { title: "Clamshell Level 1 (Right Side)", duration: 225, cue: "Heels together, open top knee like a clamshell, squeeze outer glute.", frames: ["/exercises/side_lying_clamshell.svg"] },
+      { title: "Side-Lying Leg Lift (Right Side)", duration: 225, cue: "Straighten top leg, lift 6 inches with slight internal rotation.", frames: ["/exercises/side_lying_clamshell.svg"] },
+      { title: "Clamshell Level 1 (Left Side)", duration: 225, cue: "Switch sides. Keep core engaged and hips stacked.", frames: ["/exercises/side_lying_clamshell.svg"] },
+      { title: "Side-Lying Leg Lift (Left Side)", duration: 225, cue: "Lift top leg with control, avoiding hip rotation.", frames: ["/exercises/side_lying_clamshell.svg"] }
     ]
   },
   {
@@ -318,10 +318,10 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
     precautions: ["Drive through heels and squeeze glutes; avoid arching lower back at peak."],
     contraindications: [],
     steps: [
-      { title: "Basic Glute Bridge (Feet Flat)", duration: 225, cue: "Exhale lift hips until straight line from knees to shoulders, hold 3s.", frames: ["/hip_mobility_routine.jpg"] },
-      { title: "Bridge with Pelvic Squeeze", duration: 225, cue: "Place small ball/block between knees, squeeze gently while bridging.", frames: ["/exercises/supine_pelvic_tilts.jpg"] },
-      { title: "Single Leg Bridge Marching", duration: 225, cue: "Hold bridge, lift right foot 1 inch off floor without dipping pelvis. Repeat left.", frames: ["/exercises/cervical_neck_mobility.jpg"] },
-      { title: "Spine Articulation Roll Down", duration: 225, cue: "Lower spine down bone by bone, finishing in neutral.", frames: ["/hip_mobility_routine.jpg"] }
+      { title: "Basic Glute Bridge (Feet Flat)", duration: 225, cue: "Exhale lift hips until straight line from knees to shoulders, hold 3s.", frames: ["/exercises/hip_glute_bridge.jpg"] },
+      { title: "Bridge with Pelvic Squeeze", duration: 225, cue: "Place small ball/block between knees, squeeze gently while bridging.", frames: ["/exercises/glute-bridges.svg"] },
+      { title: "Single Leg Bridge Marching", duration: 225, cue: "Hold bridge, lift right foot 1 inch off floor without dipping pelvis. Repeat left.", frames: ["/exercises/hip_glute_bridge.jpg"] },
+      { title: "Spine Articulation Roll Down", duration: 225, cue: "Lower spine down bone by bone, finishing in neutral.", frames: ["/exercises/glute-bridges.svg"] }
     ]
   },
   {
@@ -337,10 +337,10 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
     precautions: ["Head stays grounded if cervical fusion/strain is present."],
     contraindications: ["neck pain with head elevation"],
     steps: [
-      { title: "Arm Pump Preparation", duration: 150, cue: "Arms long by side, legs in tabletop, head resting comfortably.", frames: ["/shoulder_rehab_routine.jpg"] },
-      { title: "The Hundred: Set 1-50", duration: 150, cue: "Inhale 5 arm pumps, exhale 5 arm pumps with abdominal brace.", frames: ["/shoulder_rehab_routine.jpg"] },
-      { title: "The Hundred: Set 51-100", duration: 150, cue: "Maintain steady rhythmic breathing and flat lower abdomen.", frames: ["/exercises/restorative_savasana.jpg"] },
-      { title: "Full Body Stretch Release", duration: 150, cue: "Extend arms and legs long, releasing abdominal wall.", frames: ["/shoulder_rehab_routine.jpg"] }
+      { title: "Arm Pump Preparation", duration: 150, cue: "Arms long by side, legs in tabletop, head resting comfortably.", frames: ["/exercises/pilates_hundred_neutral.svg"] },
+      { title: "The Hundred: Set 1-50", duration: 150, cue: "Inhale 5 arm pumps, exhale 5 arm pumps with abdominal brace.", frames: ["/exercises/pilates_hundred_neutral.svg"] },
+      { title: "The Hundred: Set 51-100", duration: 150, cue: "Maintain steady rhythmic breathing and flat lower abdomen.", frames: ["/exercises/pilates_hundred_neutral.svg"] },
+      { title: "Full Body Stretch Release", duration: 150, cue: "Extend arms and legs long, releasing abdominal wall.", frames: ["/exercises/restorative_savasana.jpg"] }
     ]
   },
   {
@@ -356,10 +356,10 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
     precautions: ["Rotation comes purely from ribs/chest, not twisting lower back."],
     contraindications: ["osteoporotic vertebral compression fracture"],
     steps: [
-      { title: "Seated Spine Twist with Ball", duration: 225, cue: "Sit upright, hug ball to chest, exhale rotate ribs 20 degrees right, then left.", frames: ["/exercises/thoracic_spine_mobility.jpg"] },
-      { title: "Side-Lying Pinwheel Arm Flow", duration: 225, cue: "Circle top arm overhead opening chest to ceiling, follow with eyes.", frames: ["/exercises/thoracic_spine_mobility.jpg"] },
-      { title: "Opposite Side Pinwheel", duration: 225, cue: "Switch sides. Feel opening through anterior shoulder and ribcage.", frames: ["/exercises/thoracic_spine_mobility.jpg"] },
-      { title: "Restorative Prone Breath", duration: 225, cue: "Feel posterior ribcage expand with every inhalation.", frames: ["/exercises/thoracic_spine_mobility.jpg"] }
+      { title: "Seated Spine Twist with Ball", duration: 225, cue: "Sit upright, hug ball to chest, exhale rotate ribs 20 degrees right, then left.", frames: ["/exercises/thoracic_supine_twist.jpg"] },
+      { title: "Side-Lying Pinwheel Arm Flow", duration: 225, cue: "Circle top arm overhead opening chest to ceiling, follow with eyes.", frames: ["/exercises/open-book-thoracic.svg"] },
+      { title: "Opposite Side Pinwheel", duration: 225, cue: "Switch sides. Feel opening through anterior shoulder and ribcage.", frames: ["/exercises/open-book-thoracic.svg"] },
+      { title: "Restorative Prone Breath", duration: 225, cue: "Feel posterior ribcage expand with every inhalation.", frames: ["/exercises/constructive-rest.svg"] }
     ]
   },
   {
@@ -375,9 +375,9 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
     precautions: ["Keep head down if experiencing neck fatigue."],
     contraindications: [],
     steps: [
-      { title: "Single Leg Stretch (Head Down)", duration: 225, cue: "Hug right knee, extend left leg at 45 deg angle, switch rhythmically.", frames: ["/exercises/knee_to_chest_stretch.jpg"] },
-      { title: "Double Leg Tap Adaptation", duration: 225, cue: "Both knees bent, tap toes to mat and return with locked core.", frames: ["/hip_mobility_routine.jpg"] },
-      { title: "Single Leg Stretch Set 2", duration: 225, cue: "Focus on smooth breathing and rock-steady pelvis.", frames: ["/exercises/restorative_savasana.jpg"] },
+      { title: "Single Leg Stretch (Head Down)", duration: 225, cue: "Hug right knee, extend left leg at 45 deg angle, switch rhythmically.", frames: ["/exercises/supine-single-knee-to-chest.svg"] },
+      { title: "Double Leg Tap Adaptation", duration: 225, cue: "Both knees bent, tap toes to mat and return with locked core.", frames: ["/exercises/core_dead_bug.jpg"] },
+      { title: "Single Leg Stretch Set 2", duration: 225, cue: "Focus on smooth breathing and rock-steady pelvis.", frames: ["/exercises/supine-single-knee-to-chest.svg"] },
       { title: "Knees to Chest Reset", duration: 225, cue: "Gentle rocking side to side.", frames: ["/exercises/knee_to_chest_stretch.jpg"] }
     ]
   },
@@ -395,9 +395,9 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
     contraindications: ["acute cervical disc issues"],
     steps: [
       { title: "Pelvic Curl Preparation", duration: 225, cue: "Tuck pelvis, lift only sacrum off mat, and roll back down.", frames: ["/exercises/supine_pelvic_tilts.jpg"] },
-      { title: "Full Segmental Bridge Roll", duration: 225, cue: "Peel spine up vertebra by vertebra to upper thoracic, hold and roll down.", frames: ["/exercises/thoracic_spine_mobility.jpg"] },
-      { title: "Bridge with Arm Reaches", duration: 225, cue: "At top of bridge, float arms back overhead, then roll spine down.", frames: ["/hip_mobility_routine.jpg"] },
-      { title: "Supine Rest", duration: 225, cue: "Neutral spine alignment rest.", frames: ["/hip_mobility_routine.jpg"] }
+      { title: "Full Segmental Bridge Roll", duration: 225, cue: "Peel spine up vertebra by vertebra to upper thoracic, hold and roll down.", frames: ["/exercises/hip_glute_bridge.jpg"] },
+      { title: "Bridge with Arm Reaches", duration: 225, cue: "At top of bridge, float arms back overhead, then roll spine down.", frames: ["/exercises/glute-bridges.svg"] },
+      { title: "Supine Rest", duration: 225, cue: "Neutral spine alignment rest.", frames: ["/exercises/constructive-rest.svg"] }
     ]
   },
   {
@@ -413,10 +413,10 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
     precautions: ["Place small pillow under lower abdomen/pelvis to prevent hyperextension."],
     contraindications: ["acute facet joint arthropathy with extension pain"],
     steps: [
-      { title: "Prone Arm Float Only", duration: 225, cue: "Lie prone, pillow under belly, float right arm 1 inch, then left.", frames: ["/hip_mobility_routine.jpg"] },
-      { title: "Prone Leg Float Only", duration: 225, cue: "Squeeze glute, float straight leg 1 inch, then opposite.", frames: ["/hip_mobility_routine.jpg"] },
-      { title: "Slow Swimming Flutter", duration: 225, cue: "Alternate opposite arm and leg fluttering rhythmically.", frames: ["/exercises/knee_to_chest_stretch.jpg"] },
-      { title: "Prone Relaxation & Breath", duration: 225, cue: "Turn head to side, relax glutes and back completely.", frames: ["/hip_mobility_routine.jpg"] }
+      { title: "Prone Arm Float Only", duration: 225, cue: "Lie prone, pillow under belly, float right arm 1 inch, then left.", frames: ["/exercises/prone_swimming_extension.svg"] },
+      { title: "Prone Leg Float Only", duration: 225, cue: "Squeeze glute, float straight leg 1 inch, then opposite.", frames: ["/exercises/prone_swimming_extension.svg"] },
+      { title: "Slow Swimming Flutter", duration: 225, cue: "Alternate opposite arm and leg fluttering rhythmically.", frames: ["/exercises/prone_swimming_extension.svg"] },
+      { title: "Prone Relaxation & Breath", duration: 225, cue: "Turn head to side, relax glutes and back completely.", frames: ["/exercises/supported-sphinx-micro-lifts.svg"] }
     ]
   },
 
@@ -436,10 +436,10 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
     precautions: ["Stop if numbness or tingling shoots down the leg."],
     contraindications: [],
     steps: [
-      { title: "Supine Figure-4 (Right)", duration: 180, cue: "Cross right ankle over left thigh, reach through and draw left leg in.", frames: ["/hip_mobility_routine.jpg"] },
-      { title: "Supine Figure-4 (Left)", duration: 180, cue: "Repeat on left side, keeping shoulders and neck relaxed.", frames: ["/exercises/cervical_neck_mobility.jpg"] },
-      { title: "Seated Chair Glute Stretch", duration: 180, cue: "Sit tall, cross ankle on knee, hinge forward from hips with flat back.", frames: ["/hip_mobility_routine.jpg"] },
-      { title: "Restorative Hip Shakes", duration: 180, cue: "Gently shake legs to release residual muscle tone.", frames: ["/hip_mobility_routine.jpg"] }
+      { title: "Supine Figure-4 (Right)", duration: 180, cue: "Cross right ankle over left thigh, reach through and draw left leg in.", frames: ["/exercises/hip_figure_four.jpg"] },
+      { title: "Supine Figure-4 (Left)", duration: 180, cue: "Repeat on left side, keeping shoulders and neck relaxed.", frames: ["/exercises/supine-figure-four-strap.svg"] },
+      { title: "Seated Chair Glute Stretch", duration: 180, cue: "Sit tall, cross ankle on knee, hinge forward from hips with flat back.", frames: ["/exercises/chair_seated_figure_four.svg"] },
+      { title: "Restorative Hip Shakes", duration: 180, cue: "Gently shake legs to release residual muscle tone.", frames: ["/exercises/constructive-rest.svg"] }
     ]
   },
   {
@@ -455,10 +455,10 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
     precautions: ["Never pull hard on head; use gentle weight of hand only."],
     contraindications: ["cervical radiculopathy flare-up"],
     steps: [
-      { title: "Scalene Anterior Stretch", duration: 150, cue: "Tilt head right, rotate chin 15 deg upward, feel stretch in front-left neck.", frames: ["/exercises/cervical_neck_mobility.jpg"] },
-      { title: "Levator Scapulae 'Nose to Armpit'", duration: 150, cue: "Turn head 45 deg right, gently drop chin towards right armpit.", frames: ["/exercises/cervical_neck_mobility.jpg"] },
-      { title: "Opposite Side Scalene & Levator", duration: 150, cue: "Repeat carefully on opposite side with relaxed shoulders.", frames: ["/exercises/cervical_neck_mobility.jpg"] },
-      { title: "Suboccipital Nod Release", duration: 150, cue: "Tiny nodding motions like saying 'yes' without flexing lower neck.", frames: ["/exercises/cervical_neck_mobility.jpg"] }
+      { title: "Scalene Anterior Stretch", duration: 150, cue: "Tilt head right, rotate chin 15 deg upward, feel stretch in front-left neck.", frames: ["/exercises/cervical_lateral_ear_shoulder.jpg"] },
+      { title: "Levator Scapulae 'Nose to Armpit'", duration: 150, cue: "Turn head 45 deg right, gently drop chin towards right armpit.", frames: ["/exercises/chair_upper_trapezius_drop.svg"] },
+      { title: "Opposite Side Scalene & Levator", duration: 150, cue: "Repeat carefully on opposite side with relaxed shoulders.", frames: ["/exercises/cervical_lateral_ear_shoulder.jpg"] },
+      { title: "Suboccipital Nod Release", duration: 150, cue: "Tiny nodding motions like saying 'yes' without flexing lower neck.", frames: ["/exercises/cervical_chin_tuck.jpg"] }
     ]
   },
   {
@@ -474,10 +474,10 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
     precautions: ["Other leg extends through doorframe flat on the floor."],
     contraindications: [],
     steps: [
-      { title: "Doorframe Stretch (Right Leg)", duration: 225, cue: "Right leg up doorframe, left leg flat on floor through doorway. Breathe deeply.", frames: ["/lumbar_core_routine.jpg"] },
-      { title: "Doorframe Stretch (Left Leg)", duration: 225, cue: "Switch sides. Relax hips and sacrum flat against mat.", frames: ["/exercises/supine_pelvic_tilts.jpg"] },
-      { title: "Ankle Pumps in Stretch", duration: 225, cue: "Point and flex toes gently while elevated to floss sciatic pathway.", frames: ["/exercises/knee_to_chest_stretch.jpg"] },
-      { title: "Supine Rest", duration: 225, cue: "Both legs down, resting pelvis in neutral.", frames: ["/lumbar_core_routine.jpg"] }
+      { title: "Doorframe Stretch (Right Leg)", duration: 225, cue: "Right leg up doorframe, left leg flat on floor through doorway. Breathe deeply.", frames: ["/exercises/supine-strap-hamstring-calf.svg"] },
+      { title: "Doorframe Stretch (Left Leg)", duration: 225, cue: "Switch sides. Relax hips and sacrum flat against mat.", frames: ["/exercises/supine-strap-hamstring-calf.svg"] },
+      { title: "Ankle Pumps in Stretch", duration: 225, cue: "Point and flex toes gently while elevated to floss sciatic pathway.", frames: ["/exercises/supine-strap-hamstring-calf.svg"] },
+      { title: "Supine Rest", duration: 225, cue: "Both legs down, resting pelvis in neutral.", frames: ["/exercises/restorative_savasana.jpg"] }
     ]
   },
   {
@@ -493,10 +493,10 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
     precautions: ["Knees stay clamped together on floor or pillow to lock lumbar spine."],
     contraindications: [],
     steps: [
-      { title: "Open Book (Right Arm Opening)", duration: 180, cue: "Side-lying on left, sweep right arm open across body, look towards right hand.", frames: ["/exercises/thoracic_spine_mobility.jpg"] },
-      { title: "Open Book Static Hold", duration: 180, cue: "Hold open for 3 deep breaths into right chest wall.", frames: ["/exercises/thoracic_spine_mobility.jpg"] },
-      { title: "Open Book (Left Arm Opening)", duration: 180, cue: "Switch sides. Sweep left arm open, keeping knees glued together.", frames: ["/exercises/thoracic_spine_mobility.jpg"] },
-      { title: "Open Book Static Hold Left", duration: 180, cue: "Deep ribcage breathing.", frames: ["/exercises/restorative_savasana.jpg"] }
+      { title: "Open Book (Right Arm Opening)", duration: 180, cue: "Side-lying on left, sweep right arm open across body, look towards right hand.", frames: ["/exercises/open-book-thoracic.svg"] },
+      { title: "Open Book Static Hold", duration: 180, cue: "Hold open for 3 deep breaths into right chest wall.", frames: ["/exercises/open-book-thoracic.svg"] },
+      { title: "Open Book (Left Arm Opening)", duration: 180, cue: "Switch sides. Sweep left arm open, keeping knees glued together.", frames: ["/exercises/open-book-thoracic.svg"] },
+      { title: "Open Book Static Hold Left", duration: 180, cue: "Deep ribcage breathing.", frames: ["/exercises/open-book-thoracic.svg"] }
     ]
   },
   {
@@ -512,10 +512,10 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
     precautions: ["Keep heel firmly planted on ground; do not let arch collapse."],
     contraindications: ["acute Achilles tendon rupture"],
     steps: [
-      { title: "Straight-Leg Gastrocnemius (Right)", duration: 150, cue: "Hands on wall, step right leg back straight, press heel down.", frames: ["/lumbar_core_routine.jpg"] },
-      { title: "Bent-Knee Soleus (Right)", duration: 150, cue: "Bend back right knee slightly, shifting stretch deeper towards Achilles.", frames: ["/lumbar_core_routine.jpg"] },
-      { title: "Straight-Leg Gastrocnemius (Left)", duration: 150, cue: "Switch legs. Step left leg back straight, heel grounded.", frames: ["/lumbar_core_routine.jpg"] },
-      { title: "Bent-Knee Soleus (Left)", duration: 150, cue: "Bend left knee slightly, keeping heel pinned down.", frames: ["/lumbar_core_routine.jpg"] }
+      { title: "Straight-Leg Gastrocnemius (Right)", duration: 150, cue: "Hands on wall, step right leg back straight, press heel down.", frames: ["/exercises/wall_calf_gastrocnemius.svg"] },
+      { title: "Bent-Knee Soleus (Right)", duration: 150, cue: "Bend back right knee slightly, shifting stretch deeper towards Achilles.", frames: ["/exercises/wall_calf_soleus.svg"] },
+      { title: "Straight-Leg Gastrocnemius (Left)", duration: 150, cue: "Switch legs. Step left leg back straight, heel grounded.", frames: ["/exercises/wall_calf_gastrocnemius.svg"] },
+      { title: "Bent-Knee Soleus (Left)", duration: 150, cue: "Bend left knee slightly, keeping heel pinned down.", frames: ["/exercises/wall_calf_soleus.svg"] }
     ]
   },
   {
@@ -531,10 +531,10 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
     precautions: ["Tuck pelvis under to engage glute; avoid arching lower back."],
     contraindications: ["acute patellofemoral pain flare-up"],
     steps: [
-      { title: "Side-Lying Quad Stretch (Right)", duration: 180, cue: "Lie on left side, hold right ankle, gently draw heel toward glute.", frames: ["/hip_mobility_routine.jpg"] },
-      { title: "Side-Lying Quad Stretch (Left)", duration: 180, cue: "Switch sides, keeping knees aligned and hips stacked.", frames: ["/hip_mobility_routine.jpg"] },
-      { title: "Prone Quad Stretch with Towel", duration: 180, cue: "Lie prone, loop towel around ankle if reaching is difficult.", frames: ["/exercises/cervical_neck_mobility.jpg"] },
-      { title: "Prone Hip Rocking Reset", duration: 180, cue: "Gently rock hips side to side to release hip flexors.", frames: ["/hip_mobility_routine.jpg"] }
+      { title: "Side-Lying Quad Stretch (Right)", duration: 180, cue: "Lie on left side, hold right ankle, gently draw heel toward glute.", frames: ["/exercises/side_lying_quad_stretch.svg"] },
+      { title: "Side-Lying Quad Stretch (Left)", duration: 180, cue: "Switch sides, keeping knees aligned and hips stacked.", frames: ["/exercises/side_lying_quad_stretch.svg"] },
+      { title: "Prone Quad Stretch with Towel", duration: 180, cue: "Lie prone, loop towel around ankle if reaching is difficult.", frames: ["/exercises/side_lying_quad_stretch.svg"] },
+      { title: "Prone Hip Rocking Reset", duration: 180, cue: "Gently rock hips side to side to release hip flexors.", frames: ["/exercises/hip_kneeling_lunge.jpg"] }
     ]
   },
   {
@@ -552,8 +552,8 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
     steps: [
       { title: "Side-Reaching Child's Pose (Right)", duration: 180, cue: "In child's pose, walk both hands to the left, feel stretch down right lat.", frames: ["/exercises/supported_childs_pose.jpg"] },
       { title: "Side-Reaching Child's Pose (Left)", duration: 180, cue: "Walk hands to the right, feel deep stretch through left ribcage and lat.", frames: ["/exercises/supported_childs_pose.jpg"] },
-      { title: "Doorframe Lat Hang", duration: 180, cue: "Hold doorframe at shoulder height, sink hips back and away gently.", frames: ["/hip_mobility_routine.jpg"] },
-      { title: "Restorative Center Breath", duration: 180, cue: "Breathe into lateral ribcage.", frames: ["/lumbar_core_routine.jpg"] }
+      { title: "Doorframe Lat Hang", duration: 180, cue: "Hold doorframe at shoulder height, sink hips back and away gently.", frames: ["/exercises/doorframe_lat_stretch.svg"] },
+      { title: "Restorative Center Breath", duration: 180, cue: "Breathe into lateral ribcage.", frames: ["/exercises/diaphragmatic-breathing.svg"] }
     ]
   },
   {
@@ -569,10 +569,10 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
     precautions: ["Never force through sharp wrist or hand pain."],
     contraindications: [],
     steps: [
-      { title: "Wrist Flexor Stretch", duration: 150, cue: "Arm straight, palm facing out fingers down, gently draw fingers back.", frames: ["/shoulder_rehab_routine.jpg"] },
-      { title: "Wrist Extensor Stretch", duration: 150, cue: "Palm facing in, gently press back of hand down and toward body.", frames: ["/shoulder_rehab_routine.jpg"] },
-      { title: "Median Nerve Gliding Flow", duration: 150, cue: "Extend arm out to side, extend wrist, tilt head away, then return.", frames: ["/shoulder_rehab_routine.jpg"] },
-      { title: "Wrist Circles & Finger Shakes", duration: 150, cue: "Gentle rolling circles and shaking out hands.", frames: ["/shoulder_rehab_routine.jpg"] }
+      { title: "Wrist Flexor Stretch", duration: 150, cue: "Arm straight, palm facing out fingers down, gently draw fingers back.", frames: ["/exercises/wrist_nerve_floss.svg"] },
+      { title: "Wrist Extensor Stretch", duration: 150, cue: "Palm facing in, gently press back of hand down and toward body.", frames: ["/exercises/wrist_nerve_floss.svg"] },
+      { title: "Median Nerve Gliding Flow", duration: 150, cue: "Extend arm out to side, extend wrist, tilt head away, then return.", frames: ["/exercises/wrist_nerve_floss.svg"] },
+      { title: "Wrist Circles & Finger Shakes", duration: 150, cue: "Gentle rolling circles and shaking out hands.", frames: ["/exercises/wrist_nerve_floss.svg"] }
     ]
   },
   {
@@ -588,10 +588,10 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
     precautions: ["Keep forearm flat against doorframe; do not twist shoulder joint."],
     contraindications: ["anterior shoulder instability"],
     steps: [
-      { title: "90-Degree Doorway Stretch (Right)", duration: 150, cue: "Elbow at 90 deg on doorframe, step right foot through doorway gently.", frames: ["/exercises/thoracic_spine_mobility.jpg"] },
-      { title: "120-Degree High Doorway Stretch (Right)", duration: 150, cue: "Elbow slightly higher to target lower pec fibers.", frames: ["/exercises/thoracic_spine_mobility.jpg"] },
-      { title: "Doorway Stretch (Left Side)", duration: 150, cue: "Repeat 90 and 120 degree angles on left side with relaxed neck.", frames: ["/exercises/cervical_neck_mobility.jpg"] },
-      { title: "Shoulder Rolls & Posture Reset", duration: 150, cue: "Roll shoulders back and down 5 times.", frames: ["/exercises/thoracic_spine_mobility.jpg"] }
+      { title: "90-Degree Doorway Stretch (Right)", duration: 150, cue: "Elbow at 90 deg on doorframe, step right foot through doorway gently.", frames: ["/exercises/doorway_pec_stretch.svg"] },
+      { title: "120-Degree High Doorway Stretch (Right)", duration: 150, cue: "Elbow slightly higher to target lower pec fibers.", frames: ["/exercises/doorway_pec_stretch.svg"] },
+      { title: "Doorway Stretch (Left Side)", duration: 150, cue: "Repeat 90 and 120 degree angles on left side with relaxed neck.", frames: ["/exercises/doorway_pec_stretch.svg"] },
+      { title: "Shoulder Rolls & Posture Reset", duration: 150, cue: "Roll shoulders back and down 5 times.", frames: ["/exercises/thoracic_cactus_expansion.jpg"] }
     ]
   },
   {
@@ -607,10 +607,10 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
     precautions: ["Do not roll ball aggressively over acute plantar fasciitis pain points."],
     contraindications: [],
     steps: [
-      { title: "Half-Kneeling Ankle Rocking", duration: 150, cue: "Half-kneeling, drive front knee forward over second toe keeping heel flat.", frames: ["/lumbar_core_routine.jpg"] },
-      { title: "Opposite Ankle Rocking", duration: 150, cue: "Switch sides, mobilizing left ankle dorsiflexion.", frames: ["/lumbar_core_routine.jpg"] },
-      { title: "Tennis Ball Foot Roll", duration: 150, cue: "Roll ball along arch of foot for 30s per foot, releasing fascia.", frames: ["/lumbar_core_routine.jpg"] },
-      { title: "Seated Toe Spreading", duration: 150, cue: "Wiggle and spread toes wide to activate intrinsic foot muscles.", frames: ["/lumbar_core_routine.jpg"] }
+      { title: "Half-Kneeling Ankle Rocking", duration: 150, cue: "Half-kneeling, drive front knee forward over second toe keeping heel flat.", frames: ["/exercises/ankle_foot_mobility.svg"] },
+      { title: "Opposite Ankle Rocking", duration: 150, cue: "Switch sides, mobilizing left ankle dorsiflexion.", frames: ["/exercises/ankle_foot_mobility.svg"] },
+      { title: "Tennis Ball Foot Roll", duration: 150, cue: "Roll ball along arch of foot for 30s per foot, releasing fascia.", frames: ["/exercises/ankle_foot_mobility.svg"] },
+      { title: "Seated Toe Spreading", duration: 150, cue: "Wiggle and spread toes wide to activate intrinsic foot muscles.", frames: ["/exercises/ankle_foot_mobility.svg"] }
     ]
   },
 

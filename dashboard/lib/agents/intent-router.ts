@@ -21,7 +21,7 @@ export function exportPainReportToMarkdown(entry: {
       fs.mkdirSync(reportsDir, { recursive: true });
     }
     const reportPath = path.join(reportsDir, 'medical_symptom_report.md');
-    const nowMel = new Date().toLocaleString('en-AU', { timeZone: 'Australia/Melbourne' });
+    const nowMel = (entry.timestamp ? new Date(entry.timestamp) : new Date()).toLocaleString('en-AU', { timeZone: 'Australia/Melbourne' });
     const primaryLoc = entry.locations[0] || { area: 'unspecified', percentage: 100 };
     const locSummary = entry.locations
       .map(l => `${l.side && l.side !== 'unspecified' ? l.side + ' ' : ''}${l.area} (${l.percentage ?? l.weight ?? 0}%)`)

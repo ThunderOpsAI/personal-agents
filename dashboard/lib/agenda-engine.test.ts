@@ -212,9 +212,9 @@ describe('Agenda Engine (dashboard/lib/agenda-engine.ts)', () => {
       const morningDate = new Date('2026-10-18T23:30:00Z');
       const protocols = ensureDailyStandingProtocols([], morningDate);
 
-      // Verify all 5 pain log reminders are generated with Oct 19 date prefix
+      // Verify all 4 pain log reminders are generated with Oct 19 date prefix
       const painReminders = protocols.filter((p) => p.id.startsWith('pain_log_reminder'));
-      expect(painReminders).toHaveLength(5);
+      expect(painReminders).toHaveLength(4);
       painReminders.forEach((reminder) => {
         expect(reminder.id).toContain('2026-10-19');
         expect(reminder.scheduled_time).toContain('2026-10-19');

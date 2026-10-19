@@ -484,6 +484,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const card = document.createElement('div');
                 card.className = `protocol-card glass-panel${isCompleted ? ' completed' : ''}${isDismissed ? ' dismissed' : ''}`;
                 card.id = `protocol-${item.id}`;
+                if (item.scheduled_time) card.setAttribute('data-scheduled-time', item.scheduled_time);
+                if (item.id) card.setAttribute('data-agenda-id', item.id);
                 
                 if (isCompleted) {
                     card.innerHTML = `
@@ -527,7 +529,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <button class="btn btn-neon-blue btn-sm btn-done" data-id="${item.id}" data-type="insight">Approve</button>
                                 <button class="btn btn-outline btn-sm btn-dismiss" data-id="${item.id}" data-type="insight">Reject</button>
                             ` : `
-                                <button class="btn btn-neon-purple btn-sm btn-show-me" data-id="${item.id}" data-type="${item.item_type || ''}">View</button>
+                                <button class="btn btn-neon-purple btn-sm btn-show-me" data-id="${item.id}" data-type="${item.item_type || ''}" data-scheduled-time="${item.scheduled_time || ''}">View</button>
                                 <button class="btn btn-neon-green btn-sm btn-done" data-id="${item.id}" data-type="${item.item_type || ''}">Done</button>
                                 <button class="btn btn-outline btn-sm btn-postpone" data-id="${item.id}" data-type="${item.item_type || ''}">Delay</button>
                                 <button class="btn btn-outline btn-sm btn-dismiss" data-id="${item.id}" data-type="${item.item_type || ''}">Dismiss</button>
@@ -2813,8 +2815,42 @@ document.addEventListener('DOMContentLoaded', () => {
         notesModal.classList.remove('hidden');
     });
 
-    function closePainLog() { painLogModal.classList.add('hidden'); }
+    let activePainLogScheduledTime = null;
+    let activePainLogAgendaId = null;
+
+    function computeRandomOffsetTimestamp(scheduledTimeStr) {
+        if (!scheduledTimeStr) return null;
+        let baseDate = null;
+        const parsed = new Date(scheduledTimeStr);
+        if (!isNaN(parsed.getTime())) {
+            baseDate = parsed;
+        } else {
+            const match = scheduledTimeStr.match(/(\d+):(\d+)\s*(AM|PM)?/i);
+            if (match) {
+                let h = parseInt(match[1]);
+                const m = parseInt(match[2]);
+                const ampm = match[3] ? match[3].toUpperCase() : null;
+                if (ampm === 'PM' && h < 12) h += 12;
+                if (ampm === 'AM' && h === 12) h = 0;
+                baseDate = new Date();
+                baseDate.setHours(h, m, 0, 0);
+            }
+        }
+        if (!baseDate || isNaN(baseDate.getTime())) return null;
+
+        // Random offset between -10 minutes and +10 minutes (-600 to +600 seconds)
+        const offsetSeconds = Math.floor(Math.random() * 1201) - 600;
+        return new Date(baseDate.getTime() + offsetSeconds * 1000).toISOString();
+    }
+
+    function closePainLog() {
+        activePainLogScheduledTime = null;
+        activePainLogAgendaId = null;
+        painLogModal.classList.add('hidden');
+    }
     if (btnOpenPainLog) btnOpenPainLog.addEventListener('click', () => {
+        activePainLogScheduledTime = null;
+        activePainLogAgendaId = null;
         renderPainModal();
         if (typeof recalculateMood === 'function') recalculateMood();
         if (typeof loadTodaysPainLogs === 'function') loadTodaysPainLogs();
@@ -4241,6 +4277,21 @@ document.addEventListener('DOMContentLoaded', () => {
             showBtn.addEventListener('click', () => {
                 const title = card.querySelector('.protocol-info p')?.innerText || id;
                 if (isPainLog()) {
+                    let schedTime = showBtn.getAttribute('data-scheduled-time') || card.getAttribute('data-scheduled-time') || '';
+                    if (!schedTime) {
+                        const h3Text = card.querySelector('.protocol-info h3')?.innerText || '';
+                        const idMatch = id.match(/pain_log_reminder_(\d{2})(\d{2})\d{2}_(\d{4}-\d{2}-\d{2})/);
+                        if (idMatch) {
+                            schedTime = `${idMatch[3]}T${idMatch[1]}:${idMatch[2]}:00+11:00`;
+                        } else if (h3Text) {
+                            schedTime = h3Text.trim();
+                        }
+                    }
+                    activePainLogScheduledTime = schedTime || null;
+                    activePainLogAgendaId = id || card.getAttribute('data-agenda-id') || null;
+                    if (typeof renderPainModal === 'function') renderPainModal();
+                    if (typeof recalculateMood === 'function') recalculateMood();
+                    if (typeof loadTodaysPainLogs === 'function') loadTodaysPainLogs();
                     document.getElementById('painLogModal').classList.remove('hidden');
                 } else if (isExercise()) {
                     const cleanId = id ? id.toLowerCase().trim() : '';
@@ -6980,30 +7031,52 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const userNotes = unifiedNotesInput ? unifiedNotesInput.value.trim() : "";
 
+        let payloadTimestamp = null;
+        if (activePainLogScheduledTime) {
+            payloadTimestamp = computeRandomOffsetTimestamp(activePainLogScheduledTime);
+        }
+
         btnLogPain.innerText = "Logged";
         btnLogPain.style.background = "var(--neon-green)";
+
+        const payload = {
+            pain_level: overallScore,
+            score: overallScore,
+            generators,
+            locations: generators,
+            pain_notes: userNotes,
+            mood_level: currentMoodLevel,
+            mood: String(currentMoodLevel),
+            mood_notes: userNotes,
+            mood_emoji: selectedMoodEmoji
+        };
+        if (payloadTimestamp) {
+            payload.created_at = payloadTimestamp;
+            payload.timestamp = payloadTimestamp;
+        }
 
         try {
             const res = await fetch(API_PAIN_LOG, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    pain_level: overallScore,
-                    score: overallScore,
-                    generators,
-                    locations: generators,
-                    pain_notes: userNotes,
-                    mood_level: currentMoodLevel,
-                    mood: String(currentMoodLevel),
-                    mood_notes: userNotes,
-                    mood_emoji: selectedMoodEmoji
-                })
+                body: JSON.stringify(payload)
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.detail || data.error || 'Pain log failed');
             if (data.alert_triggered) {
                 alertBannerText.innerText = data.alert_message;
                 alertBanner.classList.remove('hidden');
+            }
+            if (activePainLogAgendaId) {
+                try {
+                    await fetch(API_AGENDA, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: activePainLogAgendaId, action: 'update_status', status: 'completed' })
+                    });
+                } catch (agendaErr) {
+                    console.error('Error marking agenda card completed:', agendaErr);
+                }
             }
             closePainLog();
             showToast('Pain log saved to live database', 'success');

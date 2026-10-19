@@ -21,7 +21,8 @@ medical/records/Rehab_Protocols_Library/
 ├── 04_BEGINNER_MINDFUL_FLOWS_YOGA_AND_TAI_CHI.md        <-- 10–30 min beginner flows & Tai Chi
 ├── 05_MOVEHEALTH_AND_PHYSIO_INTEGRATED_ROUTINES.md      <-- Movehealth+ app routines (shoulder band, 4-point, neck)
 ├── 06_SYSTEM_REHAB_AND_EXERCISE_DATABASE_CATALOG.md     <-- Catalog of all 40 core system routines (y1-y10, p1-p10, s1-s10, r1-r6, h1-h4)
-└── 07_COMPILED_HYDROTHERAPY_ROUTINES_A4_PRINT.md        <-- Complete 5-Page A4 Laminated Print Edition & PDF Guide
+├── 07_COMPILED_HYDROTHERAPY_ROUTINES_A4_PRINT.md        <-- Complete 5-Page A4 Laminated Print Edition & PDF Guide
+└── 08_COMPILED_YOGA_AND_TAI_CHI_ROUTINES_A4_PRINT.md    <-- Complete 6-Page A4 Laminated Print Edition & PDF Guide (Portrait & Landscape)
 ```
 
 ---
@@ -62,6 +63,23 @@ medical/records/Rehab_Protocols_Library/
 - Shoulder & Upper Back Band Complex: Low Row, Upright Row (<80°), W-Row, External/Internal Rotations, Scapular Stabilization with Flexion, 30° Shrugs.
 - Four-Point Kneeling Motor Control: Upper cervical retraction, Knee hovers, Pelvic tilt, Scapular protraction, Isometric deep neck flexors, Bent-knee donkey kicks.
 - Neck & Upper Back Stretching: Open book, Thread the needle, Supine AROM cervical rotation, Wall roll-downs, Supine deep neck flexors.
+
+### Section 08: Compiled Yoga & Tai Chi A4 Laminated Print Collections (21 Protocols)
+*Complete high-resolution A4 print editions compiled for waterproof floor and bedside use:*
+- **Document**: `08_COMPILED_YOGA_AND_TAI_CHI_ROUTINES_A4_PRINT.md` (and mirrored in `agent_reports/2026-10-19_compiled_yoga_and_tai_chi_routines_a4.md`)
+- **PDF Artifacts**:
+  - Portrait Edition: `Yoga_TaiChi_Routines_A4_Laminated_Collection.pdf` (6 A4 Sheets)
+  - Landscape Edition: `Yoga_TaiChi_Routines_A4_Landscape_Collection.pdf` (6 A4 Sheets)
+- **HTML Source Sheets**:
+  - `yoga_taichi_a4_print_sheets.html`
+  - `yoga_taichi_a4_landscape_sheets.html`
+- **Sheet Architecture (6 Sheets, 21 Protocols)**:
+  - **Sheet 1**: Beginner Mindful Floor Flows (`Y-BEG1`, `Y-BEG2`, `Y-BEG3`) + Supine Visual Strip
+  - **Sheet 2**: Mindful Tai Chi Protocols (`TC-BEG1`, `TC-BEG2`, `TC-BEG3`) + Tai Chi Visual Strip
+  - **Sheet 3**: Clinical Floor & Nerve Decompression (`Y-MED1`, `Y-MED2`, `Y-MED3`) + Neurodynamic Visual Strip
+  - **Sheet 4**: Expert Strength Yoga & Pilates Isometrics (`Y-EXP1`, `Y-EXP2`) + Core/Kinetic Visual Strip
+  - **Sheet 5**: Daily System Yoga Routines 1–5 (`y1` Gentle Lumbar, `y2` Cervical Mobility, `y3` Full Body Yin, `y4` Shoulder/Thoracic Opener, `y5` Hip Flexor/Psoas) + Daily Visual Strip
+  - **Sheet 6**: Daily System Yoga Routines 6–10 (`y6` Spine Awakening, `y7` Chair Yoga Desk Decompression, `y8` Vagus Nerve, `y9` Hamstrings/Posterior Chain, `y10` Evening Wind-Down) + Daily Visual Strip
 
 ---
 *Decision Support Notice: Prescribed routines are designed for personal clinical decision support and appointment preparation. Consult treating clinicians prior to load progression.*

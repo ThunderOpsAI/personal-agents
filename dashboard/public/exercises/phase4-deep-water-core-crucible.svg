@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 240" width="500" height="240">
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="1" stdDeviation="1.5" flood-color="#000000" flood-opacity="0.06"/>
+    </filter>
+  </defs>
+  <!-- Card Background -->
+  <rect width="500" height="240" fill="#ffffff" rx="8" stroke="#e2e8f0" stroke-width="1.5"/>
+  <!-- Panel Divider -->
+  <line x1="250" y1="12" x2="250" y2="228" stroke="#f1f5f9" stroke-width="2" stroke-dasharray="4,4"/>
+  <!-- Panel Labels -->
+  <text x="24" y="24" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10" font-weight="700" fill="#64748b" letter-spacing="1">START</text>
+  <text x="274" y="24" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10" font-weight="700" fill="#64748b" letter-spacing="1">END</text>
+
+  <rect x="15" y="115" width="220" height="115" fill="#f0f9ff" opacity="0.6"/>
+  <path d="M 15 115 Q 70 112 125 115 T 235 115" fill="none" stroke="#0284c7" stroke-width="1.8" stroke-dasharray="6,2"/>
+  <rect x="265" y="115" width="220" height="115" fill="#f0f9ff" opacity="0.6"/>
+  <path d="M 265 115 Q 320 112 375 115 T 485 115" fill="none" stroke="#0284c7" stroke-width="1.8" stroke-dasharray="6,2"/>
+  <text x="125" y="109" font-family="Helvetica, Arial, sans-serif" font-size="8" font-weight="600" fill="#0284c7" text-anchor="middle">DEEP WATER SUSPENSION</text>
+  <text x="375" y="109" font-family="Helvetica, Arial, sans-serif" font-size="8" font-weight="600" fill="#0284c7" text-anchor="middle">DEEP WATER SUSPENSION</text>
+
+  <line x1="35" y1="60" x2="35" y2="190" stroke="#0f766e" stroke-width="4.5" stroke-linecap="round"/>
+  <line x1="25" y1="60" x2="45" y2="60" stroke="#0f766e" stroke-width="3.5" stroke-linecap="round"/>
+  <text x="35" y="52" font-family="Helvetica, Arial, sans-serif" font-size="8" font-weight="bold" fill="#0f766e" text-anchor="middle">[POOL RAIL]</text>
+
+  <line x1="285" y1="60" x2="285" y2="190" stroke="#0f766e" stroke-width="4.5" stroke-linecap="round"/>
+  <line x1="275" y1="60" x2="295" y2="60" stroke="#0f766e" stroke-width="3.5" stroke-linecap="round"/>
+  <text x="285" y="52" font-family="Helvetica, Arial, sans-serif" font-size="8" font-weight="bold" fill="#0f766e" text-anchor="middle">[POOL RAIL]</text>
+<circle cx="120" cy="90" r="10" fill="#4a6b82" stroke="#334e68" stroke-width="1.5"/><line x1="120" y1="101" x2="120" y2="150" stroke="#4a6b82" stroke-width="7" stroke-linecap="round"/><rect x="108" y="137" width="24" height="12" rx="3" fill="#14b8a6" stroke="#0f766e" stroke-width="1.5"/><text x="146" y="146" font-family="Helvetica, Arial, sans-serif" font-size="6.5" font-weight="bold" fill="#0f766e">[BELT]</text><line x1="120" y1="150" x2="120" y2="200" stroke="#4a6b82" stroke-width="6" stroke-linecap="round"/><circle cx="370" cy="90" r="10" fill="#4a6b82" stroke="#334e68" stroke-width="1.5"/><line x1="370" y1="101" x2="370" y2="150" stroke="#4a6b82" stroke-width="7" stroke-linecap="round"/><rect x="358" y="137" width="24" height="12" rx="3" fill="#14b8a6" stroke="#0f766e" stroke-width="1.5"/><text x="396" y="146" font-family="Helvetica, Arial, sans-serif" font-size="6.5" font-weight="bold" fill="#0f766e">[BELT]</text><polyline points="370,150 354,160 356,183" fill="none" stroke="#4a6b82" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 140 160 Q 250.0 147.5 360 155" fill="none" stroke="#d9531e" stroke-width="2.5" stroke-linecap="round"/>
+  <polygon points="360,155 353.28830970377874,150.5330980123122 352.74411859867973,158.51456755376452" fill="#d9531e"/>
+<text x="250" y="232" font-family="Helvetica, Arial, sans-serif" font-size="8.5" font-weight="bold" fill="#0f766e" text-anchor="middle">DRIVE KNEES UP AGAINST DRAG | STRICTLY NO LUMBAR FLEXION</text></svg>

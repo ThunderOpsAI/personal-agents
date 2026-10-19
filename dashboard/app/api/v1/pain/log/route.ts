@@ -38,8 +38,9 @@ export async function POST(request: Request) {
     : [];
   const mood = body.mood ?? (body.mood_level !== undefined ? String(body.mood_level) : undefined);
   const notes = body.notes ?? body.pain_notes ?? body.mood_notes ?? "";
+  const timestamp = body.created_at || body.timestamp || undefined;
 
-  const result = logPain({ score, locations, mood, notes });
+  const result = logPain({ score, locations, mood, notes, timestamp });
   if (!result.success || !result.entry) {
     return NextResponse.json(
       { status: "error", error: "Validation failed", details: result.errors },
@@ -59,6 +60,7 @@ export async function POST(request: Request) {
       })),
       mood: result.entry.mood,
       notes: result.entry.notes,
+      created_at: result.entry.timestamp,
     });
   } catch {
     // Database write best effort if memory succeeded

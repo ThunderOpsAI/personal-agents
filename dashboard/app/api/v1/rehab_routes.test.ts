@@ -77,6 +77,26 @@ describe("Rehab API Routes (dashboard/app/api/v1/rehab_routes.test.ts)", () => {
       const data = await response.json();
       expect(data.status).toBe("error");
     });
+
+    it("accepts and preserves custom created_at timestamp", async () => {
+      const customTime = "2026-10-16T14:03:00+11:00";
+      const payload = {
+        score: 6.5,
+        locations: [{ area: "lumbar", percentage: 100 }],
+        created_at: customTime,
+      };
+
+      const request = new Request("https://rumble.test/api/v1/pain/log", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+
+      const response = await painLogPost(request);
+      expect(response.status).toBe(201);
+      const data = await response.json();
+      expect(data.status).toBe("success");
+      expect(data.data.timestamp).toBe(customTime);
+    });
   });
 
   describe("2. POST /api/v1/rehab/complete", () => {
