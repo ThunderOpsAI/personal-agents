@@ -3317,12 +3317,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await res.json();
             const logs = Array.isArray(data) ? data : (data.logs || []);
 
-            const todayStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
+            const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Australia/Melbourne' }); // YYYY-MM-DD
             const todaysLogs = logs.filter(item => {
                 const ts = item.created_at || item.timestamp;
                 if (!ts) return false;
                 const d = new Date(ts);
-                return d.toLocaleDateString('en-CA') === todayStr;
+                return d.toLocaleDateString('en-CA', { timeZone: 'Australia/Melbourne' }) === todayStr;
             });
 
             if (countBadge) {
@@ -7009,7 +7009,8 @@ document.addEventListener('DOMContentLoaded', () => {
             showToast('Pain log saved to live database', 'success');
             if (typeof loadTodaysPainLogs === 'function') loadTodaysPainLogs();
             if (typeof loadPainAnalytics === 'function') loadPainAnalytics();
-            if (typeof loadAgendaItems === 'function') loadAgendaItems();
+            if (typeof loadAgenda === 'function') loadAgenda();
+            else if (typeof loadAgendaItems === 'function') loadAgendaItems();
         } catch (e) {
             showToast(e.message || 'Pain log could not be saved');
         }

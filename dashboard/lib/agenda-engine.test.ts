@@ -3,6 +3,7 @@ import {
   calculateHydrotherapySessions,
   selectWashingDays,
   ensureStandingTasks,
+  ensureDailyStandingProtocols,
 } from './agenda-engine';
 import { AgendaItem } from './schema';
 
@@ -203,4 +204,28 @@ describe('Agenda Engine (dashboard/lib/agenda-engine.ts)', () => {
       expect(deakinTasks).toHaveLength(1);
     });
   });
+
+  describe('Rule 4: Daily Standing Protocols (Timezone & Pain Log Reminders)', () => {
+    it('generates protocols with correct Australia/Melbourne dates even when server is in UTC', () => {
+      // Simulate Vercel runtime in UTC during Australian morning
+      // 2026-10-18T23:30:00Z is 2026-10-19T10:30:00+11:00 in Melbourne
+      const morningDate = new Date('2026-10-18T23:30:00Z');
+      const protocols = ensureDailyStandingProtocols([], morningDate);
+
+      // Verify all 5 pain log reminders are generated with Oct 19 date prefix
+      const painReminders = protocols.filter((p) => p.id.startsWith('pain_log_reminder'));
+      expect(painReminders).toHaveLength(5);
+      painReminders.forEach((reminder) => {
+        expect(reminder.id).toContain('2026-10-19');
+        expect(reminder.scheduled_time).toContain('2026-10-19');
+      });
+
+      // Verify Yoga, Learning, and Meditation have correct Melbourne date prefix
+      expect(protocols.find((p) => p.id === 'learning_2026-10-19')).toBeDefined();
+      expect(protocols.find((p) => p.id === 'yoga_am_2026-10-19')).toBeDefined();
+      expect(protocols.find((p) => p.id === 'yoga_pm_2026-10-19')).toBeDefined();
+      expect(protocols.find((p) => p.id === 'meditation_night_2026-10-19')).toBeDefined();
+    });
+  });
 });
+

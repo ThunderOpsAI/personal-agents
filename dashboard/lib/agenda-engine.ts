@@ -17,6 +17,27 @@ export type WashingDayResult =
   | (WashingDay[] & { status: 'success'; days: WashingDay[] })
   | { status: 'unavailable'; error: string };
 
+export function getMelbourneDatePrefix(baseDate: Date | string = new Date()): string {
+  const d = typeof baseDate === 'string' ? new Date(baseDate) : baseDate;
+  return d.toLocaleDateString('en-CA', { timeZone: 'Australia/Melbourne' });
+}
+
+export function getMelbourneOffset(baseDate: Date | string = new Date()): string {
+  const d = typeof baseDate === 'string' ? new Date(baseDate) : baseDate;
+  try {
+    const parts = new Intl.DateTimeFormat('en-AU', {
+      timeZone: 'Australia/Melbourne',
+      timeZoneName: 'longOffset'
+    }).formatToParts(d);
+    const tzPart = parts.find((p) => p.type === 'timeZoneName');
+    if (tzPart && tzPart.value.startsWith('GMT')) {
+      const raw = tzPart.value.replace('GMT', '');
+      return raw || '+11:00';
+    }
+  } catch {}
+  return '+11:00';
+}
+
 /**
  * Calculates remaining hydrotherapy sessions to reach 3 total for the current week.
  * Default schedule offsets relative to today: today (+0), today+2 (+2), today+5 (+5).
@@ -43,13 +64,8 @@ export function calculateHydrotherapySessions(
   const refDate = typeof baseDate === 'string' ? new Date(baseDate) : new Date(baseDate);
 
   return selectedOffsets.map((offsetDays) => {
-    const sessionDate = new Date(refDate);
-    sessionDate.setDate(sessionDate.getDate() + offsetDays);
-
-    const year = sessionDate.getFullYear();
-    const month = String(sessionDate.getMonth() + 1).padStart(2, '0');
-    const day = String(sessionDate.getDate()).padStart(2, '0');
-    const dateStr = `${year}-${month}-${day}`;
+    const sessionDate = new Date(refDate.getTime() + offsetDays * 24 * 60 * 60 * 1000);
+    const dateStr = getMelbourneDatePrefix(sessionDate);
 
     return {
       date: dateStr,
@@ -212,13 +228,10 @@ export function ensureStandingTasks(
 
   // Calculate tomorrow's ISO date string
   const refDate = typeof baseDate === 'string' ? new Date(baseDate) : new Date(baseDate);
-  const tomorrow = new Date(refDate);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-
-  const year = tomorrow.getFullYear();
-  const month = String(tomorrow.getMonth() + 1).padStart(2, '0');
-  const day = String(tomorrow.getDate()).padStart(2, '0');
-  const scheduledTimeStr = `${year}-${month}-${day}T09:00:00+10:00`;
+  const tomorrow = new Date(refDate.getTime() + 24 * 60 * 60 * 1000);
+  const tomorrowDateStr = getMelbourneDatePrefix(tomorrow);
+  const offsetTomorrow = getMelbourneOffset(tomorrow);
+  const scheduledTimeStr = `${tomorrowDateStr}T09:00:00${offsetTomorrow}`;
 
   const nowISO = new Date().toISOString();
 
@@ -254,10 +267,8 @@ export function ensureDailyStandingProtocols(
   baseDate: Date | string = new Date()
 ): AgendaItem[] {
   const refDate = typeof baseDate === 'string' ? new Date(baseDate) : new Date(baseDate);
-  const year = refDate.getFullYear();
-  const month = String(refDate.getMonth() + 1).padStart(2, '0');
-  const day = String(refDate.getDate()).padStart(2, '0');
-  const datePrefix = `${year}-${month}-${day}`;
+  const datePrefix = getMelbourneDatePrefix(refDate);
+  const offset = getMelbourneOffset(refDate);
   const nowISO = new Date().toISOString();
 
   const requiredProtocols = [
@@ -265,31 +276,31 @@ export function ensureDailyStandingProtocols(
       id: `learning_${datePrefix}`,
       item_type: 'learning' as const,
       title: 'Continuous Learning: Recovery & Neuroplasticity',
-      time: `${datePrefix}T07:30:00+10:00`,
+      time: `${datePrefix}T07:30:00${offset}`,
     },
     {
       id: `yoga_am_${datePrefix}`,
       item_type: 'yoga' as const,
       title: 'Morning Adaptive Yoga Routine',
-      time: `${datePrefix}T09:00:00+10:00`,
+      time: `${datePrefix}T09:00:00${offset}`,
     },
     {
       id: `yoga_pm_${datePrefix}`,
       item_type: 'yoga' as const,
       title: 'Evening Adaptive Yoga Routine',
-      time: `${datePrefix}T21:00:00+10:00`,
+      time: `${datePrefix}T21:00:00${offset}`,
     },
     {
       id: `meditation_night_${datePrefix}`,
       item_type: 'meditation' as const,
       title: 'Sleep Meditation',
-      time: `${datePrefix}T21:00:00+10:00`,
+      time: `${datePrefix}T21:00:00${offset}`,
     },
     ...['00:00:00', '08:00:00', '12:00:00', '16:00:00', '20:00:00'].map((timeStr) => ({
       id: `pain_log_reminder_${timeStr.replace(/:/g, '')}_${datePrefix}`,
       item_type: 'task' as const,
       title: 'Log Pain Level',
-      time: `${datePrefix}T${timeStr}+10:00`,
+      time: `${datePrefix}T${timeStr}${offset}`,
     })),
   ];
 
