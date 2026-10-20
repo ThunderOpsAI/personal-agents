@@ -13,7 +13,6 @@ import {
 import {
   SortableContext,
   useSortable,
-  arrayMove,
   sortableKeyboardCoordinates,
   rectSortingStrategy,
 } from "@dnd-kit/sortable";
@@ -28,9 +27,9 @@ import {
   Plus,
   X,
   Check,
-  Search,
 } from "lucide-react";
 import { Note } from "../../types";
+import { parseCommaSeparatedTags } from "../../utils/noteTags";
 
 interface NotesModalProps {
   isOpen: boolean;
@@ -118,6 +117,7 @@ export function NotesModal({
   const [isPinned, setIsPinned] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [commaTagsInput, setCommaTagsInput] = useState("");
   const [customTagInput, setCustomTagInput] = useState("");
   const [activeFilterTag, setActiveFilterTag] = useState<string | null>(null);
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
@@ -165,7 +165,8 @@ export function NotesModal({
     // Auto-detect hashtags in content or title if not explicitly added
     const textToScan = `${title} ${content}`;
     const detectedTags = (textToScan.match(/#[a-zA-Z0-9_\-]+/g) || []).map((t) => t.toLowerCase());
-    const mergedTags = Array.from(new Set([...selectedTags, ...detectedTags]));
+    const commaTags = parseCommaSeparatedTags(commaTagsInput);
+    const mergedTags = Array.from(new Set([...selectedTags, ...commaTags, ...detectedTags]));
 
     onSaveNote({
       id: editingId || `note_${Date.now()}`,
@@ -181,6 +182,7 @@ export function NotesModal({
     setContent("");
     setIsPinned(false);
     setSelectedTags([]);
+    setCommaTagsInput("");
     setCustomTagInput("");
     setIsEditorExpanded(false);
     setEditingId(null);
@@ -191,7 +193,9 @@ export function NotesModal({
     setTitle(note.title);
     setContent(note.content);
     setIsPinned(note.pinned);
-    setSelectedTags(note.tags || []);
+    const noteTags = note.tags || [];
+    setSelectedTags(noteTags);
+    setCommaTagsInput(noteTags.map((t) => t.replace(/^#/, "")).join(", "));
     setCustomTagInput("");
     setIsEditorExpanded(true);
     setActiveTab("notes");
@@ -202,9 +206,14 @@ export function NotesModal({
     setContent("");
     setIsPinned(false);
     setSelectedTags([]);
+    setCommaTagsInput("");
     setCustomTagInput("");
     setIsEditorExpanded(false);
     setEditingId(null);
+  };
+
+  const syncTagsFromCommaInput = (value: string) => {
+    setCommaTagsInput(value);
   };
 
   const togglePin = (note: Note) => {
@@ -240,7 +249,10 @@ export function NotesModal({
     setTimeout(() => setFollowUpSavedStatus(""), 3000);
   };
 
-  // Reordering handler
+  const sortByOrder = (list: Note[]) =>
+    [...list].sort((a, b) => (a.order ?? 0) - (b.order ?? 0) || a.created_at.localeCompare(b.created_at));
+
+  // Reordering handler (pinned and unpinned grids share one DndContext)
   const handleDragStart = (event: DragStartEvent) => {
     setActiveDragId(String(event.active.id));
   };
@@ -255,30 +267,33 @@ export function NotesModal({
 
     const activeNote = notes.find((n) => n.id === activeId);
     const overNote = notes.find((n) => n.id === overId);
-    if (!activeNote || !overNote) return;
+    if (!activeNote || !overNote || activeNote.isArchived || overNote.isArchived) return;
 
-    let updatedList = [...notes];
+    const pinnedTarget = overNote.pinned;
+    const sectionWithoutActive = sortByOrder(
+      notes.filter((n) => !n.isArchived && n.pinned === pinnedTarget && n.id !== activeId)
+    );
 
-    // If dragged between pinned/unpinned sections, match pinned status
-    if (activeNote.pinned !== overNote.pinned) {
-      updatedList = updatedList.map((n) =>
-        n.id === activeNote.id ? { ...n, pinned: overNote.pinned } : n
-      );
+    const overIndex = sectionWithoutActive.findIndex((n) => n.id === overId);
+    const insertIndex = overIndex === -1 ? sectionWithoutActive.length : overIndex;
+    const movedNote = { ...activeNote, pinned: pinnedTarget };
+
+    const reorderedSection = [
+      ...sectionWithoutActive.slice(0, insertIndex),
+      movedNote,
+      ...sectionWithoutActive.slice(insertIndex),
+    ].map((note, idx) => ({ ...note, order: idx }));
+
+    const byId = new Map(notes.map((n) => [n.id, n]));
+    for (const note of reorderedSection) {
+      byId.set(note.id, note);
     }
+    const merged = notes.map((n) => byId.get(n.id) ?? n);
 
-    const oldIndex = updatedList.findIndex((n) => n.id === activeId);
-    const newIndex = updatedList.findIndex((n) => n.id === overId);
-
-    if (oldIndex !== -1 && newIndex !== -1) {
-      const reordered = arrayMove(updatedList, oldIndex, newIndex).map((note, idx) => ({
-        ...note,
-        order: idx,
-      }));
-      if (onReorderNotes) {
-        onReorderNotes(reordered);
-      } else {
-        reordered.forEach((n) => onSaveNote(n));
-      }
+    if (onReorderNotes) {
+      onReorderNotes(merged);
+    } else {
+      merged.forEach((n) => onSaveNote(n));
     }
   };
 
@@ -290,9 +305,9 @@ export function NotesModal({
     );
   };
 
-  const pinnedNotes = filterByTag(notes.filter((n) => !n.isArchived && n.pinned));
-  const unpinnedNotes = filterByTag(notes.filter((n) => !n.isArchived && !n.pinned));
-  const archivedNotes = filterByTag(notes.filter((n) => n.isArchived));
+  const pinnedNotes = sortByOrder(filterByTag(notes.filter((n) => !n.isArchived && n.pinned)));
+  const unpinnedNotes = sortByOrder(filterByTag(notes.filter((n) => !n.isArchived && !n.pinned)));
+  const archivedNotes = sortByOrder(filterByTag(notes.filter((n) => n.isArchived)));
 
   const activeDragNote = activeDragId ? notes.find((n) => n.id === activeDragId) : null;
 
@@ -650,12 +665,29 @@ export function NotesModal({
                               gap: "5px",
                             }}
                           >
-                            <TagIcon size={12} color="var(--neon-blue)" /> Category Tags:
+                            <TagIcon size={12} color="var(--neon-blue)" /> Tags
                           </span>
                           <span style={{ fontSize: "0.7rem", color: "var(--text-muted)" }}>
-                            Click quick tag or add custom
+                            Comma-separated, with or without #
                           </span>
                         </div>
+
+                        <input
+                          type="text"
+                          className="glass-input"
+                          placeholder="e.g. urgent, health, finance"
+                          value={commaTagsInput}
+                          onChange={(e) => syncTagsFromCommaInput(e.target.value)}
+                          style={{
+                            width: "100%",
+                            fontSize: "0.8rem",
+                            padding: "8px 10px",
+                            marginBottom: "10px",
+                            borderRadius: "6px",
+                            background: "rgba(0,0,0,0.25)",
+                            border: "1px solid rgba(56, 189, 248, 0.25)",
+                          }}
+                        />
 
                         {/* Quick Presets */}
                         <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "8px" }}>

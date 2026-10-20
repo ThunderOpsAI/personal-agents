@@ -327,7 +327,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (res.ok) {
                 const data = await res.json();
                 if (data.temp_c !== null && data.temp_c !== undefined) {
-                    const washDays = (data.forecast || []).slice().sort((a, b) => a.precipitation_probability_pct - b.precipitation_probability_pct).slice(0, 2).map(day => day.date).join(' and ');
+                    const formatWashDay = (isoDate) => {
+                        const [y, m, d] = String(isoDate).split('-').map(Number);
+                        if (!y || !m || !d) return isoDate;
+                        return new Date(Date.UTC(y, m - 1, d, 13, 0, 0)).toLocaleDateString('en-AU', { weekday: 'long', timeZone: 'Australia/Melbourne' });
+                    };
+                    const washDays = (data.forecast || []).slice().sort((a, b) => a.precipitation_probability_pct - b.precipitation_probability_pct).slice(0, 2).map(day => formatWashDay(day.date)).join(' and ');
                     const maxTemp = data.max_temp_c !== null ? `${data.max_temp_c}°C` : '--';
                     const rainDay = data.rain_probability_pct_day !== undefined ? data.rain_probability_pct_day : (data.rain_probability_pct || 0);
                     weatherWidget.innerHTML = `<span class="weather-text">Wangaratta: ${data.temp_c}°C (Max: ${maxTemp}) • ${rainDay}% chance of rain today • Wash: ${washDays || 'forecast unavailable'}</span>`;

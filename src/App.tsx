@@ -12,6 +12,7 @@ import {
 import { EXERCISE_DATABASE, ExerciseItem } from "./data/exercise-db";
 import { ENCYCLOPEDIAS, ROTATING_LEARNING_TOPICS } from "./data/encyclopedias";
 import { fetchLiveWangarattaWeather } from "./services/weatherService";
+import { formatWashingDayLabel } from "./utils/formatWashDay";
 import {
   AgendaItem,
   BudgetItem,
@@ -325,7 +326,10 @@ export function App() {
             {weather ? (
               <div id="weatherWidget" className="weather-widget" style={{ fontSize: "0.82rem", color: "var(--neon-blue)", background: "rgba(0,0,0,0.25)", padding: "4px 10px", borderRadius: "6px", border: "1px solid rgba(255,255,255,0.06)" }}>
                 <span>
-                  Wangaratta: {weather.temp}°C, {weather.condition} • Optimal Wash: {weather.washingDays.map((w) => `${w.date.slice(5)} (${w.precipitationProbability}%)`).join(", ")}
+                  Wangaratta: {weather.temp}°C, {weather.condition} • Optimal Wash:{" "}
+                  {weather.washingDays
+                    .map((w) => `${formatWashingDayLabel(w.date)} (${w.precipitationProbability}%)`)
+                    .join(", ")}
                 </span>
               </div>
             ) : (
