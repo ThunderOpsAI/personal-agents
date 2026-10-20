@@ -13,29 +13,24 @@
 
 ## Architecture & Tech Stack
 
-- **Framework**: Next.js App Router (TypeScript).
-- **Agent Framework**: Vercel Eve, running on Vercel's Edge Network for automatic serverless scaling.
-- **Database (Production)**: Neon PostgreSQL.
-- **Vector Database (Dev/Staging)**: ChromaDB is currently designated for local-disk dev/staging only, with vector-similarity ranking explicitly deferred as a deliberate architectural decision (relational logging in Neon is the production path for now).
-- **No Legacy Python**: The legacy FastAPI backend, Agno integrations, and `uvicorn` entrypoints have been entirely removed.
+- **Framework**: React 18 SPA on Vite (TypeScript).
+- **Styling**: Rumble OS Glassmorphism theme with animated background orbs and neon accents.
+- **Port & Host**: Listens on port 3000 (`0.0.0.0:3000`).
+- **Live Weather**: Direct live Wangaratta (-36.3536, 146.3225) forecast via Open-Meteo with automated 2-day washing schedule calculation.
+- **Exercise & Rehab Database**: 34+ clinical-grade routines across Yoga, Pilates, Mobility Stretches, Spine Rehab, and Hydrotherapy.
+- **State & Persistence**: LocalStorage persistence with offline support and live synchronization.
 
 ## Quick Start
 
 ```bash
-# 1. Clone & enter the project
-git clone https://github.com/ThunderOpsAI/personal-agents.git
-cd personal-agents
-
-# 2. Install dependencies (workspace root delegates to dashboard)
+# 1. Install dependencies
 npm install
-npm install --prefix dashboard
 
-# 3. Configure environment variables
-cp .env.example .env
-# Edit .env to add your API keys and NEON_DATABASE_URL
-
-# 4. Run the development server
+# 2. Run the development server
 npm run dev
+
+# 3. Build for production
+npm run build
 ```
 
 ## Documentation Source of Truth
