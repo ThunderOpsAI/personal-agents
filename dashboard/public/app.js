@@ -5047,7 +5047,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Knees at tabletop (90 deg), reach right arm overhead and return.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/core_dead_bug.jpg"
                                 ]
                         },
                         {
@@ -5055,7 +5055,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Keep arms still, lower right heel to tap floor, return.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/core_dead_bug.jpg"
                                 ]
                         },
                         {
@@ -5063,7 +5063,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Extend opposite arm and leg simultaneously while maintaining rock-solid core.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/core_dead_bug.jpg"
                                 ]
                         },
                         {
@@ -5098,7 +5098,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Hands under shoulders, knees under hips, neck in neutral line.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/core_bird_dog.jpg"
                                 ]
                         },
                         {
@@ -5106,7 +5106,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Reach straight out, thumb up, heel pushed back. Hold 6 seconds.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/core_bird_dog.jpg"
                                 ]
                         },
                         {
@@ -5114,7 +5114,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Keep pelvis level like balancing a cup of water on lower back.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/core_bird_dog.jpg"
                                 ]
                         },
                         {
@@ -5148,7 +5148,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Heels together, open top knee like a clamshell, squeeze outer glute.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/side_lying_clamshell.svg"
                                 ]
                         },
                         {
@@ -5156,7 +5156,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Straighten top leg, lift 6 inches with slight internal rotation.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/side_lying_clamshell.svg"
                                 ]
                         },
                         {
@@ -5164,7 +5164,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Switch sides. Keep core engaged and hips stacked.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/side_lying_clamshell.svg"
                                 ]
                         },
                         {
@@ -5172,7 +5172,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Lift top leg with control, avoiding hip rotation.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/side_lying_clamshell.svg"
                                 ]
                         }
                 ]
@@ -5198,7 +5198,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Exhale lift hips until straight line from knees to shoulders, hold 3s.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/hip_glute_bridge.jpg"
                                 ]
                         },
                         {
@@ -5206,7 +5206,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Place small ball/block between knees, squeeze gently while bridging.",
                                 "frames": [
-                                        "/exercises/supine_pelvic_tilts.jpg"
+                                        "/exercises/glute-bridges.svg"
                                 ]
                         },
                         {
@@ -5214,7 +5214,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Hold bridge, lift right foot 1 inch off floor without dipping pelvis. Repeat left.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/hip_glute_bridge.jpg"
                                 ]
                         },
                         {
@@ -5222,7 +5222,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Lower spine down bone by bone, finishing in neutral.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/glute-bridges.svg"
                                 ]
                         }
                 ]
@@ -5248,7 +5248,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Arms long by side, legs in tabletop, head resting comfortably.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/pilates_hundred_neutral.svg"
                                 ]
                         },
                         {
@@ -5256,7 +5256,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Inhale 5 arm pumps, exhale 5 arm pumps with abdominal brace.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/pilates_hundred_neutral.svg"
                                 ]
                         },
                         {
@@ -5264,7 +5264,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Maintain steady rhythmic breathing and flat lower abdomen.",
                                 "frames": [
-                                        "/exercises/restorative_savasana.jpg"
+                                        "/exercises/pilates_hundred_neutral.svg"
                                 ]
                         },
                         {
@@ -5272,7 +5272,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Extend arms and legs long, releasing abdominal wall.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         }
                 ]
@@ -5298,7 +5298,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Sit upright, hug ball to chest, exhale rotate ribs 20 degrees right, then left.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/thoracic_supine_twist.jpg"
                                 ]
                         },
                         {
@@ -5306,7 +5306,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Circle top arm overhead opening chest to ceiling, follow with eyes.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/open-book-thoracic.svg"
                                 ]
                         },
                         {
@@ -5314,7 +5314,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Switch sides. Feel opening through anterior shoulder and ribcage.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/open-book-thoracic.svg"
                                 ]
                         },
                         {
@@ -5322,7 +5322,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Feel posterior ribcage expand with every inhalation.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/constructive-rest.svg"
                                 ]
                         }
                 ]
@@ -5348,7 +5348,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Hug right knee, extend left leg at 45 deg angle, switch rhythmically.",
                                 "frames": [
-                                        "/exercises/knee_to_chest_stretch.jpg"
+                                        "/exercises/supine-single-knee-to-chest.svg"
                                 ]
                         },
                         {
@@ -5356,7 +5356,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Both knees bent, tap toes to mat and return with locked core.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/core_dead_bug.jpg"
                                 ]
                         },
                         {
@@ -5364,7 +5364,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Focus on smooth breathing and rock-steady pelvis.",
                                 "frames": [
-                                        "/exercises/restorative_savasana.jpg"
+                                        "/exercises/supine-single-knee-to-chest.svg"
                                 ]
                         },
                         {
@@ -5406,7 +5406,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Peel spine up vertebra by vertebra to upper thoracic, hold and roll down.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/hip_glute_bridge.jpg"
                                 ]
                         },
                         {
@@ -5414,7 +5414,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "At top of bridge, float arms back overhead, then roll spine down.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/glute-bridges.svg"
                                 ]
                         },
                         {
@@ -5422,7 +5422,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Neutral spine alignment rest.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/constructive-rest.svg"
                                 ]
                         }
                 ]
@@ -5449,7 +5449,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Lie prone, pillow under belly, float right arm 1 inch, then left.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/prone_swimming_extension.svg"
                                 ]
                         },
                         {
@@ -5457,7 +5457,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Squeeze glute, float straight leg 1 inch, then opposite.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/prone_swimming_extension.svg"
                                 ]
                         },
                         {
@@ -5465,7 +5465,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Alternate opposite arm and leg fluttering rhythmically.",
                                 "frames": [
-                                        "/exercises/knee_to_chest_stretch.jpg"
+                                        "/exercises/prone_swimming_extension.svg"
                                 ]
                         },
                         {
@@ -5473,7 +5473,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Turn head to side, relax glutes and back completely.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/supported-sphinx-micro-lifts.svg"
                                 ]
                         }
                 ]
@@ -5500,7 +5500,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Cross right ankle over left thigh, reach through and draw left leg in.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/hip_figure_four.jpg"
                                 ]
                         },
                         {
@@ -5508,7 +5508,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Repeat on left side, keeping shoulders and neck relaxed.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/supine-figure-four-strap.svg"
                                 ]
                         },
                         {
@@ -5516,7 +5516,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Sit tall, cross ankle on knee, hinge forward from hips with flat back.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/chair_seated_figure_four.svg"
                                 ]
                         },
                         {
@@ -5524,7 +5524,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Gently shake legs to release residual muscle tone.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/constructive-rest.svg"
                                 ]
                         }
                 ]
@@ -5551,7 +5551,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Tilt head right, rotate chin 15 deg upward, feel stretch in front-left neck.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/cervical_lateral_ear_shoulder.jpg"
                                 ]
                         },
                         {
@@ -5559,7 +5559,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Turn head 45 deg right, gently drop chin towards right armpit.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/chair_upper_trapezius_drop.svg"
                                 ]
                         },
                         {
@@ -5567,7 +5567,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Repeat carefully on opposite side with relaxed shoulders.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/cervical_lateral_ear_shoulder.jpg"
                                 ]
                         },
                         {
@@ -5575,7 +5575,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Tiny nodding motions like saying 'yes' without flexing lower neck.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/cervical_chin_tuck.jpg"
                                 ]
                         }
                 ]
@@ -5601,7 +5601,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Right leg up doorframe, left leg flat on floor through doorway. Breathe deeply.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/supine-strap-hamstring-calf.svg"
                                 ]
                         },
                         {
@@ -5609,7 +5609,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Switch sides. Relax hips and sacrum flat against mat.",
                                 "frames": [
-                                        "/exercises/supine_pelvic_tilts.jpg"
+                                        "/exercises/supine-strap-hamstring-calf.svg"
                                 ]
                         },
                         {
@@ -5617,7 +5617,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Point and flex toes gently while elevated to floss sciatic pathway.",
                                 "frames": [
-                                        "/exercises/knee_to_chest_stretch.jpg"
+                                        "/exercises/supine-strap-hamstring-calf.svg"
                                 ]
                         },
                         {
@@ -5625,7 +5625,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Both legs down, resting pelvis in neutral.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         }
                 ]
@@ -5652,7 +5652,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Side-lying on left, sweep right arm open across body, look towards right hand.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/open-book-thoracic.svg"
                                 ]
                         },
                         {
@@ -5660,7 +5660,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Hold open for 3 deep breaths into right chest wall.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/open-book-thoracic.svg"
                                 ]
                         },
                         {
@@ -5668,7 +5668,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Switch sides. Sweep left arm open, keeping knees glued together.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/open-book-thoracic.svg"
                                 ]
                         },
                         {
@@ -5676,7 +5676,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Deep ribcage breathing.",
                                 "frames": [
-                                        "/exercises/restorative_savasana.jpg"
+                                        "/exercises/open-book-thoracic.svg"
                                 ]
                         }
                 ]
@@ -5703,7 +5703,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Hands on wall, step right leg back straight, press heel down.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/wall_calf_gastrocnemius.svg"
                                 ]
                         },
                         {
@@ -5711,7 +5711,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Bend back right knee slightly, shifting stretch deeper towards Achilles.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/wall_calf_soleus.svg"
                                 ]
                         },
                         {
@@ -5719,7 +5719,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Switch legs. Step left leg back straight, heel grounded.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/wall_calf_gastrocnemius.svg"
                                 ]
                         },
                         {
@@ -5727,7 +5727,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Bend left knee slightly, keeping heel pinned down.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/wall_calf_soleus.svg"
                                 ]
                         }
                 ]
@@ -5754,7 +5754,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Lie on left side, hold right ankle, gently draw heel toward glute.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/side_lying_quad_stretch.svg"
                                 ]
                         },
                         {
@@ -5762,7 +5762,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Switch sides, keeping knees aligned and hips stacked.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/side_lying_quad_stretch.svg"
                                 ]
                         },
                         {
@@ -5770,7 +5770,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Lie prone, loop towel around ankle if reaching is difficult.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/side_lying_quad_stretch.svg"
                                 ]
                         },
                         {
@@ -5778,7 +5778,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Gently rock hips side to side to release hip flexors.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/hip_kneeling_lunge.jpg"
                                 ]
                         }
                 ]
@@ -5820,7 +5820,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Hold doorframe at shoulder height, sink hips back and away gently.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/doorframe_lat_stretch.svg"
                                 ]
                         },
                         {
@@ -5828,7 +5828,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Breathe into lateral ribcage.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/diaphragmatic-breathing.svg"
                                 ]
                         }
                 ]
@@ -5855,7 +5855,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Arm straight, palm facing out fingers down, gently draw fingers back.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/wrist_nerve_floss.svg"
                                 ]
                         },
                         {
@@ -5863,7 +5863,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Palm facing in, gently press back of hand down and toward body.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/wrist_nerve_floss.svg"
                                 ]
                         },
                         {
@@ -5871,7 +5871,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Extend arm out to side, extend wrist, tilt head away, then return.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/wrist_nerve_floss.svg"
                                 ]
                         },
                         {
@@ -5879,7 +5879,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Gentle rolling circles and shaking out hands.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/wrist_nerve_floss.svg"
                                 ]
                         }
                 ]
@@ -5906,7 +5906,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Elbow at 90 deg on doorframe, step right foot through doorway gently.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/doorway_pec_stretch.svg"
                                 ]
                         },
                         {
@@ -5914,7 +5914,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Elbow slightly higher to target lower pec fibers.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/doorway_pec_stretch.svg"
                                 ]
                         },
                         {
@@ -5922,7 +5922,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Repeat 90 and 120 degree angles on left side with relaxed neck.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/doorway_pec_stretch.svg"
                                 ]
                         },
                         {
@@ -5930,7 +5930,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Roll shoulders back and down 5 times.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/thoracic_cactus_expansion.jpg"
                                 ]
                         }
                 ]
@@ -5957,7 +5957,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Half-kneeling, drive front knee forward over second toe keeping heel flat.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/ankle_foot_mobility.svg"
                                 ]
                         },
                         {
@@ -5965,7 +5965,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Switch sides, mobilizing left ankle dorsiflexion.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/ankle_foot_mobility.svg"
                                 ]
                         },
                         {
@@ -5973,7 +5973,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Roll ball along arch of foot for 30s per foot, releasing fascia.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/ankle_foot_mobility.svg"
                                 ]
                         },
                         {
@@ -5981,7 +5981,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Wiggle and spread toes wide to activate intrinsic foot muscles.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/ankle_foot_mobility.svg"
                                 ]
                         }
                 ]
@@ -6008,7 +6008,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 300,
                                 "cue": "Hands under lower back, one knee bent, lift only head/shoulders 1 inch. Hold 6s.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/mcgill_curl_up.svg"
                                 ]
                         },
                         {
@@ -6016,7 +6016,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 300,
                                 "cue": "Prop on elbow and knees, lift hips into straight alignment. Hold 6s per rep.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/side_lying_clamshell.svg"
                                 ]
                         },
                         {
@@ -6024,7 +6024,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 300,
                                 "cue": "Extend opposite arm and leg, hold 6s. Focus on neutral spine stability.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/core_bird_dog.jpg"
                                 ]
                         },
                         {
@@ -6059,7 +6059,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Sit on edge of chair with hands behind back, spine relaxed.",
                                 "frames": [
-                                        "/exercises/knee_to_chest_stretch.jpg"
+                                        "/exercises/supine-strap-hamstring-calf.svg"
                                 ]
                         },
                         {
@@ -6067,7 +6067,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Extend right knee while looking UP at ceiling, bend knee while looking DOWN.",
                                 "frames": [
-                                        "/exercises/knee_to_chest_stretch.jpg"
+                                        "/exercises/supine-strap-hamstring-calf.svg"
                                 ]
                         },
                         {
@@ -6075,7 +6075,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Repeat smooth flossing motion on left leg for 10 slow reps.",
                                 "frames": [
-                                        "/exercises/knee_to_chest_stretch.jpg"
+                                        "/exercises/supine-strap-hamstring-calf.svg"
                                 ]
                         },
                         {
@@ -6083,7 +6083,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Lie flat and observe reduction in nerve sensitivity.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         }
                 ]
@@ -6109,7 +6109,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Lie supine with small towel under neck, gently nod chin as if flattening back of neck.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/supine-arom-neck-rotation-chin-tuck.svg"
                                 ]
                         },
                         {
@@ -6117,7 +6117,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Nod chin gently, hold for 5 seconds breathing normally through nose.",
                                 "frames": [
-                                        "/exercises/restorative_savasana.jpg"
+                                        "/exercises/supine-arom-neck-rotation-chin-tuck.svg"
                                 ]
                         },
                         {
@@ -6125,7 +6125,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Stand against wall, press back of head gently into small soft ball.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/cervical_chin_tuck.jpg"
                                 ]
                         },
                         {
@@ -6133,7 +6133,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Sit tall, crown of head reaching toward ceiling.",
                                 "frames": [
-                                        "/exercises/restorative_savasana.jpg"
+                                        "/exercises/diaphragmatic-breathing.svg"
                                 ]
                         }
                 ]
@@ -6160,7 +6160,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Forearms vertical on wall with foam roller or towel, step one foot forward.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/wall-angels-partial-range.svg"
                                 ]
                         },
                         {
@@ -6168,7 +6168,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Slide forearms upward pushing into wall, shrug slightly at top, return with control.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/wall-angels-partial-range.svg"
                                 ]
                         },
                         {
@@ -6176,7 +6176,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Hands on wall, push chest away rounding upper back without bending elbows.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/scapular-retractions-prone.svg"
                                 ]
                         },
                         {
@@ -6184,7 +6184,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Shake out arms and breathe deeply.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/cervical_shoulder_shrug.jpg"
                                 ]
                         }
                 ]
@@ -6211,7 +6211,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Loop strap over right collarbone, pull down across left hip while tilting head right.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/tos_first_rib_glide.svg"
                                 ]
                         },
                         {
@@ -6219,7 +6219,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Extend arm out, bend wrist up while tilting head towards arm, then alternate.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/tos_first_rib_glide.svg"
                                 ]
                         },
                         {
@@ -6227,7 +6227,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Repeat first rib depression and gliding on left side.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/tos_first_rib_glide.svg"
                                 ]
                         },
                         {
@@ -6235,7 +6235,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Breathe deeply into lower ribcage, avoiding upper chest clavicular breathing.",
                                 "frames": [
-                                        "/exercises/restorative_savasana.jpg"
+                                        "/exercises/diaphragmatic-breathing.svg"
                                 ]
                         }
                 ]
@@ -6261,7 +6261,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Palm on forehead, gently press head forward into palm without moving head. Hold 6s.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/cervical_chin_tuck.jpg"
                                 ]
                         },
                         {
@@ -6269,7 +6269,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Hands behind head, gently press head backward into palms without tilting.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/cervical_chin_tuck.jpg"
                                 ]
                         },
                         {
@@ -6277,7 +6277,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Palm against side of head, press gently for 6s each side.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/cervical_lateral_ear_shoulder.jpg"
                                 ]
                         },
                         {
@@ -6285,7 +6285,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Sit tall with relaxed jaw and dropped shoulders.",
                                 "frames": [
-                                        "/exercises/restorative_savasana.jpg"
+                                        "/exercises/diaphragmatic-breathing.svg"
                                 ]
                         }
                 ]
@@ -6312,7 +6312,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 375,
                                 "cue": "Noodle under arms in deep water, allow legs and spine to hang weightlessly.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/phase4-deep-water-core-crucible.svg"
                                 ]
                         },
                         {
@@ -6320,7 +6320,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 375,
                                 "cue": "Slowly draw knees towards chest in water, feeling gentle lumbar opening.",
                                 "frames": [
-                                        "/exercises/knee_to_chest_stretch.jpg"
+                                        "/exercises/rail-supported-hydro-pelvic-tilts.svg"
                                 ]
                         },
                         {
@@ -6328,7 +6328,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 375,
                                 "cue": "Gentle sway of legs side to side in water column.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/phase4-deep-water-core-crucible.svg"
                                 ]
                         },
                         {
@@ -6336,7 +6336,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 375,
                                 "cue": "Full supine float supported by pillows, deep parasympathetic relaxation.",
                                 "frames": [
-                                        "/exercises/restorative_savasana.jpg"
+                                        "/exercises/phase6-passive-decompression-float.svg"
                                 ]
                         }
                 ]
@@ -6363,7 +6363,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 300,
                                 "cue": "High knee marching forward in chest-deep water with normal arm swing.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/phase5-neuromuscular-gait-retraining.svg"
                                 ]
                         },
                         {
@@ -6371,7 +6371,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 300,
                                 "cue": "Walk backward with control, engaging glutes and posterior chain.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/phase5-neuromuscular-gait-retraining.svg"
                                 ]
                         },
                         {
@@ -6379,7 +6379,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 300,
                                 "cue": "Step sideways across lane, engaging glute medius against water drag.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/phase5-neuromuscular-gait-retraining.svg"
                                 ]
                         },
                         {
@@ -6387,7 +6387,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 300,
                                 "cue": "Stand against pool wall, enjoying warmth and hydrostatic pressure.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/phase6-passive-decompression-float.svg"
                                 ]
                         }
                 ]
@@ -6414,7 +6414,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 300,
                                 "cue": "Hold pool wall, sweep right leg out to side against water resistance. Repeat left.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/submerged-banded-hip-abduction-extension.svg"
                                 ]
                         },
                         {
@@ -6422,7 +6422,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 300,
                                 "cue": "Hold kickboard with both hands, push down into water, engage abs.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/phase4-deep-water-core-crucible.svg"
                                 ]
                         },
                         {
@@ -6430,7 +6430,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 300,
                                 "cue": "Rest back on noodles, pedal legs smoothly like riding a bike.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/rail-supported-hydro-pelvic-tilts.svg"
                                 ]
                         },
                         {
@@ -6438,7 +6438,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 300,
                                 "cue": "Rest supported on water surface.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/phase6-passive-decompression-float.svg"
                                 ]
                         }
                 ]
@@ -6465,7 +6465,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 300,
                                 "cue": "Chest submerged, feel hydrostatic pressure assist deep exhalations.",
                                 "frames": [
-                                        "/exercises/restorative_savasana.jpg"
+                                        "/exercises/phase6-passive-decompression-float.svg"
                                 ]
                         },
                         {
@@ -6473,7 +6473,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 300,
                                 "cue": "Smooth sweeping circles with hands submerged in water.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/phase4-deep-water-core-crucible.svg"
                                 ]
                         },
                         {
@@ -6481,7 +6481,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 300,
                                 "cue": "Point, flex, and rotate ankles in warm water.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/rail-supported-hydro-pelvic-tilts.svg"
                                 ]
                         },
                         {
@@ -6489,7 +6489,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 300,
                                 "cue": "Complete still surrender in warm hydro pool.",
                                 "frames": [
-                                        "/exercises/restorative_savasana.jpg"
+                                        "/exercises/phase6-passive-decompression-float.svg"
                                 ]
                         }
                 ]
@@ -6498,11 +6498,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Backlog of alternative exercises for swapping
     const exerciseBacklog = [
-        { title: "Lumbar & Core Stability", duration: 225, frames: ["/lumbar_core_routine.jpg"] },
+        { title: "Lumbar & Core Stability", duration: 225, frames: ["/exercises/supine_pelvic_tilts.jpg"] },
         { title: "Child's Pose Decompression", duration: 225, frames: ["/exercises/supported_childs_pose.jpg"] },
         { title: "Pelvic Tilt & Spinal Alignment", duration: 225, frames: ["/exercises/supine_pelvic_tilts.jpg"] },
-        { title: "Hip & Lower Body Mobility", duration: 225, frames: ["/hip_mobility_routine.jpg"] },
-        { title: "Shoulder & Scapular Rehab", duration: 225, frames: ["/shoulder_rehab_routine.jpg"] }
+        { title: "Hip & Lower Body Mobility", duration: 225, frames: ["/exercises/hip_glute_bridge.jpg"] },
+        { title: "Shoulder & Scapular Rehab", duration: 225, frames: ["/exercises/wall-angels-partial-range.svg"] }
     ];
 
     let currentRoutineRunning = null;
