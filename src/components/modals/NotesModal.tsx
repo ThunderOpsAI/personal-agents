@@ -27,6 +27,8 @@ import {
   Plus,
   X,
   Check,
+  Lock,
+  ShieldAlert,
 } from "lucide-react";
 import { Note } from "../../types";
 import { parseCommaSeparatedTags } from "../../utils/noteTags";
@@ -121,6 +123,63 @@ export function NotesModal({
   const [customTagInput, setCustomTagInput] = useState("");
   const [activeFilterTag, setActiveFilterTag] = useState<string | null>(null);
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
+
+  const NOTES_PIN = "1446";
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [pinInput, setPinInput] = useState("");
+  const [pinError, setPinError] = useState("");
+  const [isShaking, setIsShaking] = useState(false);
+
+  // Auto-lock whenever modal is closed so reopening requires PIN 1446
+  React.useEffect(() => {
+    if (!isOpen) {
+      setIsUnlocked(false);
+      setPinInput("");
+      setPinError("");
+      setIsShaking(false);
+    }
+  }, [isOpen]);
+
+  const handleVerifyPin = (code: string) => {
+    if (code === NOTES_PIN) {
+      setIsUnlocked(true);
+      setPinInput("");
+      setPinError("");
+    } else {
+      setPinError("Incorrect PIN. Access restricted.");
+      setIsShaking(true);
+      setPinInput("");
+      setTimeout(() => setIsShaking(false), 500);
+    }
+  };
+
+  const handlePinDigitInput = (val: string) => {
+    const digits = val.replace(/\D/g, "").slice(0, 4);
+    setPinInput(digits);
+    setPinError("");
+    if (digits.length === 4) {
+      handleVerifyPin(digits);
+    }
+  };
+
+  const handleKeypadPress = (btn: string) => {
+    if (btn === "C") {
+      setPinInput("");
+      setPinError("");
+    } else if (btn === "⌫") {
+      setPinInput((prev) => prev.slice(0, -1));
+      setPinError("");
+    } else {
+      if (pinInput.length < 4) {
+        const next = pinInput + btn;
+        setPinInput(next);
+        setPinError("");
+        if (next.length === 4) {
+          handleVerifyPin(next);
+        }
+      }
+    }
+  };
 
   const [followUpText, setFollowUpText] = useState(
     "- Confirm Dr Khan received MRI imaging report from I-MED\n- Follow up Chemist Warehouse outreach statement for Solicitor\n- Check Deakin MFA unlock status with student central"
@@ -311,6 +370,201 @@ export function NotesModal({
 
   const activeDragNote = activeDragId ? notes.find((n) => n.id === activeDragId) : null;
 
+  if (!isUnlocked) {
+    return (
+      <div className="modal-overlay" onClick={onClose} style={{ zIndex: 1000 }}>
+        <div
+          className="modal-content glass-panel"
+          style={{
+            maxWidth: "380px",
+            width: "92%",
+            padding: "32px 24px",
+            background: "rgba(15, 17, 26, 0.98)",
+            border: "1px solid rgba(239, 68, 68, 0.35)",
+            boxShadow: "0 20px 60px rgba(0, 0, 0, 0.85), 0 0 30px rgba(239, 68, 68, 0.15)",
+            borderRadius: "16px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            textAlign: "center",
+            position: "relative",
+            animation: isShaking ? "pinShake 0.4s ease-in-out" : undefined,
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            className="btn-close"
+            onClick={onClose}
+            type="button"
+            style={{ position: "absolute", top: "14px", right: "14px" }}
+            aria-label="Close"
+          >
+            &times;
+          </button>
+
+          <div
+            style={{
+              width: "56px",
+              height: "56px",
+              borderRadius: "50%",
+              background: "rgba(239, 68, 68, 0.12)",
+              border: "1px solid rgba(239, 68, 68, 0.4)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              marginBottom: "14px",
+              color: "#f87171",
+            }}
+          >
+            <Lock size={26} />
+          </div>
+
+          <h2 style={{ margin: "0 0 6px 0", fontSize: "1.25rem", color: "#f8fafc", fontWeight: 700 }}>
+            Notes Locked
+          </h2>
+          <div
+            style={{
+              fontSize: "0.72rem",
+              color: "var(--neon-blue)",
+              background: "rgba(56, 189, 248, 0.1)",
+              padding: "3px 10px",
+              borderRadius: "12px",
+              border: "1px solid rgba(56, 189, 248, 0.25)",
+              marginBottom: "10px",
+              fontWeight: 600,
+              letterSpacing: "0.5px",
+            }}
+          >
+            DOCTOR PRESENTATION MODE
+          </div>
+          <p style={{ margin: "0 0 18px 0", fontSize: "0.82rem", color: "var(--text-secondary)", lineHeight: 1.4 }}>
+            Enter your 4-digit PIN to access private notes and clinical scratchpad.
+          </p>
+
+          {/* 4 Dots indicator */}
+          <div
+            style={{
+              display: "flex",
+              gap: "14px",
+              justifyContent: "center",
+              marginBottom: "18px",
+            }}
+          >
+            {[0, 1, 2, 3].map((idx) => {
+              const isFilled = pinInput.length > idx;
+              return (
+                <div
+                  key={idx}
+                  style={{
+                    width: "16px",
+                    height: "16px",
+                    borderRadius: "50%",
+                    background: isFilled ? "var(--neon-blue)" : "rgba(255, 255, 255, 0.12)",
+                    border: isFilled ? "1px solid var(--neon-blue)" : "1px solid rgba(255, 255, 255, 0.25)",
+                    boxShadow: isFilled ? "0 0 10px rgba(56, 189, 248, 0.7)" : "none",
+                    transition: "all 0.15s ease",
+                  }}
+                />
+              );
+            })}
+          </div>
+
+          {/* Hidden real input for physical keyboard typing */}
+          <input
+            type="password"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            maxLength={4}
+            value={pinInput}
+            autoFocus
+            onChange={(e) => handlePinDigitInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleVerifyPin(pinInput);
+            }}
+            style={{
+              opacity: 0,
+              position: "absolute",
+              pointerEvents: "none",
+              width: 0,
+              height: 0,
+            }}
+            id="notes-pin-hidden-input"
+          />
+
+          {pinError && (
+            <div
+              style={{
+                color: "#f87171",
+                fontSize: "0.82rem",
+                marginBottom: "14px",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+              }}
+            >
+              <ShieldAlert size={14} />
+              <span>{pinError}</span>
+            </div>
+          )}
+
+          {/* Numeric keypad */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap: "8px",
+              width: "100%",
+              maxWidth: "260px",
+              marginBottom: "16px",
+            }}
+          >
+            {["1", "2", "3", "4", "5", "6", "7", "8", "9", "C", "0", "⌫"].map((btn) => (
+              <button
+                key={btn}
+                type="button"
+                onClick={() => handleKeypadPress(btn)}
+                className="btn btn-outline"
+                style={{
+                  height: "46px",
+                  fontSize: btn === "⌫" || btn === "C" ? "0.95rem" : "1.2rem",
+                  fontWeight: 600,
+                  borderRadius: "8px",
+                  background: btn === "C" || btn === "⌫" ? "rgba(255,255,255,0.04)" : "rgba(56, 189, 248, 0.05)",
+                  borderColor: "rgba(255,255,255,0.12)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                }}
+              >
+                {btn}
+              </button>
+            ))}
+          </div>
+
+          <div style={{ display: "flex", gap: "10px", width: "100%", maxWidth: "260px" }}>
+            <button
+              type="button"
+              className="btn btn-outline"
+              onClick={onClose}
+              style={{ flex: 1, padding: "8px" }}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="btn btn-neon-blue"
+              onClick={() => handleVerifyPin(pinInput)}
+              style={{ flex: 1, padding: "8px" }}
+            >
+              Unlock
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div
@@ -383,6 +637,26 @@ export function NotesModal({
             >
               <Archive size={14} style={{ marginRight: "4px" }} />
               Archive ({notes.filter((n) => n.isArchived).length})
+            </button>
+            <button
+              className="btn btn-sm btn-outline"
+              type="button"
+              onClick={() => {
+                setIsUnlocked(false);
+                setPinInput("");
+                setPinError("");
+              }}
+              title="Lock Notes immediately"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+                borderColor: "rgba(239, 68, 68, 0.4)",
+                color: "#f87171",
+              }}
+            >
+              <Lock size={13} />
+              Lock
             </button>
             <button className="btn-close" onClick={onClose} type="button" aria-label="Close modal">
               &times;

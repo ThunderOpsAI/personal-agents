@@ -79,9 +79,20 @@ export function App() {
     return saved ? JSON.parse(saved) : INITIAL_NOTES;
   });
 
+  const PAIN_LOGS_VERSION = "2026-10-21_v2_sciatica";
   const [painLogs, setPainLogs] = useState<PainLogRecord[]>(() => {
     const saved = localStorage.getItem("rumble_pain_logs");
-    return saved ? JSON.parse(saved) : INITIAL_PAIN_LOGS;
+    const ver = localStorage.getItem("rumble_pain_logs_ver");
+    if (saved && ver === PAIN_LOGS_VERSION) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        // fallback
+      }
+    }
+    localStorage.setItem("rumble_pain_logs", JSON.stringify(INITIAL_PAIN_LOGS));
+    localStorage.setItem("rumble_pain_logs_ver", PAIN_LOGS_VERSION);
+    return INITIAL_PAIN_LOGS;
   });
 
   const [smsMessages, setSmsMessages] = useState<SmsMessage[]>(() => {

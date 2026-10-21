@@ -2816,9 +2816,31 @@ document.addEventListener('DOMContentLoaded', () => {
     // loadRumbleInsights();
 
     // --- 2. Persistent Notes Modal ---
-    btnOpenNotes.addEventListener('click', () => {
-        notesModal.classList.remove('hidden');
-    });
+    const NOTES_PIN = '1446';
+    let isNotesUnlocked = false;
+
+    if (btnOpenNotes) {
+        btnOpenNotes.addEventListener('click', () => {
+            if (isNotesUnlocked) {
+                notesModal.classList.remove('hidden');
+                return;
+            }
+            const entered = window.prompt('Doctor Presentation Mode Active\nEnter 4-digit PIN to access Notes:');
+            if (entered === NOTES_PIN) {
+                isNotesUnlocked = true;
+                notesModal.classList.remove('hidden');
+                showToast('Notes unlocked', 'success');
+            } else if (entered !== null) {
+                showToast('Access Denied: Incorrect PIN', 'error');
+            }
+        });
+    }
+
+    if (btnCloseNotes) {
+        btnCloseNotes.addEventListener('click', () => {
+            isNotesUnlocked = false;
+        });
+    }
 
     let activePainLogScheduledTime = null;
     let activePainLogAgendaId = null;

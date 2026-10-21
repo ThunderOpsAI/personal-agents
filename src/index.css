@@ -1750,6 +1750,12 @@ body.theme-forest {
     100% { box-shadow: 0 0 0 0 rgba(255, 0, 60, 0); }
 }
 
+@keyframes pinShake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-8px); }
+    40%, 80% { transform: translateX(8px); }
+}
+
 /* Upload Dropzone */
 .dropzone {
     border: 2px dashed var(--glass-border);
