@@ -181,8 +181,8 @@ export async function GET(request: Request) {
     // Calculate optimal Washing Days from live Wangaratta weather
     let washingItems: any[] = [];
     try {
-      const washingResult = await selectWashingDays();
-      const rawDays = Array.isArray(washingResult)
+      const washingResult: any = await selectWashingDays();
+      const rawDays: any[] = Array.isArray(washingResult)
         ? washingResult
         : washingResult && washingResult.status === "success" && Array.isArray(washingResult.days)
           ? washingResult.days
