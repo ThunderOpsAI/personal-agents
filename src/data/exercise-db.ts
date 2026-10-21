@@ -78,10 +78,10 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
     precautions: ["Maintain comfortable support under all joints."],
     contraindications: [],
     steps: [
-      { title: "Supported Reclined Bound Angle", duration: 375, cue: "Feet together, knees open supported by pillows, hands on lower abdomen.", frames: ["/exercises/constructive-rest.svg"] },
-      { title: "Gentle Cat-Cow Spine Wave", duration: 375, cue: "Flow gently with breath, avoiding end-range extremes.", frames: ["/exercises/core_cat_cow.jpg"] },
-      { title: "Supported Gentle Sphinx", duration: 375, cue: "Rest elbows on mat, gentle passive thoracic extension.", frames: ["/exercises/supported-sphinx-micro-lifts.svg"] },
-      { title: "Legs Up the Wall Relaxation", duration: 375, cue: "Elevate legs against wall to facilitate venous return and spinal decompression.", frames: ["/exercises/legs-elevated-relaxation.svg"] }
+      { title: "Supported Reclined Bound Angle", duration: 375, cue: "Feet together, knees open supported by pillows, hands on lower abdomen.", frames: ["/exercises/supported_reclined_bound_angle.jpg"] },
+      { title: "Gentle Cat-Cow Spine Wave", duration: 375, cue: "Flow gently with breath, avoiding end-range extremes.", frames: ["/exercises/gentle_cat_cow.jpg", "/exercises/cat_cow_1.jpg"] },
+      { title: "Supported Gentle Sphinx", duration: 375, cue: "Rest elbows on mat, gentle passive thoracic extension.", frames: ["/exercises/supported_gentle_sphinx.jpg"] },
+      { title: "Legs Up the Wall Relaxation", duration: 375, cue: "Elevate legs against wall to facilitate venous return and spinal decompression.", frames: ["/exercises/legs_up_the_wall.jpg"] }
     ],
     video_url: "https://www.youtube.com/watch?v=FXPGuNU-BYA"
   },

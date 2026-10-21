@@ -181,9 +181,28 @@ export function NotesModal({
     }
   };
 
-  const [followUpText, setFollowUpText] = useState(
-    "- Confirm Dr Khan received MRI imaging report from I-MED\n- Follow up Chemist Warehouse outreach statement for Solicitor\n- Check Deakin MFA unlock status with student central"
-  );
+  const FOLLOWUP_VERSION = "2026-10-22_v3_tomorrow_agenda";
+  const [followUpText, setFollowUpText] = useState(() => {
+    const saved = localStorage.getItem("rumble_followup_list");
+    const ver = localStorage.getItem("rumble_followup_ver");
+    const defaultFollowUp = [
+      "- [URGENT - Legal] Email Court Coordinator regarding appearing via video conference (Webex/AVL) due to spinal mobility restrictions",
+      "- [URGENT - Security] Enable Row-Level Security (RLS) on public table in Supabase project 'ladies-night' (cicibqblyiuibiqeaqoa) and review Oct 30 public schema GRANT changes",
+      "- [Medical] Follow up Dr. Nathan Anderson / Brett Toddhunter (20 Oct consult): Psychiatrist referral (S8 dexamphetamine), 3T Lumbar MRI, and Spinal Cord Stimulator (SCS) escalation",
+      "- [Medical / Billing] Pay Alpine Chiropractic Invoice #0033571 (emailed by Rosanna 21 Oct 2026)",
+      "- [Medical] Confirm Dr Khan received MRI imaging report from I-MED",
+      "- [Legal] Follow up Maryse Andrinopoulos-Tsigolis (Shine Lawyers - (03) 9616 4234) regarding Medical Negligence Claim scope & review VLA ATLAS grant outcome letter (14 Oct)",
+      "- [Legal] Upload Chemist Warehouse outreach statement to Solicitor folder",
+      "- [University] Check Deakin MFA unlock status with Student Central & verify S306 Computer Science minor selection in StudentConnect before T1 2027 changes",
+      "- [Finance / Admin] Redeem $200.00 Coles eGift Card (Blackhawk / Afterpay email 21 Oct) & check ING Fire Extinguisher 10 balance after declined $200 transfer to Splurge 10",
+      "- [Orders / Tickets] Reply to Reggie at Stickeroo with exact sticker dimensions to finalize custom vinyl sheet quote",
+      "- [Orders / Tickets] Reply to AXS Customer Support (Ticket #13237399 / Request #12767724) before auto-close & verify Foo Fighters Order #1000748351 in zinta_cook@live.com.au",
+    ].join("\n");
+    if (saved && ver === FOLLOWUP_VERSION) return saved;
+    localStorage.setItem("rumble_followup_list", defaultFollowUp);
+    localStorage.setItem("rumble_followup_ver", FOLLOWUP_VERSION);
+    return defaultFollowUp;
+  });
   const [followUpSavedStatus, setFollowUpSavedStatus] = useState("");
 
   // Sensors for dnd-kit: pointer sensor requires 5px drag distance to avoid accidental dragging on click
@@ -273,6 +292,7 @@ export function NotesModal({
 
   const syncTagsFromCommaInput = (value: string) => {
     setCommaTagsInput(value);
+    setSelectedTags(parseCommaSeparatedTags(value));
   };
 
   const togglePin = (note: Note) => {
@@ -285,11 +305,11 @@ export function NotesModal({
 
   const toggleTag = (tag: string) => {
     const formatted = tag.trim().startsWith("#") ? tag.trim().toLowerCase() : `#${tag.trim().toLowerCase()}`;
-    if (selectedTags.includes(formatted)) {
-      setSelectedTags(selectedTags.filter((t) => t !== formatted));
-    } else {
-      setSelectedTags([...selectedTags, formatted]);
-    }
+    const nextTags = selectedTags.includes(formatted)
+      ? selectedTags.filter((t) => t !== formatted)
+      : [...selectedTags, formatted];
+    setSelectedTags(nextTags);
+    setCommaTagsInput(nextTags.map((t) => t.replace(/^#/, "")).join(", "));
   };
 
   const addCustomTag = () => {
@@ -298,12 +318,15 @@ export function NotesModal({
     if (!clean) return;
     const formatted = `#${clean}`;
     if (!selectedTags.includes(formatted)) {
-      setSelectedTags([...selectedTags, formatted]);
+      const nextTags = [...selectedTags, formatted];
+      setSelectedTags(nextTags);
+      setCommaTagsInput(nextTags.map((t) => t.replace(/^#/, "")).join(", "));
     }
     setCustomTagInput("");
   };
 
   const saveFollowUp = () => {
+    localStorage.setItem("rumble_followup_list", followUpText);
     setFollowUpSavedStatus("Saved to permanent memory ✓");
     setTimeout(() => setFollowUpSavedStatus(""), 3000);
   };

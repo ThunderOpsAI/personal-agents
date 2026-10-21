@@ -756,9 +756,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const tomorrowProtocols = [
             { id: 'tom_retrieval_0600', time: '06:00 AM', title: 'Automated Retrieval: Scrape Gmail & Calendar', item_type: 'retrieval', status: 'pending' },
             { id: 'tom_yoga_0900', time: '09:00 AM', title: 'Adaptive Morning Yoga Routine (3 Options Dynamic)', item_type: 'yoga', status: 'pending', choices: ['Hip Flow', 'Lumbar Core', 'Shoulder Rehab'] },
+            { id: 'tom_court_0930', time: '09:30 AM', title: 'Email Court Coordinator regarding appearing via video conference (Webex/AVL)', item_type: 'task', status: 'pending' },
             { id: 'tom_hydro_1030', time: '10:30 AM', title: 'Hydrotherapy Session (Rumble Target: 3/week)', item_type: 'hydrotherapy', status: 'pending' },
+            { id: 'tom_supabase_1100', time: '11:00 AM', title: 'Enable Row-Level Security (RLS) on Supabase project ladies-night & review Oct 30 GRANT changes', item_type: 'task', status: 'pending' },
+            { id: 'tom_chiro_1130', time: '11:30 AM', title: 'Pay Alpine Chiropractic Invoice #0033571 (emailed by Rosanna 21 Oct)', item_type: 'task', status: 'pending' },
             { id: 'tom_wash_1300', time: '01:00 PM', title: 'Weather-Optimized Washing (Lowest Precip Window)', item_type: 'washing', status: 'pending' },
             { id: 'tom_email_1400', time: '02:00 PM', title: 'Automated Afternoon Email & Calendar Scrape', item_type: 'retrieval', status: 'pending' },
+            { id: 'tom_deakin_1430', time: '02:30 PM', title: 'Verify S306 Computer Science minor selection in Deakin StudentConnect & unlock MFA', item_type: 'task', status: 'pending' },
+            { id: 'tom_stickeroo_1530', time: '03:30 PM', title: 'Reply to Reggie at Stickeroo with exact sticker dimensions to finalize custom quote', item_type: 'task', status: 'pending' },
+            { id: 'tom_axs_1630', time: '04:30 PM', title: 'Reply to AXS Support Ticket #13237399 & verify Foo Fighters Order #1000748351 in zinta_cook@live.com.au', item_type: 'task', status: 'pending' },
             { id: 'tom_yoga_1700', time: '05:00 PM', title: 'Shoulder & Neck Decompression', item_type: 'yoga', status: 'pending' },
             { id: 'tom_med_2100', time: '09:00 PM', title: 'Sleep Meditation', item_type: 'meditation', status: 'pending' }
         ];
@@ -3720,8 +3726,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (followUpTextarea && document.activeElement !== followUpTextarea) {
                         followUpTextarea.value = followUpNote.content;
                     }
-                } else if (followUpTextarea && document.activeElement !== followUpTextarea) {
-                    followUpTextarea.value = '';
+                } else if (followUpTextarea && document.activeElement !== followUpTextarea && !followUpTextarea.value) {
+                    followUpTextarea.value = [
+                        "- [URGENT - Legal] Email Court Coordinator regarding appearing via video conference (Webex/AVL) due to spinal mobility restrictions",
+                        "- [URGENT - Security] Enable Row-Level Security (RLS) on public table in Supabase project 'ladies-night' (cicibqblyiuibiqeaqoa) and review Oct 30 public schema GRANT changes",
+                        "- [Medical] Follow up Dr. Nathan Anderson / Brett Toddhunter (20 Oct consult): Psychiatrist referral (S8 dexamphetamine), 3T Lumbar MRI, and Spinal Cord Stimulator (SCS) escalation",
+                        "- [Medical / Billing] Pay Alpine Chiropractic Invoice #0033571 (emailed by Rosanna 21 Oct 2026)",
+                        "- [Medical] Confirm Dr Khan received MRI imaging report from I-MED",
+                        "- [Legal] Follow up Maryse Andrinopoulos-Tsigolis (Shine Lawyers - (03) 9616 4234) regarding Medical Negligence Claim scope & review VLA ATLAS grant outcome letter (14 Oct)",
+                        "- [Legal] Upload Chemist Warehouse outreach statement to Solicitor folder",
+                        "- [University] Check Deakin MFA unlock status with Student Central & verify S306 Computer Science minor selection in StudentConnect before T1 2027 changes",
+                        "- [Finance / Admin] Redeem $200.00 Coles eGift Card (Blackhawk / Afterpay email 21 Oct) & check ING Fire Extinguisher 10 balance after declined $200 transfer to Splurge 10",
+                        "- [Orders / Tickets] Reply to Reggie at Stickeroo with exact sticker dimensions to finalize custom vinyl sheet quote",
+                        "- [Orders / Tickets] Reply to AXS Customer Support (Ticket #13237399 / Request #12767724) before auto-close & verify Foo Fighters Order #1000748351 in zinta_cook@live.com.au"
+                    ].join('\n');
                 }
                 
                 // Filter out system notes from regular display
@@ -4619,7 +4637,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 375,
                                 "cue": "Feet together, knees open supported by pillows, hands on lower abdomen.",
                                 "frames": [
-                                        "/exercises/constructive-rest.svg"
+                                        "/exercises/supported_reclined_bound_angle.jpg"
                                 ]
                         },
                         {
@@ -4627,7 +4645,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 375,
                                 "cue": "Flow gently with breath, avoiding end-range extremes.",
                                 "frames": [
-                                        "/exercises/core_cat_cow.jpg"
+                                        "/exercises/gentle_cat_cow.jpg",
+                                        "/exercises/cat_cow_1.jpg"
                                 ]
                         },
                         {
@@ -4635,7 +4654,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 375,
                                 "cue": "Rest elbows on mat, gentle passive thoracic extension.",
                                 "frames": [
-                                        "/exercises/supported-sphinx-micro-lifts.svg"
+                                        "/exercises/supported_gentle_sphinx.jpg"
                                 ]
                         },
                         {
@@ -4643,7 +4662,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 375,
                                 "cue": "Elevate legs against wall to facilitate venous return and spinal decompression.",
                                 "frames": [
-                                        "/exercises/legs-elevated-relaxation.svg"
+                                        "/exercises/legs_up_the_wall.jpg"
                                 ]
                         }
                 ]

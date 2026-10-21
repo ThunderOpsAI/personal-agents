@@ -49,9 +49,20 @@ import { DailyInsightCard } from "./components/DailyInsightCard";
 
 export function App() {
   // --- Persistent Storage State ---
+  const AGENDA_VERSION = "2026-10-22_v3_tomorrow_agenda";
   const [agendaItems, setAgendaItems] = useState<AgendaItem[]>(() => {
     const saved = localStorage.getItem("rumble_agenda_items");
-    return saved ? JSON.parse(saved) : INITIAL_AGENDA_ITEMS;
+    const ver = localStorage.getItem("rumble_agenda_ver");
+    if (saved && ver === AGENDA_VERSION) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        // fallback
+      }
+    }
+    localStorage.setItem("rumble_agenda_items", JSON.stringify(INITIAL_AGENDA_ITEMS));
+    localStorage.setItem("rumble_agenda_ver", AGENDA_VERSION);
+    return INITIAL_AGENDA_ITEMS;
   });
 
   const [budgetItems, setBudgetItems] = useState<BudgetItem[]>(() => {
@@ -69,9 +80,20 @@ export function App() {
     return saved ? JSON.parse(saved) : INITIAL_CALENDAR_EVENTS;
   });
 
+  const TASKS_VERSION = "2026-10-22_v3_tomorrow_agenda";
   const [tasks, setTasks] = useState<TaskItem[]>(() => {
     const saved = localStorage.getItem("rumble_tasks");
-    return saved ? JSON.parse(saved) : INITIAL_TASKS;
+    const ver = localStorage.getItem("rumble_tasks_ver");
+    if (saved && ver === TASKS_VERSION) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        // fallback
+      }
+    }
+    localStorage.setItem("rumble_tasks", JSON.stringify(INITIAL_TASKS));
+    localStorage.setItem("rumble_tasks_ver", TASKS_VERSION);
+    return INITIAL_TASKS;
   });
 
   const [notes, setNotes] = useState<Note[]>(() => {

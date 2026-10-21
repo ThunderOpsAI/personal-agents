@@ -61,6 +61,61 @@ export async function GET(request: Request) {
     const targetDatePrefix = targetDate.toLocaleDateString("en-CA", { timeZone: "Australia/Melbourne" });
 
     const standingProcessed = ensureStandingTasks(ensureDailyStandingProtocols(rawItems, targetDate), targetDate);
+
+    // Inject scheduled follow-up agenda items for Oct 22/23 if not already in DB
+    const targetOffset = "+11:00";
+    if (view === "tomorrow" || targetDatePrefix === "2026-10-22" || targetDatePrefix === "2026-10-23") {
+      const scheduledFollowUps = [
+        {
+          id: `agenda_court_video_conf_${targetDatePrefix}`,
+          item_type: "task" as const,
+          title: "Email Court Coordinator regarding appearing via video conference (Webex/AVL)",
+          scheduled_time: `${targetDatePrefix}T09:30:00${targetOffset}`,
+        },
+        {
+          id: `agenda_supabase_rls_${targetDatePrefix}`,
+          item_type: "task" as const,
+          title: "Enable Row-Level Security (RLS) on Supabase project ladies-night & review Oct 30 GRANT changes",
+          scheduled_time: `${targetDatePrefix}T10:30:00${targetOffset}`,
+        },
+        {
+          id: `agenda_alpine_chiro_bill_${targetDatePrefix}`,
+          item_type: "task" as const,
+          title: "Pay Alpine Chiropractic Invoice #0033571 (emailed by Rosanna 21 Oct)",
+          scheduled_time: `${targetDatePrefix}T11:30:00${targetOffset}`,
+        },
+        {
+          id: `agenda_deakin_minor_mfa_${targetDatePrefix}`,
+          item_type: "task" as const,
+          title: "Verify S306 Computer Science minor selection in Deakin StudentConnect & unlock MFA",
+          scheduled_time: `${targetDatePrefix}T14:30:00${targetOffset}`,
+        },
+        {
+          id: `agenda_stickeroo_quote_${targetDatePrefix}`,
+          item_type: "task" as const,
+          title: "Reply to Reggie at Stickeroo with exact sticker dimensions to finalize custom quote",
+          scheduled_time: `${targetDatePrefix}T15:30:00${targetOffset}`,
+        },
+        {
+          id: `agenda_axs_foo_fighters_${targetDatePrefix}`,
+          item_type: "task" as const,
+          title: "Reply to AXS Support Ticket #13237399 & verify Foo Fighters Order #1000748351 in zinta_cook@live.com.au",
+          scheduled_time: `${targetDatePrefix}T16:30:00${targetOffset}`,
+        },
+      ];
+      for (const fItem of scheduledFollowUps) {
+        if (!standingProcessed.some((i) => i.id === fItem.id || i.title === fItem.title)) {
+          standingProcessed.push({
+            ...fItem,
+            status: "pending",
+            completed_at: null,
+            dismissed_at: null,
+            audit_trail: [{ timestamp: now.toISOString(), new_status: "pending", note: "Scheduled follow-up item" }],
+            created_at: now.toISOString(),
+          });
+        }
+      }
+    }
     
     // Filter items to strictly include those scheduled for the target date
     const dailyItemsForDate = standingProcessed.filter((item) => {
@@ -127,10 +182,15 @@ export async function GET(request: Request) {
     let washingItems: any[] = [];
     try {
       const washingResult = await selectWashingDays();
-      if (washingResult && Array.isArray(washingResult)) {
-        washingItems = washingResult.slice(0, 2).map((w) => {
+      const rawDays = Array.isArray(washingResult)
+        ? washingResult
+        : washingResult && washingResult.status === "success" && Array.isArray(washingResult.days)
+          ? washingResult.days
+          : [];
+      if (rawDays.length > 0) {
+        washingItems = rawDays.slice(0, 2).map((w: any) => {
           const d = new Date(w.date);
-          const dayStr = d.toLocaleDateString("en-AU", { weekday: "short", day: "numeric", month: "short", timeZone: "Australia/Melbourne" });
+          const dayStr = d.toLocaleDateString("en-AU", { weekday: "long", timeZone: "Australia/Melbourne" });
           return {
             id: `wash_${w.date}`,
             date: w.date,
@@ -139,7 +199,7 @@ export async function GET(request: Request) {
             type: "washing",
             time: "01:00 PM",
             source: "open_meteo",
-            description: `Optimal drying window selected from live Wangaratta forecast with ${w.precipitationProbability}% precipitation probability.`
+            description: `Optimal drying window (${dayStr}) selected from live Wangaratta forecast with ${w.precipitationProbability}% precipitation probability.`
           };
         });
       }
