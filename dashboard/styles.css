@@ -855,6 +855,76 @@ input[type="datetime-local"].glass-input {
     border-color: var(--neon-blue);
 }
 
+.mood-tag-chip, .soreness-chip, .modifier-chip {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    color: var(--text-secondary);
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    user-select: none;
+}
+.mood-tag-chip:hover, .soreness-chip:hover, .modifier-chip:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+}
+.mood-tag-chip.active {
+    background: rgba(0, 240, 255, 0.2);
+    border-color: var(--neon-blue);
+    color: #38bdf8;
+    font-weight: 600;
+}
+.soreness-chip.active {
+    background: rgba(239, 68, 68, 0.25);
+    border-color: #ef4444;
+    color: #fca5a5;
+    font-weight: 600;
+}
+.modifier-chip.active.therapy {
+    background: rgba(0, 230, 118, 0.25);
+    border-color: #00e676;
+    color: #00e676;
+    font-weight: 600;
+}
+.modifier-chip.active.aggravator {
+    background: rgba(255, 82, 82, 0.25);
+    border-color: #ff5252;
+    color: #ff5252;
+    font-weight: 600;
+}
+.quick-pain-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+}
+.quick-pain-btn {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--glass-border);
+    transition: all 0.15s ease;
+    cursor: pointer;
+    text-align: left;
+}
+.quick-pain-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-1px);
+}
+.macrodroid-banner {
+    background: #dc2626;
+    color: #ffffff;
+    padding: 10px 16px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 14px rgba(220, 38, 38, 0.45);
+    font-weight: 600;
+    font-size: 0.95rem;
+    z-index: 100;
+}
+
 /* Today's Logged Check-ins Section */
 .todays-pain-history-section {
     margin-top: 14px;

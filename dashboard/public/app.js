@@ -327,7 +327,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (res.ok) {
                 const data = await res.json();
                 if (data.temp_c !== null && data.temp_c !== undefined) {
-                    const washDays = (data.forecast || []).slice().sort((a, b) => a.precipitation_probability_pct - b.precipitation_probability_pct).slice(0, 2).map(day => day.date).join(' and ');
+                    const formatWashDay = (isoDate) => {
+                        const [y, m, d] = String(isoDate).split('-').map(Number);
+                        if (!y || !m || !d) return isoDate;
+                        return new Date(Date.UTC(y, m - 1, d, 13, 0, 0)).toLocaleDateString('en-AU', { weekday: 'long', timeZone: 'Australia/Melbourne' });
+                    };
+                    const washDays = (data.forecast || []).slice().sort((a, b) => a.precipitation_probability_pct - b.precipitation_probability_pct).slice(0, 2).map(day => formatWashDay(day.date)).join(' and ');
                     const maxTemp = data.max_temp_c !== null ? `${data.max_temp_c}°C` : '--';
                     const rainDay = data.rain_probability_pct_day !== undefined ? data.rain_probability_pct_day : (data.rain_probability_pct || 0);
                     weatherWidget.innerHTML = `<span class="weather-text">Wangaratta: ${data.temp_c}°C (Max: ${maxTemp}) • ${rainDay}% chance of rain today • Wash: ${washDays || 'forecast unavailable'}</span>`;
@@ -484,6 +489,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const card = document.createElement('div');
                 card.className = `protocol-card glass-panel${isCompleted ? ' completed' : ''}${isDismissed ? ' dismissed' : ''}`;
                 card.id = `protocol-${item.id}`;
+                if (item.scheduled_time) card.setAttribute('data-scheduled-time', item.scheduled_time);
+                if (item.id) card.setAttribute('data-agenda-id', item.id);
                 
                 if (isCompleted) {
                     card.innerHTML = `
@@ -527,7 +534,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <button class="btn btn-neon-blue btn-sm btn-done" data-id="${item.id}" data-type="insight">Approve</button>
                                 <button class="btn btn-outline btn-sm btn-dismiss" data-id="${item.id}" data-type="insight">Reject</button>
                             ` : `
-                                <button class="btn btn-neon-purple btn-sm btn-show-me" data-id="${item.id}" data-type="${item.item_type || ''}">View</button>
+                                <button class="btn btn-neon-purple btn-sm btn-show-me" data-id="${item.id}" data-type="${item.item_type || ''}" data-scheduled-time="${item.scheduled_time || ''}">View</button>
                                 <button class="btn btn-neon-green btn-sm btn-done" data-id="${item.id}" data-type="${item.item_type || ''}">Done</button>
                                 <button class="btn btn-outline btn-sm btn-postpone" data-id="${item.id}" data-type="${item.item_type || ''}">Delay</button>
                                 <button class="btn btn-outline btn-sm btn-dismiss" data-id="${item.id}" data-type="${item.item_type || ''}">Dismiss</button>
@@ -749,9 +756,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const tomorrowProtocols = [
             { id: 'tom_retrieval_0600', time: '06:00 AM', title: 'Automated Retrieval: Scrape Gmail & Calendar', item_type: 'retrieval', status: 'pending' },
             { id: 'tom_yoga_0900', time: '09:00 AM', title: 'Adaptive Morning Yoga Routine (3 Options Dynamic)', item_type: 'yoga', status: 'pending', choices: ['Hip Flow', 'Lumbar Core', 'Shoulder Rehab'] },
+            { id: 'tom_court_0930', time: '09:30 AM', title: 'Email Court Coordinator regarding appearing via video conference (Webex/AVL)', item_type: 'task', status: 'pending' },
             { id: 'tom_hydro_1030', time: '10:30 AM', title: 'Hydrotherapy Session (Rumble Target: 3/week)', item_type: 'hydrotherapy', status: 'pending' },
+            { id: 'tom_supabase_1100', time: '11:00 AM', title: 'Enable Row-Level Security (RLS) on Supabase project ladies-night & review Oct 30 GRANT changes', item_type: 'task', status: 'pending' },
+            { id: 'tom_chiro_1130', time: '11:30 AM', title: 'Pay Alpine Chiropractic Invoice #0033571 (emailed by Rosanna 21 Oct)', item_type: 'task', status: 'pending' },
             { id: 'tom_wash_1300', time: '01:00 PM', title: 'Weather-Optimized Washing (Lowest Precip Window)', item_type: 'washing', status: 'pending' },
             { id: 'tom_email_1400', time: '02:00 PM', title: 'Automated Afternoon Email & Calendar Scrape', item_type: 'retrieval', status: 'pending' },
+            { id: 'tom_deakin_1430', time: '02:30 PM', title: 'Verify S306 Computer Science minor selection in Deakin StudentConnect & unlock MFA', item_type: 'task', status: 'pending' },
+            { id: 'tom_stickeroo_1530', time: '03:30 PM', title: 'Reply to Reggie at Stickeroo with exact sticker dimensions to finalize custom quote', item_type: 'task', status: 'pending' },
+            { id: 'tom_axs_1630', time: '04:30 PM', title: 'Reply to AXS Support Ticket #13237399 & verify Foo Fighters Order #1000748351 in zinta_cook@live.com.au', item_type: 'task', status: 'pending' },
             { id: 'tom_yoga_1700', time: '05:00 PM', title: 'Shoulder & Neck Decompression', item_type: 'yoga', status: 'pending' },
             { id: 'tom_med_2100', time: '09:00 PM', title: 'Sleep Meditation', item_type: 'meditation', status: 'pending' }
         ];
@@ -1871,19 +1884,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const badgeText = `Ch. ${(enc.currentChapterIndex || 0) + 1}/${enc.totalChapters}`;
                 const titleText = enc.currentChapter ? enc.currentChapter.title : 'Loading...';
                 
-                if (enc.id === 'pain') {
-                    if (painProgressBadge) painProgressBadge.innerText = badgeText;
-                    if (painCurrentTitle) painCurrentTitle.innerText = titleText;
-                } else if (enc.id === 'ai') {
-                    if (aiProgressBadge) aiProgressBadge.innerText = badgeText;
-                    if (aiCurrentTitle) aiCurrentTitle.innerText = titleText;
-                } else if (enc.id === 'tech') {
-                    if (techProgressBadge) techProgressBadge.innerText = badgeText;
-                    if (techCurrentTitle) techCurrentTitle.innerText = titleText;
-                } else if (enc.id === 'cbt') {
-                    if (cbtProgressBadge) cbtProgressBadge.innerText = badgeText;
-                    if (cbtCurrentTitle) cbtCurrentTitle.innerText = titleText;
-                }
+                const badgeEl = document.getElementById(`${enc.id}ProgressBadge`);
+                const titleEl = document.getElementById(`${enc.id}CurrentTitle`);
+                if (badgeEl) badgeEl.innerText = badgeText;
+                if (titleEl) titleEl.innerText = titleText;
             });
         } catch (e) {
             console.error('Failed to load encyclopedias summary:', e);
@@ -2437,6 +2441,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else if (data.intent === 'ADD_EXPENSE') {
                     if (typeof loadBudget === 'function') loadBudget();
                     showToast('Expense added', 'success');
+                } else if (data.intent === 'SEND_EMAIL' && actionToCommit) {
+                    if (data.status === 'success') {
+                        showToast('Email sent via Gmail', 'success');
+                    } else {
+                        showToast('Email could not be sent', 'error');
+                    }
                 }
             }
 
@@ -2812,13 +2822,70 @@ document.addEventListener('DOMContentLoaded', () => {
     // loadRumbleInsights();
 
     // --- 2. Persistent Notes Modal ---
-    btnOpenNotes.addEventListener('click', () => {
-        notesModal.classList.remove('hidden');
-    });
+    const NOTES_PIN = '1446';
+    let isNotesUnlocked = false;
 
-    function closePainLog() { painLogModal.classList.add('hidden'); }
+    if (btnOpenNotes) {
+        btnOpenNotes.addEventListener('click', () => {
+            if (isNotesUnlocked) {
+                notesModal.classList.remove('hidden');
+                return;
+            }
+            const entered = window.prompt('Doctor Presentation Mode Active\nEnter 4-digit PIN to access Notes:');
+            if (entered === NOTES_PIN) {
+                isNotesUnlocked = true;
+                notesModal.classList.remove('hidden');
+                showToast('Notes unlocked', 'success');
+            } else if (entered !== null) {
+                showToast('Access Denied: Incorrect PIN', 'error');
+            }
+        });
+    }
+
+    if (btnCloseNotes) {
+        btnCloseNotes.addEventListener('click', () => {
+            isNotesUnlocked = false;
+        });
+    }
+
+    let activePainLogScheduledTime = null;
+    let activePainLogAgendaId = null;
+
+    function computeRandomOffsetTimestamp(scheduledTimeStr) {
+        if (!scheduledTimeStr) return null;
+        let baseDate = null;
+        const parsed = new Date(scheduledTimeStr);
+        if (!isNaN(parsed.getTime())) {
+            baseDate = parsed;
+        } else {
+            const match = scheduledTimeStr.match(/(\d+):(\d+)\s*(AM|PM)?/i);
+            if (match) {
+                let h = parseInt(match[1]);
+                const m = parseInt(match[2]);
+                const ampm = match[3] ? match[3].toUpperCase() : null;
+                if (ampm === 'PM' && h < 12) h += 12;
+                if (ampm === 'AM' && h === 12) h = 0;
+                baseDate = new Date();
+                baseDate.setHours(h, m, 0, 0);
+            }
+        }
+        if (!baseDate || isNaN(baseDate.getTime())) return null;
+
+        // Random offset between -10 minutes and +10 minutes (-600 to +600 seconds)
+        const offsetSeconds = Math.floor(Math.random() * 1201) - 600;
+        return new Date(baseDate.getTime() + offsetSeconds * 1000).toISOString();
+    }
+
+    function closePainLog() {
+        activePainLogScheduledTime = null;
+        activePainLogAgendaId = null;
+        painLogModal.classList.add('hidden');
+    }
     if (btnOpenPainLog) btnOpenPainLog.addEventListener('click', () => {
+        activePainLogScheduledTime = null;
+        activePainLogAgendaId = null;
         renderPainModal();
+        if (typeof recalculateMood === 'function') recalculateMood();
         if (typeof loadTodaysPainLogs === 'function') loadTodaysPainLogs();
         painLogModal.classList.remove('hidden');
     });
@@ -2945,11 +3012,14 @@ document.addEventListener('DOMContentLoaded', () => {
                             </div>
                         </div>
                         <div>
-                            <label style="font-size: 0.75rem; color: var(--text-secondary); display: flex; justify-content: space-between; margin-bottom: 4px;">
+                            <label style="font-size: 0.75rem; color: var(--text-secondary); display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                                 <span>Pain Score</span>
-                                <strong style="color: var(--neon-red);" class="pain-score-val-label">${slot.score}/10</strong>
+                                <div style="display: flex; align-items: center; gap: 4px;">
+                                    <input type="number" class="pain-score-input-cell" data-area="${slot.area}" min="0" max="10" step="0.1" inputmode="decimal" value="${slot.score}" style="width: 52px; padding: 2px 4px; text-align: right; font-weight: bold; color: var(--neon-red); background: rgba(0,0,0,0.5); border: 1px solid rgba(255, 75, 75, 0.4); border-radius: 4px; font-size: 0.85rem;" title="Click to enter exact decimal score (e.g. 5.7, 8.3)">
+                                    <span style="font-size: 0.75rem; color: var(--text-secondary);">/10</span>
+                                </div>
                             </label>
-                            <input type="range" class="glass-input pain-slot-slider" data-area="${slot.area}" min="0" max="10" step="0.5" value="${slot.score}" style="width: 100%; height: 6px; padding: 0;">
+                            <input type="range" class="glass-input pain-slot-slider" data-area="${slot.area}" min="0" max="10" step="0.1" value="${slot.score}" style="width: 100%; height: 6px; padding: 0;">
                         </div>
                     </div>
                 </div>
@@ -2983,10 +3053,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 const area = slider.getAttribute('data-area');
                 const slot = selectedPainAreas.find(s => s.area === area);
                 if (slot) {
-                    slot.score = Number(e.target.value);
-                    const label = slider.parentElement.querySelector('.pain-score-val-label');
-                    if (label) label.innerText = `${slot.score}/10`;
+                    const parsed = parseFloat(e.target.value);
+                    slot.score = isNaN(parsed) ? 5.0 : Number(parsed.toFixed(1));
+                    const numInput = slider.closest('.pain-slot-controls')?.querySelector(`.pain-score-input-cell[data-area="${area}"]`);
+                    if (numInput && document.activeElement !== numInput) {
+                        numInput.value = slot.score;
+                    }
                 }
+            });
+        });
+
+        dynamicPainCardsContainer.querySelectorAll('.pain-score-input-cell').forEach(numInput => {
+            const handleScoreInput = (e) => {
+                const area = numInput.getAttribute('data-area');
+                const slot = selectedPainAreas.find(s => s.area === area);
+                if (slot) {
+                    let parsed = parseFloat(e.target.value);
+                    if (isNaN(parsed)) parsed = 0;
+                    parsed = Math.max(0, Math.min(10, parsed));
+                    slot.score = Number(parsed.toFixed(1));
+                    const slider = numInput.closest('.pain-slot-controls')?.querySelector(`.pain-slot-slider[data-area="${area}"]`);
+                    if (slider && document.activeElement !== slider) {
+                        slider.value = slot.score;
+                    }
+                }
+            };
+            numInput.addEventListener('input', handleScoreInput);
+            numInput.addEventListener('change', (e) => {
+                handleScoreInput(e);
+                numInput.value = slot?.score ?? numInput.value;
             });
         });
 
@@ -3017,24 +3112,264 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Quick Note Chips
-    document.querySelectorAll('.pain-rhs-combined .quick-note-chip').forEach(chip => {
-        chip.addEventListener('click', () => {
-            const text = chip.getAttribute('data-text');
-            if (unifiedNotesInput) {
-                unifiedNotesInput.value = unifiedNotesInput.value ? `${unifiedNotesInput.value}; ${text}` : text;
+        // --- Pain Presets, Mood Model & Clinical Notes ---
+    let manualMoodOverride = null;
+
+    function appendNoteChipText(text) {
+        if (!unifiedNotesInput || !text) return;
+        const cur = unifiedNotesInput.value.trim();
+        if (!cur) {
+            unifiedNotesInput.value = text;
+        } else if (!cur.toLowerCase().includes(text.toLowerCase())) {
+            unifiedNotesInput.value = `${cur}; ${text}`;
+        }
+    }
+
+    function recalculateMood() {
+        if (manualMoodOverride !== null) {
+            currentMoodLevel = Number(manualMoodOverride.toFixed(1));
+        } else {
+            let score = 5.0; // Base 5.0
+
+            // Emotional mood tags
+            document.querySelectorAll('#moodTagsRow .mood-tag-chip.active').forEach(chip => {
+                const w = parseFloat(chip.getAttribute('data-weight') || '0');
+                score += w;
+            });
+
+            // Physical soreness severity (single select)
+            const activeSoreness = document.querySelector('#sorenessChipsRow .soreness-chip.active');
+            if (activeSoreness) {
+                const w = parseFloat(activeSoreness.getAttribute('data-weight') || '0');
+                score += w;
+            }
+
+            // Therapy and exertion modifiers
+            document.querySelectorAll('#modifiersChipsRow .modifier-chip.active').forEach(chip => {
+                const w = parseFloat(chip.getAttribute('data-weight') || '0');
+                score += w;
+            });
+
+            // Clamp strictly to [0, 10]
+            currentMoodLevel = Math.max(0, Math.min(10, Number(score.toFixed(1))));
+        }
+
+        // Update displays
+        if (moodValDisplay) moodValDisplay.innerText = currentMoodLevel.toFixed(1);
+
+        let label = 'Calm';
+        if (currentMoodLevel >= 8) label = 'Happy';
+        else if (currentMoodLevel >= 6) label = 'Good';
+        else if (currentMoodLevel >= 4) label = 'Calm';
+        else if (currentMoodLevel >= 2) label = 'Tired';
+        else label = 'Flare';
+
+        if (moodLabelDisplay) moodLabelDisplay.innerText = `(${label})`;
+
+        const formulaTag = document.getElementById('moodFormulaTag');
+        if (formulaTag) {
+            formulaTag.innerText = manualMoodOverride !== null ? 'Manual Override' : `Calculated: ${currentMoodLevel.toFixed(1)}`;
+        }
+
+        // Highlight corresponding integer button in scale
+        const roundInt = Math.round(currentMoodLevel);
+        document.querySelectorAll('#moodScaleButtons .mood-num').forEach(btn => {
+            const val = parseInt(btn.getAttribute('data-val'), 10);
+            btn.classList.toggle('active', val === roundInt);
+        });
+    }
+
+    // Wire Mood Scale Manual Number Clicks
+    document.querySelectorAll('#moodScaleButtons .mood-num').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const val = parseFloat(btn.getAttribute('data-val'));
+            manualMoodOverride = isNaN(val) ? 5.0 : val;
+            recalculateMood();
+        });
+    });
+
+    // Wire Emotional State Multi-Select Tags
+    document.querySelectorAll('#moodTagsRow .mood-tag-chip').forEach(btn => {
+        btn.addEventListener('click', () => {
+            btn.classList.toggle('active');
+            manualMoodOverride = null;
+            recalculateMood();
+            if (btn.classList.contains('active')) {
+                const moodName = btn.getAttribute('data-mood');
+                appendNoteChipText(moodName);
             }
         });
     });
 
-    moodEmojiButtons.forEach(button => button.addEventListener('click', () => {
-        moodEmojiButtons.forEach(item => item.classList.remove('active'));
-        button.classList.add('active');
-        selectedMoodEmoji = button.dataset.emoji;
-        if (moodLabelDisplay && button.dataset.label) {
-            moodLabelDisplay.innerText = `(${button.dataset.label})`;
+    // Wire Soreness Severity Chips (Single-Select)
+    document.querySelectorAll('#sorenessChipsRow .soreness-chip').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('#sorenessChipsRow .soreness-chip').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            manualMoodOverride = null;
+            recalculateMood();
+            const soreness = btn.getAttribute('data-soreness');
+            if (soreness && soreness !== 'None') {
+                appendNoteChipText(`Soreness: ${soreness}`);
+            }
+        });
+    });
+
+    // Wire Therapies & Aggravators Chips
+    document.querySelectorAll('#modifiersChipsRow .modifier-chip').forEach(btn => {
+        btn.addEventListener('click', () => {
+            btn.classList.toggle('active');
+            manualMoodOverride = null;
+            recalculateMood();
+            if (btn.classList.contains('active')) {
+                const mod = btn.getAttribute('data-mod');
+                appendNoteChipText(mod);
+            }
+        });
+    });
+
+    // Wire Expanded Clinical Note Quick Chips
+    document.querySelectorAll('.pain-rhs-combined .quick-note-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            const text = chip.getAttribute('data-text') || chip.innerText.trim();
+            appendNoteChipText(text);
+        });
+    });
+
+    // Staging Presets (Loads Form State, No Auto-Commit, Explicit Save Required)
+    function stagePainPreset(presetKey) {
+        let targetAreas = [];
+        let noteText = '';
+        let sorenessLevel = 'None';
+        let activeMoodTags = [];
+        let activeModifiers = [];
+
+        if (presetKey === 'standard') {
+            const currentRotation = localStorage.getItem('rumble_standard_rotation') || 'B';
+            const nextRotation = currentRotation === 'A' ? 'B' : 'A';
+            localStorage.setItem('rumble_standard_rotation', nextRotation);
+
+            if (nextRotation === 'A') {
+                targetAreas = [
+                    { area: 'Right Lumbar', percent: 70, score: 7.5 },
+                    { area: 'Right Ankle', percent: 15, score: 5.0 },
+                    { area: 'Thoracic', percent: 15, score: 5.0 }
+                ];
+                noteText = 'Standard check-in (70% lumbar 7.5, 15% ankle 5.0, 15% thoracic 5.0)';
+            } else {
+                targetAreas = [
+                    { area: 'Right Lumbar', percent: 70, score: 7.5 },
+                    { area: 'Right Knee', percent: 15, score: 5.0 },
+                    { area: 'Neck / Cervical', percent: 15, score: 5.0 }
+                ];
+                noteText = 'Standard check-in (70% lumbar 7.5, 15% knee 5.0, 15% neck 5.0)';
+            }
+            sorenessLevel = 'Mild';
+            activeMoodTags = ['OK'];
+        } else if (presetKey === 'hydro') {
+            targetAreas = [
+                { area: 'Right Lumbar', percent: 75, score: 6.0 },
+                { area: 'Neck / Cervical', percent: 25, score: 4.5 }
+            ];
+            sorenessLevel = 'Mild';
+            activeMoodTags = ['Calm'];
+            activeModifiers = ['Hydrotherapy'];
+            noteText = 'Good hydrotherapy session, water decompression relief';
+        } else if (presetKey === 'thoracic') {
+            targetAreas = [
+                { area: 'Thoracic', percent: 70, score: 7.5 },
+                { area: 'Neck / Cervical', percent: 15, score: 7.5 },
+                { area: 'Scapula', percent: 15, score: 7.5 }
+            ];
+            sorenessLevel = 'Moderate';
+            activeMoodTags = ['OK'];
+            noteText = 'Thoracic strain & fatigue (70% thoracic, 15% neck, 15% scapula @ 7.5)';
+        } else if (presetKey === 'sciatica') {
+            targetAreas = [
+                { area: 'Sciatica', percent: 100, score: 9.5 }
+            ];
+            sorenessLevel = 'Extreme';
+            activeMoodTags = ['Frustrated'];
+            noteText = 'Sciatica pain attack flare, sharp radiating nerve pain';
+        } else if (presetKey === 'post_walk') {
+            targetAreas = [
+                { area: 'Right Lumbar', percent: 70, score: 7.5 },
+                { area: 'Right Knee', percent: 30, score: 6.5 }
+            ];
+            sorenessLevel = 'Moderate';
+            activeMoodTags = ['Frustrated'];
+            activeModifiers = ['Walking'];
+            noteText = 'Post-walk loading flare, lumbar and lower extremity fatigue';
+        } else if (presetKey === 'morning_stiffness') {
+            targetAreas = [
+                { area: 'Right Lumbar', percent: 60, score: 7.0 },
+                { area: 'Thoracic', percent: 40, score: 6.5 }
+            ];
+            sorenessLevel = 'Moderate';
+            activeMoodTags = ['OK'];
+            noteText = 'Severe morning stiffness, slow mobility';
+        } else if (presetKey === 'neck_shoulder') {
+            targetAreas = [
+                { area: 'Neck / Cervical', percent: 60, score: 7.5 },
+                { area: 'Right Shoulder', percent: 40, score: 6.5 }
+            ];
+            sorenessLevel = 'Moderate';
+            activeMoodTags = ['Frustrated'];
+            noteText = 'Cervical/trapezius spasm, guarding';
+        } else if (presetKey === 'white_fingers') {
+            targetAreas = [
+                { area: 'Neck / Cervical', percent: 50, score: 7.5 },
+                { area: 'Sciatica', percent: 50, score: 7.0 }
+            ];
+            sorenessLevel = 'Moderate';
+            activeMoodTags = ['Anxious'];
+            noteText = 'Index fingertip pallor and numbness on cold exposure, radicular flare';
+        } else if (presetKey === 'rest_day') {
+            targetAreas = [
+                { area: 'Right Lumbar', percent: 100, score: 3.5 }
+            ];
+            sorenessLevel = 'None';
+            activeMoodTags = ['Calm', 'Happy'];
+            noteText = 'Rest day, managed baseline pain';
         }
-    }));
+
+        // Stage into form state
+        selectedPainAreas = targetAreas;
+        renderPainModal();
+
+        // Update soreness chips
+        document.querySelectorAll('#sorenessChipsRow .soreness-chip').forEach(btn => {
+            btn.classList.toggle('active', btn.getAttribute('data-soreness') === sorenessLevel);
+        });
+
+        // Update mood tags
+        document.querySelectorAll('#moodTagsRow .mood-tag-chip').forEach(btn => {
+            btn.classList.toggle('active', activeMoodTags.includes(btn.getAttribute('data-mood')));
+        });
+
+        // Update modifier chips
+        document.querySelectorAll('#modifiersChipsRow .modifier-chip').forEach(btn => {
+            btn.classList.toggle('active', activeModifiers.includes(btn.getAttribute('data-mod')));
+        });
+
+        // Recalculate mood
+        manualMoodOverride = null;
+        recalculateMood();
+
+        // Stage notes
+        if (noteText) {
+            appendNoteChipText(noteText);
+        }
+
+        showToast(`Staged preset: ${presetKey.replace(/_/g, ' ').toUpperCase()} (tap "Save pain log" when ready)`, 'info');
+    }
+
+    document.querySelectorAll('.quick-pain-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const preset = btn.getAttribute('data-preset');
+            if (preset) stagePainPreset(preset);
+        });
+    });
 
     // Initial render of pain modal
     renderPainModal();
@@ -3051,12 +3386,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await res.json();
             const logs = Array.isArray(data) ? data : (data.logs || []);
 
-            const todayStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
+            const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Australia/Melbourne' }); // YYYY-MM-DD
             const todaysLogs = logs.filter(item => {
                 const ts = item.created_at || item.timestamp;
                 if (!ts) return false;
                 const d = new Date(ts);
-                return d.toLocaleDateString('en-CA') === todayStr;
+                return d.toLocaleDateString('en-CA', { timeZone: 'Australia/Melbourne' }) === todayStr;
             });
 
             if (countBadge) {
@@ -3391,8 +3726,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (followUpTextarea && document.activeElement !== followUpTextarea) {
                         followUpTextarea.value = followUpNote.content;
                     }
-                } else if (followUpTextarea && document.activeElement !== followUpTextarea) {
-                    followUpTextarea.value = '';
+                } else if (followUpTextarea && document.activeElement !== followUpTextarea && !followUpTextarea.value) {
+                    followUpTextarea.value = [
+                        "- [URGENT - Legal] Email Court Coordinator regarding appearing via video conference (Webex/AVL) due to spinal mobility restrictions",
+                        "- [URGENT - Security] Enable Row-Level Security (RLS) on public table in Supabase project 'ladies-night' (cicibqblyiuibiqeaqoa) and review Oct 30 public schema GRANT changes",
+                        "- [Medical] Follow up Dr. Nathan Anderson / Brett Toddhunter (20 Oct consult): Psychiatrist referral (S8 dexamphetamine), 3T Lumbar MRI, and Spinal Cord Stimulator (SCS) escalation",
+                        "- [Medical / Billing] Pay Alpine Chiropractic Invoice #0033571 (emailed by Rosanna 21 Oct 2026)",
+                        "- [Medical] Confirm Dr Khan received MRI imaging report from I-MED",
+                        "- [Legal] Follow up Maryse Andrinopoulos-Tsigolis (Shine Lawyers - (03) 9616 4234) regarding Medical Negligence Claim scope & review VLA ATLAS grant outcome letter (14 Oct)",
+                        "- [Legal] Upload Chemist Warehouse outreach statement to Solicitor folder",
+                        "- [University] Check Deakin MFA unlock status with Student Central & verify S306 Computer Science minor selection in StudentConnect before T1 2027 changes",
+                        "- [Finance / Admin] Redeem $200.00 Coles eGift Card (Blackhawk / Afterpay email 21 Oct) & check ING Fire Extinguisher 10 balance after declined $200 transfer to Splurge 10",
+                        "- [Orders / Tickets] Reply to Reggie at Stickeroo with exact sticker dimensions to finalize custom vinyl sheet quote",
+                        "- [Orders / Tickets] Reply to AXS Customer Support (Ticket #13237399 / Request #12767724) before auto-close & verify Foo Fighters Order #1000748351 in zinta_cook@live.com.au"
+                    ].join('\n');
                 }
                 
                 // Filter out system notes from regular display
@@ -3964,10 +4311,32 @@ document.addEventListener('DOMContentLoaded', () => {
             return title.includes('log pain') || title.includes('pain log') || i.includes('pain_log') || t.includes('pain');
         }
 
+        function isConsultChecklist() {
+            const combined = `${id} ${type} ${(card.querySelector('.protocol-info p')?.innerText || '')}`.toLowerCase();
+            return combined.includes('clancy') || combined.includes('khan') || 
+                   combined.includes('solicitor') || combined.includes('lawyer') ||
+                   combined.includes('court prep') || combined.includes('doctor consult');
+        }
+
         if (showBtn) {
             showBtn.addEventListener('click', () => {
                 const title = card.querySelector('.protocol-info p')?.innerText || id;
                 if (isPainLog()) {
+                    let schedTime = showBtn.getAttribute('data-scheduled-time') || card.getAttribute('data-scheduled-time') || '';
+                    if (!schedTime) {
+                        const h3Text = card.querySelector('.protocol-info h3')?.innerText || '';
+                        const idMatch = id.match(/pain_log_reminder_(\d{2})(\d{2})\d{2}_(\d{4}-\d{2}-\d{2})/);
+                        if (idMatch) {
+                            schedTime = `${idMatch[3]}T${idMatch[1]}:${idMatch[2]}:00+11:00`;
+                        } else if (h3Text) {
+                            schedTime = h3Text.trim();
+                        }
+                    }
+                    activePainLogScheduledTime = schedTime || null;
+                    activePainLogAgendaId = id || card.getAttribute('data-agenda-id') || null;
+                    if (typeof renderPainModal === 'function') renderPainModal();
+                    if (typeof recalculateMood === 'function') recalculateMood();
+                    if (typeof loadTodaysPainLogs === 'function') loadTodaysPainLogs();
                     document.getElementById('painLogModal').classList.remove('hidden');
                 } else if (isExercise()) {
                     const cleanId = id ? id.toLowerCase().trim() : '';
@@ -3978,6 +4347,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     } else {
                         loadExerciseSuggestions();
                     }
+                } else if (isConsultChecklist()) {
+                    const combined = `${id} ${title}`.toLowerCase();
+                    const initialTab = (combined.includes('khan') || combined.includes('dr')) ? 'drkhan' : 'clancy';
+                    openConsultChecklistModal(initialTab);
                 } else {
                     rumbleChatModal.classList.remove('hidden');
                     sendRumbleChatMessage(`Show me details for: ${title}`);
@@ -4214,7 +4587,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Gently draw chin backwards creating a double chin, lengthening back of neck.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/cervical_chin_tuck.jpg"
                                 ]
                         },
                         {
@@ -4222,7 +4595,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Drop right ear to right shoulder without lifting left shoulder. Repeat left.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/cervical_lateral_ear_shoulder.jpg"
                                 ]
                         },
                         {
@@ -4230,7 +4603,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Inhale lift shoulders to ears, exhale drop down with sigh.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/cervical_shoulder_shrug.jpg"
                                 ]
                         },
                         {
@@ -4238,7 +4611,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Sit upright, focus on diaphragmatic 360 breathing relaxing neck muscles.",
                                 "frames": [
-                                        "/exercises/restorative_savasana.jpg"
+                                        "/exercises/diaphragmatic-breathing.svg"
                                 ]
                         }
                 ]
@@ -4264,7 +4637,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 375,
                                 "cue": "Feet together, knees open supported by pillows, hands on lower abdomen.",
                                 "frames": [
-                                        "/exercises/restorative_savasana.jpg"
+                                        "/exercises/supported_reclined_bound_angle.jpg"
                                 ]
                         },
                         {
@@ -4272,7 +4645,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 375,
                                 "cue": "Flow gently with breath, avoiding end-range extremes.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/gentle_cat_cow.jpg",
+                                        "/exercises/cat_cow_1.jpg"
                                 ]
                         },
                         {
@@ -4280,7 +4654,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 375,
                                 "cue": "Rest elbows on mat, gentle passive thoracic extension.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/supported_gentle_sphinx.jpg"
                                 ]
                         },
                         {
@@ -4288,7 +4662,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 375,
                                 "cue": "Elevate legs against wall to facilitate venous return and spinal decompression.",
                                 "frames": [
-                                        "/exercises/restorative_savasana.jpg"
+                                        "/exercises/legs_up_the_wall.jpg"
                                 ]
                         }
                 ]
@@ -4315,7 +4689,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 300,
                                 "cue": "Slide right arm under torso, rest right shoulder and temple on mat.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/thoracic_thread_needle.jpg"
                                 ]
                         },
                         {
@@ -4331,7 +4705,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 300,
                                 "cue": "Draw elbows back and down, opening anterior chest wall.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/thoracic_cactus_expansion.jpg"
                                 ]
                         },
                         {
@@ -4339,7 +4713,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 300,
                                 "cue": "Rest in prone or seated, focusing on mid-back breathing.",
                                 "frames": [
-                                        "/exercises/restorative_savasana.jpg"
+                                        "/exercises/constructive-rest.svg"
                                 ]
                         }
                 ]
@@ -4366,7 +4740,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Step right foot forward, tuck tailbone, feel stretch in left front hip.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/hip_kneeling_lunge.jpg"
                                 ]
                         },
                         {
@@ -4374,7 +4748,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Rotate knees side to side gently to mobilize internal and external rotation.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/hip_ninety_ninety.jpg"
                                 ]
                         },
                         {
@@ -4382,7 +4756,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Cross right ankle over left thigh, hold left hamstring gently.",
                                 "frames": [
-                                        "/exercises/knee_to_chest_stretch.jpg"
+                                        "/exercises/hip_figure_four.jpg"
                                 ]
                         },
                         {
@@ -4416,7 +4790,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Coordinate slow spinal flexion and extension with deep breathing.",
                                 "frames": [
-                                        "/exercises/restorative_savasana.jpg"
+                                        "/exercises/core_cat_cow.jpg"
                                 ]
                         },
                         {
@@ -4432,7 +4806,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Drop knees gently to right, look center or left. Keep shoulders relaxed.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/thoracic_supine_twist.jpg"
                                 ]
                         },
                         {
@@ -4440,7 +4814,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Rest face down on hands, allowing spine to settle in neutral.",
                                 "frames": [
-                                        "/exercises/restorative_savasana.jpg"
+                                        "/exercises/constructive-rest.svg"
                                 ]
                         }
                 ]
@@ -4467,7 +4841,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Hands on knees, inhale arch chest forward, exhale round mid-back.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/chair_seated_cat_cow.svg"
                                 ]
                         },
                         {
@@ -4475,7 +4849,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Ankle on opposite knee, lean gently forward with straight back.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/chair_seated_figure_four.svg"
                                 ]
                         },
                         {
@@ -4483,7 +4857,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Hold chair base with right hand, tilt head to left.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/chair_upper_trapezius_drop.svg"
                                 ]
                         },
                         {
@@ -4491,7 +4865,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Interlace hands behind lower back or chair frame, gently lift collarbones.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/chair_seated_chest_expansion.svg"
                                 ]
                         }
                 ]
@@ -4517,7 +4891,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Inhale 4 sec through nose, hold 7 sec, exhale 8 sec through pursed lips.",
                                 "frames": [
-                                        "/exercises/restorative_savasana.jpg"
+                                        "/exercises/diaphragmatic-breathing.svg"
                                 ]
                         },
                         {
@@ -4525,7 +4899,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Rest base of skull on rolled towel, gentle micro-turns of head.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/cervical_chin_tuck.jpg"
                                 ]
                         },
                         {
@@ -4541,7 +4915,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "One hand on heart, one on belly. Feel warmth and safety.",
                                 "frames": [
-                                        "/exercises/restorative_savasana.jpg"
+                                        "/exercises/diaphragmatic-breathing.svg"
                                 ]
                         }
                 ]
@@ -4568,7 +4942,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Loop strap under right foot, extend leg upward keeping pelvis flat.",
                                 "frames": [
-                                        "/exercises/knee_to_chest_stretch.jpg"
+                                        "/exercises/supine-strap-hamstring-calf.svg"
                                 ]
                         },
                         {
@@ -4576,7 +4950,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Draw straight leg slightly across midline (2-3 inches max).",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/hip_figure_four.jpg"
                                 ]
                         },
                         {
@@ -4584,7 +4958,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Gentle micro-bends and straightening of knee to desensitize nerve.",
                                 "frames": [
-                                        "/exercises/knee_to_chest_stretch.jpg"
+                                        "/exercises/supine-strap-hamstring-calf.svg"
                                 ]
                         },
                         {
@@ -4592,7 +4966,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Rest legs long on mat, noticing length through lower back.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         }
                 ]
@@ -4626,7 +5000,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 300,
                                 "cue": "Block or pillow under sacrum, arms relaxed overhead.",
                                 "frames": [
-                                        "/exercises/supine_pelvic_tilts.jpg"
+                                        "/exercises/supported-bridge-block.svg"
                                 ]
                         },
                         {
@@ -4634,7 +5008,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 300,
                                 "cue": "Pillow between knees, slow gentle twist to each side.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/thoracic_supine_twist.jpg"
                                 ]
                         },
                         {
@@ -4719,7 +5093,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Knees at tabletop (90 deg), reach right arm overhead and return.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/core_dead_bug.jpg"
                                 ]
                         },
                         {
@@ -4727,7 +5101,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Keep arms still, lower right heel to tap floor, return.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/core_dead_bug.jpg"
                                 ]
                         },
                         {
@@ -4735,7 +5109,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Extend opposite arm and leg simultaneously while maintaining rock-solid core.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/core_dead_bug.jpg"
                                 ]
                         },
                         {
@@ -4770,7 +5144,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Hands under shoulders, knees under hips, neck in neutral line.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/core_bird_dog.jpg"
                                 ]
                         },
                         {
@@ -4778,7 +5152,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Reach straight out, thumb up, heel pushed back. Hold 6 seconds.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/core_bird_dog.jpg"
                                 ]
                         },
                         {
@@ -4786,7 +5160,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Keep pelvis level like balancing a cup of water on lower back.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/core_bird_dog.jpg"
                                 ]
                         },
                         {
@@ -4820,7 +5194,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Heels together, open top knee like a clamshell, squeeze outer glute.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/side_lying_clamshell.svg"
                                 ]
                         },
                         {
@@ -4828,7 +5202,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Straighten top leg, lift 6 inches with slight internal rotation.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/side_lying_clamshell.svg"
                                 ]
                         },
                         {
@@ -4836,7 +5210,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Switch sides. Keep core engaged and hips stacked.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/side_lying_clamshell.svg"
                                 ]
                         },
                         {
@@ -4844,7 +5218,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Lift top leg with control, avoiding hip rotation.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/side_lying_clamshell.svg"
                                 ]
                         }
                 ]
@@ -4870,7 +5244,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Exhale lift hips until straight line from knees to shoulders, hold 3s.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/hip_glute_bridge.jpg"
                                 ]
                         },
                         {
@@ -4878,7 +5252,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Place small ball/block between knees, squeeze gently while bridging.",
                                 "frames": [
-                                        "/exercises/supine_pelvic_tilts.jpg"
+                                        "/exercises/glute-bridges.svg"
                                 ]
                         },
                         {
@@ -4886,7 +5260,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Hold bridge, lift right foot 1 inch off floor without dipping pelvis. Repeat left.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/hip_glute_bridge.jpg"
                                 ]
                         },
                         {
@@ -4894,7 +5268,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Lower spine down bone by bone, finishing in neutral.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/glute-bridges.svg"
                                 ]
                         }
                 ]
@@ -4920,7 +5294,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Arms long by side, legs in tabletop, head resting comfortably.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/pilates_hundred_neutral.svg"
                                 ]
                         },
                         {
@@ -4928,7 +5302,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Inhale 5 arm pumps, exhale 5 arm pumps with abdominal brace.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/pilates_hundred_neutral.svg"
                                 ]
                         },
                         {
@@ -4936,7 +5310,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Maintain steady rhythmic breathing and flat lower abdomen.",
                                 "frames": [
-                                        "/exercises/restorative_savasana.jpg"
+                                        "/exercises/pilates_hundred_neutral.svg"
                                 ]
                         },
                         {
@@ -4944,7 +5318,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Extend arms and legs long, releasing abdominal wall.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         }
                 ]
@@ -4970,7 +5344,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Sit upright, hug ball to chest, exhale rotate ribs 20 degrees right, then left.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/thoracic_supine_twist.jpg"
                                 ]
                         },
                         {
@@ -4978,7 +5352,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Circle top arm overhead opening chest to ceiling, follow with eyes.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/open-book-thoracic.svg"
                                 ]
                         },
                         {
@@ -4986,7 +5360,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Switch sides. Feel opening through anterior shoulder and ribcage.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/open-book-thoracic.svg"
                                 ]
                         },
                         {
@@ -4994,7 +5368,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Feel posterior ribcage expand with every inhalation.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/constructive-rest.svg"
                                 ]
                         }
                 ]
@@ -5020,7 +5394,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Hug right knee, extend left leg at 45 deg angle, switch rhythmically.",
                                 "frames": [
-                                        "/exercises/knee_to_chest_stretch.jpg"
+                                        "/exercises/supine-single-knee-to-chest.svg"
                                 ]
                         },
                         {
@@ -5028,7 +5402,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Both knees bent, tap toes to mat and return with locked core.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/core_dead_bug.jpg"
                                 ]
                         },
                         {
@@ -5036,7 +5410,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Focus on smooth breathing and rock-steady pelvis.",
                                 "frames": [
-                                        "/exercises/restorative_savasana.jpg"
+                                        "/exercises/supine-single-knee-to-chest.svg"
                                 ]
                         },
                         {
@@ -5078,7 +5452,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Peel spine up vertebra by vertebra to upper thoracic, hold and roll down.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/hip_glute_bridge.jpg"
                                 ]
                         },
                         {
@@ -5086,7 +5460,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "At top of bridge, float arms back overhead, then roll spine down.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/glute-bridges.svg"
                                 ]
                         },
                         {
@@ -5094,7 +5468,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Neutral spine alignment rest.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/constructive-rest.svg"
                                 ]
                         }
                 ]
@@ -5121,7 +5495,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Lie prone, pillow under belly, float right arm 1 inch, then left.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/prone_swimming_extension.svg"
                                 ]
                         },
                         {
@@ -5129,7 +5503,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Squeeze glute, float straight leg 1 inch, then opposite.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/prone_swimming_extension.svg"
                                 ]
                         },
                         {
@@ -5137,7 +5511,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Alternate opposite arm and leg fluttering rhythmically.",
                                 "frames": [
-                                        "/exercises/knee_to_chest_stretch.jpg"
+                                        "/exercises/prone_swimming_extension.svg"
                                 ]
                         },
                         {
@@ -5145,7 +5519,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Turn head to side, relax glutes and back completely.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/supported-sphinx-micro-lifts.svg"
                                 ]
                         }
                 ]
@@ -5172,7 +5546,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Cross right ankle over left thigh, reach through and draw left leg in.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/hip_figure_four.jpg"
                                 ]
                         },
                         {
@@ -5180,7 +5554,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Repeat on left side, keeping shoulders and neck relaxed.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/supine-figure-four-strap.svg"
                                 ]
                         },
                         {
@@ -5188,7 +5562,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Sit tall, cross ankle on knee, hinge forward from hips with flat back.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/chair_seated_figure_four.svg"
                                 ]
                         },
                         {
@@ -5196,7 +5570,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Gently shake legs to release residual muscle tone.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/constructive-rest.svg"
                                 ]
                         }
                 ]
@@ -5223,7 +5597,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Tilt head right, rotate chin 15 deg upward, feel stretch in front-left neck.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/cervical_lateral_ear_shoulder.jpg"
                                 ]
                         },
                         {
@@ -5231,7 +5605,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Turn head 45 deg right, gently drop chin towards right armpit.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/chair_upper_trapezius_drop.svg"
                                 ]
                         },
                         {
@@ -5239,7 +5613,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Repeat carefully on opposite side with relaxed shoulders.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/cervical_lateral_ear_shoulder.jpg"
                                 ]
                         },
                         {
@@ -5247,7 +5621,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Tiny nodding motions like saying 'yes' without flexing lower neck.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/cervical_chin_tuck.jpg"
                                 ]
                         }
                 ]
@@ -5273,7 +5647,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Right leg up doorframe, left leg flat on floor through doorway. Breathe deeply.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/supine-strap-hamstring-calf.svg"
                                 ]
                         },
                         {
@@ -5281,7 +5655,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Switch sides. Relax hips and sacrum flat against mat.",
                                 "frames": [
-                                        "/exercises/supine_pelvic_tilts.jpg"
+                                        "/exercises/supine-strap-hamstring-calf.svg"
                                 ]
                         },
                         {
@@ -5289,7 +5663,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Point and flex toes gently while elevated to floss sciatic pathway.",
                                 "frames": [
-                                        "/exercises/knee_to_chest_stretch.jpg"
+                                        "/exercises/supine-strap-hamstring-calf.svg"
                                 ]
                         },
                         {
@@ -5297,7 +5671,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Both legs down, resting pelvis in neutral.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         }
                 ]
@@ -5324,7 +5698,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Side-lying on left, sweep right arm open across body, look towards right hand.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/open-book-thoracic.svg"
                                 ]
                         },
                         {
@@ -5332,7 +5706,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Hold open for 3 deep breaths into right chest wall.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/open-book-thoracic.svg"
                                 ]
                         },
                         {
@@ -5340,7 +5714,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Switch sides. Sweep left arm open, keeping knees glued together.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/open-book-thoracic.svg"
                                 ]
                         },
                         {
@@ -5348,7 +5722,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Deep ribcage breathing.",
                                 "frames": [
-                                        "/exercises/restorative_savasana.jpg"
+                                        "/exercises/open-book-thoracic.svg"
                                 ]
                         }
                 ]
@@ -5375,7 +5749,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Hands on wall, step right leg back straight, press heel down.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/wall_calf_gastrocnemius.svg"
                                 ]
                         },
                         {
@@ -5383,7 +5757,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Bend back right knee slightly, shifting stretch deeper towards Achilles.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/wall_calf_soleus.svg"
                                 ]
                         },
                         {
@@ -5391,7 +5765,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Switch legs. Step left leg back straight, heel grounded.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/wall_calf_gastrocnemius.svg"
                                 ]
                         },
                         {
@@ -5399,7 +5773,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Bend left knee slightly, keeping heel pinned down.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/wall_calf_soleus.svg"
                                 ]
                         }
                 ]
@@ -5426,7 +5800,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Lie on left side, hold right ankle, gently draw heel toward glute.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/side_lying_quad_stretch.svg"
                                 ]
                         },
                         {
@@ -5434,7 +5808,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Switch sides, keeping knees aligned and hips stacked.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/side_lying_quad_stretch.svg"
                                 ]
                         },
                         {
@@ -5442,7 +5816,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Lie prone, loop towel around ankle if reaching is difficult.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/side_lying_quad_stretch.svg"
                                 ]
                         },
                         {
@@ -5450,7 +5824,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Gently rock hips side to side to release hip flexors.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/hip_kneeling_lunge.jpg"
                                 ]
                         }
                 ]
@@ -5492,7 +5866,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Hold doorframe at shoulder height, sink hips back and away gently.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/doorframe_lat_stretch.svg"
                                 ]
                         },
                         {
@@ -5500,7 +5874,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Breathe into lateral ribcage.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/diaphragmatic-breathing.svg"
                                 ]
                         }
                 ]
@@ -5527,7 +5901,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Arm straight, palm facing out fingers down, gently draw fingers back.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/wrist_nerve_floss.svg"
                                 ]
                         },
                         {
@@ -5535,7 +5909,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Palm facing in, gently press back of hand down and toward body.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/wrist_nerve_floss.svg"
                                 ]
                         },
                         {
@@ -5543,7 +5917,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Extend arm out to side, extend wrist, tilt head away, then return.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/wrist_nerve_floss.svg"
                                 ]
                         },
                         {
@@ -5551,7 +5925,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Gentle rolling circles and shaking out hands.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/wrist_nerve_floss.svg"
                                 ]
                         }
                 ]
@@ -5578,7 +5952,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Elbow at 90 deg on doorframe, step right foot through doorway gently.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/doorway_pec_stretch.svg"
                                 ]
                         },
                         {
@@ -5586,7 +5960,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Elbow slightly higher to target lower pec fibers.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/doorway_pec_stretch.svg"
                                 ]
                         },
                         {
@@ -5594,7 +5968,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Repeat 90 and 120 degree angles on left side with relaxed neck.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/doorway_pec_stretch.svg"
                                 ]
                         },
                         {
@@ -5602,7 +5976,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Roll shoulders back and down 5 times.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/thoracic_cactus_expansion.jpg"
                                 ]
                         }
                 ]
@@ -5629,7 +6003,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Half-kneeling, drive front knee forward over second toe keeping heel flat.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/ankle_foot_mobility.svg"
                                 ]
                         },
                         {
@@ -5637,7 +6011,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Switch sides, mobilizing left ankle dorsiflexion.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/ankle_foot_mobility.svg"
                                 ]
                         },
                         {
@@ -5645,7 +6019,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Roll ball along arch of foot for 30s per foot, releasing fascia.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/ankle_foot_mobility.svg"
                                 ]
                         },
                         {
@@ -5653,7 +6027,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Wiggle and spread toes wide to activate intrinsic foot muscles.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/ankle_foot_mobility.svg"
                                 ]
                         }
                 ]
@@ -5680,7 +6054,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 300,
                                 "cue": "Hands under lower back, one knee bent, lift only head/shoulders 1 inch. Hold 6s.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/mcgill_curl_up.svg"
                                 ]
                         },
                         {
@@ -5688,7 +6062,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 300,
                                 "cue": "Prop on elbow and knees, lift hips into straight alignment. Hold 6s per rep.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/side_lying_clamshell.svg"
                                 ]
                         },
                         {
@@ -5696,7 +6070,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 300,
                                 "cue": "Extend opposite arm and leg, hold 6s. Focus on neutral spine stability.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/core_bird_dog.jpg"
                                 ]
                         },
                         {
@@ -5731,7 +6105,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Sit on edge of chair with hands behind back, spine relaxed.",
                                 "frames": [
-                                        "/exercises/knee_to_chest_stretch.jpg"
+                                        "/exercises/supine-strap-hamstring-calf.svg"
                                 ]
                         },
                         {
@@ -5739,7 +6113,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Extend right knee while looking UP at ceiling, bend knee while looking DOWN.",
                                 "frames": [
-                                        "/exercises/knee_to_chest_stretch.jpg"
+                                        "/exercises/supine-strap-hamstring-calf.svg"
                                 ]
                         },
                         {
@@ -5747,7 +6121,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Repeat smooth flossing motion on left leg for 10 slow reps.",
                                 "frames": [
-                                        "/exercises/knee_to_chest_stretch.jpg"
+                                        "/exercises/supine-strap-hamstring-calf.svg"
                                 ]
                         },
                         {
@@ -5755,7 +6129,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Lie flat and observe reduction in nerve sensitivity.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/restorative_savasana.jpg"
                                 ]
                         }
                 ]
@@ -5781,7 +6155,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Lie supine with small towel under neck, gently nod chin as if flattening back of neck.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/supine-arom-neck-rotation-chin-tuck.svg"
                                 ]
                         },
                         {
@@ -5789,7 +6163,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Nod chin gently, hold for 5 seconds breathing normally through nose.",
                                 "frames": [
-                                        "/exercises/restorative_savasana.jpg"
+                                        "/exercises/supine-arom-neck-rotation-chin-tuck.svg"
                                 ]
                         },
                         {
@@ -5797,7 +6171,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Stand against wall, press back of head gently into small soft ball.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/cervical_chin_tuck.jpg"
                                 ]
                         },
                         {
@@ -5805,7 +6179,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Sit tall, crown of head reaching toward ceiling.",
                                 "frames": [
-                                        "/exercises/restorative_savasana.jpg"
+                                        "/exercises/diaphragmatic-breathing.svg"
                                 ]
                         }
                 ]
@@ -5832,7 +6206,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Forearms vertical on wall with foam roller or towel, step one foot forward.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/wall-angels-partial-range.svg"
                                 ]
                         },
                         {
@@ -5840,7 +6214,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Slide forearms upward pushing into wall, shrug slightly at top, return with control.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/wall-angels-partial-range.svg"
                                 ]
                         },
                         {
@@ -5848,7 +6222,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Hands on wall, push chest away rounding upper back without bending elbows.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/scapular-retractions-prone.svg"
                                 ]
                         },
                         {
@@ -5856,7 +6230,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 225,
                                 "cue": "Shake out arms and breathe deeply.",
                                 "frames": [
-                                        "/exercises/thoracic_spine_mobility.jpg"
+                                        "/exercises/cervical_shoulder_shrug.jpg"
                                 ]
                         }
                 ]
@@ -5883,7 +6257,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Loop strap over right collarbone, pull down across left hip while tilting head right.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/tos_first_rib_glide.svg"
                                 ]
                         },
                         {
@@ -5891,7 +6265,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Extend arm out, bend wrist up while tilting head towards arm, then alternate.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/tos_first_rib_glide.svg"
                                 ]
                         },
                         {
@@ -5899,7 +6273,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Repeat first rib depression and gliding on left side.",
                                 "frames": [
-                                        "/lumbar_core_routine.jpg"
+                                        "/exercises/tos_first_rib_glide.svg"
                                 ]
                         },
                         {
@@ -5907,7 +6281,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Breathe deeply into lower ribcage, avoiding upper chest clavicular breathing.",
                                 "frames": [
-                                        "/exercises/restorative_savasana.jpg"
+                                        "/exercises/diaphragmatic-breathing.svg"
                                 ]
                         }
                 ]
@@ -5933,7 +6307,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Palm on forehead, gently press head forward into palm without moving head. Hold 6s.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/cervical_chin_tuck.jpg"
                                 ]
                         },
                         {
@@ -5941,7 +6315,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Hands behind head, gently press head backward into palms without tilting.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/cervical_chin_tuck.jpg"
                                 ]
                         },
                         {
@@ -5949,7 +6323,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Palm against side of head, press gently for 6s each side.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/cervical_lateral_ear_shoulder.jpg"
                                 ]
                         },
                         {
@@ -5957,7 +6331,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Sit tall with relaxed jaw and dropped shoulders.",
                                 "frames": [
-                                        "/exercises/restorative_savasana.jpg"
+                                        "/exercises/diaphragmatic-breathing.svg"
                                 ]
                         }
                 ]
@@ -5984,7 +6358,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 375,
                                 "cue": "Noodle under arms in deep water, allow legs and spine to hang weightlessly.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/phase4-deep-water-core-crucible.svg"
                                 ]
                         },
                         {
@@ -5992,7 +6366,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 375,
                                 "cue": "Slowly draw knees towards chest in water, feeling gentle lumbar opening.",
                                 "frames": [
-                                        "/exercises/knee_to_chest_stretch.jpg"
+                                        "/exercises/rail-supported-hydro-pelvic-tilts.svg"
                                 ]
                         },
                         {
@@ -6000,7 +6374,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 375,
                                 "cue": "Gentle sway of legs side to side in water column.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/phase4-deep-water-core-crucible.svg"
                                 ]
                         },
                         {
@@ -6008,7 +6382,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 375,
                                 "cue": "Full supine float supported by pillows, deep parasympathetic relaxation.",
                                 "frames": [
-                                        "/exercises/restorative_savasana.jpg"
+                                        "/exercises/phase6-passive-decompression-float.svg"
                                 ]
                         }
                 ]
@@ -6035,7 +6409,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 300,
                                 "cue": "High knee marching forward in chest-deep water with normal arm swing.",
                                 "frames": [
-                                        "/exercises/cervical_neck_mobility.jpg"
+                                        "/exercises/phase5-neuromuscular-gait-retraining.svg"
                                 ]
                         },
                         {
@@ -6043,7 +6417,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 300,
                                 "cue": "Walk backward with control, engaging glutes and posterior chain.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/phase5-neuromuscular-gait-retraining.svg"
                                 ]
                         },
                         {
@@ -6051,7 +6425,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 300,
                                 "cue": "Step sideways across lane, engaging glute medius against water drag.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/phase5-neuromuscular-gait-retraining.svg"
                                 ]
                         },
                         {
@@ -6059,7 +6433,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 300,
                                 "cue": "Stand against pool wall, enjoying warmth and hydrostatic pressure.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/phase6-passive-decompression-float.svg"
                                 ]
                         }
                 ]
@@ -6086,7 +6460,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 300,
                                 "cue": "Hold pool wall, sweep right leg out to side against water resistance. Repeat left.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/submerged-banded-hip-abduction-extension.svg"
                                 ]
                         },
                         {
@@ -6094,7 +6468,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 300,
                                 "cue": "Hold kickboard with both hands, push down into water, engage abs.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/phase4-deep-water-core-crucible.svg"
                                 ]
                         },
                         {
@@ -6102,7 +6476,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 300,
                                 "cue": "Rest back on noodles, pedal legs smoothly like riding a bike.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/rail-supported-hydro-pelvic-tilts.svg"
                                 ]
                         },
                         {
@@ -6110,7 +6484,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 300,
                                 "cue": "Rest supported on water surface.",
                                 "frames": [
-                                        "/hip_mobility_routine.jpg"
+                                        "/exercises/phase6-passive-decompression-float.svg"
                                 ]
                         }
                 ]
@@ -6137,7 +6511,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 300,
                                 "cue": "Chest submerged, feel hydrostatic pressure assist deep exhalations.",
                                 "frames": [
-                                        "/exercises/restorative_savasana.jpg"
+                                        "/exercises/phase6-passive-decompression-float.svg"
                                 ]
                         },
                         {
@@ -6145,7 +6519,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 300,
                                 "cue": "Smooth sweeping circles with hands submerged in water.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/phase4-deep-water-core-crucible.svg"
                                 ]
                         },
                         {
@@ -6153,7 +6527,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 300,
                                 "cue": "Point, flex, and rotate ankles in warm water.",
                                 "frames": [
-                                        "/shoulder_rehab_routine.jpg"
+                                        "/exercises/rail-supported-hydro-pelvic-tilts.svg"
                                 ]
                         },
                         {
@@ -6161,7 +6535,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 300,
                                 "cue": "Complete still surrender in warm hydro pool.",
                                 "frames": [
-                                        "/exercises/restorative_savasana.jpg"
+                                        "/exercises/phase6-passive-decompression-float.svg"
                                 ]
                         }
                 ]
@@ -6170,11 +6544,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Backlog of alternative exercises for swapping
     const exerciseBacklog = [
-        { title: "Lumbar & Core Stability", duration: 225, frames: ["/lumbar_core_routine.jpg"] },
+        { title: "Lumbar & Core Stability", duration: 225, frames: ["/exercises/supine_pelvic_tilts.jpg"] },
         { title: "Child's Pose Decompression", duration: 225, frames: ["/exercises/supported_childs_pose.jpg"] },
         { title: "Pelvic Tilt & Spinal Alignment", duration: 225, frames: ["/exercises/supine_pelvic_tilts.jpg"] },
-        { title: "Hip & Lower Body Mobility", duration: 225, frames: ["/hip_mobility_routine.jpg"] },
-        { title: "Shoulder & Scapular Rehab", duration: 225, frames: ["/shoulder_rehab_routine.jpg"] }
+        { title: "Hip & Lower Body Mobility", duration: 225, frames: ["/exercises/hip_glute_bridge.jpg"] },
+        { title: "Shoulder & Scapular Rehab", duration: 225, frames: ["/exercises/wall-angels-partial-range.svg"] }
     ];
 
     let currentRoutineRunning = null;
@@ -6288,7 +6662,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentStepIndex >= currentProtocolSteps.length) return;
         const step = currentProtocolSteps[currentStepIndex];
         
-        // Calculate remaining total time across remaining steps + current step's remaining time
+        // Calculate remaining total time
         let remainingAfter = 0;
         for (let i = currentStepIndex + 1; i < currentProtocolSteps.length; i++) {
             remainingAfter += currentProtocolSteps[i].duration;
@@ -6310,36 +6684,18 @@ document.addEventListener('DOMContentLoaded', () => {
             runnerTotalTimeDisplay.innerText = `Total Remaining: ${formatTime(totalTimeLeft)} / ${formatTime(totalRoutineDuration)}`;
         }
 
-        // Primary Program Countdown (e.g. 15:00)
-        if (runnerTimer) {
-            runnerTimer.innerText = formatTime(totalTimeLeft);
-        }
-
-        // Current Step Hold Countdown (e.g. 03:45)
-        const runnerStepTimer = document.getElementById('runnerStepTimer');
-        if (runnerStepTimer) {
-            runnerStepTimer.innerText = formatTime(timeLeft);
+        const runnerTotalTimer = document.getElementById('runnerTotalTimer');
+        if (runnerTotalTimer) {
+            runnerTotalTimer.innerText = formatTime(totalTimeLeft);
         }
 
         if (runnerStep) runnerStep.innerText = `Step ${currentStepIndex + 1} of ${currentProtocolSteps.length}: ${step.title}`;
+        if (runnerTimer) runnerTimer.innerText = formatTime(timeLeft);
         
-        // Total routine progress bar and percentage
         const progressBar = document.getElementById('runnerTotalProgressBar');
-        const progressPct = document.getElementById('runnerTotalProgressPct');
-        if (totalRoutineDuration > 0) {
-            const pct = Math.min(100, Math.max(0, Math.round(((totalRoutineDuration - totalTimeLeft) / totalRoutineDuration) * 100)));
-            if (progressBar) progressBar.style.height = `${pct}%`;
-            if (progressPct) progressPct.innerText = `${pct}%`;
-        }
-
-        // Step hold progress bar and percentage
-        const stepProgressBar = document.getElementById('runnerStepProgressBar');
-        const stepProgressPct = document.getElementById('runnerStepProgressPct');
-        const stepDuration = step.duration || 45;
-        if (stepDuration > 0) {
-            const stepPct = Math.min(100, Math.max(0, Math.round(((stepDuration - timeLeft) / stepDuration) * 100)));
-            if (stepProgressBar) stepProgressBar.style.width = `${stepPct}%`;
-            if (stepProgressPct) stepProgressPct.innerText = `${stepPct}%`;
+        if (progressBar && totalRoutineDuration > 0) {
+            const pct = Math.min(100, Math.max(0, ((totalRoutineDuration - totalTimeLeft) / totalRoutineDuration) * 100));
+            progressBar.style.width = `${pct}%`;
         }
 
         const runnerCueEl = document.getElementById('runnerCue');
@@ -6625,10 +6981,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     moodNumButtons.forEach(btn => {
         btn.addEventListener('click', () => {
-            moodNumButtons.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentMoodLevel = parseInt(btn.getAttribute('data-val'), 10);
-            moodValDisplay.innerText = currentMoodLevel;
+            const val = parseFloat(btn.getAttribute('data-val'));
+            manualMoodOverride = isNaN(val) ? 5.0 : val;
+            if (typeof recalculateMood === 'function') {
+                recalculateMood();
+            } else {
+                currentMoodLevel = manualMoodOverride;
+                if (moodValDisplay) moodValDisplay.innerText = currentMoodLevel;
+            }
         });
     });
 
@@ -6680,7 +7040,9 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (lower.includes('left')) side = 'left';
         
         let area = 'lumbar';
-        if (lower.includes('lumbar')) area = 'lumbar';
+        if (lower.includes('sciatica')) area = 'sciatica';
+        else if (lower.includes('scapula')) area = 'scapula';
+        else if (lower.includes('lumbar')) area = 'lumbar';
         else if (lower.includes('cervical') || lower.includes('neck')) area = 'cervical';
         else if (lower.includes('thoracic') || lower.includes('mid-back')) area = 'thoracic';
         else if (lower.includes('ankle')) area = 'ankle';
@@ -6715,24 +7077,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const userNotes = unifiedNotesInput ? unifiedNotesInput.value.trim() : "";
 
+        let payloadTimestamp = null;
+        if (activePainLogScheduledTime) {
+            payloadTimestamp = computeRandomOffsetTimestamp(activePainLogScheduledTime);
+        }
+
         btnLogPain.innerText = "Logged";
         btnLogPain.style.background = "var(--neon-green)";
+
+        const payload = {
+            pain_level: overallScore,
+            score: overallScore,
+            generators,
+            locations: generators,
+            pain_notes: userNotes,
+            mood_level: currentMoodLevel,
+            mood: String(currentMoodLevel),
+            mood_notes: userNotes,
+            mood_emoji: selectedMoodEmoji
+        };
+        if (payloadTimestamp) {
+            payload.created_at = payloadTimestamp;
+            payload.timestamp = payloadTimestamp;
+        }
 
         try {
             const res = await fetch(API_PAIN_LOG, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    pain_level: overallScore,
-                    score: overallScore,
-                    generators,
-                    locations: generators,
-                    pain_notes: userNotes,
-                    mood_level: currentMoodLevel,
-                    mood: String(currentMoodLevel),
-                    mood_notes: userNotes,
-                    mood_emoji: selectedMoodEmoji
-                })
+                body: JSON.stringify(payload)
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.detail || data.error || 'Pain log failed');
@@ -6740,11 +7113,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 alertBannerText.innerText = data.alert_message;
                 alertBanner.classList.remove('hidden');
             }
+            if (activePainLogAgendaId) {
+                try {
+                    await fetch(API_AGENDA, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: activePainLogAgendaId, action: 'update_status', status: 'completed' })
+                    });
+                } catch (agendaErr) {
+                    console.error('Error marking agenda card completed:', agendaErr);
+                }
+            }
             closePainLog();
             showToast('Pain log saved to live database', 'success');
             if (typeof loadTodaysPainLogs === 'function') loadTodaysPainLogs();
             if (typeof loadPainAnalytics === 'function') loadPainAnalytics();
-            if (typeof loadAgendaItems === 'function') loadAgendaItems();
+            if (typeof loadAgenda === 'function') loadAgenda();
+            else if (typeof loadAgendaItems === 'function') loadAgendaItems();
         } catch (e) {
             showToast(e.message || 'Pain log could not be saved');
         }
@@ -7861,5 +8246,404 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("Error loading pain analytics:", err);
         }
     }
+
+    // --- Consult Action Checklist Modal (Solicitor & Doctor - High Stress / ADHD-Optimized) ---
+    const consultChecklistModal = document.getElementById('consultChecklistModal');
+    const tabClancy = document.getElementById('tabClancy');
+    const tabDrKhan = document.getElementById('tabDrKhan');
+    const btnCloseConsultChecklist = document.getElementById('btnCloseConsultChecklist');
+    const btnDoneConsultChecklist = document.getElementById('btnDoneConsultChecklist');
+    const btnResetChecklist = document.getElementById('btnResetChecklist');
+    const btnCopyVerbatim = document.getElementById('btnCopyVerbatim');
+    const verbatimLabel = document.getElementById('verbatimLabel');
+    const verbatimText = document.getElementById('verbatimText');
+    const consultChecklistTitle = document.getElementById('consultChecklistTitle');
+    const consultChecklistBadge = document.getElementById('consultChecklistBadge');
+    const consultChecklistSub = document.getElementById('consultChecklistSub');
+    const checklistProgressText = document.getElementById('checklistProgressText');
+    const checklistProgressBar = document.getElementById('checklistProgressBar');
+    const checklistItemsList = document.getElementById('checklistItemsList');
+    const inputNewChecklistItem = document.getElementById('inputNewChecklistItem');
+    const btnAddChecklistItem = document.getElementById('btnAddChecklistItem');
+    const consultLiveNotes = document.getElementById('consultLiveNotes');
+    const btnSaveToRumbleNotes = document.getElementById('btnSaveToRumbleNotes');
+    const notesSavedFeedback = document.getElementById('notesSavedFeedback');
+
+    let currentConsultTab = 'clancy';
+
+    const CONSULT_CHECKLIST_DATA = {
+        clancy: {
+            title: "Geoff Clancy - Solicitor Conference",
+            badge: "8:30 AM Legal",
+            sub: "Direct Custody Risk & R v Smith Hardship",
+            verbatimLabel: "Say This First to Clancy (Custody Check)",
+            verbatim: "Before we get into details, I need a direct, realistic assessment: Looking at these charges and my history, is immediate custody on the table, or are we looking at a CCO (Community Correction Order), fine, or adjourned undertaking?",
+            notesPlaceholder: "Write down Clancy's assessment, advice, required medical wording, and next court dates here...",
+            storageKey: "rumble_checklist_clancy_v1",
+            notesKey: "rumble_notes_clancy_v1",
+            defaultItems: [
+                { id: "c1", text: "Demand realistic sentence risk assessment immediately (custody vs CCO/fine).", sub: "Know the worst-case scenario in the first 2 minutes so you can plan the rest of the day." },
+                { id: "c2", text: "Present cervical fusion & active spinal cord risk under R v Smith principles.", sub: "Argue that imprisonment is disproportionately harsh and dangerous, warranting a non-custodial CCO." },
+                { id: "c3", text: "Request Magistrate Urgent Medical Alert endorsement on warrant if custody is threatened.", sub: "Instructs corrections and Justice Health for immediate intake triage regarding spinal cord vulnerability." },
+                { id: "c4", text: "Ask office to pre-lodge surgical & medical records with Justice Health (MAP) prior to court.", sub: "Ensures MAP reception has clinical records on file before any appearance." },
+                { id: "c5", text: "Get exact medical report requirements & wording to hand to Dr Khan at 3:00 PM.", sub: "Note down specific clinical tests, phrasing, or specialist attachments required by the court." }
+            ]
+        },
+        drkhan: {
+            title: "Dr Khan - Clinical Consult & Court Documentation",
+            badge: "3:00 PM Medical",
+            sub: "Reflex Assessment, Hardship Letters & Analgesic Review",
+            verbatimLabel: "Say This First to Dr Khan (Hardship & Reflexes)",
+            verbatim: "I need an urgent bedside neurological reflex check for hyperreflexia (knee kicking out) and two formal court letters today: one for remote AVL appearance, and one detailing custodial medical hardship under R v Smith.",
+            notesPlaceholder: "Write down Dr Khan's clinical reflex findings, script details, or specialist referrals here...",
+            storageKey: "rumble_checklist_drkhan_v1",
+            notesKey: "rumble_notes_drkhan_v1",
+            defaultItems: [
+                { id: "d1", text: "Bedside neurological check: Test patellar reflexes for hyperreflexia and ankle clonus.", sub: "Ensure Dr Khan notes down brisk reflexes/clonus with today's date in medical records." },
+                { id: "d2", text: "Court Medical Hardship Report (R v Smith): Letter to Presiding Magistrate.", sub: "Details 24 June 2026 fusion, active cord compression risk, fatal/paralysis danger in prison, lack of hydrotherapy." },
+                { id: "d3", text: "Remote Court Appearance Certificate (AVL / Webex).", sub: "States prolonged static sitting/standing causes disabling pain (8-9/10), making courtroom attendance unsafe." },
+                { id: "d4", text: "Printouts of RMH Surgical Summary & Signed Current Medication Chart.", sub: "Physical copies of Royal Melbourne Hospital fusion summary and scripts (Panadeine Forte) for Justice Health." },
+                { id: "d5", text: "Prescription repeat & neurosurgical follow-up referral.", sub: "PBS Authority repeat for Panadeine Forte and referral update to Prof. Greg Cunningham (RMH)." }
+            ]
+        }
+    };
+
+    function loadChecklistItems(tab) {
+        const conf = CONSULT_CHECKLIST_DATA[tab];
+        try {
+            const raw = localStorage.getItem(conf.storageKey);
+            if (raw) {
+                return JSON.parse(raw);
+            }
+        } catch (e) {
+            console.error("Error reading checklist from storage", e);
+        }
+        return conf.defaultItems.map(item => ({ ...item, checked: false }));
+    }
+
+    function saveChecklistItems(tab, items) {
+        const conf = CONSULT_CHECKLIST_DATA[tab];
+        try {
+            localStorage.setItem(conf.storageKey, JSON.stringify(items));
+        } catch (e) {
+            console.error("Error saving checklist to storage", e);
+        }
+    }
+
+    function renderConsultChecklist() {
+        const conf = CONSULT_CHECKLIST_DATA[currentConsultTab];
+        if (!conf) return;
+
+        // Header and Verbatim box
+        if (consultChecklistTitle) consultChecklistTitle.innerText = conf.title;
+        if (consultChecklistBadge) consultChecklistBadge.innerText = conf.badge;
+        if (consultChecklistSub) consultChecklistSub.innerText = conf.sub;
+        if (verbatimLabel) verbatimLabel.innerText = conf.verbatimLabel;
+        if (verbatimText) verbatimText.innerText = conf.verbatim;
+
+        // Tab styling
+        if (tabClancy && tabDrKhan) {
+            if (currentConsultTab === 'clancy') {
+                tabClancy.style.borderColor = 'var(--neon-purple)';
+                tabClancy.style.background = 'rgba(181, 0, 255, 0.15)';
+                tabClancy.style.opacity = '1';
+                tabDrKhan.style.borderColor = 'var(--glass-border)';
+                tabDrKhan.style.background = 'transparent';
+                tabDrKhan.style.opacity = '0.65';
+            } else {
+                tabDrKhan.style.borderColor = 'var(--neon-blue)';
+                tabDrKhan.style.background = 'rgba(0, 240, 255, 0.15)';
+                tabDrKhan.style.opacity = '1';
+                tabClancy.style.borderColor = 'var(--glass-border)';
+                tabClancy.style.background = 'transparent';
+                tabClancy.style.opacity = '0.65';
+            }
+        }
+
+        // Load items & notes
+        const items = loadChecklistItems(currentConsultTab);
+        
+        // Progress
+        const total = items.length;
+        const completed = items.filter(i => i.checked).length;
+        const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
+        if (checklistProgressText) checklistProgressText.innerText = `${completed} of ${total} actions completed (${pct}%)`;
+        if (checklistProgressBar) checklistProgressBar.style.width = `${pct}%`;
+
+        // Render items
+        if (checklistItemsList) {
+            checklistItemsList.innerHTML = '';
+            items.forEach((item, idx) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'glass-panel';
+                itemDiv.style.padding = '10px 12px';
+                itemDiv.style.display = 'flex';
+                itemDiv.style.alignItems = 'flex-start';
+                itemDiv.style.gap = '12px';
+                itemDiv.style.borderRadius = '8px';
+                itemDiv.style.border = item.checked ? '1px solid rgba(0, 255, 102, 0.3)' : '1px solid var(--glass-border)';
+                itemDiv.style.background = item.checked ? 'rgba(0, 255, 102, 0.04)' : 'rgba(255, 255, 255, 0.02)';
+                itemDiv.style.transition = 'all 0.2s ease';
+
+                itemDiv.innerHTML = `
+                    <input type="checkbox" id="chk_${currentConsultTab}_${idx}" data-idx="${idx}" ${item.checked ? 'checked' : ''} style="width: 20px; height: 20px; margin-top: 2px; accent-color: var(--neon-green); cursor: pointer; flex-shrink: 0;">
+                    <div style="flex: 1;">
+                        <label for="chk_${currentConsultTab}_${idx}" style="display: block; font-size: 0.92rem; font-weight: 600; color: ${item.checked ? 'var(--neon-green)' : '#fff'}; text-decoration: ${item.checked ? 'line-through' : 'none'}; opacity: ${item.checked ? '0.75' : '1'}; cursor: pointer;">
+                            <span style="display: inline-block; width: 18px; color: var(--neon-blue); font-size: 0.8rem; font-weight: 700;">${idx + 1}.</span> ${escapeHtml(item.text)}
+                        </label>
+                        ${item.sub ? `<div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 3px; line-height: 1.35; margin-left: 18px;">${escapeHtml(item.sub)}</div>` : ''}
+                    </div>
+                    <button type="button" class="btn-delete-checklist-item" data-idx="${idx}" title="Delete item" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1rem; padding: 0 4px; line-height: 1;">&times;</button>
+                `;
+
+                const checkbox = itemDiv.querySelector('input[type="checkbox"]');
+                if (checkbox) {
+                    checkbox.addEventListener('change', (e) => {
+                        items[idx].checked = e.target.checked;
+                        saveChecklistItems(currentConsultTab, items);
+                        renderConsultChecklist();
+                    });
+                }
+
+                const deleteBtn = itemDiv.querySelector('.btn-delete-checklist-item');
+                if (deleteBtn) {
+                    deleteBtn.addEventListener('click', () => {
+                        items.splice(idx, 1);
+                        saveChecklistItems(currentConsultTab, items);
+                        renderConsultChecklist();
+                    });
+                }
+
+                checklistItemsList.appendChild(itemDiv);
+            });
+        }
+
+        // Live Notes
+        if (consultLiveNotes) {
+            consultLiveNotes.placeholder = conf.notesPlaceholder;
+            const savedNotes = localStorage.getItem(conf.notesKey) || '';
+            consultLiveNotes.value = savedNotes;
+        }
+    }
+
+    function openConsultChecklistModal(initialTab = 'clancy') {
+        currentConsultTab = initialTab;
+        renderConsultChecklist();
+        if (consultChecklistModal) {
+            consultChecklistModal.classList.remove('hidden');
+        }
+    }
+
+    if (tabClancy) {
+        tabClancy.addEventListener('click', () => {
+            currentConsultTab = 'clancy';
+            renderConsultChecklist();
+        });
+    }
+
+    if (tabDrKhan) {
+        tabDrKhan.addEventListener('click', () => {
+            currentConsultTab = 'drkhan';
+            renderConsultChecklist();
+        });
+    }
+
+    if (btnCopyVerbatim) {
+        btnCopyVerbatim.addEventListener('click', async () => {
+            const conf = CONSULT_CHECKLIST_DATA[currentConsultTab];
+            if (!conf || !conf.verbatim) return;
+            try {
+                await navigator.clipboard.writeText(conf.verbatim);
+                const originalText = btnCopyVerbatim.innerText;
+                btnCopyVerbatim.innerText = 'Copied!';
+                btnCopyVerbatim.style.borderColor = 'var(--neon-green)';
+                btnCopyVerbatim.style.color = 'var(--neon-green)';
+                setTimeout(() => {
+                    btnCopyVerbatim.innerText = originalText;
+                    btnCopyVerbatim.style.borderColor = 'var(--neon-blue)';
+                    btnCopyVerbatim.style.color = 'var(--neon-blue)';
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy text', err);
+            }
+        });
+    }
+
+    if (btnAddChecklistItem && inputNewChecklistItem) {
+        const handleAdd = () => {
+            const val = inputNewChecklistItem.value.trim();
+            if (!val) return;
+            const items = loadChecklistItems(currentConsultTab);
+            items.push({
+                id: `custom_${Date.now()}`,
+                text: val,
+                sub: "Custom added during consult prep",
+                checked: false
+            });
+            saveChecklistItems(currentConsultTab, items);
+            inputNewChecklistItem.value = '';
+            renderConsultChecklist();
+        };
+
+        btnAddChecklistItem.addEventListener('click', handleAdd);
+        inputNewChecklistItem.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleAdd();
+            }
+        });
+    }
+
+    if (consultLiveNotes) {
+        consultLiveNotes.addEventListener('input', () => {
+            const conf = CONSULT_CHECKLIST_DATA[currentConsultTab];
+            if (conf) {
+                localStorage.setItem(conf.notesKey, consultLiveNotes.value);
+                if (notesSavedFeedback) {
+                    const now = new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
+                    notesSavedFeedback.innerText = `Auto-saved to device at ${now}`;
+                }
+            }
+        });
+    }
+
+    if (btnSaveToRumbleNotes) {
+        btnSaveToRumbleNotes.addEventListener('click', async () => {
+            const conf = CONSULT_CHECKLIST_DATA[currentConsultTab];
+            const content = consultLiveNotes ? consultLiveNotes.value.trim() : '';
+            if (!content) {
+                showToast('Type notes before saving to permanent notes', 'info');
+                return;
+            }
+            btnSaveToRumbleNotes.disabled = true;
+            btnSaveToRumbleNotes.innerText = 'Saving...';
+            try {
+                const noteTitle = currentConsultTab === 'clancy' ? 'Legal Consult Notes (Geoff Clancy)' : 'Medical Consult Notes (Dr Khan)';
+                const formattedContent = `# ${noteTitle}\nDate: ${new Date().toLocaleDateString('en-AU')}\n\n${content}`;
+                const res = await fetch(API_NOTES, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        content: formattedContent,
+                        author: 'user',
+                        pinned: true
+                    })
+                });
+                if (res.ok) {
+                    showToast('Saved to Rumble Notes & Neon DB', 'success');
+                    if (notesSavedFeedback) {
+                        notesSavedFeedback.innerText = 'Permanently saved to Rumble Notes database.';
+                    }
+                    loadNotes();
+                } else {
+                    showToast('Failed to save permanent note', 'error');
+                }
+            } catch (err) {
+                console.error('Error saving note', err);
+                showToast('Network error saving note', 'error');
+            } finally {
+                btnSaveToRumbleNotes.disabled = false;
+                btnSaveToRumbleNotes.innerText = 'Save to Permanent Notes';
+            }
+        });
+    }
+
+    if (btnResetChecklist) {
+        btnResetChecklist.addEventListener('click', () => {
+            const conf = CONSULT_CHECKLIST_DATA[currentConsultTab];
+            if (conf && confirm('Reset checklist items to default?')) {
+                const defaults = conf.defaultItems.map(i => ({ ...i, checked: false }));
+                saveChecklistItems(currentConsultTab, defaults);
+                renderConsultChecklist();
+                showToast('Checklist reset to defaults', 'info');
+            }
+        });
+    }
+
+    if (btnCloseConsultChecklist && consultChecklistModal) {
+        btnCloseConsultChecklist.addEventListener('click', () => {
+            consultChecklistModal.classList.add('hidden');
+        });
+    }
+
+    if (btnDoneConsultChecklist && consultChecklistModal) {
+        btnDoneConsultChecklist.addEventListener('click', () => {
+            consultChecklistModal.classList.add('hidden');
+        });
+    }
+
+
+    // --- MacroDroid Weekly Thursday Banner Check ---
+    function checkMacroDroidBanner() {
+        const banner = document.getElementById('macrodroidBanner');
+        const doneBtn = document.getElementById('btnDoneMacroDroid');
+        if (!banner) return;
+
+        // Current time in Australia/Melbourne
+        const now = new Date();
+        const melbourneFormatter = new Intl.DateTimeFormat('en-AU', {
+            timeZone: 'Australia/Melbourne',
+            year: 'numeric',
+            month: 'numeric',
+            day: 'numeric',
+            weekday: 'short',
+            hour: 'numeric',
+            minute: 'numeric',
+            hour12: false
+        });
+
+        const parts = melbourneFormatter.formatToParts(now);
+        let melbYear = now.getFullYear();
+        let melbMonth = now.getMonth() + 1;
+        let melbDay = now.getDate();
+        let melbWeekday = '';
+        let melbHour = 0;
+
+        parts.forEach(p => {
+            if (p.type === 'year') melbYear = parseInt(p.value, 10);
+            if (p.type === 'month') melbMonth = parseInt(p.value, 10);
+            if (p.type === 'day') melbDay = parseInt(p.value, 10);
+            if (p.type === 'weekday') melbWeekday = p.value;
+            if (p.type === 'hour') melbHour = parseInt(p.value, 10);
+        });
+
+        // Compute ISO Week
+        const melbDate = new Date(Date.UTC(melbYear, melbMonth - 1, melbDay));
+        const dayNr = (melbDate.getUTCDay() + 6) % 7; // Mon=0, Thu=3, Sun=6
+        melbDate.setUTCDate(melbDate.getUTCDate() - dayNr + 3);
+        const firstThu = melbDate.valueOf();
+        melbDate.setUTCMonth(0, 1);
+        if (melbDate.getUTCDay() !== 4) {
+            melbDate.setUTCMonth(0, 1 + ((4 - melbDate.getUTCDay()) + 7) % 7);
+        }
+        const isoWeekNum = 1 + Math.ceil((firstThu - melbDate.valueOf()) / 604800000);
+        const isoWeekKey = `${melbYear}-W${String(isoWeekNum).padStart(2, '0')}`;
+
+        // Active starting Thursday 10:00 AM Australia/Melbourne through end of ISO week
+        const isThuActive = (melbWeekday.startsWith('Thu') || melbWeekday.startsWith('Thur')) && melbHour >= 10;
+        const isLaterDayActive = melbWeekday.startsWith('Fri') || melbWeekday.startsWith('Sat') || melbWeekday.startsWith('Sun');
+        const isTriggerTime = isThuActive || isLaterDayActive;
+
+        const dismissedWeek = localStorage.getItem('macrodroid_banner_dismissed_week') || localStorage.getItem('macrodroid_dismissed_week');
+
+        if (isTriggerTime && dismissedWeek !== isoWeekKey) {
+            banner.classList.remove('hidden');
+        } else {
+            banner.classList.add('hidden');
+        }
+
+        if (doneBtn && !doneBtn.dataset.wired) {
+            doneBtn.dataset.wired = 'true';
+            doneBtn.addEventListener('click', () => {
+                localStorage.setItem('macrodroid_banner_dismissed_week', isoWeekKey);
+                localStorage.setItem('macrodroid_dismissed_week', isoWeekKey);
+                banner.classList.add('hidden');
+                showToast('MacroDroid reminder marked Done for this week', 'success');
+            });
+        }
+    }
+
+    checkMacroDroidBanner();
+    setInterval(checkMacroDroidBanner, 60000);
 
 });

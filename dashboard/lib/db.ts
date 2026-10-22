@@ -314,7 +314,7 @@ export async function ensureTableExists(): Promise<void> {
 export async function createBudgetItem(input: CreateBudgetItemInput): Promise<BudgetItem> {
   await ensureTableExists();
   const id = input.id || `budget_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-  const created_at = new Date().toISOString();
+  const created_at = input.created_at || new Date().toISOString();
   
   const newItem: BudgetItem = {
     id,

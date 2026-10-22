@@ -15,6 +15,7 @@ export interface PainLogInput {
   locations: PainLocationWeight[];
   mood?: string;
   notes?: string;
+  timestamp?: string;
 }
 
 export interface PainLogEntry {
@@ -165,7 +166,7 @@ export function logPain(input: PainLogInput): { success: boolean; entry?: PainLo
     locations: normalizedLocations,
     mood: input.mood?.trim(),
     notes: input.notes?.trim(),
-    timestamp: new Date().toISOString(),
+    timestamp: input.timestamp || new Date().toISOString(),
   };
 
   painLogs.push(entry);

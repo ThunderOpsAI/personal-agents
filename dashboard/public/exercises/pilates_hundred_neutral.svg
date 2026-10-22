@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 240" width="500" height="240">
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="1" stdDeviation="1.5" flood-color="#000000" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+  <!-- Card Background -->
+  <rect width="500" height="240" fill="#0f172a" rx="8" stroke="#334155" stroke-width="1.5"/>
+  <line x1="250" y1="12" x2="250" y2="228" stroke="#1e293b" stroke-width="2" stroke-dasharray="4,4"/>
+  <text x="24" y="26" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="700" fill="#94a3b8" letter-spacing="1">SETUP</text>
+  <text x="274" y="26" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="700" fill="#00e5ff" letter-spacing="1">ACTIVE MOVEMENT</text>
+  
+  <!-- Title Badge -->
+  <rect x="24" y="38" width="210" height="22" rx="4" fill="rgba(14, 165, 233, 0.15)"/>
+  <text x="32" y="53" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10" font-weight="600" fill="#38bdf8">PILATES HUNDRED (NEUTRAL SPINE)</text>
+  
+  <!-- Left Panel: Supine Neutral Setup -->
+  <line x1="45" y1="175" x2="210" y2="175" stroke="#64748b" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="70" cy="162" r="9" fill="#f8fafc"/>
+  <line x1="80" y1="165" x2="135" y2="165" stroke="#f8fafc" stroke-width="5" stroke-linecap="round"/>
+  <line x1="92" y1="154" x2="142" y2="152" stroke="#f8fafc" stroke-width="4" stroke-linecap="round"/>
+  <line x1="135" y1="165" x2="162" y2="132" stroke="#f8fafc" stroke-width="5" stroke-linecap="round"/>
+  <line x1="162" y1="132" x2="188" y2="172" stroke="#f8fafc" stroke-width="5" stroke-linecap="round"/>
+  <text x="125" y="215" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" fill="#94a3b8" text-anchor="middle">Head resting down, neutral pelvis, arms hovered</text>
+
+  <!-- Right Panel: Active Rhythmic Arm Pumps in Tabletop -->
+  <line x1="295" y1="175" x2="460" y2="175" stroke="#64748b" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="320" cy="162" r="9" fill="#00e5ff"/>
+  <line x1="330" y1="165" x2="385" y2="165" stroke="#00e5ff" stroke-width="5" stroke-linecap="round"/>
+  <!-- Tabletop legs -->
+  <line x1="385" y1="165" x2="385" y2="128" stroke="#00e5ff" stroke-width="5" stroke-linecap="round"/>
+  <line x1="385" y1="128" x2="425" y2="128" stroke="#00e5ff" stroke-width="5" stroke-linecap="round"/>
+  <!-- Active arm pump + motion vectors -->
+  <line x1="342" y1="152" x2="395" y2="148" stroke="#00e5ff" stroke-width="4" stroke-linecap="round"/>
+  <line x1="395" y1="138" x2="395" y2="158" stroke="#38bdf8" stroke-width="2" stroke-dasharray="2,2"/>
+  <text x="375" y="215" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" fill="#cbd5e1" text-anchor="middle">Vigorous arm pumps at hip height, 5-in / 5-out breath</text>
+</svg>

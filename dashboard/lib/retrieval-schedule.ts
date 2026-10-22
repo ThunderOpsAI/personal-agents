@@ -15,5 +15,5 @@ export function getMelbourneHour(date: Date = new Date()): number {
 
 export function isRetrievalWindow(date: Date = new Date()): boolean {
   const hour = getMelbourneHour(date);
-  return hour === 6 || hour === 14;
+  return hour === 6 || hour === 9 || hour === 14;
 }

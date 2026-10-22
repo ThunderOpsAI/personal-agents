@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { TelegramUpdate, telegramBot } from '../../../../../lib/telegram/bot';
 import { createPainLog, getPainLogsFromDb } from '../../../../../lib/db';
-import { logPain } from '../../../../../lib/rehab-learning';
+import { logPain, getPainLogs } from '../../../../../lib/rehab-learning';
 import { exportPainReportToMarkdown } from '../../../../../lib/agents/intent-router';
 import { parseTelegramPainMessage, DEFAULT_PAIN_DISTRIBUTION } from '../../../../../lib/telegram/parser';
 
@@ -39,7 +39,107 @@ export async function POST(req: NextRequest) {
       let summaryTitle = '✅ *Pain Log Recorded!*';
       let alertTriggered = false;
 
-      if (data.startsWith('pain_preset:')) {
+      if (data === 'pain_quick:sciatica' || data === 'pain_sciatica') {
+        // 1. Sciatica: logs 9.5 pain 100% sciatica and records notes - Sciatica pain attack.
+        score = 9.5;
+        locations = [
+          { area: 'sciatica', side: 'unspecified' as const, percentage: 100, weight: 100 }
+        ];
+        mood = 'stressed';
+        notes = 'Sciatica pain attack';
+        summaryTitle = '🚨 *High Pain Alert Recorded! (Sciatica: 9.5/10)*';
+        alertTriggered = true;
+      } else if (data === 'pain_quick:thoracic' || data === 'pain_thoracic') {
+        // 2. Thorasic: logs 70% thorasic, 15% neck, 15% scapula all pain level 7.5.
+        score = 7.5;
+        locations = [
+          { area: 'thoracic', side: 'unspecified' as const, percentage: 70, weight: 70 },
+          { area: 'neck', side: 'unspecified' as const, percentage: 15, weight: 15 },
+          { area: 'scapula', side: 'unspecified' as const, percentage: 15, weight: 15 }
+        ];
+        mood = 'neutral';
+        notes = 'Thoracic strain & fatigue (70% thoracic, 15% neck, 15% scapula @ 7.5)';
+        summaryTitle = '✅ *Thoracic Pain Log Recorded! (7.5/10)*';
+        alertTriggered = true;
+      } else if (data === 'pain_quick:hydro' || data === 'pain_hydro') {
+        // 3. Hydro: automatically logs -1.5 on the previous pain log level with notes of Good hydrotherapy session, feeling slightly better.
+        let prevScore = 7.5;
+        let prevLocations = [...DEFAULT_PAIN_DISTRIBUTION];
+        try {
+          const inMem = getPainLogs();
+          if (inMem && inMem.length > 0) {
+            const last = inMem[inMem.length - 1];
+            prevScore = last.score;
+            if (last.locations && last.locations.length > 0) {
+              prevLocations = last.locations.map(l => ({
+                area: l.area,
+                side: l.side,
+                percentage: l.weight ?? 100,
+                weight: l.weight ?? 100
+              }));
+            }
+          } else {
+            const dbLogs = await getPainLogsFromDb();
+            if (dbLogs && dbLogs.length > 0) {
+              const last = dbLogs[0];
+              prevScore = last.score;
+              if (Array.isArray(last.locations) && last.locations.length > 0) {
+                prevLocations = last.locations.map((l: any) => ({
+                  area: l.area,
+                  side: l.side || 'unspecified',
+                  percentage: l.percentage ?? l.weight ?? 100,
+                  weight: l.percentage ?? l.weight ?? 100
+                }));
+              }
+            }
+          }
+        } catch (e) {
+          console.warn('Failed to retrieve previous pain log for Hydro preset:', e);
+        }
+
+        score = Math.max(1.0, Math.min(10.0, Number((prevScore - 1.5).toFixed(1))));
+        locations = prevLocations;
+        mood = 'good';
+        notes = 'Good hydrotherapy session, feeling slightly better';
+        summaryTitle = `🌊 *Hydrotherapy Relief Logged! (${score}/10, -1.5 delta)*`;
+      } else if (data === 'pain_quick:standard' || data === 'pain_standard') {
+        // 4. Standard: logs 70% lumbar 7.5, then rotates between 2:
+        // Variant A: ankle 15%, thorasic 15% both at pain level 5
+        // Variant B: 15% knee, 15% neck both level 5
+        let lastWasVariantA = false;
+        try {
+          const inMem = getPainLogs();
+          const lastStandard = inMem.slice().reverse().find(l => 
+            l.notes?.includes('Standard') || 
+            (l.locations.some(loc => loc.area === 'lumbar') && (l.locations.some(loc => loc.area === 'ankle') || l.locations.some(loc => loc.area === 'knee')))
+          );
+          if (lastStandard) {
+            lastWasVariantA = lastStandard.locations.some(loc => loc.area === 'ankle');
+          }
+        } catch (e) {}
+
+        if (lastWasVariantA) {
+          // Rotate to Variant B: 15% knee, 15% neck both level 5
+          locations = [
+            { area: 'lumbar', side: 'right' as const, percentage: 70, weight: 70 },
+            { area: 'knee', side: 'right' as const, percentage: 15, weight: 15 },
+            { area: 'neck', side: 'unspecified' as const, percentage: 15, weight: 15 }
+          ];
+          score = 6.8;
+          notes = 'Standard check-in (70% lumbar 7.5, 15% knee 5.0, 15% neck 5.0)';
+        } else {
+          // Variant A: ankle 15%, thorasic 15% both at pain level 5
+          locations = [
+            { area: 'lumbar', side: 'right' as const, percentage: 70, weight: 70 },
+            { area: 'ankle', side: 'right' as const, percentage: 15, weight: 15 },
+            { area: 'thoracic', side: 'unspecified' as const, percentage: 15, weight: 15 }
+          ];
+          score = 6.8;
+          notes = 'Standard check-in (70% lumbar 7.5, 15% ankle 5.0, 15% thoracic 5.0)';
+        }
+        mood = 'neutral';
+        summaryTitle = `✅ *Standard Pain Log Recorded! (${score}/10)*`;
+      } else if (data.startsWith('pain_preset:')) {
         score = parseFloat(data.replace('pain_preset:', '')) || 7.5;
         locations = [...DEFAULT_PAIN_DISTRIBUTION];
         mood = score >= 8 ? 'stressed' : score <= 5 ? 'good' : 'neutral';

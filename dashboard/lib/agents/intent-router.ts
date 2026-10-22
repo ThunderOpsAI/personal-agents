@@ -21,7 +21,7 @@ export function exportPainReportToMarkdown(entry: {
       fs.mkdirSync(reportsDir, { recursive: true });
     }
     const reportPath = path.join(reportsDir, 'medical_symptom_report.md');
-    const nowMel = new Date().toLocaleString('en-AU', { timeZone: 'Australia/Melbourne' });
+    const nowMel = (entry.timestamp ? new Date(entry.timestamp) : new Date()).toLocaleString('en-AU', { timeZone: 'Australia/Melbourne' });
     const primaryLoc = entry.locations[0] || { area: 'unspecified', percentage: 100 };
     const locSummary = entry.locations
       .map(l => `${l.side && l.side !== 'unspecified' ? l.side + ' ' : ''}${l.area} (${l.percentage ?? l.weight ?? 0}%)`)
@@ -613,7 +613,10 @@ export async function routeChatMessage(
   try {
     const washRes = await selectWashingDays();
     if (washRes.status === "success") {
-      weatherText = washRes.days.map((d: any) => `• ${d.date}: ${d.precipitationProbability}% rain risk, max ${d.tempMax}°C`).join("\n");
+      weatherText = washRes.days.map((d: any) => {
+        const dayName = new Date(d.date).toLocaleDateString("en-AU", { weekday: "long", timeZone: "Australia/Melbourne" });
+        return `• ${dayName}: ${d.precipitationProbability}% rain risk, max ${d.tempMax}°C`;
+      }).join("\n");
     }
   } catch {}
 
@@ -809,11 +812,13 @@ ${weatherText}
         return { type: a.type, data };
       });
 
-      // If multiple actions, wrap them in multi_action so frontend can confirm all at once
-      const preview: ActionPreview = {
-        type: "multi_action",
-        data: { actions: mappedActions }
-      };
+      // If single action, present that action directly; if multiple, wrap in multi_action
+      const preview: ActionPreview = mappedActions.length === 1
+        ? mappedActions[0]
+        : {
+            type: "multi_action",
+            data: { actions: mappedActions }
+          };
       
       return {
         reply: finalReply,
@@ -1008,18 +1013,26 @@ export async function executeConfirmedAction(action: ActionPreview | { type: str
   }
 
   if (action.type === "multi_action") {
-    const results = [];
+    const results: string[] = [];
+    let allSuccess = true;
     for (const subAction of action.data.actions) {
       try {
         const res = await executeConfirmedAction(subAction);
+        if (res && res.success === false) {
+          allSuccess = false;
+        }
         results.push(res.message);
       } catch (err: any) {
+        allSuccess = false;
         results.push(`Failed: ${err.message}`);
       }
     }
+    const header = allSuccess
+      ? "Rumble: Executed actions:"
+      : "Rumble: Action execution completed with errors/warnings:";
     return {
-      success: true,
-      message: `Rumble: Executed actions: Actions executed successfully.`,
+      success: allSuccess,
+      message: `${header}\n${results.map((r) => `• ${r.replace(/^Rumble:\s*/, "")}`).join("\n")}`,
       result: results,
     };
   }

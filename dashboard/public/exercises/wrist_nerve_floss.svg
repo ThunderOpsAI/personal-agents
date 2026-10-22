@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 240" width="500" height="240">
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="1" stdDeviation="1.5" flood-color="#000000" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+  <!-- Card Background -->
+  <rect width="500" height="240" fill="#0f172a" rx="8" stroke="#334155" stroke-width="1.5"/>
+  <line x1="250" y1="12" x2="250" y2="228" stroke="#1e293b" stroke-width="2" stroke-dasharray="4,4"/>
+  <text x="24" y="26" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="700" fill="#94a3b8" letter-spacing="1">SETUP</text>
+  <text x="274" y="26" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="700" fill="#00e5ff" letter-spacing="1">ACTIVE MOVEMENT</text>
+  
+  <!-- Title Badge -->
+  <rect x="24" y="38" width="208" height="22" rx="4" fill="rgba(14, 165, 233, 0.15)"/>
+  <text x="32" y="53" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10" font-weight="600" fill="#38bdf8">WRIST &amp; MEDIAN NERVE FLOSS</text>
+  
+  <!-- Left Panel: Forearm Flexor/Extensor Stretch -->
+  <circle cx="110" cy="86" r="10" fill="#f8fafc"/>
+  <line x1="110" y1="96" x2="110" y2="155" stroke="#f8fafc" stroke-width="5" stroke-linecap="round"/>
+  <line x1="110" y1="155" x2="95" y2="192" stroke="#f8fafc" stroke-width="5" stroke-linecap="round"/>
+  <line x1="110" y1="155" x2="125" y2="192" stroke="#f8fafc" stroke-width="5" stroke-linecap="round"/>
+  <!-- Extended arm + wrist extension -->
+  <line x1="110" y1="112" x2="168" y2="112" stroke="#f8fafc" stroke-width="4" stroke-linecap="round"/>
+  <line x1="168" y1="112" x2="168" y2="95" stroke="#38bdf8" stroke-width="4" stroke-linecap="round"/>
+  <text x="125" y="215" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" fill="#94a3b8" text-anchor="middle">Arm straight at shoulder height, wrist flexed/extended</text>
+
+  <!-- Right Panel: Median Nerve Glide (Head & Wrist Synchronized) -->
+  <circle cx="362" cy="85" r="10" fill="#00e5ff"/>
+  <line x1="360" y1="95" x2="360" y2="155" stroke="#00e5ff" stroke-width="5" stroke-linecap="round"/>
+  <line x1="360" y1="155" x2="345" y2="192" stroke="#00e5ff" stroke-width="5" stroke-linecap="round"/>
+  <line x1="360" y1="155" x2="375" y2="192" stroke="#00e5ff" stroke-width="5" stroke-linecap="round"/>
+  <!-- Lateral arm out to side with wrist extension -->
+  <line x1="360" y1="112" x2="425" y2="112" stroke="#00e5ff" stroke-width="4" stroke-linecap="round"/>
+  <line x1="425" y1="112" x2="425" y2="95" stroke="#38bdf8" stroke-width="4" stroke-linecap="round"/>
+  <!-- Opposite arm relaxed -->
+  <line x1="360" y1="112" x2="338" y2="142" stroke="#64748b" stroke-width="4" stroke-linecap="round"/>
+  <text x="375" y="215" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" fill="#cbd5e1" text-anchor="middle">Synchronize wrist extension with gentle head tilt</text>
+</svg>

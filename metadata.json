@@ -1,0 +1,6 @@
+{
+  "name": "Rumble OS",
+  "description": "Live recovery dashboard and personal operations command center for pain tracking, clinical rehab, agenda management, and daily workflows.",
+  "permissions": [],
+  "capabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

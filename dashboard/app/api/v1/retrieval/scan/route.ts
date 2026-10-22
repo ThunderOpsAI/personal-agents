@@ -16,7 +16,7 @@ export async function POST(request: Request) {
         if (!inWindow) {
           return NextResponse.json({
             status: "skipped",
-            reason: "Current time is outside the 06:00 / 14:00 Australia/Melbourne retrieval window.",
+            reason: "Current time is outside the 09:00 / 14:00 Australia/Melbourne retrieval window.",
             melbourne_hour: getMelbourneHour(),
             timezone: "Australia/Melbourne",
           });

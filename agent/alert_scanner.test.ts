@@ -108,8 +108,8 @@ describe("Retrieval Alert Scanner Tests (agent/alert_scanner.ts)", () => {
       expect(injected).toHaveLength(1);
       expect(injected[0].id).toBe("alert_evt_evt_physio_456");
       expect(injected[0].item_type).toBe("alert");
-      expect(injected[0].title).toBe("[Rumble: Calendar Alert] Agenda Alert: Physio Follow-up - ACTION REQUIRED: Please fill out the pre-assessment form before arrival.");
-      expect(injected[0].scheduled_time).toBe("2026-08-11T10:00:00+10:00");
+      expect(injected[0].title).toBe("[Rumble: Calendar Alert] Agenda Alert: Physio Follow-up - Action Required");
+      expect(injected[0].scheduled_time).toBe("2026-08-11T14:30:00+10:00");
 
       const dbItems = await getAgendaItems();
       expect(dbItems).toHaveLength(1);

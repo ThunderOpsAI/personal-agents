@@ -97,6 +97,18 @@ describe('Rehab & Pain Learning Loop (dashboard/lib/rehab-learning.ts)', () => {
       expect(validation.valid).toBe(false);
       expect(validation.errors[0]).toContain('Location weights must total exactly 100%');
     });
+
+    it('honors and preserves custom timestamp when provided', () => {
+      const customTime = '2026-10-15T09:55:00+11:00';
+      const input = {
+        score: 6,
+        locations: [{ area: 'lumbar', percentage: 100 }],
+        timestamp: customTime,
+      };
+      const result = logPain(input);
+      expect(result.success).toBe(true);
+      expect(result.entry?.timestamp).toBe(customTime);
+    });
   });
 
   describe('2. Routine Completion & ChromaDB Relief Delta Persistence', () => {

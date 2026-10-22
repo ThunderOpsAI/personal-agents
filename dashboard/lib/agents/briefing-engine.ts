@@ -13,6 +13,11 @@ function extractThumbnail(item: any): string | null {
   if (item.enclosure && item.enclosure.link && typeof item.enclosure.link === "string" && item.enclosure.link.startsWith("http")) {
     return item.enclosure.link;
   }
+  const contentStr = item.content || item.description || "";
+  const match = contentStr.match(/<img[^>]+src="([^">]+)"/);
+  if (match && match[1] && match[1].startsWith("http")) {
+    return match[1];
+  }
   return null;
 }
 
@@ -37,37 +42,37 @@ function getTimeoutSignal(ms: number): any {
   return undefined;
 }
 
-async function fetchLiveNews(): Promise<NewsItem[]> {
-  const parseItems = (items: any[], source: string): NewsItem[] => {
-    return (items || []).map((item: any) => {
-      let timeStr = "recently";
-      if (item.pubDate) {
-        const diffMs = Date.now() - new Date(item.pubDate).getTime();
-        const diffHours = Math.floor(Math.max(0, diffMs) / (1000 * 60 * 60));
-        if (diffHours === 0) {
-          const diffMins = Math.floor(Math.max(0, diffMs) / (1000 * 60));
-          timeStr = `${diffMins}m ago`;
-        } else if (diffHours < 24) {
-          timeStr = `${diffHours}h ago`;
-        } else {
-          timeStr = new Date(item.pubDate).toLocaleDateString("en-AU", { month: "short", day: "numeric" });
-        }
+function parseItems(items: any[], source: string): NewsItem[] {
+  return (items || []).map((item: any) => {
+    let timeStr = "recently";
+    if (item.pubDate) {
+      const diffMs = Date.now() - new Date(item.pubDate).getTime();
+      const diffHours = Math.floor(Math.max(0, diffMs) / (1000 * 60 * 60));
+      if (diffHours === 0) {
+        const diffMins = Math.floor(Math.max(0, diffMs) / (1000 * 60));
+        timeStr = `${diffMins}m ago`;
+      } else if (diffHours < 24) {
+        timeStr = `${diffHours}h ago`;
+      } else {
+        timeStr = new Date(item.pubDate).toLocaleDateString("en-AU", { month: "short", day: "numeric" });
       }
-      return {
-        title: item.title,
-        url: item.link,
-        source,
-        time: timeStr,
-        thumbnail: extractThumbnail(item),
-        blurb: cleanBlurb(item.description || item.content || "")
-      };
-    });
-  };
+    }
+    return {
+      title: item.title,
+      url: item.link,
+      source,
+      time: timeStr,
+      thumbnail: extractThumbnail(item),
+      blurb: cleanBlurb(item.description || item.content || "")
+    };
+  });
+}
 
+async function fetchLiveThunderNbaNews(): Promise<NewsItem[]> {
   try {
     const results: NewsItem[] = [];
 
-    // 1. Fetch OKC Thunder news (Thunderous Intentions) with 3.5s timeout
+    // 1. OKC Thunder news (Thunderous Intentions) with 3.5s timeout
     try {
       const thunderRes = await fetch("https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent("https://thunderousintentions.com/feed/"), {
         signal: getTimeoutSignal(3500),
@@ -83,7 +88,7 @@ async function fetchLiveNews(): Promise<NewsItem[]> {
       console.warn("[Briefing] Thunder RSS timeout/error:", err);
     }
 
-    // 2. Fetch general NBA news (ESPN NBA) with 3.5s timeout
+    // 2. ESPN NBA news with 3.5s timeout
     try {
       const nbaRes = await fetch("https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent("https://www.espn.com/espn/rss/nba/news"), {
         signal: getTimeoutSignal(3500),
@@ -103,7 +108,6 @@ async function fetchLiveNews(): Promise<NewsItem[]> {
       return results.slice(0, 4);
     }
 
-    // Fallback if network feeds fail
     return [
       {
         title: "OKC Thunder: Roster Depth & Championship Contention Outlook",
@@ -119,11 +123,10 @@ async function fetchLiveNews(): Promise<NewsItem[]> {
         source: "ESPN NBA",
         time: "today",
         thumbnail: null,
-        blurb: "Key offseason storylines, training camp developments, and rotational depth charts across the association."
+        blurb: "Key storylines, defensive rotations, and depth charts across the association."
       }
     ];
   } catch (err) {
-    console.error("[Briefing] Error fetching live NBA and OKC Thunder news:", err);
     return [
       {
         title: "OKC Thunder: Shai Gilgeous-Alexander & Core Roster Trajectory",
@@ -135,6 +138,125 @@ async function fetchLiveNews(): Promise<NewsItem[]> {
       }
     ];
   }
+}
+
+async function fetchLiveTechNews(): Promise<NewsItem[]> {
+  try {
+    const res = await fetch("https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent("https://techcrunch.com/feed/"), {
+      signal: getTimeoutSignal(3500),
+      next: { revalidate: 900 }
+    } as any);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.status === "ok" && Array.isArray(data.items)) {
+        const parsed = parseItems(data.items.slice(0, 3), "TechCrunch");
+        if (parsed.length > 0) return parsed;
+      }
+    }
+  } catch (err) {
+    console.warn("[Briefing] Tech news RSS timeout/error:", err);
+  }
+
+  return [
+    {
+      title: "Agentic AI & Serverless Edge Architecture Breakthroughs",
+      url: "https://techcrunch.com",
+      source: "TechCrunch",
+      time: "today",
+      thumbnail: null,
+      blurb: "Advancements in autonomous agent frameworks, low-latency edge deployment, and localized AI models."
+    },
+    {
+      title: "Developer Tooling & Next-Gen Systems Infrastructure Trends",
+      url: "https://techcrunch.com",
+      source: "Tech News",
+      time: "today",
+      thumbnail: null,
+      blurb: "Rapid iteration cycles and resilient distributed state storage patterns for modern engineering teams."
+    }
+  ];
+}
+
+async function fetchLiveAusWorldNews(): Promise<NewsItem[]> {
+  try {
+    const results: NewsItem[] = [];
+
+    // ABC National news
+    try {
+      const res = await fetch("https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent("https://www.abc.net.au/news/feed/51120/rss.xml"), {
+        signal: getTimeoutSignal(3500),
+        next: { revalidate: 900 }
+      } as any);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.status === "ok" && Array.isArray(data.items)) {
+          results.push(...parseItems(data.items.slice(0, 2), "ABC News"));
+        }
+      }
+    } catch (err) {
+      console.warn("[Briefing] ABC news RSS timeout/error:", err);
+    }
+
+    // ABC Victoria / Regional news
+    try {
+      const resVic = await fetch("https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent("https://www.abc.net.au/news/feed/45910/rss.xml"), {
+        signal: getTimeoutSignal(3500),
+        next: { revalidate: 900 }
+      } as any);
+      if (resVic.ok) {
+        const dataVic = await resVic.json();
+        if (dataVic.status === "ok" && Array.isArray(dataVic.items)) {
+          results.push(...parseItems(dataVic.items.slice(0, 2), "ABC Victoria"));
+        }
+      }
+    } catch (err) {
+      console.warn("[Briefing] ABC Victoria RSS timeout/error:", err);
+    }
+
+    if (results.length > 0) return results.slice(0, 4);
+  } catch (err) {
+    console.warn("[Briefing] Aus/World news error:", err);
+  }
+
+  return [
+    {
+      title: "Australian National Affairs & Regional Economic Outlook",
+      url: "https://www.abc.net.au/news",
+      source: "ABC News",
+      time: "today",
+      thumbnail: null,
+      blurb: "Key national headlines, regional infrastructure, and economic updates across Australia."
+    },
+    {
+      title: "Victorian State News & Regional Community Developments",
+      url: "https://www.abc.net.au/news",
+      source: "ABC Victoria",
+      time: "today",
+      thumbnail: null,
+      blurb: "Essential regional updates, public infrastructure milestones, and local community news."
+    }
+  ];
+}
+
+function renderNewsCards(items: NewsItem[], accentColor: string = "var(--neon-blue)"): string {
+  return items.map(item => `
+    <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="news-story-card">
+      <div class="news-story-body">
+        <div class="news-story-meta">
+          <strong style="color: ${accentColor};">${item.source}</strong>
+          <span>&bull;</span>
+          <span>${item.time}</span>
+        </div>
+        <div class="news-story-title">${item.title}</div>
+        ${item.blurb ? `<div class="news-story-blurb">${item.blurb}</div>` : ''}
+      </div>
+      ${item.thumbnail ? `
+        <div class="news-story-thumb-wrap">
+          <img src="${item.thumbnail}" alt="" loading="lazy" onerror="this.parentElement.style.display='none'" />
+        </div>
+      ` : ''}
+    </a>
+  `).join('');
 }
 
 export async function generateBriefing(events: any[], type: "morning" | "evening"): Promise<string> {
@@ -168,31 +290,6 @@ export async function generateBriefing(events: any[], type: "morning" | "evening
     ? formattedEvents.map(e => `- ${e.time}: ${e.title}`).join('\n')
     : "No events scheduled.";
 
-  // Fetch live OKC Thunder & NBA news
-  const newsItems = await fetchLiveNews();
-  const thunderNewsContext = newsItems.length > 0
-    ? newsItems.map(n => `- [${n.source}] ${n.title}: ${n.blurb}`).join('\n')
-    : "- OKC Thunder training camp and roster depth outlook\n- Shai Gilgeous-Alexander MVP trajectory and offensive leadership\n- Western Conference title chase and NBA storylines";
-
-  const newsCardsHtml = newsItems.map(item => `
-    <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="news-story-card">
-      <div class="news-story-body">
-        <div class="news-story-meta">
-          <strong style="color: ${item.source.includes("Thunder") ? "#38bdf8" : "var(--neon-blue)"};">${item.source}</strong>
-          <span>&bull;</span>
-          <span>${item.time}</span>
-        </div>
-        <div class="news-story-title">${item.title}</div>
-        ${item.blurb ? `<div class="news-story-blurb">${item.blurb}</div>` : ''}
-      </div>
-      ${item.thumbnail ? `
-        <div class="news-story-thumb-wrap">
-          <img src="${item.thumbnail}" alt="" loading="lazy" onerror="this.parentElement.style.display='none'" />
-        </div>
-      ` : ''}
-    </a>
-  `).join('');
-
   if (type === "evening") {
     const eveningHero = `
 <div class="briefing-hero-bar">
@@ -201,7 +298,7 @@ export async function generateBriefing(events: any[], type: "morning" | "evening
     <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">Daily execution review and achievements</div>
   </div>
   <div class="briefing-meta-chips">
-    <span class="briefing-chip">${events.length} Reviewed Items</span>
+    <span class="briefing-chip">${events.length} events reviewed</span>
   </div>
 </div>
 `;
@@ -224,6 +321,17 @@ export async function generateBriefing(events: any[], type: "morning" | "evening
 </div>
 `;
   }
+
+  // Morning briefing: Fetch all live feeds concurrently
+  const [thunderNews, techNews, ausNews] = await Promise.all([
+    fetchLiveThunderNbaNews(),
+    fetchLiveTechNews(),
+    fetchLiveAusWorldNews()
+  ]);
+
+  const thunderNewsContext = thunderNews.length > 0
+    ? thunderNews.map(n => `- [${n.source}] ${n.title}: ${n.blurb}`).join('\n')
+    : "- OKC Thunder training camp and roster depth outlook\n- Shai Gilgeous-Alexander MVP trajectory and offensive leadership\n- Western Conference title chase and NBA storylines";
 
   // Morning briefing: strict prompt to guarantee compact, ADHD-friendly, scannable output
   const systemPrompt = `You are Rumble, an executive AI assistant for James (who has ADHD).
@@ -316,99 +424,25 @@ ${thunderNewsContext}
     `;
   }
 
-  // Build the complete tabbed UI component
+  // Render cards for each feed
+  const thunderCardsHtml = renderNewsCards(thunderNews, "#38bdf8");
+  const techCardsHtml = renderNewsCards(techNews, "#10b981");
+  const ausCardsHtml = renderNewsCards(ausNews, "#f59e0b");
+
+  // Single scrolling feed (Order: Schedule/Priorities -> OKC/NBA -> AI/Tech -> Aus/World)
   const heroHtml = `
 <div class="briefing-hero-bar">
   <div>
     <div class="briefing-hero-title">Executive Morning Briefing</div>
     <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">
-      Laser focus on daily execution and OKC Thunder &amp; NBA dispatch
+      Laser focus on daily execution, OKC Thunder &amp; NBA, AI/Tech, and world news
     </div>
   </div>
   <div class="briefing-meta-chips">
-    <span class="briefing-chip">${events.length} Agenda Items</span>
+    <span class="briefing-chip">${events.length} events scheduled</span>
     <span class="briefing-chip purple">OKC Thunder &amp; NBA</span>
-  </div>
-</div>
-`;
-
-  const navTabsHtml = `
-<div class="briefing-tab-nav" role="tablist" aria-label="Briefing sections">
-  <button class="briefing-nav-tab active" data-tab="tab-briefing-agenda" type="button" role="tab" aria-selected="true">
-    Schedule &amp; Priorities (${events.length})
-  </button>
-  <button class="briefing-nav-tab" data-tab="tab-briefing-thunder" type="button" role="tab" aria-selected="false">
-    OKC Thunder &amp; NBA
-  </button>
-  <button class="briefing-nav-tab" data-tab="tab-briefing-all" type="button" role="tab" aria-selected="false">
-    Full View
-  </button>
-</div>
-`;
-
-  const agendaPaneHtml = `
-<div class="briefing-tab-pane active" id="tab-briefing-agenda" role="tabpanel">
-  <div class="briefing-card-panel">
-    <h4>Daily Priorities &amp; Focus (50%)</h4>
-    ${agendaContent}
-  </div>
-  <div class="briefing-card-panel">
-    <h4 style="color: var(--neon-purple);">Today's Schedule Timeline</h4>
-    <div class="briefing-agenda-timeline">
-      ${timelineHtml}
-    </div>
-  </div>
-</div>
-`;
-
-  const thunderPaneHtml = `
-<div class="briefing-tab-pane" id="tab-briefing-thunder" role="tabpanel">
-  <div class="briefing-card-panel">
-    <h4 class="thunder-header">OKC Thunder &amp; NBA Dispatch (50%)</h4>
-    ${thunderContent}
-  </div>
-  <div class="briefing-news-section" style="margin-top: 14px; border-top: none; padding-top: 0;">
-    <div class="briefing-news-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
-      <h4 style="margin: 0; font-size: 0.92rem; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
-        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #007ac1;"></span>
-        Live Thunder &amp; NBA Headlines
-      </h4>
-      <a href="https://thunderousintentions.com" target="_blank" rel="noopener noreferrer" style="font-size: 0.78rem; color: var(--neon-blue); text-decoration: none;">Thunder news &rarr;</a>
-    </div>
-    <div class="briefing-news-grid" style="display: flex; flex-direction: column; gap: 8px;">
-      ${newsCardsHtml}
-    </div>
-  </div>
-</div>
-`;
-
-  const allPaneHtml = `
-<div class="briefing-tab-pane" id="tab-briefing-all" role="tabpanel">
-  <div class="briefing-card-panel">
-    <h4>Daily Priorities &amp; Focus (50%)</h4>
-    ${agendaContent}
-  </div>
-  <div class="briefing-card-panel">
-    <h4 style="color: var(--neon-purple);">Today's Schedule Timeline</h4>
-    <div class="briefing-agenda-timeline">
-      ${timelineHtml}
-    </div>
-  </div>
-  <div class="briefing-card-panel">
-    <h4 class="thunder-header">OKC Thunder &amp; NBA Dispatch (50%)</h4>
-    ${thunderContent}
-  </div>
-  <div class="briefing-news-section" style="margin-top: 14px; border-top: none; padding-top: 0;">
-    <div class="briefing-news-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
-      <h4 style="margin: 0; font-size: 0.92rem; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
-        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #007ac1;"></span>
-        Live Thunder &amp; NBA Headlines
-      </h4>
-      <a href="https://thunderousintentions.com" target="_blank" rel="noopener noreferrer" style="font-size: 0.78rem; color: var(--neon-blue); text-decoration: none;">Thunder news &rarr;</a>
-    </div>
-    <div class="briefing-news-grid" style="display: flex; flex-direction: column; gap: 8px;">
-      ${newsCardsHtml}
-    </div>
+    <span class="briefing-chip" style="background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.4); color: #10b981;">AI &amp; Tech</span>
+    <span class="briefing-chip" style="background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.4); color: #f59e0b;">Aus &amp; World</span>
   </div>
 </div>
 `;
@@ -416,10 +450,64 @@ ${thunderNewsContext}
   return `
 <div class="briefing-container">
   ${heroHtml}
-  ${navTabsHtml}
-  ${agendaPaneHtml}
-  ${thunderPaneHtml}
-  ${allPaneHtml}
+
+  <!-- Section 1: Schedule & Priorities -->
+  <div class="briefing-card-panel" style="margin-bottom: 14px;">
+    <h4>Daily Priorities &amp; Focus</h4>
+    ${agendaContent}
+  </div>
+  <div class="briefing-card-panel" style="margin-bottom: 14px;">
+    <h4 style="color: var(--neon-purple);">Today's Schedule Timeline</h4>
+    <div class="briefing-agenda-timeline">
+      ${timelineHtml}
+    </div>
+  </div>
+
+  <!-- Section 2: OKC Thunder & NBA Dispatch -->
+  <div class="briefing-card-panel" style="margin-bottom: 14px;">
+    <h4 class="thunder-header">OKC Thunder &amp; NBA Dispatch</h4>
+    ${thunderContent}
+  </div>
+  <div class="briefing-news-section" style="margin-bottom: 14px; border-top: none; padding-top: 0;">
+    <div class="briefing-news-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+      <h4 style="margin: 0; font-size: 0.92rem; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
+        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #007ac1;"></span>
+        Live Thunder &amp; NBA Headlines
+      </h4>
+      <a href="https://thunderousintentions.com" target="_blank" rel="noopener noreferrer" style="font-size: 0.78rem; color: var(--neon-blue); text-decoration: none;">Thunder news &rarr;</a>
+    </div>
+    <div class="briefing-news-grid" style="display: flex; flex-direction: column; gap: 8px;">
+      ${thunderCardsHtml}
+    </div>
+  </div>
+
+  <!-- Section 3: AI & Tech News -->
+  <div class="briefing-news-section" style="margin-bottom: 14px; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 14px;">
+    <div class="briefing-news-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+      <h4 style="margin: 0; font-size: 0.92rem; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
+        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10b981;"></span>
+        AI &amp; Tech Intelligence
+      </h4>
+      <a href="https://techcrunch.com" target="_blank" rel="noopener noreferrer" style="font-size: 0.78rem; color: var(--neon-blue); text-decoration: none;">Tech news &rarr;</a>
+    </div>
+    <div class="briefing-news-grid" style="display: flex; flex-direction: column; gap: 8px;">
+      ${techCardsHtml}
+    </div>
+  </div>
+
+  <!-- Section 4: Australian & World News -->
+  <div class="briefing-news-section" style="margin-bottom: 14px; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 14px;">
+    <div class="briefing-news-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+      <h4 style="margin: 0; font-size: 0.92rem; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
+        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #f59e0b;"></span>
+        Australian &amp; World News
+      </h4>
+      <a href="https://www.abc.net.au/news" target="_blank" rel="noopener noreferrer" style="font-size: 0.78rem; color: var(--neon-blue); text-decoration: none;">ABC News &rarr;</a>
+    </div>
+    <div class="briefing-news-grid" style="display: flex; flex-direction: column; gap: 8px;">
+      ${ausCardsHtml}
+    </div>
+  </div>
 </div>
 `;
 }

@@ -125,6 +125,11 @@ describe("API Route: POST /api/v1/retrieval/scan (dashboard/app/api/v1/retrieval
       expect(getMelbourneHour(winterDate1400)).toBe(14);
       expect(isRetrievalWindow(winterDate1400)).toBe(true);
 
+      // 2026-07-15 09:00 AEST is 2026-07-14 23:00 UTC
+      const winterDate0900 = new Date("2026-07-14T23:00:00Z");
+      expect(getMelbourneHour(winterDate0900)).toBe(9);
+      expect(isRetrievalWindow(winterDate0900)).toBe(true);
+
       // 2026-07-15 10:00 AEST is outside window
       const winterDate1000 = new Date("2026-07-15T00:00:00Z");
       expect(getMelbourneHour(winterDate1000)).toBe(10);
@@ -137,6 +142,11 @@ describe("API Route: POST /api/v1/retrieval/scan (dashboard/app/api/v1/retrieval
       const summerDate0600 = new Date("2026-01-14T19:00:00Z");
       expect(getMelbourneHour(summerDate0600)).toBe(6);
       expect(isRetrievalWindow(summerDate0600)).toBe(true);
+
+      // 2026-01-15 09:00 AEDT is 2026-01-14 22:00 UTC
+      const summerDate0900 = new Date("2026-01-14T22:00:00Z");
+      expect(getMelbourneHour(summerDate0900)).toBe(9);
+      expect(isRetrievalWindow(summerDate0900)).toBe(true);
 
       // 2026-01-15 14:00 AEDT is 2026-01-15 03:00 UTC
       const summerDate1400 = new Date("2026-01-15T03:00:00Z");

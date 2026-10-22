@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 240" width="500" height="240">
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="1" stdDeviation="1.5" flood-color="#000000" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+  <!-- Card Background -->
+  <rect width="500" height="240" fill="#0f172a" rx="8" stroke="#334155" stroke-width="1.5"/>
+  <line x1="250" y1="12" x2="250" y2="228" stroke="#1e293b" stroke-width="2" stroke-dasharray="4,4"/>
+  <text x="24" y="26" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="700" fill="#94a3b8" letter-spacing="1">SETUP</text>
+  <text x="274" y="26" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="700" fill="#00e5ff" letter-spacing="1">ACTIVE MOVEMENT</text>
+  
+  <!-- Title Badge -->
+  <rect x="24" y="38" width="198" height="22" rx="4" fill="rgba(14, 165, 233, 0.15)"/>
+  <text x="32" y="53" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10" font-weight="600" fill="#38bdf8">MCGILL MODIFIED CURL-UP</text>
+  
+  <!-- Left Panel: Supine Setup with One Knee Bent & Hands Under Lumbar -->
+  <line x1="40" y1="175" x2="215" y2="175" stroke="#64748b" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="68" cy="162" r="9" fill="#f8fafc"/>
+  <line x1="78" y1="165" x2="132" y2="165" stroke="#f8fafc" stroke-width="5" stroke-linecap="round"/>
+  <!-- Hands supporting lumbar curve -->
+  <circle cx="112" cy="168" r="3.5" fill="#38bdf8"/>
+  <!-- One leg bent, one leg straight -->
+  <line x1="132" y1="165" x2="158" y2="132" stroke="#f8fafc" stroke-width="5" stroke-linecap="round"/>
+  <line x1="158" y1="132" x2="182" y2="172" stroke="#f8fafc" stroke-width="5" stroke-linecap="round"/>
+  <line x1="132" y1="165" x2="198" y2="170" stroke="#64748b" stroke-width="4" stroke-linecap="round"/>
+  <text x="125" y="215" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" fill="#94a3b8" text-anchor="middle">One knee bent, hands supporting natural low back</text>
+
+  <!-- Right Panel: Slight Cranial & Sternum Hover (1 inch) -->
+  <line x1="290" y1="175" x2="465" y2="175" stroke="#64748b" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="320" cy="150" r="9" fill="#00e5ff"/>
+  <line x1="329" y1="154" x2="382" y2="165" stroke="#00e5ff" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="362" cy="168" r="3.5" fill="#38bdf8"/>
+  <line x1="382" y1="165" x2="408" y2="132" stroke="#00e5ff" stroke-width="5" stroke-linecap="round"/>
+  <line x1="408" y1="132" x2="432" y2="172" stroke="#00e5ff" stroke-width="5" stroke-linecap="round"/>
+  <line x1="382" y1="165" x2="448" y2="170" stroke="#64748b" stroke-width="4" stroke-linecap="round"/>
+  <text x="375" y="215" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" fill="#cbd5e1" text-anchor="middle">Hover head and sternum 1 inch without flattening back</text>
+</svg>
