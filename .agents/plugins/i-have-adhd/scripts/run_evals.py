@@ -13,7 +13,6 @@ from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
 
-
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_CASES = ROOT / "evals" / "cases.jsonl"
 WEIGHTS = {
@@ -36,7 +35,7 @@ def read_jsonl(path: Path) -> list[dict[str, Any]]:
         except json.JSONDecodeError as exc:
             raise ValueError(f"{path}: line {number}: {exc.msg}") from exc
         if not isinstance(row, dict):
-            raise ValueError(f"{path}: line {number}: expected a JSON object")
+            raise ValueError(f"{path}: line {number}: expected a JSON object")  # noqa: TRY004
         rows.append(row)
     return rows
 
@@ -91,7 +90,7 @@ def _validate_score(row: dict[str, Any], index: int) -> None:
         if not isinstance(value, (int, float)) or not 1 <= value <= 5:
             raise ValueError(f"Score row {index}: {metric} must be between 1 and 5")
     if not isinstance(row["blocker"], bool):
-        raise ValueError(f"Score row {index}: blocker must be boolean")
+        raise ValueError(f"Score row {index}: blocker must be boolean")  # noqa: TRY004
 
 
 def _describe_rows(keys: list[tuple[str, Any]]) -> str:

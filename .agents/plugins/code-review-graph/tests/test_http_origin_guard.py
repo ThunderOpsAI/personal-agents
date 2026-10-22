@@ -11,15 +11,14 @@ from __future__ import annotations
 import inspect
 
 import pytest
-from fastmcp import FastMCP
-from starlette.testclient import TestClient
-
 from code_review_graph.http_origin_guard import (
     LoopbackOriginGuard,
     build_http_middleware,
     is_loopback_host,
     split_host_port,
 )
+from fastmcp import FastMCP
+from starlette.testclient import TestClient
 
 HOST = "127.0.0.1"
 PORT = 5555

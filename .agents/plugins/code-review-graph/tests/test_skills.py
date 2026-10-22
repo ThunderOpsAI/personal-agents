@@ -15,7 +15,6 @@ if sys.version_info >= (3, 11):
 else:  # pragma: no cover - Python 3.10 backport
     import tomli as tomllib
 
-from code_review_graph import skills as skills_module
 from code_review_graph.skills import (
     _CLAUDE_MD_SECTION_MARKER,
     PLATFORMS,
@@ -41,6 +40,8 @@ from code_review_graph.skills import (
     install_opencode_plugin,
     install_platform_configs,
 )
+
+from code_review_graph import skills as skills_module
 
 _needs_tomllib = pytest.mark.skipif(
     tomllib is None, reason="tomllib requires Python 3.11+",

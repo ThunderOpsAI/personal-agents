@@ -1,5 +1,4 @@
 import json
-import re
 
 source_file = "/Users/thunderopsai/Documents/Workspace/01_Projects/personal-agents/agent_reports/2026-10-12_comprehensive_yoga_hydrotherapy_routine_library.md"
 

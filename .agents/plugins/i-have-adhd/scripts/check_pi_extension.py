@@ -12,7 +12,6 @@ import threading
 from pathlib import Path
 from typing import Any
 
-
 ROOT = Path(__file__).resolve().parents[1]
 RPC_TIMEOUT_SECONDS = 30
 SHARED_MANIFEST_FIELDS = ("name", "version", "description", "license", "homepage")
@@ -35,7 +34,7 @@ def validate_package_manifest() -> None:
 
 class RpcClient:
     def __init__(self, env: dict[str, str], *args: str) -> None:
-        self.stderr_file = tempfile.TemporaryFile(mode="w+t")
+        self.stderr_file = tempfile.TemporaryFile(mode="w+t")  # noqa: SIM115
         self.process = subprocess.Popen(
             ["pi", "--mode", "rpc", *args],
             cwd=ROOT,

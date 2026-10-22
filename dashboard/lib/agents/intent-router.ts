@@ -613,7 +613,10 @@ export async function routeChatMessage(
   try {
     const washRes = await selectWashingDays();
     if (washRes.status === "success") {
-      weatherText = washRes.days.map((d: any) => `• ${d.date}: ${d.precipitationProbability}% rain risk, max ${d.tempMax}°C`).join("\n");
+      weatherText = washRes.days.map((d: any) => {
+        const dayName = new Date(d.date).toLocaleDateString("en-AU", { weekday: "long", timeZone: "Australia/Melbourne" });
+        return `• ${dayName}: ${d.precipitationProbability}% rain risk, max ${d.tempMax}°C`;
+      }).join("\n");
     }
   } catch {}
 

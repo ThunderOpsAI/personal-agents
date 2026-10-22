@@ -9,8 +9,6 @@ import logging
 from pathlib import Path
 
 import pytest
-
-from code_review_graph import custom_languages
 from code_review_graph.custom_languages import (
     CONFIG_RELATIVE_PATH,
     MAX_CUSTOM_LANGUAGES,
@@ -21,6 +19,8 @@ from code_review_graph.parser import (
     CodeParser,
     _builtin_language_names,
 )
+
+from code_review_graph import custom_languages
 
 BUILTIN_LANGUAGES = _builtin_language_names()
 

@@ -10,7 +10,6 @@ from html.parser import HTMLParser
 from importlib import resources
 
 import pytest
-
 from code_review_graph.graph import GraphStore
 from code_review_graph.parser import EdgeInfo, NodeInfo
 
