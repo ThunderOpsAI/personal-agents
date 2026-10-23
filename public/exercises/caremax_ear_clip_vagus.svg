@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 240" width="500" height="240">
+  <title>Caremax Ear Clip &amp; Auricular Placement Guide</title>
+  <desc>Transcutaneous vagus nerve stimulation guide showing ear clip placement strictly on the left tragus and companion gel pad on the posterior left shoulder for safe circuit completion.</desc>
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="1" stdDeviation="1.5" flood-color="#000000" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+  <!-- Card Background -->
+  <rect width="500" height="240" fill="#0f172a" rx="8" stroke="#334155" stroke-width="1.5"/>
+  <line x1="250" y1="12" x2="250" y2="228" stroke="#1e293b" stroke-width="2" stroke-dasharray="4,4"/>
+  <text x="24" y="26" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="700" fill="#94a3b8" letter-spacing="1">1. LEFT TRAGUS CLIP</text>
+  <text x="274" y="26" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="700" fill="#00e5ff" letter-spacing="1">2. POSTERIOR SHOULDER PAD</text>
+  
+  <!-- Title Badge -->
+  <rect x="24" y="38" width="220" height="22" rx="4" fill="rgba(14, 165, 233, 0.15)"/>
+  <text x="32" y="53" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10" font-weight="600" fill="#38bdf8">CAREMAX EAR CLIP SETUP (LEFT SIDE)</text>
+  
+  <!-- Left Panel: Outer Ear Anatomy & Tragus Clip -->
+  <!-- Outer Ear Contour (Left ear view) -->
+  <path d="M 125 80 C 85 80 80 115 85 145 C 90 170 115 190 135 185 C 145 182 150 170 145 155 C 142 145 130 145 130 135 C 130 120 148 115 145 95 C 142 85 135 80 125 80 Z" fill="none" stroke="#f8fafc" stroke-width="3" stroke-linecap="round"/>
+  <!-- Concha inner curve -->
+  <path d="M 115 115 C 105 125 105 145 120 150" fill="none" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Ear Canal indicator -->
+  <circle cx="126" cy="138" r="4.5" fill="#1e293b" stroke="#64748b" stroke-width="1.5"/>
+  <!-- Tragus Cartilage Highlight -->
+  <path d="M 134 130 C 137 135 137 142 133 146" fill="none" stroke="#00e5ff" stroke-width="3.5" stroke-linecap="round"/>
+  <!-- Ear Clip graphic clamped onto tragus -->
+  <rect x="135" y="132" width="16" height="12" rx="3" fill="#38bdf8" stroke="#00e5ff" stroke-width="1.5"/>
+  <path d="M 151 138 L 175 142" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Label Badge for Tragus -->
+  <circle cx="134" cy="138" r="3" fill="#00e5ff"/>
+  <text x="125" y="215" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" fill="#94a3b8" text-anchor="middle">Clip firmly to LEFT tragus with drop of water/gel</text>
+
+  <!-- Right Panel: Left Shoulder Circuit Completion -->
+  <!-- Posterior Neck & Left Shoulder Outline -->
+  <path d="M 330 95 C 330 120 345 135 345 150 L 345 180" fill="none" stroke="#64748b" stroke-width="3" stroke-linecap="round"/>
+  <!-- Head silhouette -->
+  <circle cx="330" cy="85" r="16" fill="none" stroke="#64748b" stroke-width="3"/>
+  <!-- Left shoulder line -->
+  <path d="M 345 135 C 365 140 405 145 440 160" fill="none" stroke="#f8fafc" stroke-width="3.5" stroke-linecap="round"/>
+  <!-- Gel Pad on posterior left shoulder / upper trapezius -->
+  <rect x="375" y="135" width="28" height="20" rx="3" fill="rgba(14, 165, 233, 0.25)" stroke="#00e5ff" stroke-width="2"/>
+  <line x1="389" y1="145" x2="389" y2="175" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Single Channel Indicator -->
+  <rect x="380" y="70" width="85" height="42" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+  <text x="422" y="86" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="8.5" font-weight="700" fill="#38bdf8" text-anchor="middle">SINGLE CHANNEL</text>
+  <text x="422" y="100" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="8" fill="#f8fafc" text-anchor="middle">TENS: 25 Hz / 200 µs</text>
+  <text x="375" y="215" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" fill="#94a3b8" text-anchor="middle">Pad on left shoulder closes circuit; keep strictly on left</text>
+</svg>

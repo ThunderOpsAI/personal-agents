@@ -99,7 +99,7 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
     contraindications: ["acute rotator cuff tear"],
     steps: [
       { title: "Thread the Needle", duration: 300, cue: "Slide right arm under torso, rest right shoulder and temple on mat.", frames: ["/exercises/thoracic_thread_needle.jpg"] },
-      { title: "Puppy Pose Thoracic Stretch", duration: 300, cue: "Hips stay over knees, walk hands forward melting chest towards floor.", frames: ["/exercises/supported_childs_pose.jpg"] },
+      { title: "Puppy Pose Thoracic Stretch", duration: 300, cue: "Hips stay over knees, walk hands forward melting chest towards floor.", frames: ["/exercises/yoga_puppy_pose_thoracic.svg"] },
       { title: "Seated Cactus Arm Openers", duration: 300, cue: "Draw elbows back and down, opening anterior chest wall.", frames: ["/exercises/thoracic_cactus_expansion.jpg"] },
       { title: "Scapular Retraction & Rest", duration: 300, cue: "Rest in prone or seated, focusing on mid-back breathing.", frames: ["/exercises/constructive-rest.svg"] }
     ],
@@ -141,7 +141,7 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
       { title: "Cat-Cow Spine Awakening", duration: 225, cue: "Coordinate slow spinal flexion and extension with deep breathing.", frames: ["/exercises/core_cat_cow.jpg"] },
       { title: "Gentle Side Body Lateral Stretch", duration: 225, cue: "Walk hands to the right in child's pose, then left.", frames: ["/exercises/supported_childs_pose.jpg"] },
       { title: "Gentle Supine Torso Twist", duration: 225, cue: "Drop knees gently to right, look center or left. Keep shoulders relaxed.", frames: ["/exercises/thoracic_supine_twist.jpg"] },
-      { title: "Restorative Prone Rest", duration: 225, cue: "Rest face down on hands, allowing spine to settle in neutral.", frames: ["/exercises/constructive-rest.svg"] }
+      { title: "Restorative Prone Rest", duration: 225, cue: "Rest face down on hands, allowing spine to settle in neutral.", frames: ["/exercises/supported-sphinx-micro-lifts.svg"] }
     ],
     video_url: "https://www.youtube.com/watch?v=UEEsdXn8oG8"
   },
@@ -173,15 +173,19 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
     focus_areas: ["nervous system", "diaphragm", "cervical"],
     duration_minutes: 15,
     intensity: "Gentle Restorative",
-    instruction: "Pranayama, suboccipital release, and gentle eye movements designed to activate the parasympathetic vagal brake.",
-    description: "Pranayama, suboccipital release, and gentle eye movements designed to activate the parasympathetic vagal brake.",
-    precautions: ["Breathe at a comfortable rhythm without breath-holding dizziness."],
-    contraindications: [],
+    instruction: "Pranayama, suboccipital release, and gentle eye movements designed to support parasympathetic down-regulation and deep autonomic relaxation.",
+    description: "Pranayama, suboccipital release, and gentle eye movements designed to support parasympathetic down-regulation and deep autonomic relaxation.",
+    precautions: [
+      "Breathe at a comfortable rhythm without breath-holding dizziness.",
+      "Caremax ear clip protocol: left side only (left tragus clip + posterior left shoulder pad). Do not use with cardiac implants or acute arrhythmias. Clinician review advised."
+    ],
+    contraindications: ["cardiac pacemaker or ICD", "acute cardiac arrhythmia"],
     steps: [
-      { title: "4-7-8 Parasympathetic Breathing", duration: 225, cue: "Inhale 4 sec through nose, hold 7 sec, exhale 8 sec through pursed lips.", frames: ["/exercises/diaphragmatic-breathing.svg"] },
-      { title: "Suboccipital Massage with Towel", duration: 225, cue: "Rest base of skull on rolled towel, gentle micro-turns of head.", frames: ["/exercises/cervical_chin_tuck.jpg"] },
-      { title: "Oculomotor Vagal Reset", duration: 225, cue: "Keep head straight, look fully right for 30s until swallow/sigh, then left.", frames: ["/exercises/restorative_savasana.jpg"] },
-      { title: "Gentle Heart-Belly Grounding", duration: 225, cue: "One hand on heart, one on belly. Feel warmth and safety.", frames: ["/exercises/diaphragmatic-breathing.svg"] }
+      { title: "4-7-8 Parasympathetic Breathing", duration: 180, cue: "Inhale 4 sec through nose, hold 7 sec, exhale 8 sec through pursed lips.", frames: ["/exercises/diaphragmatic-breathing.svg"] },
+      { title: "Caremax Auricular Ear Clip Setup (Optional)", duration: 180, cue: "Attach clip to LEFT tragus with gel/water; place companion pad on posterior left shoulder. Set TENS DIY U1 to 25 Hz, 200 µs, low comfortable tingling.", frames: ["/exercises/caremax_ear_clip_vagus.svg"] },
+      { title: "Suboccipital Massage with Towel", duration: 180, cue: "Rest base of skull on rolled towel, gentle micro-turns of head.", frames: ["/exercises/cervical_chin_tuck.jpg"] },
+      { title: "Oculomotor Vagal Reset", duration: 180, cue: "Keep head straight, look fully right for 30s until swallow/sigh, then left.", frames: ["/exercises/restorative_savasana.jpg"] },
+      { title: "Gentle Heart-Belly Grounding", duration: 180, cue: "One hand on heart, one on belly. Feel warmth and safety.", frames: ["/exercises/diaphragmatic-breathing.svg"] }
     ],
     video_url: "https://www.youtube.com/watch?v=R0__e0QTtQw"
   },
@@ -199,7 +203,7 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
     contraindications: ["acute sciatica flare-up"],
     steps: [
       { title: "Supine Strap Leg Extension", duration: 225, cue: "Loop strap under right foot, extend leg upward keeping pelvis flat.", frames: ["/exercises/supine-strap-hamstring-calf.svg"] },
-      { title: "Gentle IT Band Cross-Body", duration: 225, cue: "Draw straight leg slightly across midline (2-3 inches max).", frames: ["/exercises/hip_figure_four.jpg"] },
+      { title: "Gentle IT Band Cross-Body", duration: 225, cue: "Draw straight leg with strap slightly across midline (2-3 inches max).", frames: ["/exercises/supine-strap-hamstring-calf.svg"] },
       { title: "Reclined Hamstring Flutter", duration: 225, cue: "Gentle micro-bends and straightening of knee to desensitize nerve.", frames: ["/exercises/supine-strap-hamstring-calf.svg"] },
       { title: "Restorative Leg Rest", duration: 225, cue: "Rest legs long on mat, noticing length through lower back.", frames: ["/exercises/restorative_savasana.jpg"] }
     ],
@@ -218,7 +222,7 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
     precautions: ["Keep lighting low and room comfortable."],
     contraindications: [],
     steps: [
-      { title: "Wide Knee Child's Pose", duration: 300, cue: "Allow belly to soften between thighs, long slow exhales.", frames: ["/exercises/supported_childs_pose.jpg"] },
+      { title: "Wide Knee Child's Pose", duration: 300, cue: "Allow belly to soften between thighs, long slow exhales.", frames: ["/exercises/supported-childs-pose-bolster.svg"] },
       { title: "Supported Bridge Pose", duration: 300, cue: "Block or pillow under sacrum, arms relaxed overhead.", frames: ["/exercises/supported-bridge-block.svg"] },
       { title: "Supine Spinal Twist with Pillow", duration: 300, cue: "Pillow between knees, slow gentle twist to each side.", frames: ["/exercises/thoracic_supine_twist.jpg"] },
       { title: "Corpse Pose Deep Relaxation", duration: 300, cue: "Complete still surrender into mattress or mat.", frames: ["/exercises/restorative_savasana.jpg"] }
@@ -237,8 +241,8 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
     focus_areas: ["core", "pelvic floor", "lumbar", "transverse abdominis"],
     duration_minutes: 15,
     intensity: "Core Stabilization",
-    instruction: "Foundational clinical Pilates finding neutral spine, gentle pelvic floor cues, and deep abdominal bracing.",
-    description: "Foundational clinical Pilates finding neutral spine, gentle pelvic floor cues, and deep abdominal bracing.",
+    instruction: "Foundational clinical Pilates establishing neutral lumbopelvic alignment, sub-maximal transverse abdominis recruitment, and diaphragmatic dissociation without pelvic tucking.",
+    description: "Foundational clinical Pilates establishing neutral lumbopelvic alignment, sub-maximal transverse abdominis recruitment, and diaphragmatic dissociation without pelvic tucking.",
     precautions: ["Do not tilt pelvis into excessive posterior or anterior tuck."],
     contraindications: [],
     steps: [
@@ -261,9 +265,9 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
     precautions: ["Lower limb only as far as you can maintain neutral lower back."],
     contraindications: ["acute abdominal tear"],
     steps: [
-      { title: "Deadbug Level 1 (Arm Reach Only)", duration: 225, cue: "Knees at tabletop (90 deg), reach right arm overhead and return.", frames: ["/exercises/core_dead_bug.jpg"] },
-      { title: "Deadbug Level 2 (Heel Tap Only)", duration: 225, cue: "Keep arms still, lower right heel to tap floor, return.", frames: ["/exercises/core_dead_bug.jpg"] },
-      { title: "Deadbug Level 3 (Opposite Arm & Leg)", duration: 225, cue: "Extend opposite arm and leg simultaneously while maintaining rock-solid core.", frames: ["/exercises/core_dead_bug.jpg"] },
+      { title: "Deadbug Level 1 (Arm Reach Only)", duration: 225, cue: "Knees at tabletop (90 deg), reach right arm overhead and return.", frames: ["/exercises/pilates_deadbug_lumbar.svg"] },
+      { title: "Deadbug Level 2 (Heel Tap Only)", duration: 225, cue: "Keep arms still, lower right heel to tap floor, return.", frames: ["/exercises/pilates_deadbug_lumbar.svg"] },
+      { title: "Deadbug Level 3 (Opposite Arm & Leg)", duration: 225, cue: "Extend opposite arm and leg simultaneously while maintaining rock-solid core.", frames: ["/exercises/pilates_deadbug_lumbar.svg"] },
       { title: "Knees to Chest Neutral Reset", duration: 225, cue: "Soft hold, resting hip flexors.", frames: ["/exercises/knee_to_chest_stretch.jpg"] }
     ]
   },
@@ -280,10 +284,10 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
     precautions: ["Do not lift leg above hip level to avoid lumbar extension arching."],
     contraindications: ["severe wrist arthritis (use fists or forearms)"],
     steps: [
-      { title: "Quadruped Neutral Alignment", duration: 225, cue: "Hands under shoulders, knees under hips, neck in neutral line.", frames: ["/exercises/core_bird_dog.jpg"] },
-      { title: "Bird-Dog Reach (Right Arm, Left Leg)", duration: 225, cue: "Reach straight out, thumb up, heel pushed back. Hold 6 seconds.", frames: ["/exercises/core_bird_dog.jpg"] },
-      { title: "Bird-Dog Reach (Left Arm, Right Leg)", duration: 225, cue: "Keep pelvis level like balancing a cup of water on lower back.", frames: ["/exercises/core_bird_dog.jpg"] },
-      { title: "Child's Pose Decompression", duration: 225, cue: "Sink hips back, lengthening spinal erectors.", frames: ["/exercises/supported_childs_pose.jpg"] }
+      { title: "Quadruped Neutral Alignment", duration: 225, cue: "Hands under shoulders, knees under hips, neck in neutral line.", frames: ["/exercises/pilates_birddog_stabilization.svg"] },
+      { title: "Bird-Dog Reach (Right Arm, Left Leg)", duration: 225, cue: "Reach straight out, thumb up, heel pushed back. Hold 6 seconds.", frames: ["/exercises/pilates_birddog_stabilization.svg"] },
+      { title: "Bird-Dog Reach (Left Arm, Right Leg)", duration: 225, cue: "Keep pelvis level like balancing a cup of water on lower back.", frames: ["/exercises/pilates_birddog_stabilization.svg"] },
+      { title: "Child's Pose Decompression", duration: 225, cue: "Sink hips back, lengthening spinal erectors.", frames: ["/exercises/supported-childs-pose-bolster.svg"] }
     ]
   },
   {
@@ -299,10 +303,10 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
     precautions: ["Do not roll top hip backwards; keep hips stacked perpendicularly."],
     contraindications: ["acute trochanteric bursitis"],
     steps: [
-      { title: "Clamshell Level 1 (Right Side)", duration: 225, cue: "Heels together, open top knee like a clamshell, squeeze outer glute.", frames: ["/exercises/side_lying_clamshell.svg"] },
-      { title: "Side-Lying Leg Lift (Right Side)", duration: 225, cue: "Straighten top leg, lift 6 inches with slight internal rotation.", frames: ["/exercises/side_lying_clamshell.svg"] },
-      { title: "Clamshell Level 1 (Left Side)", duration: 225, cue: "Switch sides. Keep core engaged and hips stacked.", frames: ["/exercises/side_lying_clamshell.svg"] },
-      { title: "Side-Lying Leg Lift (Left Side)", duration: 225, cue: "Lift top leg with control, avoiding hip rotation.", frames: ["/exercises/side_lying_clamshell.svg"] }
+      { title: "Clamshell Level 1 (Right Side)", duration: 225, cue: "Heels together, open top knee without pelvis roll, squeeze outer glute.", frames: ["/exercises/pilates_clamshell_glute_medius.svg"] },
+      { title: "Side-Lying Leg Lift (Right Side)", duration: 225, cue: "Straighten top leg, lift 6 inches with control, leading with heel.", frames: ["/exercises/pilates_clamshell_glute_medius.svg"] },
+      { title: "Clamshell Level 1 (Left Side)", duration: 225, cue: "Switch sides. Keep core engaged and hips stacked.", frames: ["/exercises/pilates_clamshell_glute_medius.svg"] },
+      { title: "Side-Lying Leg Lift (Left Side)", duration: 225, cue: "Lift top leg with control, avoiding hip rotation.", frames: ["/exercises/pilates_clamshell_glute_medius.svg"] }
     ]
   },
   {
@@ -356,7 +360,7 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
     precautions: ["Rotation comes purely from ribs/chest, not twisting lower back."],
     contraindications: ["osteoporotic vertebral compression fracture"],
     steps: [
-      { title: "Seated Spine Twist with Ball", duration: 225, cue: "Sit upright, hug ball to chest, exhale rotate ribs 20 degrees right, then left.", frames: ["/exercises/thoracic_supine_twist.jpg"] },
+      { title: "Seated Spine Twist with Ball", duration: 225, cue: "Sit upright, hug ball to chest, exhale rotate ribs 20 degrees right, then left.", frames: ["/exercises/pilates_spine_twist_thoracic.svg"] },
       { title: "Side-Lying Pinwheel Arm Flow", duration: 225, cue: "Circle top arm overhead opening chest to ceiling, follow with eyes.", frames: ["/exercises/open-book-thoracic.svg"] },
       { title: "Opposite Side Pinwheel", duration: 225, cue: "Switch sides. Feel opening through anterior shoulder and ribcage.", frames: ["/exercises/open-book-thoracic.svg"] },
       { title: "Restorative Prone Breath", duration: 225, cue: "Feel posterior ribcage expand with every inhalation.", frames: ["/exercises/constructive-rest.svg"] }
@@ -375,9 +379,9 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
     precautions: ["Keep head down if experiencing neck fatigue."],
     contraindications: [],
     steps: [
-      { title: "Single Leg Stretch (Head Down)", duration: 225, cue: "Hug right knee, extend left leg at 45 deg angle, switch rhythmically.", frames: ["/exercises/supine-single-knee-to-chest.svg"] },
-      { title: "Double Leg Tap Adaptation", duration: 225, cue: "Both knees bent, tap toes to mat and return with locked core.", frames: ["/exercises/core_dead_bug.jpg"] },
-      { title: "Single Leg Stretch Set 2", duration: 225, cue: "Focus on smooth breathing and rock-steady pelvis.", frames: ["/exercises/supine-single-knee-to-chest.svg"] },
+      { title: "Single Leg Stretch (Head Down)", duration: 225, cue: "Guide right knee, extend left leg at 45 deg angle with head supported on mat.", frames: ["/exercises/pilates_single_leg_stretch.svg"] },
+      { title: "Double Leg Tap Adaptation", duration: 225, cue: "Both knees bent, tap toes to mat and return with locked core.", frames: ["/exercises/pilates_deadbug_lumbar.svg"] },
+      { title: "Single Leg Stretch Set 2", duration: 225, cue: "Maintain head resting on mat, smooth breathing, and rock-steady pelvis.", frames: ["/exercises/pilates_single_leg_stretch.svg"] },
       { title: "Knees to Chest Reset", duration: 225, cue: "Gentle rocking side to side.", frames: ["/exercises/knee_to_chest_stretch.jpg"] }
     ]
   },
@@ -413,9 +417,9 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
     precautions: ["Place small pillow under lower abdomen/pelvis to prevent hyperextension."],
     contraindications: ["acute facet joint arthropathy with extension pain"],
     steps: [
-      { title: "Prone Arm Float Only", duration: 225, cue: "Lie prone, pillow under belly, float right arm 1 inch, then left.", frames: ["/exercises/prone_swimming_extension.svg"] },
-      { title: "Prone Leg Float Only", duration: 225, cue: "Squeeze glute, float straight leg 1 inch, then opposite.", frames: ["/exercises/prone_swimming_extension.svg"] },
-      { title: "Slow Swimming Flutter", duration: 225, cue: "Alternate opposite arm and leg fluttering rhythmically.", frames: ["/exercises/prone_swimming_extension.svg"] },
+      { title: "Prone Arm Float Only", duration: 225, cue: "Lie prone, pillow under belly, float right arm 1 inch, gaze straight down.", frames: ["/exercises/pilates_swimming_posterior_chain.svg"] },
+      { title: "Prone Leg Float Only", duration: 225, cue: "Squeeze glute, float straight leg 1 inch without pelvic tilt, then opposite.", frames: ["/exercises/pilates_swimming_posterior_chain.svg"] },
+      { title: "Slow Swimming Flutter", duration: 225, cue: "Alternate opposite arm and leg fluttering rhythmically with neck in neutral line.", frames: ["/exercises/pilates_swimming_posterior_chain.svg"] },
       { title: "Prone Relaxation & Breath", duration: 225, cue: "Turn head to side, relax glutes and back completely.", frames: ["/exercises/supported-sphinx-micro-lifts.svg"] }
     ]
   },
