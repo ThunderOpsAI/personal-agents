@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 240" width="500" height="240">
+  <title>Puppy Pose Thoracic Stretch (Uttana Shishosana)</title>
+  <desc>Restorative yoga puppy pose showing hips stacked vertically above knees at 90 degrees, hands walked forward, and thoracic chest gently melting toward the mat.</desc>
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="1" stdDeviation="1.5" flood-color="#000000" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+  <!-- Card Background -->
+  <rect width="500" height="240" fill="#0f172a" rx="8" stroke="#334155" stroke-width="1.5"/>
+  <line x1="250" y1="12" x2="250" y2="228" stroke="#1e293b" stroke-width="2" stroke-dasharray="4,4"/>
+  <text x="24" y="26" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="700" fill="#94a3b8" letter-spacing="1">SETUP: 4-POINT KNEELING</text>
+  <text x="274" y="26" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="700" fill="#00e5ff" letter-spacing="1">PUPPY POSE (HIPS OVER KNEES)</text>
+  
+  <!-- Title Badge -->
+  <rect x="24" y="38" width="220" height="22" rx="4" fill="rgba(14, 165, 233, 0.15)"/>
+  <text x="32" y="53" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10" font-weight="600" fill="#38bdf8">PUPPY POSE THORACIC OPENER</text>
+  
+  <!-- Left Panel: Setup -->
+  <line x1="45" y1="180" x2="215" y2="180" stroke="#64748b" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="85" cy="126" r="8" fill="#f8fafc"/>
+  <line x1="93" y1="130" x2="160" y2="130" stroke="#f8fafc" stroke-width="5" stroke-linecap="round"/>
+  <line x1="105" y1="130" x2="105" y2="180" stroke="#f8fafc" stroke-width="4.5" stroke-linecap="round"/>
+  <line x1="155" y1="130" x2="155" y2="180" stroke="#f8fafc" stroke-width="5" stroke-linecap="round"/>
+  <line x1="155" y1="180" x2="180" y2="180" stroke="#f8fafc" stroke-width="4" stroke-linecap="round"/>
+  <text x="125" y="215" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" fill="#94a3b8" text-anchor="middle">Begin in tabletop; knees directly beneath hip joints</text>
+
+  <!-- Right Panel: Puppy Pose Extension -->
+  <line x1="295" y1="180" x2="465" y2="180" stroke="#64748b" stroke-width="4" stroke-linecap="round"/>
+  <!-- Hips STAY elevated at 90 deg above knees -->
+  <line x1="420" y1="135" x2="420" y2="180" stroke="#00e5ff" stroke-width="5" stroke-linecap="round"/>
+  <line x1="420" y1="180" x2="445" y2="180" stroke="#00e5ff" stroke-width="4" stroke-linecap="round"/>
+  <!-- Spine slopes down from elevated hips to mat -->
+  <line x1="420" y1="135" x2="350" y2="168" stroke="#00e5ff" stroke-width="5" stroke-linecap="round"/>
+  <!-- Forehead / Chin resting softly near mat -->
+  <circle cx="340" cy="165" r="8" fill="#00e5ff"/>
+  <!-- Arms extended long out in front on mat -->
+  <line x1="350" y1="168" x2="305" y2="175" stroke="#00e5ff" stroke-width="4.5" stroke-linecap="round"/>
+  <!-- Guideline showing hips stacked vertically -->
+  <line x1="420" y1="120" x2="420" y2="135" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="2,2"/>
+  <text x="375" y="215" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" fill="#94a3b8" text-anchor="middle">Hips stacked over knees; walk hands forward, melting chest</text>
+</svg>

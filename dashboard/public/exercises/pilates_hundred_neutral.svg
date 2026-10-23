@@ -1,4 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 240" width="500" height="240">
+  <title>Pilates Hundred (Neutral Spine Adaptation)</title>
+  <desc>Modified clinical Pilates Hundred showing head grounded/supported on mat, 90 degree tabletop legs, neutral lumbar spine, and rhythmic staccato arm pulsing.</desc>
   <defs>
     <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
       <feDropShadow dx="0" dy="1" stdDeviation="1.5" flood-color="#000000" flood-opacity="0.08"/>
@@ -7,31 +9,40 @@
   <!-- Card Background -->
   <rect width="500" height="240" fill="#0f172a" rx="8" stroke="#334155" stroke-width="1.5"/>
   <line x1="250" y1="12" x2="250" y2="228" stroke="#1e293b" stroke-width="2" stroke-dasharray="4,4"/>
-  <text x="24" y="26" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="700" fill="#94a3b8" letter-spacing="1">SETUP</text>
-  <text x="274" y="26" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="700" fill="#00e5ff" letter-spacing="1">ACTIVE MOVEMENT</text>
+  <text x="24" y="26" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="700" fill="#94a3b8" letter-spacing="1">SETUP: NEUTRAL TABLETOP</text>
+  <text x="274" y="26" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="700" fill="#00e5ff" letter-spacing="1">ACTIVE 5-COUNT ARM PUMPS</text>
   
   <!-- Title Badge -->
-  <rect x="24" y="38" width="210" height="22" rx="4" fill="rgba(14, 165, 233, 0.15)"/>
+  <rect x="24" y="38" width="225" height="22" rx="4" fill="rgba(14, 165, 233, 0.15)"/>
   <text x="32" y="53" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10" font-weight="600" fill="#38bdf8">PILATES HUNDRED (NEUTRAL SPINE)</text>
   
-  <!-- Left Panel: Supine Neutral Setup -->
-  <line x1="45" y1="175" x2="210" y2="175" stroke="#64748b" stroke-width="4" stroke-linecap="round"/>
-  <circle cx="70" cy="162" r="9" fill="#f8fafc"/>
-  <line x1="80" y1="165" x2="135" y2="165" stroke="#f8fafc" stroke-width="5" stroke-linecap="round"/>
-  <line x1="92" y1="154" x2="142" y2="152" stroke="#f8fafc" stroke-width="4" stroke-linecap="round"/>
-  <line x1="135" y1="165" x2="162" y2="132" stroke="#f8fafc" stroke-width="5" stroke-linecap="round"/>
-  <line x1="162" y1="132" x2="188" y2="172" stroke="#f8fafc" stroke-width="5" stroke-linecap="round"/>
-  <text x="125" y="215" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" fill="#94a3b8" text-anchor="middle">Head resting down, neutral pelvis, arms hovered</text>
+  <!-- Left Panel: Tabletop Neutral Setup -->
+  <line x1="45" y1="180" x2="215" y2="180" stroke="#64748b" stroke-width="4" stroke-linecap="round"/>
+  <!-- Head grounded flat on pillow/mat -->
+  <circle cx="70" cy="168" r="9" fill="#f8fafc"/>
+  <!-- Torso supine, natural gentle lumbar curve maintained without arching -->
+  <line x1="79" y1="171" x2="135" y2="171" stroke="#f8fafc" stroke-width="5" stroke-linecap="round"/>
+  <!-- Thighs at 90 deg tabletop -->
+  <line x1="135" y1="171" x2="135" y2="128" stroke="#f8fafc" stroke-width="5" stroke-linecap="round"/>
+  <!-- Shins parallel to floor at 90 deg -->
+  <line x1="135" y1="128" x2="175" y2="128" stroke="#f8fafc" stroke-width="5" stroke-linecap="round"/>
+  <!-- Arms long by side hovered 2 inches -->
+  <line x1="90" y1="168" x2="140" y2="168" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/>
+  <text x="125" y="215" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" fill="#94a3b8" text-anchor="middle">Head fully supported on mat, knees 90° tabletop, lumbar neutral</text>
 
-  <!-- Right Panel: Active Rhythmic Arm Pumps in Tabletop -->
-  <line x1="295" y1="175" x2="460" y2="175" stroke="#64748b" stroke-width="4" stroke-linecap="round"/>
-  <circle cx="320" cy="162" r="9" fill="#00e5ff"/>
-  <line x1="330" y1="165" x2="385" y2="165" stroke="#00e5ff" stroke-width="5" stroke-linecap="round"/>
-  <!-- Tabletop legs -->
-  <line x1="385" y1="165" x2="385" y2="128" stroke="#00e5ff" stroke-width="5" stroke-linecap="round"/>
+  <!-- Right Panel: Active Staccato Pumping -->
+  <line x1="295" y1="180" x2="465" y2="180" stroke="#64748b" stroke-width="4" stroke-linecap="round"/>
+  <!-- Head grounded flat (protecting cervical spine) -->
+  <circle cx="320" cy="168" r="9" fill="#00e5ff"/>
+  <!-- Torso stable with deep transverse abdominis brace -->
+  <line x1="329" y1="171" x2="385" y2="171" stroke="#00e5ff" stroke-width="5" stroke-linecap="round"/>
+  <!-- Tabletop legs locked in space -->
+  <line x1="385" y1="171" x2="385" y2="128" stroke="#00e5ff" stroke-width="5" stroke-linecap="round"/>
   <line x1="385" y1="128" x2="425" y2="128" stroke="#00e5ff" stroke-width="5" stroke-linecap="round"/>
-  <!-- Active arm pump + motion vectors -->
-  <line x1="342" y1="152" x2="395" y2="148" stroke="#00e5ff" stroke-width="4" stroke-linecap="round"/>
-  <line x1="395" y1="138" x2="395" y2="158" stroke="#38bdf8" stroke-width="2" stroke-dasharray="2,2"/>
-  <text x="375" y="215" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" fill="#cbd5e1" text-anchor="middle">Vigorous arm pumps at hip height, 5-in / 5-out breath</text>
+  <!-- Pulsing arm with motion indicators -->
+  <line x1="340" y1="168" x2="390" y2="164" stroke="#00e5ff" stroke-width="4.5" stroke-linecap="round"/>
+  <!-- Pump vectors -->
+  <line x1="375" y1="156" x2="375" y2="174" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="2,2"/>
+  <path d="M 372 159 L 375 156 L 378 159 M 372 171 L 375 174 L 378 171" fill="none" stroke="#38bdf8" stroke-width="1.5"/>
+  <text x="375" y="215" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" fill="#94a3b8" text-anchor="middle">Inhale 5 pumps, exhale 5 pumps; rigid trunk, no neck strain</text>
 </svg>
