@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
 
-interface ChatMessage {
-  id: string;
-  sender: "rumble" | "user";
-  text: string;
-  timestamp: string;
+interface ActionPreview {
+  type: "pain_log" | "note" | "task" | "multi_action" | "calendar_event" | "send_email" | "send_sms" | "budget_item" | "agent_report";
+  data: Record<string, any>;
 }
 
 interface RumbleChatProps {
@@ -13,73 +13,103 @@ interface RumbleChatProps {
 }
 
 export function RumbleChat({ onClose, initialMessage }: RumbleChatProps) {
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: "m_welcome",
-      sender: "rumble",
-      text: "Hello. Type or use voice to speak directly with me regarding your agenda, symptoms, or recovery.",
-      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-    },
-  ]);
+  const [actionStatuses, setActionStatuses] = useState<Record<string, { status: "pending" | "confirmed" | "cancelled"; resultMessage?: string }>>({});
   const [inputMessage, setInputMessage] = useState(initialMessage || "");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [localError, setLocalError] = useState<string | null>(null);
 
-  const sendMessage = async (e?: React.FormEvent) => {
+  const {
+    messages,
+    sendMessage,
+    status,
+    error: chatError,
+  } = useChat({
+    transport: new DefaultChatTransport({ api: "/api/v1/rumble/chat" }),
+    messages: [
+      {
+        id: "m_welcome",
+        role: "assistant",
+        parts: [
+          {
+            type: "text",
+            text: "Hello. Type or use voice to speak directly with me regarding your agenda, symptoms, or recovery.",
+          },
+        ],
+      },
+    ],
+  });
+
+  const isLoading = status === "streaming" || status === "submitted";
+
+  // Auto-send initialMessage if provided (Universal Intent Capture)
+  useEffect(() => {
+    if (initialMessage && initialMessage.trim()) {
+      sendMessage({ text: initialMessage.trim() }).catch((err: any) => {
+        console.warn("Failed to auto-send initial message:", err);
+      });
+    }
+  }, [initialMessage]);
+
+  const onSendMessage = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     const trimmed = inputMessage.trim();
-    if (!trimmed || loading) return;
-
-    const userMsg: ChatMessage = {
-      id: `msg_${Date.now()}`,
-      sender: "user",
-      text: trimmed,
-      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-    };
-
-    setMessages((prev) => [...prev, userMsg]);
+    if (!trimmed || isLoading) return;
     setInputMessage("");
-    setLoading(true);
-    setError(null);
+    setLocalError(null);
+    try {
+      await sendMessage({ text: trimmed });
+    } catch (err: any) {
+      setLocalError(err.message || "Failed to send message to Rumble OS");
+    }
+  };
 
+  const handleConfirmAction = async (actionId: string, preview: ActionPreview) => {
     try {
       const res = await fetch("/api/v1/rumble/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: trimmed }),
+        body: JSON.stringify({
+          confirm_action: preview,
+          pending_action_id: actionId,
+        }),
       });
 
-      if (!res.ok) {
-        throw new Error("Chat service is unavailable. Please try again later.");
+      const data = await res.json();
+      if (!res.ok || data.status === "error") {
+        throw new Error(data.error || "Failed to commit confirmed action");
       }
 
-      const data = await res.json();
-      const replyText = data.reply || "Rumble received your message.";
-
-      setMessages((prev) => [
+      setActionStatuses((prev) => ({
         ...prev,
-        {
-          id: `msg_reply_${Date.now()}`,
-          sender: "rumble",
-          text: replyText,
-          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        [actionId]: {
+          status: "confirmed",
+          resultMessage: data.reply || "Action confirmed and saved to database.",
         },
-      ]);
+      }));
     } catch (err: any) {
-      // Local fallback for smooth conversational experience if offline
-      const fallbackReply = generateFallbackRumbleReply(trimmed);
-      setMessages((prev) => [
+      setLocalError(`Error confirming action: ${err.message}`);
+    }
+  };
+
+  const handleCancelAction = async (actionId: string) => {
+    try {
+      await fetch("/api/v1/rumble/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          cancel_action: true,
+          pending_action_id: actionId,
+        }),
+      });
+
+      setActionStatuses((prev) => ({
         ...prev,
-        {
-          id: `msg_reply_${Date.now()}`,
-          sender: "rumble",
-          text: fallbackReply,
-          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        [actionId]: {
+          status: "cancelled",
+          resultMessage: "Action cancelled.",
         },
-      ]);
-      setError("Live chat service is temporarily unavailable; operating in local mode.");
-    } finally {
-      setLoading(false);
+      }));
+    } catch (err: any) {
+      setLocalError(`Error cancelling action: ${err.message}`);
     }
   };
 
@@ -112,42 +142,199 @@ export function RumbleChat({ onClose, initialMessage }: RumbleChatProps) {
         </div>
       </div>
 
-      {error ? (
-        <div role="alert" className="alert-banner" style={{ background: "rgba(220, 38, 38, 0.2)", borderLeft: "3px solid var(--neon-red)", padding: "6px 12px", borderRadius: "6px", marginBottom: "8px", fontSize: "0.8rem", color: "var(--neon-red)" }}>
-          {error}
+      {localError || chatError ? (
+        <div
+          role="alert"
+          className="alert-banner"
+          style={{
+            background: "rgba(220, 38, 38, 0.2)",
+            borderLeft: "3px solid var(--neon-red)",
+            padding: "8px 12px",
+            borderRadius: "6px",
+            marginBottom: "8px",
+            fontSize: "0.85rem",
+            color: "var(--neon-red)",
+          }}
+        >
+          {localError || chatError?.message || "Chat service is temporarily unavailable."}
         </div>
       ) : null}
 
-      <div className="chat-messages" style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: "10px", padding: "10px 0", minHeight: "260px", maxHeight: "420px" }}>
-        {messages.map((m) => (
-          <div
-            key={m.id}
-            className={`message ${m.sender === "rumble" ? "rumble-message" : "user-message"}`}
-            style={{
-              padding: "10px 14px",
-              borderRadius: "10px",
-              maxWidth: "85%",
-              alignSelf: m.sender === "rumble" ? "flex-start" : "flex-end",
-              background: m.sender === "rumble" ? "rgba(0, 240, 255, 0.08)" : "rgba(181, 0, 255, 0.15)",
-              border: m.sender === "rumble" ? "1px solid rgba(0, 240, 255, 0.3)" : "1px solid rgba(181, 0, 255, 0.3)",
-              fontSize: "0.9rem",
-              lineHeight: 1.45,
-            }}
-          >
-            <div style={{ fontSize: "0.72rem", color: m.sender === "rumble" ? "var(--neon-blue)" : "var(--neon-purple)", fontWeight: "bold", marginBottom: "3px" }}>
-              {m.sender === "rumble" ? "RUMBLE" : "YOU"} • {m.timestamp}
+      <div
+        className="chat-messages"
+        style={{
+          flex: 1,
+          overflowY: "auto",
+          display: "flex",
+          flexDirection: "column",
+          gap: "12px",
+          padding: "10px 0",
+          minHeight: "260px",
+          maxHeight: "440px",
+        }}
+      >
+        {messages.map((m) => {
+          const isUser = (m.role as string) === "user";
+          return (
+            <div
+              key={m.id}
+              className={`message ${isUser ? "user-message" : "rumble-message"}`}
+              style={{
+                padding: "12px 14px",
+                borderRadius: "10px",
+                maxWidth: "88%",
+                alignSelf: isUser ? "flex-end" : "flex-start",
+                background: isUser ? "rgba(181, 0, 255, 0.15)" : "rgba(0, 240, 255, 0.08)",
+                border: isUser ? "1px solid rgba(181, 0, 255, 0.3)" : "1px solid rgba(0, 240, 255, 0.3)",
+                fontSize: "0.9rem",
+                lineHeight: 1.5,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: "0.72rem",
+                  color: isUser ? "var(--neon-purple)" : "var(--neon-blue)",
+                  fontWeight: "bold",
+                  marginBottom: "4px",
+                }}
+              >
+                {isUser ? "YOU" : "RUMBLE"}
+              </div>
+
+              {/* Text content from parts */}
+              {m.parts &&
+                m.parts.map((part: any, pIdx: number) => {
+                  if (part.type === "text") {
+                    return (
+                      <div key={pIdx} style={{ whiteSpace: "pre-wrap" }}>
+                        {part.text}
+                      </div>
+                    );
+                  }
+
+                  // Tool invocation parts (Generative UI)
+                  const isTool =
+                    part.type === "tool-invocation" ||
+                    part.type === "dynamic-tool" ||
+                    (typeof part.type === "string" && part.type.startsWith("tool-"));
+
+                  if (isTool) {
+                    const toolName = part.toolName || (part.type.startsWith("tool-") ? part.type.replace(/^tool-/, "") : "");
+                    const actionId = part.toolCallId || part.id || `${m.id}_tool_${pIdx}`;
+                    const args = part.input || part.args || {};
+                    const statusInfo = actionStatuses[actionId] || { status: "pending" };
+
+                    return (
+                      <div key={pIdx} style={{ marginTop: "10px" }}>
+                        {(toolName === "painLog" || toolName === "pain_log") && (
+                          <PainLogConfirmationCard
+                            actionId={actionId}
+                            initialScore={args.score || 5}
+                            locations={args.locations || [{ area: "lumbar", percentage: 100 }]}
+                            initialMood={args.mood || ""}
+                            initialNotes={args.notes || ""}
+                            status={statusInfo.status}
+                            resultMessage={statusInfo.resultMessage}
+                            onConfirm={(data) => handleConfirmAction(actionId, { type: "pain_log", data })}
+                            onCancel={() => handleCancelAction(actionId)}
+                          />
+                        )}
+
+                        {(toolName === "manageAgenda" || toolName === "agendaItem") && (
+                          <AgendaConfirmationCard
+                            actionId={actionId}
+                            action={args.action || "create"}
+                            title={args.title || "Scheduled Item"}
+                            scheduledTime={args.scheduled_time || ""}
+                            status={statusInfo.status}
+                            resultMessage={statusInfo.resultMessage}
+                            onConfirm={() => handleConfirmAction(actionId, { type: "task", data: args })}
+                            onCancel={() => handleCancelAction(actionId)}
+                          />
+                        )}
+
+                        {(toolName === "saveNote" || toolName === "note") && (
+                          <NoteConfirmationCard
+                            actionId={actionId}
+                            content={args.content || ""}
+                            author={args.author || "user"}
+                            status={statusInfo.status}
+                            resultMessage={statusInfo.resultMessage}
+                            onConfirm={() => handleConfirmAction(actionId, { type: "note", data: args })}
+                            onCancel={() => handleCancelAction(actionId)}
+                          />
+                        )}
+
+                        {(toolName === "manageCalendar" || toolName === "calendarAction") && (
+                          <CalendarConfirmationCard
+                            actionId={actionId}
+                            action={args.action || "create"}
+                            summary={args.summary || ""}
+                            startDatetime={args.start_datetime || ""}
+                            endDatetime={args.end_datetime}
+                            status={statusInfo.status}
+                            resultMessage={statusInfo.resultMessage}
+                            onConfirm={() => handleConfirmAction(actionId, { type: "calendar_event", data: args })}
+                            onCancel={() => handleCancelAction(actionId)}
+                          />
+                        )}
+
+                        {(toolName === "draftEmail" || toolName === "emailAction") && (
+                          <EmailConfirmationCard
+                            actionId={actionId}
+                            to={args.to || ""}
+                            subject={args.subject || ""}
+                            body={args.body || ""}
+                            status={statusInfo.status}
+                            resultMessage={statusInfo.resultMessage}
+                            onConfirm={() => handleConfirmAction(actionId, { type: "send_email", data: args })}
+                            onCancel={() => handleCancelAction(actionId)}
+                          />
+                        )}
+
+                        {(toolName === "draftSms" || toolName === "smsAction") && (
+                          <SmsConfirmationCard
+                            actionId={actionId}
+                            to={args.to || ""}
+                            body={args.body || ""}
+                            status={statusInfo.status}
+                            resultMessage={statusInfo.resultMessage}
+                            onConfirm={() => handleConfirmAction(actionId, { type: "send_sms", data: args })}
+                            onCancel={() => handleCancelAction(actionId)}
+                          />
+                        )}
+
+                        {(toolName === "logBudgetItem" || toolName === "budgetItem") && (
+                          <BudgetConfirmationCard
+                            actionId={actionId}
+                            description={args.description || ""}
+                            amount={args.amount || 0}
+                            category={args.category || ""}
+                            type={args.type || "expense"}
+                            status={statusInfo.status}
+                            resultMessage={statusInfo.resultMessage}
+                            onConfirm={() => handleConfirmAction(actionId, { type: "budget_item", data: args })}
+                            onCancel={() => handleCancelAction(actionId)}
+                          />
+                        )}
+                      </div>
+                    );
+                  }
+
+                  return null;
+                })}
             </div>
-            <div>{m.text}</div>
-          </div>
-        ))}
-        {loading && (
+          );
+        })}
+
+        {isLoading && (
           <div style={{ color: "var(--neon-blue)", fontSize: "0.85rem", fontStyle: "italic", padding: "6px 10px" }}>
             Rumble is analyzing…
           </div>
         )}
       </div>
 
-      <form onSubmit={sendMessage} style={{ marginTop: "12px", display: "flex", gap: "8px", alignItems: "center" }}>
+      <form onSubmit={onSendMessage} style={{ marginTop: "12px", display: "flex", gap: "8px", alignItems: "center" }}>
         <input
           type="text"
           aria-label="Message"
@@ -157,7 +344,12 @@ export function RumbleChat({ onClose, initialMessage }: RumbleChatProps) {
           onChange={(e) => setInputMessage(e.target.value)}
           style={{ flex: 1, padding: "10px 14px", fontSize: "0.9rem" }}
         />
-        <button className="btn btn-neon-blue btn-sm" type="submit" aria-label="Send message" disabled={loading || !inputMessage.trim()}>
+        <button
+          className="btn btn-neon-blue btn-sm"
+          type="submit"
+          aria-label="Send message"
+          disabled={isLoading || !inputMessage.trim()}
+        >
           Send message
         </button>
       </form>
@@ -165,16 +357,457 @@ export function RumbleChat({ onClose, initialMessage }: RumbleChatProps) {
   );
 }
 
-function generateFallbackRumbleReply(input: string): string {
-  const lower = input.toLowerCase();
-  if (lower.includes("pain") || lower.includes("lumbar") || lower.includes("sciatica") || lower.includes("neck")) {
-    return "Acknowledged. Recorded your symptom context. Remember to maintain neutral pelvic alignment, use warm hydrotherapy decompression, and avoid aggravating end-range lumbar flexion during acute spikes.";
+// ==========================================
+// GENERATIVE UI CONFIRMATION WIDGETS
+// ==========================================
+
+function PainLogConfirmationCard({
+  actionId,
+  initialScore,
+  locations,
+  initialMood,
+  initialNotes,
+  status,
+  resultMessage,
+  onConfirm,
+  onCancel,
+}: {
+  actionId: string;
+  initialScore: number;
+  locations: Array<{ area: string; side?: string; percentage: number }>;
+  initialMood: string;
+  initialNotes: string;
+  status: "pending" | "confirmed" | "cancelled";
+  resultMessage?: string;
+  onConfirm: (data: { score: number; locations: any[]; mood?: string; notes?: string }) => void;
+  onCancel: () => void;
+}) {
+  const [score, setScore] = useState(initialScore);
+  const [mood, setMood] = useState(initialMood);
+  const [notes, setNotes] = useState(initialNotes);
+
+  const moodOptions = [
+    { label: "Great", symbol: "😀" },
+    { label: "Good", symbol: "🙂" },
+    { label: "Okay", symbol: "😐" },
+    { label: "Low", symbol: "🙁" },
+    { label: "Severe", symbol: "😣" },
+  ];
+
+  if (status === "confirmed") {
+    return (
+      <div style={{ padding: "10px", borderRadius: "8px", background: "rgba(0, 255, 128, 0.1)", border: "1px solid var(--neon-green)" }}>
+        <div style={{ fontWeight: "bold", color: "var(--neon-green)", fontSize: "0.85rem" }}>Confirmed & Saved</div>
+        <div style={{ fontSize: "0.8rem", marginTop: "4px" }}>{resultMessage}</div>
+      </div>
+    );
   }
-  if (lower.includes("weather") || lower.includes("wash") || lower.includes("rain")) {
-    return "The live Wangaratta forecast shows Wednesday and Friday have the lowest precipitation risk (5-10%), optimal for outdoor washing.";
+
+  if (status === "cancelled") {
+    return (
+      <div style={{ padding: "8px 12px", borderRadius: "8px", background: "rgba(128, 128, 128, 0.1)", color: "#888", fontSize: "0.8rem" }}>
+        Action cancelled.
+      </div>
+    );
   }
-  if (lower.includes("dr") || lower.includes("clancy") || lower.includes("court") || lower.includes("meeting")) {
-    return "Consultation notes and checklists are updated. In your meeting, present the concise 30-day pain trajectory report and request MRI review for cervical hyperreflexia.";
+
+  return (
+    <div
+      style={{
+        padding: "12px",
+        borderRadius: "8px",
+        background: "rgba(20, 20, 35, 0.9)",
+        border: "1px solid var(--neon-blue)",
+        display: "flex",
+        flexDirection: "column",
+        gap: "10px",
+      }}
+    >
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span style={{ fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "1px", color: "var(--neon-blue)", fontWeight: "bold" }}>
+          Confirm Pain Log
+        </span>
+        <span style={{ fontSize: "0.9rem", fontWeight: "bold", color: score >= 7 ? "var(--neon-red)" : "var(--neon-blue)" }}>
+          {score}/10
+        </span>
+      </div>
+
+      {/* Pain slider */}
+      <div>
+        <label htmlFor={`slider_${actionId}`} style={{ fontSize: "0.75rem", color: "#aaa" }}>
+          Adjust Pain Severity (1 - 10):
+        </label>
+        <input
+          id={`slider_${actionId}`}
+          type="range"
+          min="1"
+          max="10"
+          value={score}
+          onChange={(e) => setScore(parseInt(e.target.value, 10))}
+          style={{ width: "100%", accentColor: "var(--neon-blue)", marginTop: "4px" }}
+        />
+      </div>
+
+      {/* Locations */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+        {locations.map((loc, idx) => (
+          <span
+            key={idx}
+            style={{
+              fontSize: "0.75rem",
+              padding: "2px 8px",
+              borderRadius: "4px",
+              background: "rgba(0, 240, 255, 0.15)",
+              border: "1px solid rgba(0, 240, 255, 0.3)",
+              color: "#fff",
+            }}
+          >
+            {loc.side && loc.side !== "unspecified" ? `${loc.side} ` : ""}
+            {loc.area} ({loc.percentage}%)
+          </span>
+        ))}
+      </div>
+
+      {/* Mood Selector (Allowed Symbol/Emoji Exception) */}
+      <div>
+        <div style={{ fontSize: "0.75rem", color: "#aaa", marginBottom: "4px" }}>Mood Selector:</div>
+        <div style={{ display: "flex", gap: "6px" }}>
+          {moodOptions.map((m) => (
+            <button
+              key={m.label}
+              type="button"
+              onClick={() => setMood(m.label)}
+              style={{
+                background: mood === m.label ? "rgba(0, 240, 255, 0.3)" : "rgba(255, 255, 255, 0.05)",
+                border: mood === m.label ? "1px solid var(--neon-blue)" : "1px solid #444",
+                borderRadius: "6px",
+                padding: "4px 8px",
+                cursor: "pointer",
+                fontSize: "0.9rem",
+              }}
+              title={m.label}
+            >
+              {m.symbol}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Notes */}
+      <div>
+        <input
+          type="text"
+          className="glass-input"
+          placeholder="Optional notes or aggravating triggers…"
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          style={{ width: "100%", padding: "6px 10px", fontSize: "0.8rem", borderRadius: "4px" }}
+        />
+      </div>
+
+      {/* Action buttons */}
+      <div style={{ display: "flex", gap: "8px", marginTop: "4px" }}>
+        <button
+          type="button"
+          className="btn btn-neon-blue btn-sm"
+          style={{ flex: 1, padding: "6px 10px" }}
+          onClick={() => onConfirm({ score, locations, mood: mood || undefined, notes: notes || undefined })}
+        >
+          Confirm & Log
+        </button>
+        <button
+          type="button"
+          className="btn btn-outline btn-sm"
+          style={{ padding: "6px 10px" }}
+          onClick={onCancel}
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function AgendaConfirmationCard({
+  action,
+  title,
+  scheduledTime,
+  status,
+  resultMessage,
+  onConfirm,
+  onCancel,
+}: {
+  actionId: string;
+  action: string;
+  title: string;
+  scheduledTime: string;
+  status: "pending" | "confirmed" | "cancelled";
+  resultMessage?: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  if (status === "confirmed") {
+    return (
+      <div style={{ padding: "10px", borderRadius: "8px", background: "rgba(0, 255, 128, 0.1)", border: "1px solid var(--neon-green)", fontSize: "0.85rem" }}>
+        {resultMessage || "Task confirmed and added to agenda."}
+      </div>
+    );
   }
-  return `Understood: "${input}". Action noted in daily operational context.`;
+
+  if (status === "cancelled") {
+    return <div style={{ padding: "8px 12px", borderRadius: "8px", background: "rgba(128, 128, 128, 0.1)", color: "#888", fontSize: "0.8rem" }}>Action cancelled.</div>;
+  }
+
+  return (
+    <div style={{ padding: "12px", borderRadius: "8px", background: "rgba(20, 20, 35, 0.9)", border: "1px solid var(--neon-purple)", display: "flex", flexDirection: "column", gap: "8px" }}>
+      <div style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "1px", color: "var(--neon-purple)", fontWeight: "bold" }}>
+        {action === "reschedule" ? "Reschedule Task Preview" : "Add to Agenda Preview"}
+      </div>
+      <div style={{ fontSize: "0.9rem", fontWeight: "bold" }}>{title}</div>
+      <div style={{ fontSize: "0.8rem", color: "#aaa" }}>
+        Scheduled: {new Date(scheduledTime).toLocaleString("en-AU", { timeZone: "Australia/Melbourne" })}
+      </div>
+      <div style={{ display: "flex", gap: "8px", marginTop: "4px" }}>
+        <button type="button" className="btn btn-neon-blue btn-sm" style={{ flex: 1 }} onClick={onConfirm}>
+          Confirm & Add
+        </button>
+        <button type="button" className="btn btn-outline btn-sm" onClick={onCancel}>
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function NoteConfirmationCard({
+  content,
+  author,
+  status,
+  resultMessage,
+  onConfirm,
+  onCancel,
+}: {
+  actionId: string;
+  content: string;
+  author: string;
+  status: "pending" | "confirmed" | "cancelled";
+  resultMessage?: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  if (status === "confirmed") {
+    return (
+      <div style={{ padding: "10px", borderRadius: "8px", background: "rgba(0, 255, 128, 0.1)", border: "1px solid var(--neon-green)", fontSize: "0.85rem" }}>
+        {resultMessage || "Note saved."}
+      </div>
+    );
+  }
+
+  if (status === "cancelled") {
+    return <div style={{ padding: "8px 12px", borderRadius: "8px", background: "rgba(128, 128, 128, 0.1)", color: "#888", fontSize: "0.8rem" }}>Action cancelled.</div>;
+  }
+
+  return (
+    <div style={{ padding: "12px", borderRadius: "8px", background: "rgba(20, 20, 35, 0.9)", border: "1px solid #ffd700", display: "flex", flexDirection: "column", gap: "8px" }}>
+      <div style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "1px", color: "#ffd700", fontWeight: "bold" }}>
+        Save Note Preview
+      </div>
+      <div style={{ fontSize: "0.85rem", fontStyle: "italic", whiteSpace: "pre-wrap" }}>"{content}"</div>
+      <div style={{ fontSize: "0.75rem", color: "#888" }}>Author: {author}</div>
+      <div style={{ display: "flex", gap: "8px", marginTop: "4px" }}>
+        <button type="button" className="btn btn-neon-blue btn-sm" style={{ flex: 1 }} onClick={onConfirm}>
+          Confirm & Save
+        </button>
+        <button type="button" className="btn btn-outline btn-sm" onClick={onCancel}>
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function CalendarConfirmationCard({
+  action,
+  summary,
+  startDatetime,
+  endDatetime,
+  status,
+  resultMessage,
+  onConfirm,
+  onCancel,
+}: {
+  actionId: string;
+  action: string;
+  summary: string;
+  startDatetime: string;
+  endDatetime?: string;
+  status: "pending" | "confirmed" | "cancelled";
+  resultMessage?: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  if (status === "confirmed") {
+    return <div style={{ padding: "10px", borderRadius: "8px", background: "rgba(0, 255, 128, 0.1)", border: "1px solid var(--neon-green)", fontSize: "0.85rem" }}>{resultMessage}</div>;
+  }
+  if (status === "cancelled") {
+    return <div style={{ padding: "8px 12px", borderRadius: "8px", background: "rgba(128, 128, 128, 0.1)", color: "#888", fontSize: "0.8rem" }}>Action cancelled.</div>;
+  }
+
+  return (
+    <div style={{ padding: "12px", borderRadius: "8px", background: "rgba(20, 20, 35, 0.9)", border: "1px solid var(--neon-blue)", display: "flex", flexDirection: "column", gap: "8px" }}>
+      <div style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "1px", color: "var(--neon-blue)", fontWeight: "bold" }}>
+        Calendar {action} Preview
+      </div>
+      <div style={{ fontSize: "0.9rem", fontWeight: "bold" }}>{summary}</div>
+      <div style={{ fontSize: "0.8rem", color: "#aaa" }}>
+        Start: {new Date(startDatetime).toLocaleString("en-AU", { timeZone: "Australia/Melbourne" })}
+        {endDatetime && ` | End: ${new Date(endDatetime).toLocaleString("en-AU", { timeZone: "Australia/Melbourne" })}`}
+      </div>
+      <div style={{ display: "flex", gap: "8px", marginTop: "4px" }}>
+        <button type="button" className="btn btn-neon-blue btn-sm" style={{ flex: 1 }} onClick={onConfirm}>
+          Confirm Calendar Event
+        </button>
+        <button type="button" className="btn btn-outline btn-sm" onClick={onCancel}>
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function EmailConfirmationCard({
+  to,
+  subject,
+  body,
+  status,
+  resultMessage,
+  onConfirm,
+  onCancel,
+}: {
+  actionId: string;
+  to: string;
+  subject: string;
+  body: string;
+  status: "pending" | "confirmed" | "cancelled";
+  resultMessage?: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  if (status === "confirmed") {
+    return <div style={{ padding: "10px", borderRadius: "8px", background: "rgba(0, 255, 128, 0.1)", border: "1px solid var(--neon-green)", fontSize: "0.85rem" }}>{resultMessage}</div>;
+  }
+  if (status === "cancelled") {
+    return <div style={{ padding: "8px 12px", borderRadius: "8px", background: "rgba(128, 128, 128, 0.1)", color: "#888", fontSize: "0.8rem" }}>Action cancelled.</div>;
+  }
+
+  return (
+    <div style={{ padding: "12px", borderRadius: "8px", background: "rgba(20, 20, 35, 0.9)", border: "1px solid var(--neon-red)", display: "flex", flexDirection: "column", gap: "8px" }}>
+      <div style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "1px", color: "var(--neon-red)", fontWeight: "bold" }}>
+        Email Send Approval Required
+      </div>
+      <div style={{ fontSize: "0.85rem" }}><strong>To:</strong> {to}</div>
+      <div style={{ fontSize: "0.85rem" }}><strong>Subject:</strong> {subject}</div>
+      <div style={{ fontSize: "0.8rem", maxHeight: "120px", overflowY: "auto", background: "rgba(0,0,0,0.3)", padding: "8px", borderRadius: "4px", whiteSpace: "pre-wrap" }}>
+        {body}
+      </div>
+      <div style={{ display: "flex", gap: "8px", marginTop: "4px" }}>
+        <button type="button" className="btn btn-neon-blue btn-sm" style={{ flex: 1 }} onClick={onConfirm}>
+          Confirm & Dispatch
+        </button>
+        <button type="button" className="btn btn-outline btn-sm" onClick={onCancel}>
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function SmsConfirmationCard({
+  to,
+  body,
+  status,
+  resultMessage,
+  onConfirm,
+  onCancel,
+}: {
+  actionId: string;
+  to: string;
+  body: string;
+  status: "pending" | "confirmed" | "cancelled";
+  resultMessage?: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  if (status === "confirmed") {
+    return <div style={{ padding: "10px", borderRadius: "8px", background: "rgba(0, 255, 128, 0.1)", border: "1px solid var(--neon-green)", fontSize: "0.85rem" }}>{resultMessage}</div>;
+  }
+  if (status === "cancelled") {
+    return <div style={{ padding: "8px 12px", borderRadius: "8px", background: "rgba(128, 128, 128, 0.1)", color: "#888", fontSize: "0.8rem" }}>Action cancelled.</div>;
+  }
+
+  return (
+    <div style={{ padding: "12px", borderRadius: "8px", background: "rgba(20, 20, 35, 0.9)", border: "1px solid var(--neon-blue)", display: "flex", flexDirection: "column", gap: "8px" }}>
+      <div style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "1px", color: "var(--neon-blue)", fontWeight: "bold" }}>
+        SMS Send Approval Required
+      </div>
+      <div style={{ fontSize: "0.85rem" }}><strong>To:</strong> {to}</div>
+      <div style={{ fontSize: "0.8rem", background: "rgba(0,0,0,0.3)", padding: "8px", borderRadius: "4px", whiteSpace: "pre-wrap" }}>
+        "{body}"
+      </div>
+      <div style={{ display: "flex", gap: "8px", marginTop: "4px" }}>
+        <button type="button" className="btn btn-neon-blue btn-sm" style={{ flex: 1 }} onClick={onConfirm}>
+          Confirm & Send SMS
+        </button>
+        <button type="button" className="btn btn-outline btn-sm" onClick={onCancel}>
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function BudgetConfirmationCard({
+  description,
+  amount,
+  category,
+  type,
+  status,
+  resultMessage,
+  onConfirm,
+  onCancel,
+}: {
+  actionId: string;
+  description: string;
+  amount: number;
+  category: string;
+  type: string;
+  status: "pending" | "confirmed" | "cancelled";
+  resultMessage?: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  if (status === "confirmed") {
+    return <div style={{ padding: "10px", borderRadius: "8px", background: "rgba(0, 255, 128, 0.1)", border: "1px solid var(--neon-green)", fontSize: "0.85rem" }}>{resultMessage}</div>;
+  }
+  if (status === "cancelled") {
+    return <div style={{ padding: "8px 12px", borderRadius: "8px", background: "rgba(128, 128, 128, 0.1)", color: "#888", fontSize: "0.8rem" }}>Action cancelled.</div>;
+  }
+
+  return (
+    <div style={{ padding: "12px", borderRadius: "8px", background: "rgba(20, 20, 35, 0.9)", border: "1px solid var(--neon-green)", display: "flex", flexDirection: "column", gap: "8px" }}>
+      <div style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "1px", color: "var(--neon-green)", fontWeight: "bold" }}>
+        Budget {type === "expense" ? "Expense" : "Income"} Preview
+      </div>
+      <div style={{ fontSize: "0.9rem", fontWeight: "bold" }}>${amount.toFixed(2)} - {description}</div>
+      <div style={{ fontSize: "0.75rem", color: "#888" }}>Category: {category}</div>
+      <div style={{ display: "flex", gap: "8px", marginTop: "4px" }}>
+        <button type="button" className="btn btn-neon-blue btn-sm" style={{ flex: 1 }} onClick={onConfirm}>
+          Confirm & Log {type === "expense" ? "Expense" : "Income"}
+        </button>
+        <button type="button" className="btn btn-outline btn-sm" onClick={onCancel}>
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
 }
