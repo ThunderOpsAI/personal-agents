@@ -36,6 +36,7 @@ import {
   CREATE_CHAT_LOGS_TABLE_SQL,
   SmsMessage,
   CreateSmsMessageInput,
+  SmsParseStatus,
   CREATE_SMS_MESSAGES_TABLE_SQL,
   PendingChatAction,
   CREATE_PENDING_CHAT_ACTIONS_TABLE_SQL,
@@ -285,6 +286,9 @@ export async function ensureTableExists(): Promise<void> {
       await pgPool.query(CREATE_LEARNING_PROGRESS_TABLE_SQL);
       await pgPool.query(CREATE_CHAT_LOGS_TABLE_SQL);
       await pgPool.query(CREATE_SMS_MESSAGES_TABLE_SQL);
+      await pgPool.query(`ALTER TABLE sms_messages ADD COLUMN IF NOT EXISTS parse_status TEXT NOT NULL DEFAULT 'parsed'`).catch(() => {});
+      await pgPool.query(`ALTER TABLE sms_messages ADD COLUMN IF NOT EXISTS raw_payload TEXT`).catch(() => {});
+      await pgPool.query(`ALTER TABLE sms_messages ADD COLUMN IF NOT EXISTS provider_format TEXT`).catch(() => {});
       await pgPool.query(CREATE_PENDING_CHAT_ACTIONS_TABLE_SQL);
       await pgPool.query(CREATE_TASKS_TABLE_SQL);
     }
@@ -1536,6 +1540,9 @@ export async function createSmsMessage(input: CreateSmsMessageInput): Promise<Sm
   const id = `sms_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
   const now = new Date().toISOString();
   const received_at = input.received_at || now;
+  const parse_status = input.parse_status || 'parsed';
+  const raw_payload = input.raw_payload ?? null;
+  const provider_format = input.provider_format ?? null;
 
   const newMessage: SmsMessage = {
     id,
@@ -1544,23 +1551,69 @@ export async function createSmsMessage(input: CreateSmsMessageInput): Promise<Sm
     received_at,
     read: false,
     created_at: now,
+    parse_status,
+    raw_payload,
+    provider_format,
   };
 
   const status = getDbStatus();
   if (status.provider === 'neon' && pgPool) {
-    const text = 'INSERT INTO sms_messages(id, sender, body, received_at, read, created_at) VALUES($1, $2, $3, $4, $5, $6)';
-    const values = [newMessage.id, newMessage.sender, newMessage.body, newMessage.received_at, newMessage.read, newMessage.created_at];
+    const text = 'INSERT INTO sms_messages(id, sender, body, received_at, read, created_at, parse_status, raw_payload, provider_format) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)';
+    const values = [newMessage.id, newMessage.sender, newMessage.body, newMessage.received_at, newMessage.read, newMessage.created_at, newMessage.parse_status, newMessage.raw_payload, newMessage.provider_format];
     await pgPool.query(text, values);
   } else if (status.provider === 'sqlite' && sqliteDb) {
     const stmt = sqliteDb.prepare(
-      'INSERT INTO sms_messages (id, sender, body, received_at, read, created_at) VALUES (?, ?, ?, ?, ?, ?)'
+      'INSERT INTO sms_messages (id, sender, body, received_at, read, created_at, parse_status, raw_payload, provider_format) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
     );
-    stmt.run(newMessage.id, newMessage.sender, newMessage.body, newMessage.received_at, newMessage.read, newMessage.created_at);
+    stmt.run(newMessage.id, newMessage.sender, newMessage.body, newMessage.received_at, newMessage.read, newMessage.created_at, newMessage.parse_status, newMessage.raw_payload, newMessage.provider_format);
   } else {
     throw new Error('Database not initialized');
   }
 
   return newMessage;
+}
+
+export async function getLatestSmsMessage(): Promise<SmsMessage | null> {
+  const messages = await getSmsMessages({ limit: 1 });
+  return messages.length > 0 ? messages[0] : null;
+}
+
+export async function getSmsHeartbeatStatus(thresholdHours: number = 24): Promise<{
+  healthy: boolean;
+  status: 'healthy' | 'stale';
+  last_received_at: string | null;
+  hours_since_last_received: number | null;
+  threshold_hours: number;
+  message: string;
+}> {
+  const latest = await getLatestSmsMessage();
+  if (!latest) {
+    return {
+      healthy: false,
+      status: 'stale',
+      last_received_at: null,
+      hours_since_last_received: null,
+      threshold_hours: thresholdHours,
+      message: 'No SMS messages recorded yet',
+    };
+  }
+
+  const lastDate = new Date(latest.received_at || latest.created_at);
+  const now = new Date();
+  const diffMs = now.getTime() - lastDate.getTime();
+  const hoursSince = Math.round((diffMs / (1000 * 60 * 60)) * 10) / 10;
+  const isHealthy = hoursSince < thresholdHours;
+
+  return {
+    healthy: isHealthy,
+    status: isHealthy ? 'healthy' : 'stale',
+    last_received_at: latest.received_at,
+    hours_since_last_received: hoursSince,
+    threshold_hours: thresholdHours,
+    message: isHealthy
+      ? 'Phone webhook heartbeat active'
+      : `No phone webhook received in over ${thresholdHours} hours`,
+  };
 }
 
 export async function getSmsMessages(options?: { limit?: number; unreadOnly?: boolean }): Promise<SmsMessage[]> {

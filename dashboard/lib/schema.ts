@@ -339,6 +339,8 @@ CREATE TABLE IF NOT EXISTS chat_logs (
 );
 `;
 
+export type SmsParseStatus = 'parsed' | 'malformed' | 'failed';
+
 export interface SmsMessage {
   id: string;
   sender: string;
@@ -346,12 +348,18 @@ export interface SmsMessage {
   received_at: string;
   read: boolean;
   created_at: string;
+  parse_status?: SmsParseStatus;
+  raw_payload?: string | null;
+  provider_format?: string | null;
 }
 
 export interface CreateSmsMessageInput {
   sender: string;
   body: string;
   received_at?: string;
+  parse_status?: SmsParseStatus;
+  raw_payload?: string | null;
+  provider_format?: string | null;
 }
 
 export const CREATE_SMS_MESSAGES_TABLE_SQL = `
@@ -361,7 +369,10 @@ CREATE TABLE IF NOT EXISTS sms_messages (
     body TEXT NOT NULL,
     received_at TEXT NOT NULL,
     read BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at TEXT NOT NULL
+    created_at TEXT NOT NULL,
+    parse_status TEXT NOT NULL DEFAULT 'parsed',
+    raw_payload TEXT,
+    provider_format TEXT
 );
 `;
 
