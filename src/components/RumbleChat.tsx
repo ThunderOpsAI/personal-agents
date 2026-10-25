@@ -317,6 +317,13 @@ export function RumbleChat({ onClose, initialMessage }: RumbleChatProps) {
                             onCancel={() => handleCancelAction(actionId)}
                           />
                         )}
+
+                        {(toolName === "searchSemanticMemory" || toolName === "semanticMemory") && (
+                          <SemanticMemoryCard
+                            query={args.query || ""}
+                            sourceType={args.source_type || "all"}
+                          />
+                        )}
                       </div>
                     );
                   }
@@ -807,6 +814,39 @@ function BudgetConfirmationCard({
         <button type="button" className="btn btn-outline btn-sm" onClick={onCancel}>
           Cancel
         </button>
+      </div>
+    </div>
+  );
+}
+
+function SemanticMemoryCard({
+  query,
+  sourceType,
+}: {
+  query: string;
+  sourceType: string;
+}) {
+  return (
+    <div
+      style={{
+        padding: "10px 14px",
+        borderRadius: "8px",
+        background: "rgba(0, 240, 255, 0.05)",
+        border: "1px solid rgba(0, 240, 255, 0.3)",
+        display: "flex",
+        flexDirection: "column",
+        gap: "4px",
+        fontSize: "0.85rem",
+      }}
+    >
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "1px", color: "var(--neon-blue)", fontWeight: "bold" }}>
+          Semantic Memory Search
+        </span>
+        <span style={{ fontSize: "0.7rem", color: "var(--text-secondary)" }}>pgvector</span>
+      </div>
+      <div style={{ color: "var(--text-primary)" }}>
+        Searching <strong>{sourceType === "all" ? "all records" : sourceType}</strong> for: &ldquo;{query}&rdquo;
       </div>
     </div>
   );
