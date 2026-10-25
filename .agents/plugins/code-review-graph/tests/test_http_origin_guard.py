@@ -26,7 +26,10 @@ BASE_URL = f"http://{HOST}:{PORT}"
 MCP_PATH = "/mcp/"
 # streamable-http requires both content types; without them FastMCP answers 406
 # before dispatching, which is still proof the request passed the guard.
-MCP_HEADERS = {"Accept": "application/json, text/event-stream", "Content-Type": "application/json"}
+MCP_HEADERS = {
+    "Accept": "application/json, text/event-stream",
+    "Content-Type": "application/json",
+}
 
 
 @pytest.fixture(scope="module")
@@ -45,7 +48,10 @@ def client() -> TestClient:
 
 def _post(client: TestClient, **kwargs) -> int:
     return client.post(
-        MCP_PATH, headers={**MCP_HEADERS, **kwargs.pop("headers", {})}, json={}, **kwargs
+        MCP_PATH,
+        headers={**MCP_HEADERS, **kwargs.pop("headers", {})},
+        json={},
+        **kwargs,
     ).status_code
 
 
@@ -72,7 +78,9 @@ class TestGuardEndToEnd:
         """DNS rebinding arrives on loopback but carries the attacker's Host."""
         assert _post(client, headers={"Host": "evil.example"}) == 403
 
-    def test_rebound_host_with_matching_port_is_rejected(self, client: TestClient) -> None:
+    def test_rebound_host_with_matching_port_is_rejected(
+        self, client: TestClient
+    ) -> None:
         assert _post(client, headers={"Host": f"evil.example:{PORT}"}) == 403
 
     def test_origin_on_wrong_port_is_rejected(self, client: TestClient) -> None:

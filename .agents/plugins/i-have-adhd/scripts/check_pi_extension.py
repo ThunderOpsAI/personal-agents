@@ -22,9 +22,9 @@ def validate_package_manifest() -> None:
     kimi = json.loads((ROOT / "kimi.plugin.json").read_text(encoding="utf8"))
 
     for field in SHARED_MANIFEST_FIELDS:
-        assert package.get(field) == kimi.get(field), (
-            f"package.json and kimi.plugin.json disagree on {field}"
-        )
+        assert package.get(field) == kimi.get(
+            field
+        ), f"package.json and kimi.plugin.json disagree on {field}"
 
     assert package.get("pi") == {
         "extensions": ["./extensions/i-have-adhd.ts"],
@@ -214,11 +214,17 @@ export default function (pi: ExtensionAPI) {
             "--adhd",
         )
         try:
-            commands, startup_events = client.request("commands", {"type": "get_commands"})
-            command_names = {command["name"] for command in commands["data"]["commands"]}
+            commands, startup_events = client.request(
+                "commands", {"type": "get_commands"}
+            )
+            command_names = {
+                command["name"] for command in commands["data"]["commands"]
+            }
             assert "i-have-adhd" in command_names
             assert "skill:i-have-adhd" in command_names
-            assert any("ADHD ON" in (text or "") for text in status_texts(startup_events))
+            assert any(
+                "ADHD ON" in (text or "") for text in status_texts(startup_events)
+            )
 
             entries, _ = client.request("entries-startup", {"type": "get_entries"})
             assert message_count(entries, "i-have-adhd-rules") == 1
@@ -229,12 +235,14 @@ export default function (pi: ExtensionAPI) {
                 {"type": "prompt", "message": "/reload-probe"},
             )
             assert reloaded["success"] is True
-            assert any("ADHD ON" in (text or "") for text in status_texts(reload_events))
+            assert any(
+                "ADHD ON" in (text or "") for text in status_texts(reload_events)
+            )
 
             entries, _ = client.request("entries-reloaded", {"type": "get_entries"})
-            assert message_count(entries, "i-have-adhd-rules") == 1, (
-                "Rules were injected twice for one active session"
-            )
+            assert (
+                message_count(entries, "i-have-adhd-rules") == 1
+            ), "Rules were injected twice for one active session"
 
             toggled_off, toggle_off_events = client.request(
                 "toggle-off",
@@ -252,9 +260,13 @@ export default function (pi: ExtensionAPI) {
                 {"type": "prompt", "message": "/reload-probe"},
             )
             assert reloaded["success"] is True
-            assert not any("ADHD ON" in (text or "") for text in status_texts(reload_events))
+            assert not any(
+                "ADHD ON" in (text or "") for text in status_texts(reload_events)
+            )
 
-            entries, _ = client.request("entries-reload-disabled", {"type": "get_entries"})
+            entries, _ = client.request(
+                "entries-reload-disabled", {"type": "get_entries"}
+            )
             assert message_count(entries, "i-have-adhd-rules") == 1
             assert message_count(entries, "i-have-adhd-disabled") == 1
 
@@ -263,7 +275,9 @@ export default function (pi: ExtensionAPI) {
                 {"type": "prompt", "message": "/i-have-adhd"},
             )
             assert toggled_on["success"] is True
-            assert any("ADHD ON" in (text or "") for text in status_texts(toggle_on_events))
+            assert any(
+                "ADHD ON" in (text or "") for text in status_texts(toggle_on_events)
+            )
 
             entries, _ = client.request("entries-toggled-on", {"type": "get_entries"})
             assert latest_enabled(entries) is True
@@ -321,8 +335,7 @@ export default function (pi: ExtensionAPI) {
                 {"type": "get_state"},
             )
             assert any(
-                "ADHD ON" in (text or "")
-                for text in status_texts(always_on_events)
+                "ADHD ON" in (text or "") for text in status_texts(always_on_events)
             )
         finally:
             always_on.close()

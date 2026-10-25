@@ -53,9 +53,23 @@ logger = logging.getLogger(__name__)
 
 # Shared platform choices for install and init commands
 _PLATFORM_CHOICES = [
-    "codex", "claude", "claude-code", "cursor", "windsurf", "zed",
-    "continue", "opencode", "antigravity", "gemini-cli", "qwen", "kiro", "qoder",
-    "copilot", "copilot-cli", "codebuddy", "all",
+    "codex",
+    "claude",
+    "claude-code",
+    "cursor",
+    "windsurf",
+    "zed",
+    "continue",
+    "opencode",
+    "antigravity",
+    "gemini-cli",
+    "qwen",
+    "kiro",
+    "qoder",
+    "copilot",
+    "copilot-cli",
+    "codebuddy",
+    "all",
 ]
 
 
@@ -82,6 +96,7 @@ def _get_version() -> str:
     # Fallback: read __version__ directly from the package.
     try:
         from . import __version__ as fallback_version
+
         if fallback_version:
             return fallback_version
     except ImportError:
@@ -356,7 +371,6 @@ def _handle_init(args: argparse.Namespace) -> None:
     elif skip_instructions:
         print("Skipped instruction injection (--no-instructions).")
 
-
     # Install Qoder skills (global user-level skills directory)
     if not skip_skills and target in ("qoder", "all"):
         qoder_skills_dir = install_qoder_skills(repo_root)
@@ -384,7 +398,11 @@ def _handle_init(args: argparse.Namespace) -> None:
             print(f"Installed git pre-commit hook in {git_hook}")
 
     # Cursor hooks (user-level, only if ~/.cursor exists — matching MCP detect)
-    if not skip_hooks and target in ("all", "cursor") and PLATFORMS["cursor"]["detect"]():
+    if (
+        not skip_hooks
+        and target in ("all", "cursor")
+        and PLATFORMS["cursor"]["detect"]()
+    ):
         try:
             hooks_path = install_cursor_hooks()
             print(f"Installed Cursor hooks in {hooks_path}")
@@ -399,7 +417,11 @@ def _handle_init(args: argparse.Namespace) -> None:
             logger.warning("Could not install Gemini CLI hooks: %s", exc)
 
     # OpenCode plugin (user-level, gated by same detect() as MCP config)
-    if not skip_hooks and target in ("all", "opencode") and PLATFORMS["opencode"]["detect"]():
+    if (
+        not skip_hooks
+        and target in ("all", "opencode")
+        and PLATFORMS["opencode"]["detect"]()
+    ):
         try:
             plugin_path = install_opencode_plugin()
             print(f"Installed OpenCode plugin in {plugin_path}")
@@ -417,6 +439,7 @@ def _handle_data_dir_option(args, repo_root: Path) -> None:
     if hasattr(args, "data_dir") and args.data_dir:
         try:
             from .registry import Registry
+
             data_dir_path = Path(args.data_dir).expanduser().resolve()
             data_dir_path.mkdir(parents=True, exist_ok=True)
             Registry().set_data_dir(str(repo_root), str(data_dir_path))
@@ -606,12 +629,18 @@ def main() -> None:
         prog="code-review-graph",
         description="Persistent incremental knowledge graph for code reviews",
     )
-    ap.add_argument("-v", "--version", action="store_true", help="Show version and exit")
+    ap.add_argument(
+        "-v", "--version", action="store_true", help="Show version and exit"
+    )
     sub = ap.add_subparsers(dest="command")
 
     # install (primary) + init (alias)
-    install_cmd = sub.add_parser("install", help="Register MCP server with AI coding platforms")
-    install_cmd.add_argument("--repo", default=None, help="Repository root (auto-detected)")
+    install_cmd = sub.add_parser(
+        "install", help="Register MCP server with AI coding platforms"
+    )
+    install_cmd.add_argument(
+        "--repo", default=None, help="Repository root (auto-detected)"
+    )
     install_cmd.add_argument(
         "--dry-run",
         action="store_true",
@@ -652,7 +681,9 @@ def main() -> None:
     )
 
     init_cmd = sub.add_parser("init", help="Alias for install")
-    init_cmd.add_argument("--repo", default=None, help="Repository root (auto-detected)")
+    init_cmd.add_argument(
+        "--repo", default=None, help="Repository root (auto-detected)"
+    )
     init_cmd.add_argument(
         "--dry-run",
         action="store_true",
@@ -681,7 +712,9 @@ def main() -> None:
     )
     init_cmd.add_argument("--skills", action="store_true", help=argparse.SUPPRESS)
     init_cmd.add_argument("--hooks", action="store_true", help=argparse.SUPPRESS)
-    init_cmd.add_argument("--all", action="store_true", dest="install_all", help=argparse.SUPPRESS)
+    init_cmd.add_argument(
+        "--all", action="store_true", dest="install_all", help=argparse.SUPPRESS
+    )
     init_cmd.add_argument(
         "--platform",
         choices=_PLATFORM_CHOICES,
@@ -718,7 +751,7 @@ def main() -> None:
         choices=_PLATFORM_CHOICES,
         default="all",
         help="Unbind only this platform's MCP registration and keep the graph "
-             "data and every other integration. Default: all (full uninstall).",
+        "data and every other integration. Default: all (full uninstall).",
     )
     uninstall_cmd.add_argument(
         "--dry-run",
@@ -734,7 +767,9 @@ def main() -> None:
 
     # build
     build_cmd = sub.add_parser("build", help="Full graph build (re-parse all files)")
-    build_cmd.add_argument("--repo", default=None, help="Repository root (auto-detected)")
+    build_cmd.add_argument(
+        "--repo", default=None, help="Repository root (auto-detected)"
+    )
     build_cmd.add_argument("-q", "--quiet", action="store_true", help="Suppress output")
     build_cmd.add_argument(
         "--skip-flows",
@@ -749,19 +784,25 @@ def main() -> None:
     build_cmd.add_argument(
         "--data-dir",
         default=None,
-        help="External directory to store graph database (useful for network shares)"
+        help="External directory to store graph database (useful for network shares)",
     )
     _add_embedding_refresh_args(build_cmd)
 
     # update
-    update_cmd = sub.add_parser("update", help="Incremental update (only changed files)")
+    update_cmd = sub.add_parser(
+        "update", help="Incremental update (only changed files)"
+    )
     update_cmd.add_argument(
         "--base",
         default=None,
         help="Git diff base (default: the commit the graph was last built at)",
     )
-    update_cmd.add_argument("--repo", default=None, help="Repository root (auto-detected)")
-    update_cmd.add_argument("-q", "--quiet", action="store_true", help="Suppress output")
+    update_cmd.add_argument(
+        "--repo", default=None, help="Repository root (auto-detected)"
+    )
+    update_cmd.add_argument(
+        "-q", "--quiet", action="store_true", help="Suppress output"
+    )
     update_cmd.add_argument(
         "--skip-flows",
         action="store_true",
@@ -776,24 +817,24 @@ def main() -> None:
         "--brief",
         action="store_true",
         help="After re-parsing changed files into the graph, also print the "
-             "risk summary + Token Savings panel that 'detect-changes --brief' "
-             "prints. Use this after a rebase or large change set when you "
-             "want to refresh the graph AND see the impact in one command; "
-             "use 'detect-changes --brief' alone when the graph is already "
-             "up to date (analysis only, no re-parse).",
+        "risk summary + Token Savings panel that 'detect-changes --brief' "
+        "prints. Use this after a rebase or large change set when you "
+        "want to refresh the graph AND see the impact in one command; "
+        "use 'detect-changes --brief' alone when the graph is already "
+        "up to date (analysis only, no re-parse).",
     )
     update_cmd.add_argument(
         "--verify",
         action="store_true",
         help="Calibrate the estimated savings against tiktoken's "
-             "cl100k_base tokenizer (the GPT-4 family tokenizer). Adds a "
-             "second row to the panel with the real token counts. Requires "
-             "`pip install tiktoken`.",
+        "cl100k_base tokenizer (the GPT-4 family tokenizer). Adds a "
+        "second row to the panel with the real token counts. Requires "
+        "`pip install tiktoken`.",
     )
     update_cmd.add_argument(
         "--data-dir",
         default=None,
-        help="External directory to store graph database (useful for network shares)"
+        help="External directory to store graph database (useful for network shares)",
     )
     _add_embedding_refresh_args(update_cmd)
 
@@ -804,12 +845,14 @@ def main() -> None:
     )
     pp_cmd.add_argument("--repo", default=None, help="Repository root (auto-detected)")
     pp_cmd.add_argument("--no-flows", action="store_true", help="Skip flow detection")
-    pp_cmd.add_argument("--no-communities", action="store_true", help="Skip community detection")
+    pp_cmd.add_argument(
+        "--no-communities", action="store_true", help="Skip community detection"
+    )
     pp_cmd.add_argument("--no-fts", action="store_true", help="Skip FTS rebuild")
     pp_cmd.add_argument(
         "--data-dir",
         default=None,
-        help="External directory to store graph database (useful for network shares)"
+        help="External directory to store graph database (useful for network shares)",
     )
     _add_embedding_refresh_args(pp_cmd)
 
@@ -818,7 +861,9 @@ def main() -> None:
         "embed",
         help="Compute vector embeddings for semantic search",
     )
-    embed_cmd.add_argument("--repo", default=None, help="Repository root (auto-detected)")
+    embed_cmd.add_argument(
+        "--repo", default=None, help="Repository root (auto-detected)"
+    )
     embed_cmd.add_argument(
         "--provider",
         choices=["local", "openai", "google", "minimax", "voyage"],
@@ -829,28 +874,34 @@ def main() -> None:
         "--model",
         default=None,
         help="Embedding model. For local: HuggingFace ID (default all-MiniLM-L6-v2); "
-             "for openai/google/minimax/voyage: provider-specific model ID.",
+        "for openai/google/minimax/voyage: provider-specific model ID.",
     )
     embed_cmd.add_argument(
         "--data-dir",
         default=None,
-        help="External directory to store graph database (useful for network shares)"
+        help="External directory to store graph database (useful for network shares)",
     )
 
     # watch
     watch_cmd = sub.add_parser("watch", help="Watch for changes and auto-update")
-    watch_cmd.add_argument("--repo", default=None, help="Repository root (auto-detected)")
+    watch_cmd.add_argument(
+        "--repo", default=None, help="Repository root (auto-detected)"
+    )
     watch_cmd.add_argument(
         "--data-dir",
         default=None,
-        help="External directory to store graph database (useful for network shares)"
+        help="External directory to store graph database (useful for network shares)",
     )
     _add_embedding_refresh_args(watch_cmd)
 
     # status
     status_cmd = sub.add_parser("status", help="Show graph statistics")
-    status_cmd.add_argument("--repo", default=None, help="Repository root (auto-detected)")
-    status_cmd.add_argument("-q", "--quiet", action="store_true", help="Suppress output")
+    status_cmd.add_argument(
+        "--repo", default=None, help="Repository root (auto-detected)"
+    )
+    status_cmd.add_argument(
+        "-q", "--quiet", action="store_true", help="Suppress output"
+    )
     status_cmd.add_argument(
         "--json",
         action="store_true",
@@ -860,7 +911,7 @@ def main() -> None:
     status_cmd.add_argument(
         "--data-dir",
         default=None,
-        help="External directory to store graph database (useful for network shares)"
+        help="External directory to store graph database (useful for network shares)",
     )
 
     # forget
@@ -873,9 +924,11 @@ def main() -> None:
         nargs="+",
         metavar="PATH",
         help="Files, directories, or glob patterns to drop from the graph. "
-             "Paths may be absolute or relative to the repository root.",
+        "Paths may be absolute or relative to the repository root.",
     )
-    forget_cmd.add_argument("--repo", default=None, help="Repository root (auto-detected)")
+    forget_cmd.add_argument(
+        "--repo", default=None, help="Repository root (auto-detected)"
+    )
     forget_cmd.add_argument(
         "--dry-run",
         action="store_true",
@@ -884,11 +937,13 @@ def main() -> None:
     forget_cmd.add_argument(
         "--data-dir",
         default=None,
-        help="External directory to store graph database (useful for network shares)"
+        help="External directory to store graph database (useful for network shares)",
     )
 
     # visualize
-    vis_cmd = sub.add_parser("visualize", help="Generate interactive HTML graph visualization")
+    vis_cmd = sub.add_parser(
+        "visualize", help="Generate interactive HTML graph visualization"
+    )
     vis_cmd.add_argument("--repo", default=None, help="Repository root (auto-detected)")
     vis_cmd.add_argument(
         "--mode",
@@ -910,12 +965,16 @@ def main() -> None:
     vis_cmd.add_argument(
         "--data-dir",
         default=None,
-        help="External directory to store graph database (useful for network shares)"
+        help="External directory to store graph database (useful for network shares)",
     )
 
     # wiki
-    wiki_cmd = sub.add_parser("wiki", help="Generate markdown wiki from community structure")
-    wiki_cmd.add_argument("--repo", default=None, help="Repository root (auto-detected)")
+    wiki_cmd = sub.add_parser(
+        "wiki", help="Generate markdown wiki from community structure"
+    )
+    wiki_cmd.add_argument(
+        "--repo", default=None, help="Repository root (auto-detected)"
+    )
     wiki_cmd.add_argument(
         "--force",
         action="store_true",
@@ -924,7 +983,7 @@ def main() -> None:
     wiki_cmd.add_argument(
         "--data-dir",
         default=None,
-        help="External directory to store graph database (useful for network shares)"
+        help="External directory to store graph database (useful for network shares)",
     )
 
     # register
@@ -932,13 +991,17 @@ def main() -> None:
         "register", help="Register a repository in the multi-repo registry"
     )
     register_cmd.add_argument("path", help="Path to the repository root")
-    register_cmd.add_argument("--alias", default=None, help="Short alias for the repository")
+    register_cmd.add_argument(
+        "--alias", default=None, help="Short alias for the repository"
+    )
 
     # unregister
     unregister_cmd = sub.add_parser(
         "unregister", help="Remove a repository from the multi-repo registry"
     )
-    unregister_cmd.add_argument("path_or_alias", help="Repository path or alias to remove")
+    unregister_cmd.add_argument(
+        "path_or_alias", help="Repository path or alias to remove"
+    )
 
     # repos
     sub.add_parser("repos", help="List registered repositories")
@@ -952,10 +1015,18 @@ def main() -> None:
         "agent_baseline, flow_completeness, search_quality, build_performance, "
         "multi_hop_retrieval)",
     )
-    eval_cmd.add_argument("--repo", default=None, help="Comma-separated repo config names")
-    eval_cmd.add_argument("--all", action="store_true", dest="run_all", help="Run all benchmarks")
-    eval_cmd.add_argument("--report", action="store_true", help="Generate report from results")
-    eval_cmd.add_argument("--output-dir", default=None, help="Output directory for results")
+    eval_cmd.add_argument(
+        "--repo", default=None, help="Comma-separated repo config names"
+    )
+    eval_cmd.add_argument(
+        "--all", action="store_true", dest="run_all", help="Run all benchmarks"
+    )
+    eval_cmd.add_argument(
+        "--report", action="store_true", help="Generate report from results"
+    )
+    eval_cmd.add_argument(
+        "--output-dir", default=None, help="Output directory for results"
+    )
     eval_cmd.add_argument(
         "--embed",
         action="store_true",
@@ -971,7 +1042,7 @@ def main() -> None:
         choices=["local", "openai", "google", "minimax", "voyage"],
         default=None,
         help="Provider for --embed (default: local, needs "
-             "code-review-graph[embeddings])",
+        "code-review-graph[embeddings])",
     )
     eval_cmd.add_argument(
         "--embed-model",
@@ -983,30 +1054,34 @@ def main() -> None:
     detect_cmd = sub.add_parser(
         "detect-changes",
         help="Analyze change impact against the existing graph (read-only). "
-             "Does NOT re-parse files — for that, use 'update --brief'.",
+        "Does NOT re-parse files — for that, use 'update --brief'.",
     )
-    detect_cmd.add_argument("--base", default="HEAD~1", help="Git diff base (default: HEAD~1)")
+    detect_cmd.add_argument(
+        "--base", default="HEAD~1", help="Git diff base (default: HEAD~1)"
+    )
     detect_cmd.add_argument(
         "--brief",
         action="store_true",
         help="Show the risk summary + Token Savings panel instead of the "
-             "full JSON. Read-only against the existing graph.",
+        "full JSON. Read-only against the existing graph.",
     )
-    detect_cmd.add_argument("--repo", default=None, help="Repository root (auto-detected)")
+    detect_cmd.add_argument(
+        "--repo", default=None, help="Repository root (auto-detected)"
+    )
     detect_cmd.add_argument(
         "--churn",
         action="store_true",
         help="Add an opt-in change-frequency term to risk scores. Counts "
-             "commits per file over 90 days by default; set "
-             "CRG_CHURN_WINDOW_DAYS to adjust.",
+        "commits per file over 90 days by default; set "
+        "CRG_CHURN_WINDOW_DAYS to adjust.",
     )
     detect_cmd.add_argument(
         "--verify",
         action="store_true",
         help="Calibrate the estimated savings against tiktoken's "
-             "cl100k_base tokenizer (the GPT-4 family tokenizer). Adds a "
-             "second row to the panel with the real token counts. Requires "
-             "`pip install tiktoken`.",
+        "cl100k_base tokenizer (the GPT-4 family tokenizer). Adds a "
+        "second row to the panel with the real token counts. Requires "
+        "`pip install tiktoken`.",
     )
 
     # enrich (Claude Code PreToolUse hook; reads one JSON object from stdin)
@@ -1040,7 +1115,9 @@ def main() -> None:
         dest="json_output",
         help="Output a machine-readable JSON array",
     )
-    dead_cmd.add_argument("--repo", default=None, help="Repository root (auto-detected)")
+    dead_cmd.add_argument(
+        "--repo", default=None, help="Repository root (auto-detected)"
+    )
     dead_cmd.add_argument(
         "--data-dir",
         default=None,
@@ -1063,7 +1140,9 @@ def main() -> None:
         ],
     )
     query_cmd.add_argument("target", help="Node name, qualified name, or file path")
-    query_cmd.add_argument("--repo", default=None, help="Repository root (auto-detected)")
+    query_cmd.add_argument(
+        "--repo", default=None, help="Repository root (auto-detected)"
+    )
 
     impact_cmd = sub.add_parser("impact", help="Analyze the blast radius of changes")
     impact_cmd.add_argument(
@@ -1075,7 +1154,9 @@ def main() -> None:
     impact_cmd.add_argument("--depth", type=_non_negative_int, default=2)
     impact_cmd.add_argument("--max-results", type=_positive_int, default=500)
     impact_cmd.add_argument("--base", default="HEAD~1")
-    impact_cmd.add_argument("--repo", default=None, help="Repository root (auto-detected)")
+    impact_cmd.add_argument(
+        "--repo", default=None, help="Repository root (auto-detected)"
+    )
 
     search_cmd = sub.add_parser("search", help="Search graph entities")
     search_cmd.add_argument("query", help="Search string")
@@ -1085,7 +1166,9 @@ def main() -> None:
         default=None,
     )
     search_cmd.add_argument("--limit", type=_positive_int, default=20)
-    search_cmd.add_argument("--repo", default=None, help="Repository root (auto-detected)")
+    search_cmd.add_argument(
+        "--repo", default=None, help="Repository root (auto-detected)"
+    )
 
     flows_cmd = sub.add_parser("flows", help="List stored execution flows")
     flows_cmd.add_argument(
@@ -1095,14 +1178,20 @@ def main() -> None:
     )
     flows_cmd.add_argument("--limit", type=_positive_int, default=50)
     flows_cmd.add_argument("--kind", default=None, help="Entry-point kind filter")
-    flows_cmd.add_argument("--repo", default=None, help="Repository root (auto-detected)")
+    flows_cmd.add_argument(
+        "--repo", default=None, help="Repository root (auto-detected)"
+    )
 
     flow_cmd = sub.add_parser("flow", help="Show one stored execution flow")
     flow_selector = flow_cmd.add_mutually_exclusive_group(required=True)
     flow_selector.add_argument("--id", type=_positive_int, default=None)
     flow_selector.add_argument("--name", default=None)
-    flow_cmd.add_argument("--source", action="store_true", help="Include source snippets")
-    flow_cmd.add_argument("--repo", default=None, help="Repository root (auto-detected)")
+    flow_cmd.add_argument(
+        "--source", action="store_true", help="Include source snippets"
+    )
+    flow_cmd.add_argument(
+        "--repo", default=None, help="Repository root (auto-detected)"
+    )
 
     communities_cmd = sub.add_parser("communities", help="List graph communities")
     communities_cmd.add_argument(
@@ -1111,14 +1200,18 @@ def main() -> None:
         default="size",
     )
     communities_cmd.add_argument("--min-size", type=_non_negative_int, default=0)
-    communities_cmd.add_argument("--repo", default=None, help="Repository root (auto-detected)")
+    communities_cmd.add_argument(
+        "--repo", default=None, help="Repository root (auto-detected)"
+    )
 
     community_cmd = sub.add_parser("community", help="Show one graph community")
     community_selector = community_cmd.add_mutually_exclusive_group(required=True)
     community_selector.add_argument("--id", type=_positive_int, default=None)
     community_selector.add_argument("--name", default=None)
     community_cmd.add_argument("--members", action="store_true")
-    community_cmd.add_argument("--repo", default=None, help="Repository root (auto-detected)")
+    community_cmd.add_argument(
+        "--repo", default=None, help="Repository root (auto-detected)"
+    )
 
     architecture_cmd = sub.add_parser("architecture", help="Show architecture overview")
     architecture_cmd.add_argument(
@@ -1126,7 +1219,9 @@ def main() -> None:
         choices=["minimal", "standard"],
         default="minimal",
     )
-    architecture_cmd.add_argument("--repo", default=None, help="Repository root (auto-detected)")
+    architecture_cmd.add_argument(
+        "--repo", default=None, help="Repository root (auto-detected)"
+    )
 
     large_cmd = sub.add_parser("large-functions", help="Find oversized graph nodes")
     large_cmd.add_argument("--min-lines", type=_positive_int, default=50)
@@ -1137,7 +1232,9 @@ def main() -> None:
     )
     large_cmd.add_argument("--path", default=None, help="File-path substring filter")
     large_cmd.add_argument("--limit", type=_positive_int, default=50)
-    large_cmd.add_argument("--repo", default=None, help="Repository root (auto-detected)")
+    large_cmd.add_argument(
+        "--repo", default=None, help="Repository root (auto-detected)"
+    )
 
     refactor_cmd = sub.add_parser("refactor", help="Preview graph-backed refactors")
     refactor_cmd.add_argument("mode", choices=["rename", "dead_code", "suggest"])
@@ -1149,21 +1246,26 @@ def main() -> None:
         default=None,
     )
     refactor_cmd.add_argument("--path", default=None, help="File-path substring filter")
-    refactor_cmd.add_argument("--repo", default=None, help="Repository root (auto-detected)")
+    refactor_cmd.add_argument(
+        "--repo", default=None, help="Repository root (auto-detected)"
+    )
 
     # serve / mcp
     serve_cmd = sub.add_parser(
         "serve",
         help="Start MCP server (stdio by default, or HTTP on localhost with --http)",
     )
-    serve_cmd.add_argument("--repo", default=None, help="Repository root (auto-detected)")
+    serve_cmd.add_argument(
+        "--repo", default=None, help="Repository root (auto-detected)"
+    )
     serve_cmd.add_argument(
         "--auto-watch",
         action="store_true",
         help="Start filesystem watch in a daemon thread while MCP server runs",
     )
     serve_cmd.add_argument(
-        "--tools", default=None,
+        "--tools",
+        default=None,
         help=(
             "Comma-separated list of tool names to expose "
             "(e.g. query_graph_tool,semantic_search_nodes_tool). "
@@ -1398,7 +1500,9 @@ def main() -> None:
             print(tables)
         else:
             repos = (
-                [r.strip() for r in args.repo.split(",")] if getattr(args, "repo", None) else None
+                [r.strip() for r in args.repo.split(",")]
+                if getattr(args, "repo", None)
+                else None
             )
             benchmarks = (
                 [b.strip() for b in args.benchmark.split(",")]
@@ -1603,9 +1707,7 @@ def main() -> None:
         "wiki",
         "dead-code",
     )
-    status_data_dir = (
-        args.command == "status" and bool(getattr(args, "data_dir", None))
-    )
+    status_data_dir = args.command == "status" and bool(getattr(args, "data_dir", None))
     if args.command in _data_dir_cmds and not status_data_dir:
         _handle_data_dir_option(args, repo_root)
 
@@ -1771,8 +1873,11 @@ def main() -> None:
                     verified = None
                     if getattr(args, "verify", False):
                         from .context_savings import verify_with_tiktoken
+
                         verified = verify_with_tiktoken(
-                            repo_root, changed, impact,
+                            repo_root,
+                            changed,
+                            impact,
                         )
                         if verified is None:
                             print(
@@ -1803,20 +1908,24 @@ def main() -> None:
             stored_rev = store.get_metadata("svn_revision")
 
             if args.json_output:
-                print(json.dumps({
-                    "nodes": stats.total_nodes,
-                    "edges": stats.total_edges,
-                    "files": stats.files_count,
-                    "languages": list(stats.languages),
-                    "last_updated": stats.last_updated,
-                    "vcs": vcs,
-                    "built_on_branch": stored_branch,
-                    "built_at_commit": stored_sha,
-                    "current_branch": current_branch,
-                    "current_sha": current_sha,
-                    "svn_branch": stored_svn_branch,
-                    "svn_revision": stored_rev,
-                }))
+                print(
+                    json.dumps(
+                        {
+                            "nodes": stats.total_nodes,
+                            "edges": stats.total_edges,
+                            "files": stats.files_count,
+                            "languages": list(stats.languages),
+                            "last_updated": stats.last_updated,
+                            "vcs": vcs,
+                            "built_on_branch": stored_branch,
+                            "built_at_commit": stored_sha,
+                            "current_branch": current_branch,
+                            "current_sha": current_sha,
+                            "svn_branch": stored_svn_branch,
+                            "svn_revision": stored_rev,
+                        }
+                    )
+                )
             elif not args.quiet:
                 print(f"Nodes: {stats.total_nodes}")
                 print(f"Edges: {stats.total_edges}")
@@ -1948,7 +2057,9 @@ def main() -> None:
                     )
                     print(f"Serving at http://localhost:{port}/graph.html")
                     print("Press Ctrl+C to stop.")
-                    with http.server.HTTPServer(("localhost", port), http_handler) as httpd:
+                    with http.server.HTTPServer(
+                        ("localhost", port), http_handler
+                    ) as httpd:
                         try:
                             httpd.serve_forever()
                         except KeyboardInterrupt:
@@ -1962,7 +2073,11 @@ def main() -> None:
 
             wiki_dir = get_data_dir(repo_root) / "wiki"
             result = generate_wiki(store, wiki_dir, force=args.force)
-            total = result["pages_generated"] + result["pages_updated"] + result["pages_unchanged"]
+            total = (
+                result["pages_generated"]
+                + result["pages_updated"]
+                + result["pages_unchanged"]
+            )
             print(
                 f"Wiki: {result['pages_generated']} new, "
                 f"{result['pages_updated']} updated, "
@@ -2004,6 +2119,7 @@ def main() -> None:
                         format_context_savings_panel,
                         verify_with_tiktoken,
                     )
+
                     print(result.get("summary", "No summary available."))
                     verified = None
                     if getattr(args, "verify", False):

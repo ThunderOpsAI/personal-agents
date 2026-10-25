@@ -122,9 +122,7 @@ def _path_key(file_path: str) -> str:
     return file_path.replace("\\", "/")
 
 
-def _path_ends_with(
-    path_tokens: list[str], suffix: list[str], language: str
-) -> bool:
+def _path_ends_with(path_tokens: list[str], suffix: list[str], language: str) -> bool:
     """Whether a complete import/module suffix matches a defining file path."""
     if not suffix or len(suffix) > len(path_tokens):
         return False
@@ -300,9 +298,7 @@ def resolve_scoped_calls(store: GraphStore) -> dict:
     for row in conn.execute(
         "SELECT file_path, target_qualified FROM edges WHERE kind = 'IMPORTS_FROM'"
     ).fetchall():
-        imports_by_file.setdefault(row["file_path"], set()).add(
-            row["target_qualified"]
-        )
+        imports_by_file.setdefault(row["file_path"], set()).add(row["target_qualified"])
 
     # ------------------------------------------------------------------
     # csharp_namespaces_by_file: .cs file → namespaces it declares. C#
@@ -371,9 +367,7 @@ def resolve_scoped_calls(store: GraphStore) -> dict:
         # #574's PHP import resolver rewrites resolvable ``use`` targets to the
         # absolute path of the class file, so a direct path match is exact.
         imported_paths = {
-            _path_key(target)
-            for target in imported
-            if "/" in target or "\\" in target
+            _path_key(target) for target in imported if "/" in target or "\\" in target
         }
         matched = [
             candidate
@@ -399,8 +393,7 @@ def resolve_scoped_calls(store: GraphStore) -> dict:
                     continue
                 suffixes = _safe_import_suffixes(segments, language)
                 if any(
-                    _path_ends_with(tokens, suffix, language)
-                    for suffix in suffixes
+                    _path_ends_with(tokens, suffix, language) for suffix in suffixes
                 ):
                     matched_by_suffix.add(candidate)
                     break
@@ -501,7 +494,9 @@ def resolve_scoped_calls(store: GraphStore) -> dict:
         resolved += 1
         logger.debug(
             "Scoped resolver: %s → %s (via %s)",
-            resolution_target, new_target, via,
+            resolution_target,
+            new_target,
+            via,
         )
 
     if resolved:
@@ -509,6 +504,7 @@ def resolve_scoped_calls(store: GraphStore) -> dict:
 
     logger.info(
         "Scoped resolver: resolved %d CALLS edges across %d files",
-        resolved, len(file_language),
+        resolved,
+        len(file_language),
     )
     return {"files_indexed": len(file_language), "calls_resolved": resolved}

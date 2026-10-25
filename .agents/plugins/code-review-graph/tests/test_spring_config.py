@@ -46,12 +46,17 @@ def test_only_conventional_spring_files_are_classified(tmp_path: Path) -> None:
 
     assert parser.detect_language(tmp_path / "application.yml") == "spring_config"
     assert parser.detect_language(tmp_path / "application-prod.yaml") == "spring_config"
-    assert parser.detect_language(tmp_path / "application.properties") == "spring_config"
+    assert (
+        parser.detect_language(tmp_path / "application.properties") == "spring_config"
+    )
     assert parser.detect_language(tmp_path / "app.properties") is None
     assert parser.detect_language(tmp_path / "workflow.yml") == "yaml"
 
     assert parser.parse_bytes(tmp_path / "workflow.yml", YAML_SOURCE) == ([], [])
-    assert parser.parse_bytes(tmp_path / "app.properties", PROPERTIES_SOURCE) == ([], [])
+    assert parser.parse_bytes(tmp_path / "app.properties", PROPERTIES_SOURCE) == (
+        [],
+        [],
+    )
 
 
 def test_confirmed_ansible_path_keeps_ansible_precedence(tmp_path: Path) -> None:
@@ -67,7 +72,9 @@ def test_confirmed_ansible_path_keeps_ansible_precedence(tmp_path: Path) -> None
 
 def test_non_spring_application_yaml_is_not_indexed_as_config(tmp_path: Path) -> None:
     parser = CodeParser()
-    github_actions = b"name: CI\non: [push]\njobs:\n  test:\n    runs-on: ubuntu-latest\n"
+    github_actions = (
+        b"name: CI\non: [push]\njobs:\n  test:\n    runs-on: ubuntu-latest\n"
+    )
     kubernetes = b"apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: api\n"
 
     assert parser.parse_bytes(tmp_path / "application.yml", github_actions) == ([], [])
@@ -133,7 +140,9 @@ def test_java_config_annotations_emit_key_only_dependencies(tmp_path: Path) -> N
         "config:payment.gateway.url",
         "config:payment.apiToken",
     }
-    assert {edge.source for edge in config_edges} == {f"{path.as_posix()}::KafkaSettings"}
+    assert {edge.source for edge in config_edges} == {
+        f"{path.as_posix()}::KafkaSettings"
+    }
     serialized_metadata = json.dumps([edge.extra for edge in config_edges])
     assert "do-not-store-this-default" not in serialized_metadata
 

@@ -81,7 +81,9 @@ class TestJsconfigResolution:
             importer = root / "src" / "App.vue"
             importer.write_text("import '@/composables/useThing'\n", encoding="utf-8")
 
-            result = self.resolver.resolve_alias("@/composables/useThing", str(importer))
+            result = self.resolver.resolve_alias(
+                "@/composables/useThing", str(importer)
+            )
             assert result is not None
             assert Path(result) == target.resolve()
 
@@ -109,13 +111,13 @@ class TestJsconfigResolution:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             (root / "jsconfig.base.json").write_text(
-                '{\n'
-                '  // shared aliases\n'
+                "{\n"
+                "  // shared aliases\n"
                 '  "compilerOptions": {\n'
                 '    "baseUrl": ".",\n'
                 '    "paths": {"@/*": ["src/*"],}\n'
-                '  }\n'
-                '}\n',
+                "  }\n"
+                "}\n",
                 encoding="utf-8",
             )
             (root / "jsconfig.json").write_text(
