@@ -5,7 +5,7 @@
  */
 
 import { getDbStatus } from './db';
-import { Pool } from 'pg';
+import { Pool } from '@neondatabase/serverless';
 
 export interface SemanticMemoryRecord {
   id: string;
