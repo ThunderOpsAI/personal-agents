@@ -7,6 +7,8 @@ import { getAgendaItems, createAgendaItem, createNote, createPainLog, getNotes, 
 import { logPain, PainLocationWeight, validatePainLog } from '../rehab-learning';
 import { selectWashingDays, WashingDay } from '../agenda-engine';
 import { fetchLiveGmailMessages, fetchLiveCalendarEvents } from '../google-auth';
+import { executeSandboxedCode } from '../sandbox/runner';
+import { preparePrPreview, executeOpenPr } from '../sandbox/pr-creator';
 
 export const MEDICAL_GUARDRAIL =
   "Medical output is decision support, not diagnosis. Preserve clinician restrictions; recommend clinician review for worsening or concerning symptoms.";
@@ -86,7 +88,7 @@ export interface ParsedPainLog {
 }
 
 export interface ActionPreview {
-  type: "pain_log" | "note" | "task" | "multi_action" | "calendar_event" | "send_email" | "send_sms" | "budget_item" | "agent_report";
+  type: "pain_log" | "note" | "task" | "multi_action" | "calendar_event" | "send_email" | "send_sms" | "budget_item" | "agent_report" | "create_pr";
   data: Record<string, any>;
 }
 
@@ -391,6 +393,54 @@ export const semanticMemoryTool = tool({
   },
 });
 
+export const sandboxExecuteSchema = z.object({
+  code: z.string().describe("The isolated code snippet (Python or JavaScript) to execute in the sandbox"),
+  language: z.enum(["python", "javascript", "typescript"]).optional().default("python").describe("Programming language for the sandbox runner"),
+  timeout_ms: z.number().int().min(1000).max(60000).optional().default(15000).describe("Execution timeout in milliseconds"),
+});
+
+export const sandboxExecuteTool = tool({
+  description: "Execute ad-hoc calculations, data transformations, or throwaway prototypes in a secure, isolated sandbox with zero access to credentials or medical data.",
+  inputSchema: sandboxExecuteSchema,
+  execute: async ({ code, language, timeout_ms }) => {
+    const result = await executeSandboxedCode(code, {
+      language,
+      timeoutMs: timeout_ms,
+    });
+    return {
+      status: result.status,
+      stdout: result.stdout,
+      stderr: result.stderr,
+      results: result.results,
+      execution_time_ms: result.executionTimeMs,
+      error: result.error,
+      summary: result.status === "success"
+        ? `Sandbox execution completed in ${result.executionTimeMs}ms: ${result.stdout || "No output"}`
+        : `Sandbox execution ${result.status}: ${result.error || result.stderr || "Unknown error"}`,
+    };
+  },
+});
+
+export const prFileSchema = z.object({
+  path: z.string().describe("Relative file path for the change (denylist enforced)"),
+  content: z.string().describe("Complete file content"),
+});
+
+export const prCreatorSchema = z.object({
+  title: z.string().min(5).max(120).describe("Clear pull request title"),
+  slug: z.string().min(2).max(40).describe("Short slug for branch name feat/rumble-<slug>"),
+  summary: z.string().min(10).describe("Detailed summary of changes for mobile review"),
+  files: z.array(prFileSchema).min(1).describe("List of file modifications or additions"),
+});
+
+export const prCreatorTool = tool({
+  description: "Create a GitHub Pull Request for mobile review. Follows parse -> preview -> confirm -> commit. Turn 1 generates a unified diff preview. Turn 2 opens the PR on feat/rumble-<slug>.",
+  inputSchema: prCreatorSchema,
+  execute: async ({ title, slug, summary, files }) => {
+    return preparePrPreview({ title, slug, summary, files });
+  },
+});
+
 export function createRumbleTools() {
   return {
     painLog: painLogTool,
@@ -401,6 +451,8 @@ export function createRumbleTools() {
     draftSms: smsActionTool,
     logBudgetItem: budgetItemTool,
     searchSemanticMemory: semanticMemoryTool,
+    runSandboxCode: sandboxExecuteTool,
+    createPullRequest: prCreatorTool,
   };
 }
 
@@ -1400,6 +1452,22 @@ export async function executeConfirmedAction(action: ActionPreview | { type: str
       message: `Rumble: Confirmed and added to agenda: "${action.data.summary}".`,
       result: savedAgendaItem,
     };
+  }
+
+  if (action.type === "create_pr") {
+    try {
+      const res = await executeOpenPr(action.data as any);
+      return {
+        success: true,
+        message: `Pull Request #${res.prNumber} opened on branch '${res.branch}': ${res.prUrl}`,
+        result: res,
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        message: `Failed to open Pull Request: ${err.message}`,
+      };
+    }
   }
 
   throw new Error(`Unknown action type: ${(action as any).type}`);
