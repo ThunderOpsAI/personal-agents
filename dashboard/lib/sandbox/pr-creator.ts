@@ -35,13 +35,29 @@ export interface PrExecutionResult {
 
 // Strict denylist of files and patterns forbidden from modification
 export const FORBIDDEN_FILE_PATTERNS = [
-  /^agents\.md$/i,
-  /^context\.md$/i,
-  /^\.env/i,
+  // 1. Source-of-truth documents (case-insensitive)
+  /(^|\/)agents\.md$/i,
+  /(^|\/)context\.md$/i,
+  /(^|\/)agent\/[^\/]+\.md$/i,
+  /(^|\/)\.?agents?\/skills(\/|$)/i,
+  /(^|\/)agent\/tools(\/|$)/i,
+
+  // 2. Authentication, credentials, and secrets
+  /(^|\/)\.env/i,
   /credentials/i,
   /secret/i,
+  /(^|\/)auth(\/|$|\.)/i,
+  /(^|\/)lib\/auth/i,
+  /(^|\/)api\/v1\/auth/i,
   /google-auth/i,
-  /^agent_reports\//i,
+
+  // 3. Medical safety, clinical protocols, and rehab engines
+  /medical/i,
+  /rehab/i,
+  /safety/i,
+
+  // 4. Autonomous reports directory & directory traversal
+  /(^|\/)agent_reports(\/|$)/i,
   /\.\./, // directory traversal
 ];
 

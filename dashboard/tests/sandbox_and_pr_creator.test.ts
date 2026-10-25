@@ -1,7 +1,9 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
   executeSandboxedCode,
   sanitizeSandboxEnvironment,
+  setSandboxTestRunner,
+  SandboxRunnerFn,
 } from '../lib/sandbox/runner';
 import {
   validatePrFiles,
@@ -62,76 +64,121 @@ describe('Phase 4: Sandboxed Code Execution and PR Automation', () => {
     });
   });
 
-  describe('Isolated Sandboxed Code Runner', () => {
-    it('executes JavaScript ad-hoc calculation and returns stdout', async () => {
-      const code = `
-        const data = [10, 20, 30, 40];
-        const sum = data.reduce((a, b) => a + b, 0);
-        console.log(JSON.stringify({ total: sum, avg: sum / data.length }));
-      `;
+  describe('Fail-Closed Invariant & Sandboxed Code Execution', () => {
+    const originalE2bKey = process.env.E2B_API_KEY;
 
-      const result = await executeSandboxedCode(code, { language: 'javascript' });
-
-      expect(result.status).toBe('success');
-      expect(result.isSandboxed).toBe(true);
-      expect(result.executionTimeMs).toBeGreaterThan(0);
-      const parsed = JSON.parse(result.stdout);
-      expect(parsed.total).toBe(100);
-      expect(parsed.avg).toBe(25);
+    afterEach(() => {
+      setSandboxTestRunner(null);
+      if (originalE2bKey !== undefined) {
+        process.env.E2B_API_KEY = originalE2bKey;
+      } else {
+        delete process.env.E2B_API_KEY;
+      }
     });
 
-    it('executes Python ad-hoc data transformation and returns stdout', async () => {
-      const code = `
-items = [1, 2, 3, 4, 5]
-squares = [x**2 for x in items]
-print(sum(squares))
-`;
+    it('fails closed when E2B_API_KEY is not configured (zero host subprocess execution)', async () => {
+      delete process.env.E2B_API_KEY;
+      setSandboxTestRunner(null);
 
-      const result = await executeSandboxedCode(code, { language: 'python' });
-
-      expect(result.status).toBe('success');
-      expect(result.isSandboxed).toBe(true);
-      expect(result.stdout.trim()).toBe('55');
-    });
-
-    it('captures runtime errors and non-zero exit codes gracefully', async () => {
-      const badCode = `
-        throw new Error("Intentional calculation failure");
-      `;
-
-      const result = await executeSandboxedCode(badCode, { language: 'javascript' });
+      const result = await executeSandboxedCode('console.log("hello host");');
 
       expect(result.status).toBe('error');
-      expect(result.error).toBeDefined();
-      expect(result.isSandboxed).toBe(true);
+      expect(result.isSandboxed).toBe(false);
+      expect(result.error).toContain('E2B_API_KEY is not configured. Sandboxed code execution failed closed.');
+    });
+
+    it('fails closed when E2B runner is unreachable', async () => {
+      process.env.E2B_API_KEY = 'e2b_dummy_unreachable_key';
+      setSandboxTestRunner(null);
+
+      const result = await executeSandboxedCode('print("test");');
+
+      expect(result.status).toBe('error');
+      expect(result.isSandboxed).toBe(false);
+      expect(result.error).toMatch(/E2B runner unreachable|failed closed/);
     });
 
     it('handles empty code input gracefully', async () => {
       const result = await executeSandboxedCode('');
       expect(result.status).toBe('error');
-      expect(result.error).toContain('No code provided');
+      expect(result.error).toContain('No code provided for execution');
     });
 
-    it('enforces execution timeout and terminates runaway processes', async () => {
-      // Run an infinite loop with 1.2s timeout
-      const infiniteLoopCode = `
-        const start = Date.now();
-        while (true) {
-          // busy spin
-        }
-      `;
+    it('supports test dependency injection via mockRunner without spawning host processes', async () => {
+      const mockRunner: SandboxRunnerFn = async (code, options) => {
+        return {
+          status: 'success',
+          stdout: '{"total":100,"avg":25}',
+          stderr: '',
+          results: [{ total: 100, avg: 25 }],
+          executionTimeMs: 42,
+          isSandboxed: true,
+        };
+      };
 
-      const result = await executeSandboxedCode(infiniteLoopCode, {
+      const result = await executeSandboxedCode('computeAverage([10, 20, 30, 40])', {
         language: 'javascript',
-        timeoutMs: 1200,
+        mockRunner,
       });
 
-      expect(result.status).toBe('timeout');
-      expect(result.error).toContain('timed out');
-    }, 10000);
+      expect(result.status).toBe('success');
+      expect(result.isSandboxed).toBe(true);
+      expect(result.executionTimeMs).toBe(42);
+      const parsed = JSON.parse(result.stdout);
+      expect(parsed.total).toBe(100);
+      expect(parsed.avg).toBe(25);
+    });
+
+    it('supports global test runner registration with timeout simulation', async () => {
+      setSandboxTestRunner(async (_code, options) => {
+        if (options.timeoutMs && options.timeoutMs < 2000) {
+          return {
+            status: 'timeout',
+            stdout: '',
+            stderr: '',
+            results: [],
+            executionTimeMs: options.timeoutMs,
+            error: `Execution timed out after ${options.timeoutMs}ms`,
+            isSandboxed: true,
+          };
+        }
+        return {
+          status: 'success',
+          stdout: '55',
+          stderr: '',
+          results: [55],
+          executionTimeMs: 30,
+          isSandboxed: true,
+        };
+      });
+
+      const timeoutResult = await executeSandboxedCode('while(true){}', { timeoutMs: 1500 });
+      expect(timeoutResult.status).toBe('timeout');
+      expect(timeoutResult.error).toContain('timed out');
+
+      const normalResult = await executeSandboxedCode('sum(range(1, 11))', { timeoutMs: 5000 });
+      expect(normalResult.status).toBe('success');
+      expect(normalResult.stdout).toBe('55');
+    });
+
+    it('captures runtime errors gracefully via injected runner', async () => {
+      const errorRunner: SandboxRunnerFn = async () => ({
+        status: 'error',
+        stdout: '',
+        stderr: 'Intentional calculation failure',
+        results: [],
+        executionTimeMs: 15,
+        error: 'Error: Intentional calculation failure',
+        isSandboxed: true,
+      });
+
+      const result = await executeSandboxedCode('throw new Error()', { mockRunner: errorRunner });
+      expect(result.status).toBe('error');
+      expect(result.error).toContain('Intentional calculation failure');
+    });
   });
 
-  describe('PR Creator Safety Guardrails and Path Denylist', () => {
+  describe('PR Creator Safety Guardrails & Complete Path Denylist', () => {
     it('refuses to modify AGENTS.md (case-insensitive)', () => {
       expect(() => {
         validatePrFiles([{ path: 'AGENTS.md', content: '# modified' }]);
@@ -152,6 +199,62 @@ print(sum(squares))
       }).toThrow(/Procedural Safety Violation/);
     });
 
+    it('refuses to modify agent source-of-truth files: agent/instructions.md and agent/*.md', () => {
+      expect(() => {
+        validatePrFiles([{ path: 'agent/instructions.md', content: '# modified instructions' }]);
+      }).toThrow(/Procedural Safety Violation/);
+
+      expect(() => {
+        validatePrFiles([{ path: 'agent/overview.md', content: '# modified overview' }]);
+      }).toThrow(/Procedural Safety Violation/);
+    });
+
+    it('refuses to modify agent skills: agent/skills/rehab.md and .agents/skills/**', () => {
+      expect(() => {
+        validatePrFiles([{ path: 'agent/skills/rehab.md', content: '# modified rehab skill' }]);
+      }).toThrow(/Procedural Safety Violation/);
+
+      expect(() => {
+        validatePrFiles([{ path: '.agents/skills/planner.md', content: '# modified planner' }]);
+      }).toThrow(/Procedural Safety Violation/);
+    });
+
+    it('refuses to modify agent tools: agent/tools/calendar.ts', () => {
+      expect(() => {
+        validatePrFiles([{ path: 'agent/tools/calendar.ts', content: 'export const hacked = true;' }]);
+      }).toThrow(/Procedural Safety Violation/);
+
+      expect(() => {
+        validatePrFiles([{ path: 'agent/tools/drive.ts', content: 'export const hacked = true;' }]);
+      }).toThrow(/Procedural Safety Violation/);
+    });
+
+    it('refuses to modify authentication and secret files', () => {
+      expect(() => {
+        validatePrFiles([{ path: 'auth/session.ts', content: 'auth bypass' }]);
+      }).toThrow(/Procedural Safety Violation/);
+
+      expect(() => {
+        validatePrFiles([{ path: 'dashboard/lib/auth.ts', content: 'auth bypass' }]);
+      }).toThrow(/Procedural Safety Violation/);
+
+      expect(() => {
+        validatePrFiles([{ path: 'dashboard/app/api/v1/auth/google/route.ts', content: 'auth route' }]);
+      }).toThrow(/Procedural Safety Violation/);
+
+      expect(() => {
+        validatePrFiles([{ path: 'dashboard/lib/google-auth.ts', content: 'hack' }]);
+      }).toThrow(/Procedural Safety Violation/);
+
+      expect(() => {
+        validatePrFiles([{ path: 'config/credentials.json', content: '{}' }]);
+      }).toThrow(/Procedural Safety Violation/);
+
+      expect(() => {
+        validatePrFiles([{ path: 'config/secret_keys.json', content: '{}' }]);
+      }).toThrow(/Procedural Safety Violation/);
+    });
+
     it('refuses to modify environment files (.env, .env.local, .env.production)', () => {
       expect(() => {
         validatePrFiles([{ path: '.env', content: 'SECRET=val' }]);
@@ -166,13 +269,17 @@ print(sum(squares))
       }).toThrow(/Procedural Safety Violation/);
     });
 
-    it('refuses to modify auth or secret files', () => {
+    it('refuses to modify medical safety, clinical protocol, and rehab engine files', () => {
       expect(() => {
-        validatePrFiles([{ path: 'dashboard/lib/google-auth.ts', content: 'hack' }]);
+        validatePrFiles([{ path: 'dashboard/lib/medical-guardrail.ts', content: 'compromised' }]);
       }).toThrow(/Procedural Safety Violation/);
 
       expect(() => {
-        validatePrFiles([{ path: 'config/secret_keys.json', content: '{}' }]);
+        validatePrFiles([{ path: 'dashboard/lib/rehab-learning.ts', content: 'altered weights' }]);
+      }).toThrow(/Procedural Safety Violation/);
+
+      expect(() => {
+        validatePrFiles([{ path: 'dashboard/lib/safety-rules.ts', content: 'disabled safety' }]);
       }).toThrow(/Procedural Safety Violation/);
 
       expect(() => {
@@ -191,6 +298,7 @@ print(sum(squares))
         validatePrFiles([
           { path: 'dashboard/lib/calculations/bmi.ts', content: 'export const calculate = () => 22;' },
           { path: 'dashboard/tests/calculations.test.ts', content: 'test("calc", () => {});' },
+          { path: 'dashboard/lib/water.ts', content: 'export const getWater = () => 2000;' },
         ]);
       }).not.toThrow();
     });
@@ -276,7 +384,31 @@ print(sum(squares))
       expect(tools.createPullRequest).toBeDefined();
     });
 
-    it('sandboxExecuteTool executes directly and returns formatted summary', async () => {
+    it('sandboxExecuteTool executes directly and returns formatted summary (fail-closed if no key)', async () => {
+      delete process.env.E2B_API_KEY;
+      setSandboxTestRunner(null);
+
+      const res: any = await (sandboxExecuteTool as any).execute({
+        code: 'console.log(123 + 456);',
+        language: 'javascript',
+        timeout_ms: 5000,
+      });
+
+      expect(res.status).toBe('error');
+      expect(res.summary).toContain('Sandbox execution error');
+      expect(res.summary).toContain('E2B_API_KEY is not configured');
+    });
+
+    it('sandboxExecuteTool executes successfully when mock runner is provided', async () => {
+      setSandboxTestRunner(async (code) => ({
+        status: 'success',
+        stdout: '579',
+        stderr: '',
+        results: [579],
+        executionTimeMs: 12,
+        isSandboxed: true,
+      }));
+
       const res: any = await (sandboxExecuteTool as any).execute({
         code: 'console.log(123 + 456);',
         language: 'javascript',
@@ -285,7 +417,8 @@ print(sum(squares))
 
       expect(res.status).toBe('success');
       expect(res.stdout).toBe('579');
-      expect(res.summary).toContain('Sandbox execution completed');
+      expect(res.summary).toContain('Sandbox execution completed in 12ms');
+      setSandboxTestRunner(null);
     });
 
     it('prCreatorTool executes Turn 1 and returns preview requiring confirmation', async () => {
