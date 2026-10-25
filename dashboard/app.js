@@ -4331,6 +4331,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     return;
                 }
+                if (id.toLowerCase().includes('court') || title.toLowerCase().includes('court') || type.toLowerCase().includes('court')) {
+                    if (typeof openCourtModal === 'function') {
+                        openCourtModal();
+                    } else {
+                        const m = document.getElementById('courtModal');
+                        if (m) m.classList.remove('hidden');
+                        else window.open('https://csvic.webex.com/meet/26517100652', '_blank');
+                    }
+                    return;
+                }
                 if (isPainLog()) {
                     let schedTime = showBtn.getAttribute('data-scheduled-time') || card.getAttribute('data-scheduled-time') || '';
                     if (!schedTime) {
@@ -4530,46 +4540,95 @@ document.addEventListener('DOMContentLoaded', () => {
                 "id": "y1",
                 "title": "Gentle Lumbar Release",
                 "category": "yoga",
-                "duration_minutes": 15,
+                "duration_minutes": 20,
                 "intensity": "Gentle Restorative",
                 "focus_areas": [
                         "lumbar",
                         "lower back",
                         "pelvis"
                 ],
-                "instruction": "Slow pelvic tilts, supported child's pose, and gentle supine knee-to-chest holds to safely decompress the lumbar spine.",
+                "instruction": "Progressive supine lumbar decompression protocol: diaphragmatic awakening, gentle pelvic clocks, single knee-to-chest releases, supported bridge holds, and restorative bolster grounding.",
                 "precautions": [
-                        "Avoid aggressive lumbar flexion during acute disc flare-ups."
+                        "Avoid aggressive lumbar flexion during acute disc flare-ups.",
+                        "Keep movements gentle and pain-free."
                 ],
                 "steps": [
                         {
-                                "title": "Supine Pelvic Tilts",
-                                "duration": 225,
-                                "cue": "Flatten lower back against the mat on exhale, gentle arch on inhale.",
+                                "title": "Diaphragmatic 360 Core Awakening",
+                                "duration": 120,
+                                "cue": "Lie supine with knees bent, breathe deep into lateral ribs and lower abdomen.",
+                                "frames": [
+                                        "/exercises/diaphragmatic-breathing.svg"
+                                ]
+                        },
+                        {
+                                "title": "Supine Pelvic Tilts & Neutral Finding",
+                                "duration": 120,
+                                "cue": "Flatten lower back gently on exhale, slight neutral arch on inhale.",
                                 "frames": [
                                         "/exercises/supine_pelvic_tilts.jpg"
                                 ]
                         },
                         {
-                                "title": "Supported Child's Pose",
-                                "duration": 225,
-                                "cue": "Widen knees, rest torso forward on bolster, lengthen spine.",
+                                "title": "Supine Pelvic Clocks & Transverse Holds",
+                                "duration": 120,
+                                "cue": "Gentle circular micro-mobilization of the pelvis without straining lumbar discs.",
                                 "frames": [
-                                        "/exercises/supported_childs_pose.jpg"
+                                        "/exercises/pelvic-tilts-transverse-holds.svg"
                                 ]
                         },
                         {
-                                "title": "Supine Single Knee-to-Chest",
-                                "duration": 225,
-                                "cue": "Gently hug right knee, then left knee. Keep sacrum grounded.",
+                                "title": "Supine Single Knee-to-Chest (Right)",
+                                "duration": 120,
+                                "cue": "Hug right knee gently towards shoulder, keeping left foot grounded flat.",
                                 "frames": [
                                         "/exercises/knee_to_chest_stretch.jpg"
                                 ]
                         },
                         {
+                                "title": "Supine Single Knee-to-Chest (Left)",
+                                "duration": 120,
+                                "cue": "Switch and hug left knee gently, decompressing lumbar facet joints.",
+                                "frames": [
+                                        "/exercises/supine-single-knee-to-chest.svg"
+                                ]
+                        },
+                        {
+                                "title": "Gentle Supported Bridge Activation",
+                                "duration": 120,
+                                "cue": "Press through heels to lift pelvis slightly, engaging glutes without arching lumbar spine.",
+                                "frames": [
+                                        "/exercises/hip_glute_bridge.jpg"
+                                ]
+                        },
+                        {
+                                "title": "Supported Child's Pose Decompression",
+                                "duration": 120,
+                                "cue": "Knees wide, sink hips toward heels, rest torso on cushion or mat.",
+                                "frames": [
+                                        "/exercises/supported_childs_pose.jpg"
+                                ]
+                        },
+                        {
+                                "title": "Cat-Cow Spine Awakening",
+                                "duration": 120,
+                                "cue": "Gentle rhythmic undulation of spine on hands and knees, keeping neck neutral.",
+                                "frames": [
+                                        "/exercises/core_cat_cow.jpg"
+                                ]
+                        },
+                        {
+                                "title": "Gentle Supine Torso Twist",
+                                "duration": 120,
+                                "cue": "Drop knees gently 45 degrees to each side to mobilize lumbar rotation safely.",
+                                "frames": [
+                                        "/exercises/thoracic_supine_twist.jpg"
+                                ]
+                        },
+                        {
                                 "title": "Restorative Savasana with Bolster",
-                                "duration": 225,
-                                "cue": "Place bolster under knees to release psoas and lumbar pressure.",
+                                "duration": 120,
+                                "cue": "Rest with bolster beneath knees to unload psoas and settle lumbar spine.",
                                 "frames": [
                                         "/exercises/restorative_savasana.jpg"
                                 ]
@@ -4580,21 +4639,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 "id": "y2",
                 "title": "Cervical Mobility Flow",
                 "category": "yoga",
-                "duration_minutes": 10,
+                "duration_minutes": 16,
                 "intensity": "Gentle Restorative",
                 "focus_areas": [
                         "cervical",
                         "neck",
                         "upper trapezius"
                 ],
-                "instruction": "Gentle seated neck retractions, slow lateral tilts, and upper trapezius relaxation for post-surgical cervical safety.",
+                "instruction": "Gentle seated neck retractions, slow lateral tilts, scapular shrugs, and thoracic decompression for post-surgical cervical safety.",
                 "precautions": [
                         "No rapid cervical rotations or forced extension post-cervical surgery."
                 ],
                 "steps": [
                         {
-                                "title": "Seated Axial Retraction",
-                                "duration": 150,
+                                "title": "Seated Axial Retraction (Chin Tuck)",
+                                "duration": 120,
                                 "cue": "Gently draw chin backwards creating a double chin, lengthening back of neck.",
                                 "frames": [
                                         "/exercises/cervical_chin_tuck.jpg"
@@ -4602,7 +4661,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         },
                         {
                                 "title": "Gentle Lateral Ear-to-Shoulder",
-                                "duration": 150,
+                                "duration": 120,
                                 "cue": "Drop right ear to right shoulder without lifting left shoulder. Repeat left.",
                                 "frames": [
                                         "/exercises/cervical_lateral_ear_shoulder.jpg"
@@ -4610,15 +4669,47 @@ document.addEventListener('DOMContentLoaded', () => {
                         },
                         {
                                 "title": "Shoulder Shrug & Release",
-                                "duration": 150,
+                                "duration": 120,
                                 "cue": "Inhale lift shoulders to ears, exhale drop down with sigh.",
                                 "frames": [
                                         "/exercises/cervical_shoulder_shrug.jpg"
                                 ]
                         },
                         {
+                                "title": "Gentle Neck AROM Rotation (Supine)",
+                                "duration": 120,
+                                "cue": "Supine with head supported, turn chin gently 30 degrees side to side.",
+                                "frames": [
+                                        "/exercises/supine-arom-neck-rotation-chin-tuck.svg"
+                                ]
+                        },
+                        {
+                                "title": "Seated Cactus Arm Chest Expansion",
+                                "duration": 120,
+                                "cue": "Draw elbows back and down, opening anterior chest without neck extension.",
+                                "frames": [
+                                        "/exercises/thoracic_cactus_expansion.jpg"
+                                ]
+                        },
+                        {
+                                "title": "Thread the Needle Upper Spine Release",
+                                "duration": 120,
+                                "cue": "Slide arm across mat to soften upper trapezius and rhomboids.",
+                                "frames": [
+                                        "/exercises/thread-the-needle-modified.svg"
+                                ]
+                        },
+                        {
+                                "title": "Constructive Rest Position",
+                                "duration": 120,
+                                "cue": "Rest flat on back with knees bent, allowing cervical spine to lengthen.",
+                                "frames": [
+                                        "/exercises/constructive-rest.svg"
+                                ]
+                        },
+                        {
                                 "title": "Restorative Alignment Breathing",
-                                "duration": 150,
+                                "duration": 120,
                                 "cue": "Sit upright, focus on diaphragmatic 360 breathing relaxing neck muscles.",
                                 "frames": [
                                         "/exercises/diaphragmatic-breathing.svg"
@@ -4630,30 +4721,39 @@ document.addEventListener('DOMContentLoaded', () => {
                 "id": "y3",
                 "title": "Full Body Restorative Yin",
                 "category": "yoga",
-                "duration_minutes": 25,
+                "duration_minutes": 30,
                 "intensity": "Gentle Restorative",
                 "focus_areas": [
                         "full body",
                         "nervous system",
                         "spine"
                 ],
-                "instruction": "Passive supported poses using bolsters and blocks to downregulate sympathetic tone and relieve chronic muscular tension.",
+                "instruction": "Extended 10-step passive supported restorative sequence using bolsters and cushions to downregulate sympathetic tone, release spinal tension, and prepare for restorative sleep.",
                 "precautions": [
-                        "Maintain comfortable support under all joints."
+                        "Maintain comfortable support under all joints.",
+                        "Move slowly between postures."
                 ],
                 "steps": [
                         {
                                 "title": "Supported Reclined Bound Angle",
-                                "duration": 375,
-                                "cue": "Feet together, knees open supported by pillows, hands on lower abdomen.",
+                                "duration": 180,
+                                "cue": "Soles together, knees supported wide on cushions or bolsters, hands on abdomen.",
                                 "frames": [
                                         "/exercises/supported_reclined_bound_angle.jpg"
                                 ]
                         },
                         {
+                                "title": "Gentle Diaphragmatic Breath Grounding",
+                                "duration": 180,
+                                "cue": "Slow 4-second nasal inhale expanding abdomen 360 degrees, 6-second relaxed exhale.",
+                                "frames": [
+                                        "/exercises/diaphragmatic-breathing.svg"
+                                ]
+                        },
+                        {
                                 "title": "Gentle Cat-Cow Spine Wave",
-                                "duration": 375,
-                                "cue": "Flow gently with breath, avoiding end-range extremes.",
+                                "duration": 180,
+                                "cue": "Flow smoothly on hands and knees with breath, avoiding end-range extremes.",
                                 "frames": [
                                         "/exercises/gentle_cat_cow.jpg",
                                         "/exercises/cat_cow_1.jpg"
@@ -4661,18 +4761,58 @@ document.addEventListener('DOMContentLoaded', () => {
                         },
                         {
                                 "title": "Supported Gentle Sphinx",
-                                "duration": 375,
-                                "cue": "Rest elbows on mat, gentle passive thoracic extension.",
+                                "duration": 180,
+                                "cue": "Rest elbows on mat under shoulders, gentle passive thoracic extension.",
                                 "frames": [
                                         "/exercises/supported_gentle_sphinx.jpg"
                                 ]
                         },
                         {
-                                "title": "Legs Up the Wall Relaxation",
-                                "duration": 375,
+                                "title": "Supported Child's Pose with Bolster",
+                                "duration": 180,
+                                "cue": "Wide knees, torso fully resting forward on bolster, lengthen spine.",
+                                "frames": [
+                                        "/exercises/supported-childs-pose-bolster.svg"
+                                ]
+                        },
+                        {
+                                "title": "Gentle Supine Torso Twist",
+                                "duration": 180,
+                                "cue": "Arms in gentle cactus or T, knees softly roll side to side with pillow support.",
+                                "frames": [
+                                        "/exercises/thoracic_supine_twist.jpg"
+                                ]
+                        },
+                        {
+                                "title": "Supported Pelvic Bridge on Block",
+                                "duration": 180,
+                                "cue": "Yoga block or firm cushion under sacrum, letting hip flexors and psoas release.",
+                                "frames": [
+                                        "/exercises/supported-bridge-block.svg"
+                                ]
+                        },
+                        {
+                                "title": "Constructive Rest Position with Bolster",
+                                "duration": 180,
+                                "cue": "Knees bent and resting together, feet wide, lower back fully unloaded.",
+                                "frames": [
+                                        "/exercises/constructive-rest.svg"
+                                ]
+                        },
+                        {
+                                "title": "Legs Up the Wall (Viparita Karani)",
+                                "duration": 180,
                                 "cue": "Elevate legs against wall to facilitate venous return and spinal decompression.",
                                 "frames": [
                                         "/exercises/legs_up_the_wall.jpg"
+                                ]
+                        },
+                        {
+                                "title": "Acupressure Mat & Bolster Wind-Down Savasana",
+                                "duration": 180,
+                                "cue": "Rest spine on acupressure mat or soft bolster, complete still surrender.",
+                                "frames": [
+                                        "/exercises/acupressure-mat-bolster-wind-down.svg"
                                 ]
                         }
                 ]
@@ -4689,22 +4829,54 @@ document.addEventListener('DOMContentLoaded', () => {
                         "scapula",
                         "chest"
                 ],
-                "instruction": "Targeted mobility for the mid-back and pectoral girdle to counter rounded desk posture and relieve neck strain.",
+                "instruction": "Targeted 10-step mobility protocol for the mid-back, pectoral girdle, and scapular stabilizers to counter rounded desk posture and relieve neck strain.",
                 "precautions": [
                         "Avoid overhead impingement angles if shoulder pain is sharp."
                 ],
                 "steps": [
                         {
-                                "title": "Thread the Needle",
-                                "duration": 300,
+                                "title": "Diaphragmatic Breath & Rib Expansion",
+                                "duration": 120,
+                                "cue": "Breathe deeply expanding lateral ribcage, relaxing neck and shoulders.",
+                                "frames": [
+                                        "/exercises/diaphragmatic-breathing.svg"
+                                ]
+                        },
+                        {
+                                "title": "Cervical Chin Tucks & Neck Lengthening",
+                                "duration": 120,
+                                "cue": "Gently glide chin back to align cervical spine over thoracic base.",
+                                "frames": [
+                                        "/exercises/cervical_chin_tuck.jpg"
+                                ]
+                        },
+                        {
+                                "title": "Cat-Cow Thoracic Waves",
+                                "duration": 120,
+                                "cue": "Mobilize mid-back gently without forcing lower back or neck arches.",
+                                "frames": [
+                                        "/exercises/gentle_cat_cow.jpg"
+                                ]
+                        },
+                        {
+                                "title": "Thread the Needle (Right Side)",
+                                "duration": 120,
                                 "cue": "Slide right arm under torso, rest right shoulder and temple on mat.",
                                 "frames": [
                                         "/exercises/thoracic_thread_needle.jpg"
                                 ]
                         },
                         {
+                                "title": "Thread the Needle (Left Side)",
+                                "duration": 120,
+                                "cue": "Slide left arm under torso, breathing into posterior ribcage.",
+                                "frames": [
+                                        "/exercises/thread-the-needle-modified.svg"
+                                ]
+                        },
+                        {
                                 "title": "Puppy Pose Thoracic Stretch",
-                                "duration": 300,
+                                "duration": 120,
                                 "cue": "Hips stay over knees, walk hands forward melting chest towards floor.",
                                 "frames": [
                                         "/exercises/yoga_puppy_pose_thoracic.svg"
@@ -4712,16 +4884,32 @@ document.addEventListener('DOMContentLoaded', () => {
                         },
                         {
                                 "title": "Seated Cactus Arm Openers",
-                                "duration": 300,
+                                "duration": 120,
                                 "cue": "Draw elbows back and down, opening anterior chest wall.",
                                 "frames": [
                                         "/exercises/thoracic_cactus_expansion.jpg"
                                 ]
                         },
                         {
-                                "title": "Scapular Retraction & Rest",
-                                "duration": 300,
-                                "cue": "Rest in prone or seated, focusing on mid-back breathing.",
+                                "title": "Open Book Thoracic Rotations",
+                                "duration": 120,
+                                "cue": "Side-lying arm sweep opening chest, following hand with gentle gaze.",
+                                "frames": [
+                                        "/exercises/open-book-thoracic.svg"
+                                ]
+                        },
+                        {
+                                "title": "Supported Gentle Sphinx",
+                                "duration": 120,
+                                "cue": "Rest forearms on mat, gentle active lift through sternum.",
+                                "frames": [
+                                        "/exercises/supported_gentle_sphinx.jpg"
+                                ]
+                        },
+                        {
+                                "title": "Constructive Rest & Scapular Settle",
+                                "duration": 120,
+                                "cue": "Lie supine, palms open, feel shoulder blades settle completely into mat.",
                                 "frames": [
                                         "/exercises/constructive-rest.svg"
                                 ]
@@ -4732,7 +4920,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 "id": "y5",
                 "title": "Hip Flexor & Psoas Flow",
                 "category": "yoga",
-                "duration_minutes": 15,
+                "duration_minutes": 20,
                 "intensity": "Adaptive Mobility",
                 "focus_areas": [
                         "hip",
@@ -4740,39 +4928,87 @@ document.addEventListener('DOMContentLoaded', () => {
                         "pelvis",
                         "lumbar"
                 ],
-                "instruction": "Gentle low lunges and 90/90 pelvic alignments to release anterior hip tightness that pulls on the lumbar spine.",
+                "instruction": "10-step progressive pelvic and hip mobility flow: pelvic neutralisation, kneeling lunges, 90/90 rotations, figure-4 glute stretches, and psoas decompression.",
                 "precautions": [
                         "Tuck pelvis under (posterior pelvic tilt) to avoid hyperextending lower back."
                 ],
                 "steps": [
                         {
-                                "title": "Low Kneeling Lunge",
-                                "duration": 225,
-                                "cue": "Step right foot forward, tuck tailbone, feel stretch in left front hip.",
+                                "title": "Diaphragmatic Breath & Psoas Awareness",
+                                "duration": 120,
+                                "cue": "Inhale expanding lower belly, releasing deep anterior tension in psoas.",
+                                "frames": [
+                                        "/exercises/diaphragmatic-breathing.svg"
+                                ]
+                        },
+                        {
+                                "title": "Supine Pelvic Tilts to Neutral",
+                                "duration": 120,
+                                "cue": "Gently tilt pelvis backwards to flatten lumbar spine, then return to neutral.",
+                                "frames": [
+                                        "/exercises/supine_pelvic_tilts.jpg"
+                                ]
+                        },
+                        {
+                                "title": "Gentle Glute Bridge Activation",
+                                "duration": 120,
+                                "cue": "Drive through heels, squeeze glutes to open hip flexors at the top.",
+                                "frames": [
+                                        "/exercises/hip_glute_bridge.jpg"
+                                ]
+                        },
+                        {
+                                "title": "Low Kneeling Lunge (Right Hip Flexor)",
+                                "duration": 120,
+                                "cue": "Right leg forward, tuck pelvis, feel gentle elongation in left anterior hip.",
                                 "frames": [
                                         "/exercises/hip_kneeling_lunge.jpg"
                                 ]
                         },
                         {
-                                "title": "90/90 Seated Hip Flow",
-                                "duration": 225,
-                                "cue": "Rotate knees side to side gently to mobilize internal and external rotation.",
+                                "title": "Low Kneeling Lunge (Left Hip Flexor)",
+                                "duration": 120,
+                                "cue": "Left leg forward, tuck pelvis, breathe into right anterior hip.",
+                                "frames": [
+                                        "/exercises/hip_kneeling_lunge.jpg"
+                                ]
+                        },
+                        {
+                                "title": "90/90 Seated Hip Rotations",
+                                "duration": 120,
+                                "cue": "Seated on mat, windscreen wiper knees smoothly side to side.",
                                 "frames": [
                                         "/exercises/hip_ninety_ninety.jpg"
                                 ]
                         },
                         {
-                                "title": "Gentle Reclined Figure-4",
-                                "duration": 225,
-                                "cue": "Cross right ankle over left thigh, hold left hamstring gently.",
+                                "title": "Reclined Figure-4 Hip Opener (Right)",
+                                "duration": 120,
+                                "cue": "Right ankle on left knee, gentle stretch in right deep glute/piriformis.",
                                 "frames": [
                                         "/exercises/hip_figure_four.jpg"
                                 ]
                         },
                         {
-                                "title": "Savasana Psoas Rest",
-                                "duration": 225,
-                                "cue": "Lie flat with gentle diaphragmatic expansion.",
+                                "title": "Reclined Figure-4 Hip Opener (Left)",
+                                "duration": 120,
+                                "cue": "Left ankle on right knee, keeping head and shoulders relaxed.",
+                                "frames": [
+                                        "/exercises/supine-figure-four-strap.svg"
+                                ]
+                        },
+                        {
+                                "title": "Supported Reclined Bound Angle",
+                                "duration": 120,
+                                "cue": "Soles together with knees supported, releasing adductors and hip capsules.",
+                                "frames": [
+                                        "/exercises/supported_reclined_bound_angle.jpg"
+                                ]
+                        },
+                        {
+                                "title": "Savasana Psoas Decompression",
+                                "duration": 120,
+                                "cue": "Lie flat with bolster under knees, letting hip flexors fully melt.",
                                 "frames": [
                                         "/exercises/restorative_savasana.jpg"
                                 ]
@@ -4783,48 +5019,96 @@ document.addEventListener('DOMContentLoaded', () => {
                 "id": "y6",
                 "title": "Morning Spine Awakening",
                 "category": "yoga",
-                "duration_minutes": 15,
+                "duration_minutes": 20,
                 "intensity": "Adaptive Mobility",
                 "focus_areas": [
                         "spine",
                         "core",
                         "full body"
                 ],
-                "instruction": "Gentle multi-directional spinal mobilization to lubricate facet joints and stimulate spinal cord circulation upon waking.",
+                "instruction": "10-step gentle morning routine to stimulate spinal circulation, lubricate facet joints, and awaken core stabilizers without impact.",
                 "precautions": [
                         "Start slowly without forcing range of motion in early morning."
                 ],
                 "steps": [
                         {
-                                "title": "Cat-Cow Spine Awakening",
-                                "duration": 225,
-                                "cue": "Coordinate slow spinal flexion and extension with deep breathing.",
+                                "title": "Morning Breath & Centering",
+                                "duration": 120,
+                                "cue": "Deep diaphragmatic breaths to oxygenate tissues and awaken spinal circulation.",
+                                "frames": [
+                                        "/exercises/diaphragmatic-breathing.svg"
+                                ]
+                        },
+                        {
+                                "title": "Cat-Cow Rhythmic Spine Mobilization",
+                                "duration": 120,
+                                "cue": "Coordinate gentle spinal flexion and extension with breathing rhythm.",
                                 "frames": [
                                         "/exercises/core_cat_cow.jpg"
                                 ]
                         },
                         {
-                                "title": "Gentle Side Body Lateral Stretch",
-                                "duration": 225,
-                                "cue": "Walk hands to the right in child's pose, then left.",
+                                "title": "Child's Pose Lateral Side Stretch",
+                                "duration": 120,
+                                "cue": "Walk hands gently to right side feeling left rib cage stretch, then to left side.",
                                 "frames": [
                                         "/exercises/supported_childs_pose.jpg"
                                 ]
                         },
                         {
+                                "title": "Puppy Pose Thoracic Melt",
+                                "duration": 120,
+                                "cue": "Hips stay over knees, walk hands forward melting chest towards floor.",
+                                "frames": [
+                                        "/exercises/yoga_puppy_pose_thoracic.svg"
+                                ]
+                        },
+                        {
+                                "title": "Open Book Thoracic Opener (Right)",
+                                "duration": 120,
+                                "cue": "Side-lying, rotate top arm open like a book, following hand with eyes.",
+                                "frames": [
+                                        "/exercises/open-book-thoracic.svg"
+                                ]
+                        },
+                        {
+                                "title": "Open Book Thoracic Opener (Left)",
+                                "duration": 120,
+                                "cue": "Roll to other side, repeat smooth thoracic opening with full breath.",
+                                "frames": [
+                                        "/exercises/open-book-thoracic.svg"
+                                ]
+                        },
+                        {
+                                "title": "Supported Low Kneeling Lunge",
+                                "duration": 120,
+                                "cue": "Step foot forward, tuck tailbone to open front hip without hyperextending lower back.",
+                                "frames": [
+                                        "/exercises/hip_kneeling_lunge.jpg"
+                                ]
+                        },
+                        {
                                 "title": "Gentle Supine Torso Twist",
-                                "duration": 225,
-                                "cue": "Drop knees gently to right, look center or left. Keep shoulders relaxed.",
+                                "duration": 120,
+                                "cue": "Knees bent, drop softly side to side to loosen spinal rotators.",
                                 "frames": [
                                         "/exercises/thoracic_supine_twist.jpg"
                                 ]
                         },
                         {
-                                "title": "Restorative Prone Rest",
-                                "duration": 225,
-                                "cue": "Rest face down on hands, allowing spine to settle in neutral.",
+                                "title": "Supported Gentle Sphinx Micro-Lifts",
+                                "duration": 120,
+                                "cue": "Rest prone on forearms, gentle upward gaze with active mid-back engagement.",
                                 "frames": [
                                         "/exercises/supported-sphinx-micro-lifts.svg"
+                                ]
+                        },
+                        {
+                                "title": "Constructive Rest Neutral Settle",
+                                "duration": 120,
+                                "cue": "Lie on back with knees bent, resting hands on belly to integrate spinal mobility.",
+                                "frames": [
+                                        "/exercises/constructive-rest.svg"
                                 ]
                         }
                 ]
@@ -4833,7 +5117,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 "id": "y7",
                 "title": "Chair Yoga for Desk Decompression",
                 "category": "yoga",
-                "duration_minutes": 10,
+                "duration_minutes": 16,
                 "intensity": "Gentle Restorative",
                 "focus_areas": [
                         "spine",
@@ -4847,35 +5131,67 @@ document.addEventListener('DOMContentLoaded', () => {
                 ],
                 "steps": [
                         {
+                                "title": "Seated Diaphragmatic Breath",
+                                "duration": 120,
+                                "cue": "Sit upright, breathe deeply into ribs, relaxing shoulders.",
+                                "frames": [
+                                        "/exercises/diaphragmatic-breathing.svg"
+                                ]
+                        },
+                        {
                                 "title": "Seated Cat-Cow",
-                                "duration": 150,
+                                "duration": 120,
                                 "cue": "Hands on knees, inhale arch chest forward, exhale round mid-back.",
                                 "frames": [
                                         "/exercises/chair_seated_cat_cow.svg"
                                 ]
                         },
                         {
-                                "title": "Seated Figure-4 Hip Opener",
-                                "duration": 150,
-                                "cue": "Ankle on opposite knee, lean gently forward with straight back.",
+                                "title": "Seated Figure-4 Hip Opener (Right)",
+                                "duration": 120,
+                                "cue": "Right ankle on left knee, lean gently forward with straight back.",
                                 "frames": [
                                         "/exercises/chair_seated_figure_four.svg"
                                 ]
                         },
                         {
-                                "title": "Seated Upper Trapezius Drop",
-                                "duration": 150,
+                                "title": "Seated Figure-4 Hip Opener (Left)",
+                                "duration": 120,
+                                "cue": "Left ankle on right knee, gentle hip capsule release.",
+                                "frames": [
+                                        "/exercises/chair_seated_figure_four.svg"
+                                ]
+                        },
+                        {
+                                "title": "Seated Upper Trapezius Drop (Right)",
+                                "duration": 120,
                                 "cue": "Hold chair base with right hand, tilt head to left.",
                                 "frames": [
                                         "/exercises/chair_upper_trapezius_drop.svg"
                                 ]
                         },
                         {
+                                "title": "Seated Upper Trapezius Drop (Left)",
+                                "duration": 120,
+                                "cue": "Hold chair base with left hand, tilt head to right.",
+                                "frames": [
+                                        "/exercises/chair_upper_trapezius_drop.svg"
+                                ]
+                        },
+                        {
                                 "title": "Seated Chest Expansion",
-                                "duration": 150,
+                                "duration": 120,
                                 "cue": "Interlace hands behind lower back or chair frame, gently lift collarbones.",
                                 "frames": [
                                         "/exercises/chair_seated_chest_expansion.svg"
+                                ]
+                        },
+                        {
+                                "title": "Seated Alignment & Grounding",
+                                "duration": 120,
+                                "cue": "Feet flat on floor, lengthen crown of head, gentle steady breathing.",
+                                "frames": [
+                                        "/exercises/diaphragmatic-breathing.svg"
                                 ]
                         }
                 ]
@@ -4884,14 +5200,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 "id": "y8",
                 "title": "Vagus Nerve & Restorative Breath",
                 "category": "yoga",
-                "duration_minutes": 15,
+                "duration_minutes": 20,
                 "intensity": "Gentle Restorative",
                 "focus_areas": [
                         "nervous system",
                         "diaphragm",
                         "cervical"
                 ],
-                "instruction": "Pranayama, suboccipital release, and gentle eye movements designed to support parasympathetic down-regulation and deep autonomic relaxation.",
+                "instruction": "Pranayama, suboccipital release, oculomotor resetting, and restorative positioning designed to support parasympathetic down-regulation and autonomic relaxation.",
                 "precautions": [
                         "Breathe at a comfortable rhythm without breath-holding dizziness.",
                         "Caremax ear clip protocol: left side only (left tragus clip + posterior left shoulder pad). Do not use with cardiac implants or acute arrhythmias. Clinician review advised."
@@ -4903,7 +5219,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 "steps": [
                         {
                                 "title": "4-7-8 Parasympathetic Breathing",
-                                "duration": 180,
+                                "duration": 150,
                                 "cue": "Inhale 4 sec through nose, hold 7 sec, exhale 8 sec through pursed lips.",
                                 "frames": [
                                         "/exercises/diaphragmatic-breathing.svg"
@@ -4911,7 +5227,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         },
                         {
                                 "title": "Caremax Auricular Ear Clip Setup (Optional)",
-                                "duration": 180,
+                                "duration": 150,
                                 "cue": "Attach clip to LEFT tragus with gel/water; place companion pad on posterior left shoulder. Set TENS DIY U1 to 25 Hz, 200 µs, low comfortable tingling.",
                                 "frames": [
                                         "/exercises/caremax_ear_clip_vagus.svg"
@@ -4919,7 +5235,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         },
                         {
                                 "title": "Suboccipital Massage with Towel",
-                                "duration": 180,
+                                "duration": 150,
                                 "cue": "Rest base of skull on rolled towel, gentle micro-turns of head.",
                                 "frames": [
                                         "/exercises/cervical_chin_tuck.jpg"
@@ -4927,18 +5243,42 @@ document.addEventListener('DOMContentLoaded', () => {
                         },
                         {
                                 "title": "Oculomotor Vagal Reset",
-                                "duration": 180,
+                                "duration": 150,
                                 "cue": "Keep head straight, look fully right for 30s until swallow/sigh, then left.",
                                 "frames": [
                                         "/exercises/restorative_savasana.jpg"
                                 ]
                         },
                         {
+                                "title": "Supported Reclined Bound Angle",
+                                "duration": 150,
+                                "cue": "Soles together with pillows under thighs, hands resting gently on low belly.",
+                                "frames": [
+                                        "/exercises/supported_reclined_bound_angle.jpg"
+                                ]
+                        },
+                        {
                                 "title": "Gentle Heart-Belly Grounding",
-                                "duration": 180,
+                                "duration": 150,
                                 "cue": "One hand on heart, one on belly. Feel warmth and safety.",
                                 "frames": [
                                         "/exercises/diaphragmatic-breathing.svg"
+                                ]
+                        },
+                        {
+                                "title": "Constructive Rest Position",
+                                "duration": 150,
+                                "cue": "Rest with knees bent and leaning together, completely softening back.",
+                                "frames": [
+                                        "/exercises/constructive-rest.svg"
+                                ]
+                        },
+                        {
+                                "title": "Legs-Elevated Vagal Calming",
+                                "duration": 150,
+                                "cue": "Elevate lower legs on bolster or against wall, releasing central tension.",
+                                "frames": [
+                                        "/exercises/legs-elevated-relaxation.svg"
                                 ]
                         }
                 ]
@@ -4947,7 +5287,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 "id": "y9",
                 "title": "Hamstring & Posterior Chain Release",
                 "category": "yoga",
-                "duration_minutes": 15,
+                "duration_minutes": 20,
                 "intensity": "Adaptive Mobility",
                 "focus_areas": [
                         "hamstrings",
@@ -4955,39 +5295,71 @@ document.addEventListener('DOMContentLoaded', () => {
                         "sciatic nerve",
                         "pelvis"
                 ],
-                "instruction": "Supine strap stretches to lengthen posterior fascia without placing flexion load on the lumbar discs.",
+                "instruction": "Supine strap stretches and gentle neural flossing to lengthen posterior fascia safely without placing flexion load on the lumbar discs.",
                 "precautions": [
                         "Keep slight bend in knee; do not pull into sharp nerve pain."
                 ],
                 "steps": [
                         {
-                                "title": "Supine Strap Leg Extension",
-                                "duration": 225,
+                                "title": "Diaphragmatic Breath & Pelvic Alignment",
+                                "duration": 150,
+                                "cue": "Ground sacrum flat against mat, knees bent, gentle diaphragmatic breaths.",
+                                "frames": [
+                                        "/exercises/diaphragmatic-breathing.svg"
+                                ]
+                        },
+                        {
+                                "title": "Supine Pelvic Tilts",
+                                "duration": 150,
+                                "cue": "Gently oscillate between gentle arch and imprint to mobilize lumbar vertebrae.",
+                                "frames": [
+                                        "/exercises/supine_pelvic_tilts.jpg"
+                                ]
+                        },
+                        {
+                                "title": "Supine Strap Leg Extension (Right)",
+                                "duration": 150,
                                 "cue": "Loop strap under right foot, extend leg upward keeping pelvis flat.",
                                 "frames": [
                                         "/exercises/supine-strap-hamstring-calf.svg"
                                 ]
                         },
                         {
-                                "title": "Gentle IT Band Cross-Body",
-                                "duration": 225,
-                                "cue": "Draw straight leg with strap slightly across midline (2-3 inches max).",
+                                "title": "Supine Strap Leg Extension (Left)",
+                                "duration": 150,
+                                "cue": "Loop strap under left foot, extend leg upward keeping sacrum anchored.",
                                 "frames": [
                                         "/exercises/supine-strap-hamstring-calf.svg"
                                 ]
                         },
                         {
-                                "title": "Reclined Hamstring Flutter",
-                                "duration": 225,
-                                "cue": "Gentle micro-bends and straightening of knee to desensitize nerve.",
+                                "title": "Gentle IT Band Cross-Body (Right)",
+                                "duration": 150,
+                                "cue": "Draw right leg slightly across midline (2-3 inches max) feeling lateral hip stretch.",
                                 "frames": [
                                         "/exercises/supine-strap-hamstring-calf.svg"
                                 ]
                         },
                         {
-                                "title": "Restorative Leg Rest",
-                                "duration": 225,
-                                "cue": "Rest legs long on mat, noticing length through lower back.",
+                                "title": "Gentle IT Band Cross-Body (Left)",
+                                "duration": 150,
+                                "cue": "Draw left leg slightly across midline, keeping shoulders and pelvis rooted.",
+                                "frames": [
+                                        "/exercises/supine-strap-hamstring-calf.svg"
+                                ]
+                        },
+                        {
+                                "title": "Ankle & Foot Mobility Pumps",
+                                "duration": 150,
+                                "cue": "Point and flex toes in air to gently glide sciatic and tibial nerves.",
+                                "frames": [
+                                        "/exercises/ankle_foot_mobility.svg"
+                                ]
+                        },
+                        {
+                                "title": "Restorative Leg Rest Savasana",
+                                "duration": 150,
+                                "cue": "Rest legs long on mat with bolster under knees, noticing length in posterior chain.",
                                 "frames": [
                                         "/exercises/restorative_savasana.jpg"
                                 ]
@@ -4998,46 +5370,94 @@ document.addEventListener('DOMContentLoaded', () => {
                 "id": "y10",
                 "title": "Evening Restorative Wind-Down",
                 "category": "yoga",
-                "duration_minutes": 20,
+                "duration_minutes": 25,
                 "intensity": "Gentle Restorative",
                 "focus_areas": [
                         "full body",
                         "nervous system",
                         "sleep"
                 ],
-                "instruction": "Pre-bed restorative yoga protocol designed to drop core body temperature and release nighttime muscle guarding.",
+                "instruction": "10-step pre-bed restorative yoga protocol designed to downregulate sympathetic tone, drop core body temperature, and release nighttime muscle guarding.",
                 "precautions": [
                         "Keep lighting low and room comfortable."
                 ],
                 "steps": [
                         {
-                                "title": "Wide Knee Child's Pose",
-                                "duration": 300,
-                                "cue": "Allow belly to soften between thighs, long slow exhales.",
+                                "title": "Diaphragmatic Parasympathetic Reset",
+                                "duration": 150,
+                                "cue": "Hand on heart and hand on belly, lengthen exhales to signal nervous system downregulation.",
+                                "frames": [
+                                        "/exercises/diaphragmatic-breathing.svg"
+                                ]
+                        },
+                        {
+                                "title": "Supported Reclined Bound Angle",
+                                "duration": 150,
+                                "cue": "Feet together with pillow support beneath outer knees, softening groins and lower belly.",
+                                "frames": [
+                                        "/exercises/supported_reclined_bound_angle.jpg"
+                                ]
+                        },
+                        {
+                                "title": "Gentle Pelvic Tilts & Lumbopelvic Clocks",
+                                "duration": 150,
+                                "cue": "Micro-tilts rocking sacrum between 12 and 6 o'clock to release lower back guarding.",
+                                "frames": [
+                                        "/exercises/supine_pelvic_tilts.jpg"
+                                ]
+                        },
+                        {
+                                "title": "Supine Single Knee-to-Chest Hug",
+                                "duration": 150,
+                                "cue": "Gently hug right knee towards chest, then left knee, keeping neck and head grounded.",
+                                "frames": [
+                                        "/exercises/knee_to_chest_stretch.jpg"
+                                ]
+                        },
+                        {
+                                "title": "Wide Knee Child's Pose with Bolster",
+                                "duration": 150,
+                                "cue": "Allow belly to soften between thighs onto bolster, relaxing shoulders.",
                                 "frames": [
                                         "/exercises/supported-childs-pose-bolster.svg"
                                 ]
                         },
                         {
-                                "title": "Supported Bridge Pose",
-                                "duration": 300,
-                                "cue": "Block or pillow under sacrum, arms relaxed overhead.",
+                                "title": "Thread the Needle Shoulder Glide",
+                                "duration": 150,
+                                "cue": "Slide arm under chest to gently release posterior shoulder and upper thoracic tension.",
+                                "frames": [
+                                        "/exercises/thread-the-needle-modified.svg"
+                                ]
+                        },
+                        {
+                                "title": "Supported Bridge on Soft Block",
+                                "duration": 150,
+                                "cue": "Pillow or block under sacrum, arms relaxed at sides, releasing anterior chain tension.",
                                 "frames": [
                                         "/exercises/supported-bridge-block.svg"
                                 ]
                         },
                         {
-                                "title": "Supine Spinal Twist with Pillow",
-                                "duration": 300,
-                                "cue": "Pillow between knees, slow gentle twist to each side.",
+                                "title": "Supine Gentle Twist with Bolster",
+                                "duration": 150,
+                                "cue": "Knees stacked over bolster on right side, breathe into ribcage, repeat left.",
                                 "frames": [
                                         "/exercises/thoracic_supine_twist.jpg"
                                 ]
                         },
                         {
-                                "title": "Corpse Pose Deep Relaxation",
-                                "duration": 300,
-                                "cue": "Complete still surrender into mattress or mat.",
+                                "title": "Legs-Elevated Relaxation (Wall or Bolster)",
+                                "duration": 150,
+                                "cue": "Elevate lower legs on bolster or against wall to ease lower limb circulation.",
+                                "frames": [
+                                        "/exercises/legs-elevated-relaxation.svg"
+                                ]
+                        },
+                        {
+                                "title": "Corpse Pose Deep Relaxation (Savasana)",
+                                "duration": 150,
+                                "cue": "Full body surrender into mat or mattress, jaw loose, releasing all muscular hold.",
                                 "frames": [
                                         "/exercises/restorative_savasana.jpg"
                                 ]
@@ -6606,9 +7026,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!foundRoutine) {
             // Intelligent fallback for agenda morning/evening yoga items
             if (rawId.includes('yoga_am') || rawId.includes('morning')) {
-                foundRoutine = YOGA_ROUTINES['y1']; // Gentle Lumbar Release (15 min)
+                foundRoutine = YOGA_ROUTINES['y1']; // Gentle Lumbar Release (20 min)
             } else if (rawId.includes('yoga_pm') || rawId.includes('evening')) {
-                foundRoutine = YOGA_ROUTINES['y3']; // Full Body Restorative Yin (25 min)
+                foundRoutine = YOGA_ROUTINES['y3']; // Full Body Restorative Yin (30 min)
             }
         }
 
@@ -6714,6 +7134,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (runnerStep) runnerStep.innerText = `Step ${currentStepIndex + 1} of ${currentProtocolSteps.length}: ${step.title}`;
         if (runnerTimer) runnerTimer.innerText = formatTime(timeLeft);
+        const runnerStepTimer = document.getElementById('runnerStepTimer');
+        if (runnerStepTimer) runnerStepTimer.innerText = formatTime(timeLeft);
         
         const progressBar = document.getElementById('runnerTotalProgressBar');
         if (progressBar && totalRoutineDuration > 0) {
@@ -6837,10 +7259,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (runnerTimer) runnerTimer.innerText = "00:00";
                     const runnerStepTimer = document.getElementById('runnerStepTimer');
                     if (runnerStepTimer) runnerStepTimer.innerText = "00:00";
+                    const runnerTotalTimer = document.getElementById('runnerTotalTimer');
+                    if (runnerTotalTimer) runnerTotalTimer.innerText = "00:00";
                     const runnerTotalTimeDisplay = document.getElementById('runnerTotalTimeDisplay');
                     if (runnerTotalTimeDisplay) runnerTotalTimeDisplay.innerText = `Total Remaining: 00:00 / ${formatTime(totalRoutineDuration)}`;
                     const progressBar = document.getElementById('runnerTotalProgressBar');
-                    if (progressBar) progressBar.style.height = "100%";
+                    if (progressBar) progressBar.style.width = "100%";
                     const progressPct = document.getElementById('runnerTotalProgressPct');
                     if (progressPct) progressPct.innerText = "100%";
                     const stepProgressBar = document.getElementById('runnerStepProgressBar');
@@ -6856,16 +7280,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (reliefModal) reliefModal.classList.remove('hidden');
                     }, 1200);
                 } else {
-                    timeLeft = (currentProtocolSteps[currentStepIndex] && currentProtocolSteps[currentStepIndex].duration) || 225;
+                    timeLeft = (currentProtocolSteps[currentStepIndex] && currentProtocolSteps[currentStepIndex].duration) || 120;
                     updateStepUI();
                 }
             } else {
-                // Update primary routine timer (e.g. 15:00 countdown)
-                if (runnerTimer) runnerTimer.innerText = formatTime(totalTimeLeft);
-                
-                // Update step timer (e.g. 03:45 hold countdown)
+                // Update Current Step countdown (e.g. 02:00 hold countdown)
+                if (runnerTimer) runnerTimer.innerText = formatTime(timeLeft);
                 const runnerStepTimer = document.getElementById('runnerStepTimer');
                 if (runnerStepTimer) runnerStepTimer.innerText = formatTime(timeLeft);
+                
+                // Update Total Routine countdown (e.g. 25:00 countdown)
+                const runnerTotalTimer = document.getElementById('runnerTotalTimer');
+                if (runnerTotalTimer) runnerTotalTimer.innerText = formatTime(totalTimeLeft);
                 
                 const runnerTotalTimeDisplay = document.getElementById('runnerTotalTimeDisplay');
                 if (runnerTotalTimeDisplay) {
@@ -6877,7 +7303,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const progressPct = document.getElementById('runnerTotalProgressPct');
                 if (progressBar && totalRoutineDuration > 0) {
                     const pct = Math.min(100, Math.max(0, Math.round(((totalRoutineDuration - totalTimeLeft) / totalRoutineDuration) * 100)));
-                    progressBar.style.height = `${pct}%`;
+                    progressBar.style.width = `${pct}%`;
                     if (progressPct) progressPct.innerText = `${pct}%`;
                 }
 
@@ -6885,7 +7311,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const stepProgressBar = document.getElementById('runnerStepProgressBar');
                 const stepProgressPct = document.getElementById('runnerStepProgressPct');
                 const curStep = currentProtocolSteps[currentStepIndex];
-                const stepDuration = (curStep && curStep.duration) || 45;
+                const stepDuration = (curStep && curStep.duration) || 120;
                 if (stepProgressBar && stepDuration > 0) {
                     const stepPct = Math.min(100, Math.max(0, Math.round(((stepDuration - timeLeft) / stepDuration) * 100)));
                     stepProgressBar.style.width = `${stepPct}%`;
@@ -6902,7 +7328,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btnPrevStep.addEventListener('click', () => {
             if (currentStepIndex > 0) {
                 currentStepIndex--;
-                timeLeft = (currentProtocolSteps[currentStepIndex] && currentProtocolSteps[currentStepIndex].duration) || 225;
+                timeLeft = (currentProtocolSteps[currentStepIndex] && currentProtocolSteps[currentStepIndex].duration) || 120;
                 updateStepUI();
             }
         });
@@ -6919,7 +7345,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 pendingProtocol = { id: currentRoutineRunning?.id || 'y1', name: routineName, beforePain: currentPainLevel || 5 };
                 if (reliefModal) reliefModal.classList.remove('hidden');
             } else {
-                timeLeft = (currentProtocolSteps[currentStepIndex] && currentProtocolSteps[currentStepIndex].duration) || 225;
+                timeLeft = (currentProtocolSteps[currentStepIndex] && currentProtocolSteps[currentStepIndex].duration) || 120;
                 updateStepUI();
             }
         });
@@ -8863,6 +9289,43 @@ Email: thunderops.ai@gmail.com`
                     btnCopyComplaint.textContent = originalText;
                 }, 2000);
             }
+        });
+    }
+
+    function openCourtModal() {
+        const modal = document.getElementById('courtModal');
+        if (modal) {
+            modal.classList.remove('hidden');
+        } else {
+            window.open('https://csvic.webex.com/meet/26517100652', '_blank');
+        }
+    }
+    window.openCourtModal = openCourtModal;
+
+    const modalCourt = document.getElementById('courtModal');
+    const btnCloseCourt = document.getElementById('btnCloseCourtModal');
+    const btnCloseCourtBtn = document.getElementById('btnCloseCourtBtn');
+    const btnCopyCourtPw = document.getElementById('btnCopyCourtPassword');
+
+    [btnCloseCourt, btnCloseCourtBtn].forEach(btn => {
+        if (btn) {
+            btn.addEventListener('click', () => {
+                if (modalCourt) modalCourt.classList.add('hidden');
+            });
+        }
+    });
+
+    if (btnCopyCourtPw) {
+        btnCopyCourtPw.addEventListener('click', () => {
+            navigator.clipboard.writeText('7VDyhKbVX74');
+            const orig = btnCopyCourtPw.textContent;
+            btnCopyCourtPw.textContent = '✓ Password Copied';
+            if (typeof showToast === 'function') {
+                showToast('Webex Password copied: 7VDyhKbVX74', 'success');
+            }
+            setTimeout(() => {
+                btnCopyCourtPw.textContent = orig;
+            }, 2500);
         });
     }
 

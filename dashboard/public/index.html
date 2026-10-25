@@ -1281,6 +1281,109 @@
             </div>
         </div>
 
+        <!-- Court Webex Hearing Modal -->
+        <div class="modal-overlay hidden" id="courtModal" style="z-index: 1100;">
+            <div class="modal-content glass-panel" style="max-width: 520px; width: 92%;">
+                <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 16px;">
+                    <div>
+                        <h2 style="margin: 0; font-size: 1.25rem; color: #fff;">Wangaratta Magistrates' Court</h2>
+                        <span style="font-size: 0.82rem; color: var(--text-secondary);">Remote Mention Hearing &bull; Audio Visual Link (AVL)</span>
+                    </div>
+                    <button class="btn-close" id="btnCloseCourtModal">&times;</button>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 18px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <span class="badge neon-purple" style="font-size: 0.8rem; padding: 3px 8px;">Webex Appearance Confirmed</span>
+                        <span style="font-size: 0.9rem; color: var(--neon-blue); font-weight: 600;">Today @ 10:00 AM</span>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.35); border: 1px solid var(--glass-border); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 10px;">
+                        <div>
+                            <span style="color: var(--text-secondary); font-size: 0.8rem; display: block; margin-bottom: 4px;">Meeting Link (Tap to Join):</span>
+                            <a href="https://csvic.webex.com/meet/26517100652" target="_blank" rel="noopener noreferrer" style="color: var(--neon-blue); font-weight: 600; text-decoration: underline; word-break: break-all; font-size: 0.95rem;" id="courtWebexLink">https://csvic.webex.com/meet/26517100652</a>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px;">
+                            <div>
+                                <span style="color: var(--text-secondary); font-size: 0.8rem;">Meeting Number:</span>
+                                <strong style="color: #fff; font-size: 0.92rem; margin-left: 6px;">2651 710 0652</strong>
+                            </div>
+                            <div>
+                                <span style="color: var(--text-secondary); font-size: 0.8rem;">Password:</span>
+                                <strong style="color: var(--neon-green); font-size: 1rem; margin-left: 6px; letter-spacing: 0.5px;" id="courtMeetingPassword">7VDyhKbVX74</strong>
+                            </div>
+                        </div>
+                        <div style="border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px;">
+                            <span style="color: var(--text-secondary); font-size: 0.8rem;">Video Address (SIP / Room System):</span>
+                            <code style="color: #fff; font-size: 0.82rem; background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px; display: block; margin-top: 3px;">26517100652@csvic.webex.com</code>
+                        </div>
+                        <div style="font-size: 0.78rem; color: var(--text-muted); border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px;">
+                            Registrar: Jacinta Scurrah &bull; Wangaratta Law Courts &bull; Phone: (03) 9087 5728
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: space-between; gap: 10px; margin-top: 8px;">
+                    <button type="button" class="btn btn-outline btn-sm" id="btnCopyCourtPassword">Copy Password</button>
+                    <div style="display: flex; gap: 8px;">
+                        <button type="button" class="btn btn-outline btn-sm" id="btnCloseCourtBtn">Close</button>
+                        <a href="https://csvic.webex.com/meet/26517100652" target="_blank" rel="noopener noreferrer" class="btn btn-neon-green btn-sm" id="btnJoinWebexDirect" style="text-decoration: none; display: inline-flex; align-items: center; padding: 6px 14px;">Join Webex Now &rarr;</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Regulatory Complaints Manifest Modal (ACCC, VPA & CAV) -->
+        <div class="modal-overlay hidden" id="complaintsModal" style="z-index: 1100;">
+            <div class="modal-content glass-panel" style="max-width: 780px; width: 95%; max-height: 90vh; display: flex; flex-direction: column; padding: 20px;">
+                <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 16px;">
+                    <div>
+                        <h2 style="margin: 0; font-size: 1.25rem; color: #fff;">Regulatory Complaints Manifest</h2>
+                        <span style="font-size: 0.82rem; color: var(--text-secondary);">Saved drafts ready for review &amp; regulatory escalation</span>
+                    </div>
+                    <button class="btn-close" id="btnCloseComplaintsModal">&times;</button>
+                </div>
+
+                <!-- Tabs -->
+                <div style="display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;" id="complaintsTabContainer">
+                    <button type="button" class="btn btn-sm btn-neon-green active" id="tabComplaintsCav">Consumer Affairs Vic (CAV)</button>
+                    <button type="button" class="btn btn-sm btn-outline" id="tabComplaintsAccc">ACCC (REF4785185)</button>
+                    <button type="button" class="btn btn-sm btn-outline" id="tabComplaintsVpa">VPA (Pharmacy Authority)</button>
+                </div>
+
+                <!-- Complaint Details Header -->
+                <div id="complaintsMetaCard" style="margin-bottom: 12px; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <span class="badge neon-green" id="complaintBadge">CAV Consumer Rights Complaint</span>
+                        <span style="font-size: 0.8rem; color: var(--text-secondary);" id="complaintRef">Consumer Affairs Victoria</span>
+                    </div>
+                    <div style="font-size: 0.88rem; margin-top: 4px;">
+                        <strong>To:</strong> <code style="color: var(--neon-blue);" id="complaintRecipient">consumer@justice.vic.gov.au</code>
+                    </div>
+                    <div style="font-size: 0.88rem; margin-top: 4px;">
+                        <strong>Subject:</strong> <span id="complaintSubject">Formal Consumer Complaint: Chemist Warehouse Wangaratta – Breach of Consumer Guarantees (ACL Section 60), Disgraceful Customer Service & Record Suppression</span>
+                    </div>
+                </div>
+
+                <!-- Copy Button -->
+                <div style="display: flex; justify-content: flex-end; margin-bottom: 8px;">
+                    <button type="button" class="btn btn-sm btn-outline" id="btnCopyComplaintText" style="font-size: 0.8rem;">
+                        📋 Copy Full Body Text
+                    </button>
+                </div>
+
+                <!-- Body Pre -->
+                <div style="flex: 1; overflow-y: auto; padding-right: 4px;">
+                    <pre id="complaintBodyText" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 14px; white-space: pre-wrap; word-break: break-word; font-size: 0.84rem; line-height: 1.5; color: #e2e8f0; font-family: monospace;"></pre>
+                </div>
+
+                <!-- Footer -->
+                <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.78rem; color: var(--text-secondary);">
+                        Saved in: <code style="font-size: 0.75rem;">ACCC/accc_and_vpa_regulatory_complaints.md</code>
+                    </span>
+                    <button type="button" class="btn btn-neon-blue btn-sm" id="btnDoneComplaintsModal">Done</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Clinical Pain Analytics & GP Report Modal -->
         <div class="modal-overlay hidden" id="painAnalyticsModal">
             <div class="modal-content glass-panel" style="max-width: 900px; width: 95%; max-height: 90vh; overflow-y: auto;">
@@ -1456,6 +1559,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="app.js?v=20261019_painfix"></script>
+    <script src="app.js?v=20261026_yogaupdate"></script>
 </body>
 </html>
