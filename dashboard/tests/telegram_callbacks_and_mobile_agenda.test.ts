@@ -316,6 +316,93 @@ describe('Telegram Bot Inline Callbacks & Symptoms Logging & Mobile Agenda', () 
       expect(log2.locations.some(l => l.area === 'knee')).toBe(true);
       expect(log2.locations.some(l => l.area === 'neck')).toBe(true);
     });
+
+    it('handles Big Day (8.0, 70% lumbar, 20% knee, 10% thoracic) quick preset', async () => {
+      vi.spyOn(telegramBot, 'answerCallbackQuery').mockResolvedValue({ ok: true });
+      vi.spyOn(telegramBot, 'sendMessage').mockResolvedValue({ ok: true, result: {} });
+
+      const req = new Request('https://rumble.test/api/v1/telegram/webhook', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-telegram-bot-api-secret-token': 'test_secret_123',
+        },
+        body: JSON.stringify({
+          update_id: 1010,
+          callback_query: {
+            id: 'cb_bigday_1',
+            from: { id: 999, is_bot: false, first_name: 'TestUser' },
+            data: 'pain_quick:big_day',
+          },
+        }),
+      });
+
+      const res = await telegramWebhookPost(req as any);
+      expect(res.status).toBe(200);
+
+      const inMem = getPainLogs();
+      const last = inMem[inMem.length - 1];
+      expect(last.score).toBe(8.0);
+      expect(last.notes).toContain('Big Day');
+      expect(last.locations).toEqual(expect.arrayContaining([
+        expect.objectContaining({ area: 'lumbar', weight: 70 }),
+        expect.objectContaining({ area: 'knee', weight: 20 }),
+        expect.objectContaining({ area: 'thoracic', weight: 10 }),
+      ]));
+      const totalPct = last.locations.reduce((acc, l) => acc + l.weight, 0);
+      expect(totalPct).toBe(100);
+    });
+
+    it('handles Post-Walk (7.2, 70% lumbar, 30% knee) and Rest Day (3.5, 100% lumbar) presets', async () => {
+      vi.spyOn(telegramBot, 'answerCallbackQuery').mockResolvedValue({ ok: true });
+      vi.spyOn(telegramBot, 'sendMessage').mockResolvedValue({ ok: true, result: {} });
+
+      // Post-walk
+      const req1 = new Request('https://rumble.test/api/v1/telegram/webhook', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-telegram-bot-api-secret-token': 'test_secret_123',
+        },
+        body: JSON.stringify({
+          update_id: 1011,
+          callback_query: {
+            id: 'cb_postwalk_1',
+            from: { id: 999, is_bot: false, first_name: 'TestUser' },
+            data: 'pain_quick:post_walk',
+          },
+        }),
+      });
+      const res1 = await telegramWebhookPost(req1 as any);
+      expect(res1.status).toBe(200);
+      const inMem1 = getPainLogs();
+      const last1 = inMem1[inMem1.length - 1];
+      expect(last1.score).toBe(7.2);
+      expect(last1.locations.reduce((acc, l) => acc + l.weight, 0)).toBe(100);
+
+      // Rest day
+      const req2 = new Request('https://rumble.test/api/v1/telegram/webhook', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-telegram-bot-api-secret-token': 'test_secret_123',
+        },
+        body: JSON.stringify({
+          update_id: 1012,
+          callback_query: {
+            id: 'cb_restday_1',
+            from: { id: 999, is_bot: false, first_name: 'TestUser' },
+            data: 'pain_quick:rest_day',
+          },
+        }),
+      });
+      const res2 = await telegramWebhookPost(req2 as any);
+      expect(res2.status).toBe(200);
+      const inMem2 = getPainLogs();
+      const last2 = inMem2[inMem2.length - 1];
+      expect(last2.score).toBe(3.5);
+      expect(last2.locations.reduce((acc, l) => acc + l.weight, 0)).toBe(100);
+    });
   });
 
   describe('2. Symptoms & Pain Logging Endpoint (/api/symptoms/log)', () => {
@@ -415,12 +502,12 @@ describe('Telegram Bot Inline Callbacks & Symptoms Logging & Mobile Agenda', () 
         reply_markup: expect.objectContaining({
           inline_keyboard: expect.arrayContaining([
             expect.arrayContaining([
-              expect.objectContaining({ callback_data: 'pain_quick:standard' }),
               expect.objectContaining({ callback_data: 'pain_quick:hydro' }),
+              expect.objectContaining({ callback_data: 'pain_quick:big_day' }),
             ]),
             expect.arrayContaining([
-              expect.objectContaining({ callback_data: 'pain_quick:thoracic' }),
-              expect.objectContaining({ callback_data: 'pain_quick:sciatica' }),
+              expect.objectContaining({ callback_data: 'pain_quick:standard' }),
+              expect.objectContaining({ callback_data: 'pain_quick:post_walk' }),
             ]),
           ]),
         }),
