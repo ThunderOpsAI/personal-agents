@@ -3,7 +3,7 @@ import path from 'path';
 import { z } from 'zod';
 import { tool, streamText, generateObject, generateText } from 'ai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
-import { getAgendaItems, createAgendaItem, createNote, createPainLog, getNotes, getPainLogsFromDb, getSmsMessages } from '../db';
+import { getAgendaItems, createAgendaItem, createNote, createPainLog, getNotes, getPainLogsFromDb, getSmsMessages, searchMemories } from '../db';
 import { logPain, PainLocationWeight, validatePainLog } from '../rehab-learning';
 import { selectWashingDays, WashingDay } from '../agenda-engine';
 import { fetchLiveGmailMessages, fetchLiveCalendarEvents } from '../google-auth';
@@ -366,6 +366,31 @@ export const budgetItemTool = tool({
   },
 });
 
+export const semanticMemorySchema = z.object({
+  query: z.string().describe("Search query for retrieving relevant past medical notes, SOUL reflections, or pain logs"),
+  source_type: z.enum(["all", "medical_note", "soul_reflection", "pain_log"]).optional().default("all"),
+  limit: z.number().int().min(1).max(10).optional().default(5),
+});
+
+export const semanticMemoryTool = tool({
+  description: "Search long-term semantic memory (medical notes, SOUL reflections, pain logs) using pgvector semantic similarity",
+  inputSchema: semanticMemorySchema,
+  execute: async ({ query, source_type, limit }) => {
+    const results = await searchMemories({ query, sourceType: source_type, limit });
+    return {
+      query,
+      results_count: results.length,
+      matches: results.map((r) => ({
+        sourceType: r.sourceType,
+        content: r.content,
+        similarity: Math.round(r.similarity * 100) / 100,
+        metadata: r.metadata,
+      })),
+      summary: `Found ${results.length} semantic memory match(es) for "${query}".`,
+    };
+  },
+});
+
 export function createRumbleTools() {
   return {
     painLog: painLogTool,
@@ -375,6 +400,7 @@ export function createRumbleTools() {
     draftEmail: emailActionTool,
     draftSms: smsActionTool,
     logBudgetItem: budgetItemTool,
+    searchSemanticMemory: semanticMemoryTool,
   };
 }
 

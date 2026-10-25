@@ -211,6 +211,23 @@ export function App() {
     fetchLiveWangarattaWeather().then((w) => setWeather(w));
   }, []);
 
+  // SMS Webhook Heartbeat state
+  const [smsHeartbeat, setSmsHeartbeat] = useState<{
+    healthy: boolean;
+    hours_since_last_received: number | null;
+  } | null>(null);
+
+  useEffect(() => {
+    fetch("/api/v1/sms/heartbeat")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data && typeof data.healthy === "boolean") {
+          setSmsHeartbeat(data);
+        }
+      })
+      .catch(() => {});
+  }, [smsMessages]);
+
   // Budget calculations
   const totalIncome = useMemo(
     () => budgetItems.filter((i) => i.type === "income").reduce((sum, i) => sum + i.amount, 0),
@@ -299,6 +316,15 @@ export function App() {
   const urgentTasks = useMemo(() => tasks.filter((t) => t.urgent && t.status === "needsAction"), [tasks]);
   const pendingTasksCount = useMemo(() => tasks.filter((t) => t.status === "needsAction").length, [tasks]);
   const unreadSmsCount = useMemo(() => smsMessages.filter((s) => !s.read).length, [smsMessages]);
+
+  const isPhoneWebhookStale = useMemo(() => {
+    if (smsHeartbeat && smsHeartbeat.healthy === false) return true;
+    if (smsMessages.length === 0) return true;
+    const latestTimestamp = smsMessages[0]?.timestamp;
+    if (!latestTimestamp) return false;
+    const diffMs = Date.now() - new Date(latestTimestamp).getTime();
+    return diffMs > 24 * 60 * 60 * 1000;
+  }, [smsHeartbeat, smsMessages]);
 
   const openUniversalChat = (contextNote?: string) => {
     setChatInitialMessage(contextNote || "");
@@ -884,11 +910,40 @@ export function App() {
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               <h2 style={{ margin: 0 }}>Text Messages</h2>
               <span className="badge neon-blue">{unreadSmsCount} Unread</span>
+              {isPhoneWebhookStale && (
+                <span
+                  className="badge"
+                  style={{
+                    background: "rgba(255, 77, 77, 0.15)",
+                    border: "1px solid var(--neon-red)",
+                    color: "var(--neon-red)",
+                    fontSize: "0.72rem",
+                  }}
+                  title="No phone webhook received in over 24 hours"
+                >
+                  Phone Inactive (&gt;24h)
+                </span>
+              )}
             </div>
             <button className="btn btn-neon-blue btn-sm" onClick={() => setIsComposeSmsOpen(true)}>
               Compose SMS
             </button>
           </div>
+          {isPhoneWebhookStale && (
+            <div
+              style={{
+                marginTop: "8px",
+                padding: "6px 10px",
+                borderRadius: "6px",
+                background: "rgba(255, 77, 77, 0.1)",
+                border: "1px solid rgba(255, 77, 77, 0.3)",
+                color: "var(--neon-red)",
+                fontSize: "0.78rem",
+              }}
+            >
+              Phone Webhook Warning: No phone webhook received in over 24 hours. Check MacroDroid / Tasker background service.
+            </div>
+          )}
           <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "12px", maxHeight: "200px", overflowY: "auto" }}>
             {smsMessages.map((sms) => (
               <div key={sms.id} className="glass-panel" style={{ padding: "10px", fontSize: "0.85rem", background: "rgba(0,0,0,0.2)" }}>
