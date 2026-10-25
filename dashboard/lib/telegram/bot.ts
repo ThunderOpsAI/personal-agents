@@ -189,14 +189,26 @@ export class TelegramBot {
       ]);
     }
 
-    // 4 Auto-Logging Quick Presets matching Rumble pain log screen
+    // Quick Presets matching Rumble pain log screen & exertion modifiers
     inline_keyboard.push([
-      { text: "Standard", callback_data: "pain_quick:standard" },
       { text: "Hydro (-1.5)", callback_data: "pain_quick:hydro" },
+      { text: "Big Day (8.0)", callback_data: "pain_quick:big_day" },
+    ]);
+    inline_keyboard.push([
+      { text: "Standard (6.8)", callback_data: "pain_quick:standard" },
+      { text: "Post-Walk (7.2)", callback_data: "pain_quick:post_walk" },
+    ]);
+    inline_keyboard.push([
+      { text: "Morning Stiff (6.8)", callback_data: "pain_quick:morning_stiffness" },
+      { text: "Sciatica (9.5)", callback_data: "pain_quick:sciatica" },
     ]);
     inline_keyboard.push([
       { text: "Thoracic (7.5)", callback_data: "pain_quick:thoracic" },
-      { text: "Sciatica (9.5)", callback_data: "pain_quick:sciatica" },
+      { text: "Rest Day (3.5)", callback_data: "pain_quick:rest_day" },
+    ]);
+    inline_keyboard.push([
+      { text: "Neck/Shoulder (7.0)", callback_data: "pain_quick:neck_shoulder" },
+      { text: "White Fingers (7.5)", callback_data: "pain_quick:white_fingers" },
     ]);
 
     return this.sendMessage(targetChatId, message, {

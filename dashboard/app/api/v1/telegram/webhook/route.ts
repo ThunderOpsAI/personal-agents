@@ -139,6 +139,64 @@ export async function POST(req: NextRequest) {
         }
         mood = 'neutral';
         summaryTitle = `✅ *Standard Pain Log Recorded! (${score}/10)*`;
+      } else if (data === 'pain_quick:big_day' || data === 'pain_big_day') {
+        score = 8.0;
+        locations = [
+          { area: 'lumbar', side: 'right' as const, percentage: 70, weight: 70 },
+          { area: 'knee', side: 'right' as const, percentage: 20, weight: 20 },
+          { area: 'thoracic', side: 'unspecified' as const, percentage: 10, weight: 10 }
+        ];
+        mood = 'fatigued';
+        notes = 'Big Day: heavy physical exertion, cumulative loading flare';
+        summaryTitle = '⚡ *Big Day Pain Log Recorded! (8.0/10)*';
+        alertTriggered = true;
+      } else if (data === 'pain_quick:post_walk' || data === 'pain_post_walk') {
+        score = 7.2;
+        locations = [
+          { area: 'lumbar', side: 'right' as const, percentage: 70, weight: 70 },
+          { area: 'knee', side: 'right' as const, percentage: 30, weight: 30 }
+        ];
+        mood = 'frustrated';
+        notes = 'Post-walk loading flare, lumbar and lower extremity fatigue';
+        summaryTitle = '🚶 *Post-Walk Pain Log Recorded! (7.2/10)*';
+        alertTriggered = true;
+      } else if (data === 'pain_quick:morning_stiffness' || data === 'pain_morning_stiffness') {
+        score = 6.8;
+        locations = [
+          { area: 'lumbar', side: 'right' as const, percentage: 60, weight: 60 },
+          { area: 'thoracic', side: 'unspecified' as const, percentage: 40, weight: 40 }
+        ];
+        mood = 'neutral';
+        notes = 'Severe morning stiffness, slow mobility';
+        summaryTitle = '🌅 *Morning Stiffness Pain Log Recorded! (6.8/10)*';
+      } else if (data === 'pain_quick:rest_day' || data === 'pain_rest_day') {
+        score = 3.5;
+        locations = [
+          { area: 'lumbar', side: 'right' as const, percentage: 100, weight: 100 }
+        ];
+        mood = 'calm';
+        notes = 'Rest day, managed baseline pain';
+        summaryTitle = '🛋️ *Rest Day Pain Log Recorded! (3.5/10)*';
+      } else if (data === 'pain_quick:neck_shoulder' || data === 'pain_neck_shoulder') {
+        score = 7.0;
+        locations = [
+          { area: 'neck', side: 'unspecified' as const, percentage: 60, weight: 60 },
+          { area: 'shoulder', side: 'right' as const, percentage: 40, weight: 40 }
+        ];
+        mood = 'frustrated';
+        notes = 'Cervical/trapezius spasm, guarding';
+        summaryTitle = '💆 *Neck/Shoulder Pain Log Recorded! (7.0/10)*';
+        alertTriggered = true;
+      } else if (data === 'pain_quick:white_fingers' || data === 'pain_white_fingers') {
+        score = 7.5;
+        locations = [
+          { area: 'neck', side: 'unspecified' as const, percentage: 50, weight: 50 },
+          { area: 'sciatica', side: 'unspecified' as const, percentage: 50, weight: 50 }
+        ];
+        mood = 'stressed';
+        notes = 'Index fingertip pallor and numbness on cold exposure, radicular flare';
+        summaryTitle = '❄️ *White Fingers Flare Recorded! (7.5/10)*';
+        alertTriggered = true;
       } else if (data.startsWith('pain_preset:')) {
         score = parseFloat(data.replace('pain_preset:', '')) || 7.5;
         locations = [...DEFAULT_PAIN_DISTRIBUTION];

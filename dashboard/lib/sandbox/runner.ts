@@ -1,20 +1,16 @@
 /**
  * Sandboxed Code Execution Engine
  * Primary runner: E2B Code Interpreter (@e2b/code-interpreter)
- * Fallback runner: Secure isolated process runner for local offline testing
  *
  * Invariants:
+ * - Fail-Closed Invariant: ZERO local or subprocess fallback on host.
+ *   If E2B_API_KEY is missing or E2B is unreachable, execution fails closed.
  * - Sandbox receives NO production credentials (NEON, GEMINI, GOOGLE, etc.)
- * - Sandbox receives NO medical data, pain logs, or SMS content
- * - Enforces execution timeouts and memory/process constraints
+ * - Sandbox receives NO medical data, pain logs, or SMS content.
+ * - Enforces execution timeouts and memory/process constraints.
+ * - For tests: dependency injection of a mock runner is supported so no host
+ *   processes are spawned.
  */
-
-import type { ChildProcess } from 'child_process';
-
-export interface SandboxExecutionOptions {
-  language?: 'python' | 'javascript' | 'typescript';
-  timeoutMs?: number; // default 15000ms (15s)
-}
 
 export interface SandboxExecutionResult {
   status: 'success' | 'error' | 'timeout';
@@ -24,6 +20,17 @@ export interface SandboxExecutionResult {
   executionTimeMs: number;
   error?: string;
   isSandboxed: boolean;
+}
+
+export type SandboxRunnerFn = (
+  code: string,
+  options: SandboxExecutionOptions
+) => Promise<SandboxExecutionResult>;
+
+export interface SandboxExecutionOptions {
+  language?: 'python' | 'javascript' | 'typescript';
+  timeoutMs?: number; // default 15000ms (15s)
+  mockRunner?: SandboxRunnerFn; // Dependency injection for test isolation without host execution
 }
 
 // Credentials and sensitive keys that must NEVER be passed to sandbox
@@ -47,6 +54,19 @@ const CREDENTIAL_DENYLIST_PREFIXES = [
 ];
 
 /**
+ * Global test mock runner registry (for test suites where mock runner injection is global).
+ */
+let globalTestRunner: SandboxRunnerFn | null = null;
+
+export function setSandboxTestRunner(runner: SandboxRunnerFn | null): void {
+  globalTestRunner = runner;
+}
+
+export function getSandboxTestRunner(): SandboxRunnerFn | null {
+  return globalTestRunner;
+}
+
+/**
  * Sanitizes an environment object ensuring ZERO production credentials leak.
  */
 export function sanitizeSandboxEnvironment(env: Record<string, string | undefined>): Record<string, string> {
@@ -68,7 +88,7 @@ export function sanitizeSandboxEnvironment(env: Record<string, string | undefine
 }
 
 /**
- * Executes code using E2B Code Interpreter if API key is present.
+ * Executes code using E2B Code Interpreter microVM.
  */
 async function runWithE2B(
   code: string,
@@ -109,93 +129,8 @@ async function runWithE2B(
 }
 
 /**
- * Isolated process fallback for offline development / test suites
- * Ensures timeout limits, zero credential leakage, and strict process termination.
- */
-async function runWithIsolatedLocalFallback(
-  code: string,
-  options: SandboxExecutionOptions
-): Promise<SandboxExecutionResult> {
-  const { spawn } = await import('child_process');
-  const timeoutMs = Math.min(Math.max(options.timeoutMs || 15000, 1000), 60000);
-  const startTime = Date.now();
-  const safeEnv = sanitizeSandboxEnvironment({});
-
-  return new Promise((resolve) => {
-    let stdoutData = '';
-    let stderrData = '';
-    let timedOut = false;
-
-    const isPython = options.language === 'python';
-    const command = isPython ? 'python3' : 'node';
-    const flag = isPython ? '-c' : '-e';
-    const child: ChildProcess = spawn(command, [flag, code], {
-      env: safeEnv as unknown as NodeJS.ProcessEnv,
-      timeout: timeoutMs,
-    });
-
-    const timer = setTimeout(() => {
-      timedOut = true;
-      child.kill('SIGKILL');
-    }, timeoutMs);
-
-    if (child.stdout) {
-      child.stdout.on('data', (chunk: Buffer | string) => {
-        stdoutData += chunk.toString();
-      });
-    }
-
-    if (child.stderr) {
-      child.stderr.on('data', (chunk: Buffer | string) => {
-        stderrData += chunk.toString();
-      });
-    }
-
-    child.on('close', (codeStatus: number | null) => {
-      clearTimeout(timer);
-      const executionTimeMs = Date.now() - startTime;
-
-      if (timedOut) {
-        return resolve({
-          status: 'timeout',
-          stdout: stdoutData,
-          stderr: stderrData,
-          results: [],
-          executionTimeMs,
-          error: `Execution timed out after ${timeoutMs}ms`,
-          isSandboxed: true,
-        });
-      }
-
-      const hasError = codeStatus !== 0;
-      resolve({
-        status: hasError ? 'error' : 'success',
-        stdout: stdoutData.trim(),
-        stderr: stderrData.trim(),
-        results: stdoutData.trim() ? [stdoutData.trim()] : [],
-        executionTimeMs,
-        error: hasError ? `Process exited with code ${codeStatus}: ${stderrData.trim()}` : undefined,
-        isSandboxed: true,
-      });
-    });
-
-    child.on('error', (err: Error) => {
-      clearTimeout(timer);
-      resolve({
-        status: 'error',
-        stdout: stdoutData,
-        stderr: err.message,
-        results: [],
-        executionTimeMs: Date.now() - startTime,
-        error: err.message,
-        isSandboxed: true,
-      });
-    });
-  });
-}
-
-/**
  * Main sandboxed code execution handler.
+ * Strict fail-closed invariant: ZERO local or subprocess fallback on host.
  */
 export async function executeSandboxedCode(
   code: string,
@@ -213,14 +148,39 @@ export async function executeSandboxedCode(
     };
   }
 
-  // Use E2B if API key is provided and not in simulated test mode
-  if (process.env.E2B_API_KEY && !process.env.VITEST_LOCAL_SANDBOX) {
-    try {
-      return await runWithE2B(code, options);
-    } catch (err: any) {
-      console.warn(`[Sandbox] E2B initialization failed, falling back to isolated runner: ${err.message}`);
-    }
+  // 1. Check for explicit mock runner (per-call dependency injection or global test runner)
+  const activeRunner = options.mockRunner || globalTestRunner;
+  if (activeRunner) {
+    return activeRunner(code, options);
   }
 
-  return runWithIsolatedLocalFallback(code, options);
+  // 2. Strict Fail-Closed Check: E2B_API_KEY must be configured
+  const apiKey = process.env.E2B_API_KEY;
+  if (!apiKey) {
+    return {
+      status: 'error',
+      stdout: '',
+      stderr: '',
+      results: [],
+      executionTimeMs: 0,
+      error: 'E2B_API_KEY is not configured. Sandboxed code execution failed closed.',
+      isSandboxed: false,
+    };
+  }
+
+  // 3. Execute via E2B Cloud MicroVM; fail closed if unreachable
+  const startTime = Date.now();
+  try {
+    return await runWithE2B(code, options);
+  } catch (err: any) {
+    return {
+      status: 'error',
+      stdout: '',
+      stderr: err.message || '',
+      results: [],
+      executionTimeMs: Date.now() - startTime,
+      error: `E2B runner unreachable: ${err.message}`,
+      isSandboxed: false,
+    };
+  }
 }

@@ -757,6 +757,7 @@ document.addEventListener('DOMContentLoaded', () => {
             { id: 'tom_retrieval_0600', time: '06:00 AM', title: 'Automated Retrieval: Scrape Gmail & Calendar', item_type: 'retrieval', status: 'pending' },
             { id: 'tom_yoga_0900', time: '09:00 AM', title: 'Adaptive Morning Yoga Routine (3 Options Dynamic)', item_type: 'yoga', status: 'pending', choices: ['Hip Flow', 'Lumbar Core', 'Shoulder Rehab'] },
             { id: 'tom_court_0930', time: '09:30 AM', title: 'Email Court Coordinator regarding appearing via video conference (Webex/AVL)', item_type: 'task', status: 'pending' },
+            { id: 'tom_complaints_1000', time: '10:00 AM', title: 'Review & Lodge Regulatory Complaints (ACCC, VPA & CAV)', item_type: 'complaints', status: 'pending' },
             { id: 'tom_hydro_1030', time: '10:30 AM', title: 'Hydrotherapy Session (Rumble Target: 3/week)', item_type: 'hydrotherapy', status: 'pending' },
             { id: 'tom_supabase_1100', time: '11:00 AM', title: 'Enable Row-Level Security (RLS) on Supabase project ladies-night & review Oct 30 GRANT changes', item_type: 'task', status: 'pending' },
             { id: 'tom_chiro_1130', time: '11:30 AM', title: 'Pay Alpine Chiropractic Invoice #0033571 (emailed by Rosanna 21 Oct)', item_type: 'task', status: 'pending' },
@@ -4321,6 +4322,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (showBtn) {
             showBtn.addEventListener('click', () => {
                 const title = card.querySelector('.protocol-info p')?.innerText || id;
+                if (id === 'tom_complaints_1000' || id.includes('complaints') || type === 'complaints' || title.toLowerCase().includes('regulatory complaints')) {
+                    if (typeof openComplaintsModal === 'function') {
+                        openComplaintsModal('cav');
+                    } else {
+                        const m = document.getElementById('complaintsModal');
+                        if (m) m.classList.remove('hidden');
+                    }
+                    return;
+                }
                 if (isPainLog()) {
                     let schedTime = showBtn.getAttribute('data-scheduled-time') || card.getAttribute('data-scheduled-time') || '';
                     if (!schedTime) {
@@ -8654,6 +8664,206 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast('MacroDroid reminder marked Done for this week', 'success');
             });
         }
+    }
+
+    // --- Regulatory Complaints Manifest Modal (CAV, ACCC, VPA) ---
+    const COMPLAINTS_DATA = {
+        cav: {
+            recipient: "consumer@justice.vic.gov.au",
+            reference: "Consumer Affairs Victoria",
+            badge: "CAV Consumer Rights Complaint",
+            badgeClass: "neon-green",
+            subject: "Formal Consumer Complaint: Chemist Warehouse Wangaratta – Breach of Consumer Guarantees (ACL Section 60), Disgraceful Customer Service & Record Suppression",
+            body: `To Consumer Affairs Victoria,
+
+RE: Formal Consumer Complaint – Chemist Warehouse (Wangaratta, VIC)
+Complainant: James Jones
+Residential Address: 158 Tone Rd, Wangaratta VIC 3677
+Phone: 0402 270 259
+Email: thunderops.ai@gmail.com
+Trader: Chemist Warehouse Wangaratta (CW Retail Services Pty Ltd)
+Trader Internal Case Reference: Case #516500 (Logged 13 October 2026 – Unresolved)
+ACCC Report Reference: REF4785185
+
+I am writing to formally lodge a consumer complaint against Chemist Warehouse Wangaratta under the Australian Consumer Law (Victoria) for serious failures to provide services with due care and skill, unlawful cancellation of active prescriptions, gross customer service failure, and obstruction of complaint mechanisms.
+
+Summary of Grounds:
+
+1. Unilateral Prescription Cancellations & Health Endangerment:
+   Active, valid medical prescriptions presented to this pharmacy were repeatedly cancelled without patient consultation, notice, or consent. This failure directly severed therapeutic continuity and access to vital pain management.
+
+2. Disgraceful Customer Service & Contemptuous Pharmacist Conduct:
+   The dispensing pharmacists at the Wangaratta store displayed appalling customer service and total hostility when questioned about missing medications and cancelled scripts. They exhibited zero professional care, refused to examine dispensary logs or stock reconciliations, and treated legitimate patient inquiries with contempt.
+
+3. Complete Obstruction of Complaint Channels & Staff Incompetence:
+   During an in-person store visit, I specifically asked a front-counter staff member how to lodge a complaint—prompting her with standard channels: an email address, telephone number, feedback form, website link, or a duty manager to speak with. The staff member stated she had absolutely no idea, could provide none of those channels, and had no avenue to record my grievance. When asked how long she had worked there, she stated 5 years. A retail pharmacy employee of 5 years having zero knowledge of any complaints pathway illustrates deliberate institutional obstruction and a systemic corporate failure to provide accessible consumer recourse.
+
+4. Unaccounted Schedule 8 Medication:
+   Dispensary stock reconciliations for my prescribed Schedule 8 medication (Targin) could not be accounted for by dispensary staff during in-person visits. In-store staff refused to take responsibility or provide a record of dispensing attempts.
+
+5. Digital Consumer Record Suppression:
+   Historical communications, enquiries, and digital transaction history within the proprietary Chemist Warehouse application have been purged or rendered inaccessible, obstructing documentation of previous dispensing requests.
+
+6. Total Breakdown in Corporate Dispute Resolution:
+   A formal complaint was lodged with head office customer service on 13 October 2026 (Case #516500). Despite repeated written follow-ups requesting urgent management contact, the business has completely ignored the case and failed to provide any phone or email contact after nearly two weeks.
+
+Remedy Sought:
+1. Formal conciliation compelling Chemist Warehouse to provide full dispensary audit logs and archived communication transcripts.
+2. Written reconciliation of the unaccounted Schedule 8 medication.
+3. Investigation into Chemist Warehouse's practice of cancelling valid prescriptions without consumer notification and obstructing consumer dispute resolution in store.
+
+Kind regards,
+
+James Jones
+158 Tone Rd, Wangaratta VIC 3677
+Phone: 0402 270 259
+Email: thunderops.ai@gmail.com`
+        },
+        accc: {
+            recipient: "info.centre@accc.gov.au",
+            reference: "ACCC Ref: REF4785185",
+            badge: "ACCC Supplementary Report",
+            badgeClass: "neon-blue",
+            subject: "Re: We received your report (Reference: REF4785185) – Supplementary Evidence & Systemic Failure Update",
+            body: `Attn: Infocentre,
+Australian Competition and Consumer Commission (ACCC),
+
+RE: Supplementary Update to Consumer Report REF4785185
+Business: Chemist Warehouse (Wangaratta, VIC branch / CW Retail Services Pty Ltd)
+Complainant: James Jones
+Phone: 0402 270 259
+Email: thunderops.ai@gmail.com
+
+I am writing to provide an urgent evidentiary update to my consumer report REF4785185 regarding Chemist Warehouse Wangaratta.
+
+Following my initial lodging on 13 October 2026:
+1. Total Customer Service Failure: Chemist Warehouse assigned internal Case #516500 on 13 October 2026. Despite scheduled medication (Targin) being unaccounted for and repeated written requests for management contact, the business has completely failed to respond after nearly two weeks.
+2. Obstruction of In-Store Complaint Pathways: During in-person visits to the Wangaratta store, front-counter staff employed for over 5 years explicitly stated they had zero avenues, forms, email addresses, or phone numbers to receive consumer complaints, representing an intentional barrier to dispute resolution.
+3. Hostile Pharmacist Conduct: Dispensing pharmacists exhibited unacceptable customer service, refusing to investigate missing scripts or provide accountability.
+4. Suppression of Digital Consumer Records: Historical communication records and prescription histories within the proprietary Chemist Warehouse mobile app have vanished/been removed, hindering consumer access to transaction records and documentation of dispensing requests.
+5. Health & Safety Risk: Repeated cancellations of active, valid scripts without prior notice or clinical consultation represents an unreasonable failure to render services with due care and skill under Section 60 of the Australian Consumer Law.
+
+This documentation is submitted to form part of the ACCC's compliance intelligence regarding unfair practices, obstruction of complaint mechanisms, and electronic record suppression by this pharmacy group.
+
+Kind regards,
+
+James Jones
+0402 270 259
+thunderops.ai@gmail.com`
+        },
+        vpa: {
+            recipient: "enquiries@pharmacy.vic.gov.au",
+            reference: "Premises: Chemist Warehouse Wangaratta",
+            badge: "VPA Operational & S8 Complaint",
+            badgeClass: "neon-purple",
+            subject: "Formal Complaint: Chemist Warehouse Wangaratta – Pharmacy Operations, Record Keeping & Unaccounted Schedule 8 Prescription (Targin)",
+            body: `To the Registrar & Complaints Officer,
+Victorian Pharmacy Authority (VPA),
+
+RE: Formal Complaint – Pharmacy Operations & S8 Medication Record Keeping
+Premises: Chemist Warehouse Wangaratta (VIC)
+Patient / Complainant: James Jones
+Phone: 0402 270 259
+Email: thunderops.ai@gmail.com
+
+I am writing to formally lodge a complaint regarding serious operational and record-keeping deficiencies at Chemist Warehouse Wangaratta, specifically concerning the handling and dispensing of my Schedule 8 prescription medication (Targin).
+
+Key grounds of complaint:
+1. Unaccounted Schedule 8 Medication / Script Discrepancy:
+   - On multiple occasions over recent months, valid electronic/hard-copy prescriptions for Targin presented for dispensing were cancelled or remained unfulfilled without clinical explanation or notification.
+   - Repeated in-store visits to resolve the discrepancy with the dispensing pharmacist revealed that a box of Targin could not be accounted for on the dispensary records.
+2. Lack of Clinical Governance & Unprofessional Conduct:
+   - In-store dispensary staff and front-counter employees repeatedly refused or were unable to provide records of dispensing attempts, escalate to the supervising pharmacy owner/manager, or provide a complaints pathway.
+   - Staff employed at the store for over 5 years stated they have no complaints process or management contact available.
+   - Digital communication records and chat history within the Chemist Warehouse patient portal have been cleared or rendered inaccessible.
+3. Failure to Respond to Serious Prescription Enquiries:
+   - A formal complaint was lodged with head office (Internal Case #516500) on 13 October 2026 requesting audit of dispensary logs and CCTV. To date, no pharmacist or management representative has contacted me.
+
+Given the strict regulatory requirements governing Schedule 8 poisons and dispensary audit trails under the Pharmacy Regulation Act 2010 (Vic) and Drugs, Poisons and Controlled Substances Act 1981, I respectfully request that the Authority investigate the dispensary procedures, register reconciliation, and operational practices at this premises.
+
+Supporting correspondence and incident timelines can be provided upon request.
+
+Kind regards,
+
+James Jones
+158 Tone Rd, Wangaratta VIC 3677
+Phone: 0402 270 259
+Email: thunderops.ai@gmail.com`
+        }
+    };
+
+    let currentComplaintTab = 'cav';
+
+    function renderComplaintView(tabKey = 'cav') {
+        currentComplaintTab = tabKey;
+        const data = COMPLAINTS_DATA[tabKey];
+        if (!data) return;
+
+        const badge = document.getElementById('complaintBadge');
+        const ref = document.getElementById('complaintRef');
+        const recipient = document.getElementById('complaintRecipient');
+        const subject = document.getElementById('complaintSubject');
+        const bodyText = document.getElementById('complaintBodyText');
+
+        if (badge) {
+            badge.className = `badge ${data.badgeClass}`;
+            badge.textContent = data.badge;
+        }
+        if (ref) ref.textContent = data.reference;
+        if (recipient) recipient.textContent = data.recipient;
+        if (subject) subject.textContent = data.subject;
+        if (bodyText) bodyText.textContent = data.body;
+
+        const tabCav = document.getElementById('tabComplaintsCav');
+        const tabAccc = document.getElementById('tabComplaintsAccc');
+        const tabVpa = document.getElementById('tabComplaintsVpa');
+        [tabCav, tabAccc, tabVpa].forEach(btn => {
+            if (btn) btn.className = 'btn btn-sm btn-outline';
+        });
+        if (tabKey === 'cav' && tabCav) tabCav.className = 'btn btn-sm btn-neon-green active';
+        if (tabKey === 'accc' && tabAccc) tabAccc.className = 'btn btn-sm btn-neon-blue active';
+        if (tabKey === 'vpa' && tabVpa) tabVpa.className = 'btn btn-sm btn-neon-purple active';
+    }
+
+    function openComplaintsModal(initialTab = 'cav') {
+        renderComplaintView(initialTab);
+        const modal = document.getElementById('complaintsModal');
+        if (modal) modal.classList.remove('hidden');
+    }
+
+    const modalComplaints = document.getElementById('complaintsModal');
+    const btnCloseComplaints = document.getElementById('btnCloseComplaintsModal');
+    const btnDoneComplaints = document.getElementById('btnDoneComplaintsModal');
+    const btnCopyComplaint = document.getElementById('btnCopyComplaintText');
+
+    [btnCloseComplaints, btnDoneComplaints].forEach(btn => {
+        if (btn) {
+            btn.addEventListener('click', () => {
+                if (modalComplaints) modalComplaints.classList.add('hidden');
+            });
+        }
+    });
+
+    const tabCav = document.getElementById('tabComplaintsCav');
+    const tabAccc = document.getElementById('tabComplaintsAccc');
+    const tabVpa = document.getElementById('tabComplaintsVpa');
+
+    if (tabCav) tabCav.addEventListener('click', () => renderComplaintView('cav'));
+    if (tabAccc) tabAccc.addEventListener('click', () => renderComplaintView('accc'));
+    if (tabVpa) tabVpa.addEventListener('click', () => renderComplaintView('vpa'));
+
+    if (btnCopyComplaint) {
+        btnCopyComplaint.addEventListener('click', () => {
+            const data = COMPLAINTS_DATA[currentComplaintTab];
+            if (data && data.body) {
+                navigator.clipboard.writeText(data.body);
+                const originalText = btnCopyComplaint.textContent;
+                btnCopyComplaint.textContent = "✓ Copied to Clipboard";
+                setTimeout(() => {
+                    btnCopyComplaint.textContent = originalText;
+                }, 2000);
+            }
+        });
     }
 
     checkMacroDroidBanner();
