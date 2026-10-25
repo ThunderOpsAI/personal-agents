@@ -1,4 +1,11 @@
-import { Pool } from 'pg';
+import { Pool } from '@neondatabase/serverless';
+import { drizzle as drizzleServerless, NeonDatabase } from 'drizzle-orm/neon-serverless';
+import * as drizzleSchema from './db/schema';
+import {
+  indexSemanticMemory,
+  searchSemanticMemories,
+  SemanticSearchResult,
+} from './semantic-memory';
 // import Database from 'better-sqlite3';
 import {
   AgendaItem,
@@ -49,6 +56,14 @@ import {
 let pgPool: Pool | null = null;
 let sqliteDb: any = null; // mocked Database.Database | null
 let currentStatus: DatabaseStatus | null = null;
+let drizzleDb: NeonDatabase<typeof drizzleSchema> | null = null;
+
+export function getDrizzleDb(): NeonDatabase<typeof drizzleSchema> | null {
+  if (!drizzleDb && pgPool) {
+    drizzleDb = drizzleServerless(pgPool, { schema: drizzleSchema });
+  }
+  return drizzleDb;
+}
 
 export function getDbStatus(): DatabaseStatus {
   if (currentStatus) {
@@ -291,6 +306,18 @@ export async function ensureTableExists(): Promise<void> {
       await pgPool.query(`ALTER TABLE sms_messages ADD COLUMN IF NOT EXISTS provider_format TEXT`).catch(() => {});
       await pgPool.query(CREATE_PENDING_CHAT_ACTIONS_TABLE_SQL);
       await pgPool.query(CREATE_TASKS_TABLE_SQL);
+      await pgPool.query('CREATE EXTENSION IF NOT EXISTS vector').catch(() => {});
+      await pgPool.query(`
+        CREATE TABLE IF NOT EXISTS semantic_memories (
+          id TEXT PRIMARY KEY,
+          source_type TEXT NOT NULL,
+          source_id TEXT NOT NULL,
+          content TEXT NOT NULL,
+          metadata JSONB,
+          embedding vector(768),
+          created_at TEXT NOT NULL
+        )
+      `).catch(() => {});
     }
   } else {
     if (!sqliteDb) {
@@ -536,6 +563,9 @@ export async function getBudgetReportById(id: string): Promise<BudgetReportRecor
 }
 
 export async function closeDb(): Promise<void> {
+  if (drizzleDb) {
+    drizzleDb = null;
+  }
   if (pgPool) {
     await pgPool.end();
     pgPool = null;
@@ -2022,6 +2052,25 @@ export async function deleteTaskInDb(id: string): Promise<boolean> {
   }
 
   return false;
+}
+
+export async function indexMemory(input: {
+  sourceType: 'medical_note' | 'soul_reflection' | 'pain_log';
+  sourceId: string;
+  content: string;
+  metadata?: Record<string, any>;
+}): Promise<{ id: string; success: boolean }> {
+  await ensureTableExists();
+  return indexSemanticMemory({ ...input, pgPool });
+}
+
+export async function searchMemories(input: {
+  query: string;
+  sourceType?: 'all' | 'medical_note' | 'soul_reflection' | 'pain_log';
+  limit?: number;
+}): Promise<SemanticSearchResult[]> {
+  await ensureTableExists();
+  return searchSemanticMemories({ ...input, pgPool });
 }
 
 

@@ -3,7 +3,7 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 
 interface ActionPreview {
-  type: "pain_log" | "note" | "task" | "multi_action" | "calendar_event" | "send_email" | "send_sms" | "budget_item" | "agent_report";
+  type: "pain_log" | "note" | "task" | "multi_action" | "calendar_event" | "send_email" | "send_sms" | "budget_item" | "agent_report" | "create_pr";
   data: Record<string, any>;
 }
 
@@ -315,6 +315,49 @@ export function RumbleChat({ onClose, initialMessage }: RumbleChatProps) {
                             resultMessage={statusInfo.resultMessage}
                             onConfirm={() => handleConfirmAction(actionId, { type: "budget_item", data: args })}
                             onCancel={() => handleCancelAction(actionId)}
+                          />
+                        )}
+
+                        {(toolName === "searchSemanticMemory" || toolName === "semanticMemory") && (
+                          <SemanticMemoryCard
+                            query={args.query || ""}
+                            sourceType={args.source_type || "all"}
+                          />
+                        )}
+
+                        {(toolName === "createPullRequest" || toolName === "createPr") && (
+                          <PrConfirmationCard
+                            actionId={actionId}
+                            title={args.title || ""}
+                            slug={args.slug || ""}
+                            summary={args.summary || ""}
+                            files={args.files || []}
+                            diff={args.diff || (part as any).result?.preview?.data?.diff}
+                            status={statusInfo.status}
+                            resultMessage={statusInfo.resultMessage}
+                            onConfirm={() =>
+                              handleConfirmAction(actionId, {
+                                type: "create_pr",
+                                data: (part as any).result?.preview?.data || {
+                                  title: args.title,
+                                  slug: args.slug,
+                                  summary: args.summary,
+                                  files: args.files,
+                                },
+                              })
+                            }
+                            onCancel={() => handleCancelAction(actionId)}
+                          />
+                        )}
+
+                        {(toolName === "runSandboxCode" || toolName === "sandboxExecute") && (
+                          <SandboxExecutionCard
+                            code={args.code || ""}
+                            language={args.language || "python"}
+                            status={(part as any).result?.status}
+                            stdout={(part as any).result?.stdout}
+                            stderr={(part as any).result?.stderr}
+                            executionTimeMs={(part as any).result?.execution_time_ms}
                           />
                         )}
                       </div>
@@ -808,6 +851,213 @@ function BudgetConfirmationCard({
           Cancel
         </button>
       </div>
+    </div>
+  );
+}
+
+function SemanticMemoryCard({
+  query,
+  sourceType,
+}: {
+  query: string;
+  sourceType: string;
+}) {
+  return (
+    <div
+      style={{
+        padding: "10px 14px",
+        borderRadius: "8px",
+        background: "rgba(0, 240, 255, 0.05)",
+        border: "1px solid rgba(0, 240, 255, 0.3)",
+        display: "flex",
+        flexDirection: "column",
+        gap: "4px",
+        fontSize: "0.85rem",
+      }}
+    >
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "1px", color: "var(--neon-blue)", fontWeight: "bold" }}>
+          Semantic Memory Search
+        </span>
+        <span style={{ fontSize: "0.7rem", color: "var(--text-secondary)" }}>pgvector</span>
+      </div>
+      <div style={{ color: "var(--text-primary)" }}>
+        Searching <strong>{sourceType === "all" ? "all records" : sourceType}</strong> for: &ldquo;{query}&rdquo;
+      </div>
+    </div>
+  );
+}
+
+function PrConfirmationCard({
+  title,
+  slug,
+  summary,
+  files,
+  diff,
+  status,
+  resultMessage,
+  onConfirm,
+  onCancel,
+}: {
+  actionId: string;
+  title: string;
+  slug: string;
+  summary: string;
+  files: Array<{ path: string; content?: string }>;
+  diff?: string;
+  status: "pending" | "confirmed" | "cancelled";
+  resultMessage?: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  const branch = `feat/rumble-${(slug || "patch").toLowerCase().replace(/[^a-z0-9-_]/g, "-").replace(/^-+|-+$/g, "").slice(0, 40)}`;
+
+  if (status === "confirmed") {
+    return (
+      <div style={{ padding: "12px", borderRadius: "8px", background: "rgba(0, 255, 128, 0.1)", border: "1px solid var(--neon-green)", fontSize: "0.85rem" }}>
+        <div style={{ fontWeight: "bold", color: "var(--neon-green)", marginBottom: "4px" }}>
+          Pull Request Created Successfully
+        </div>
+        <div>{resultMessage}</div>
+      </div>
+    );
+  }
+
+  if (status === "cancelled") {
+    return (
+      <div style={{ padding: "8px 12px", borderRadius: "8px", background: "rgba(128, 128, 128, 0.1)", color: "#888", fontSize: "0.8rem" }}>
+        PR creation cancelled.
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ padding: "14px", borderRadius: "8px", background: "rgba(20, 20, 35, 0.95)", border: "1px solid var(--neon-blue)", display: "flex", flexDirection: "column", gap: "10px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "1px", color: "var(--neon-blue)", fontWeight: "bold" }}>
+          GitHub Pull Request Preview
+        </span>
+        <span style={{ fontSize: "0.75rem", color: "var(--neon-purple)", fontFamily: "monospace" }}>
+          {branch}
+        </span>
+      </div>
+
+      <div style={{ fontSize: "0.95rem", fontWeight: "bold", color: "#fff" }}>
+        {title}
+      </div>
+
+      <div style={{ fontSize: "0.85rem", color: "#ccc" }}>
+        {summary}
+      </div>
+
+      {files && files.length > 0 && (
+        <div style={{ fontSize: "0.8rem" }}>
+          <strong style={{ color: "var(--text-secondary)" }}>Files to commit ({files.length}):</strong>
+          <ul style={{ margin: "4px 0 0 16px", padding: 0, fontFamily: "monospace", color: "var(--neon-cyan, #00e5ff)" }}>
+            {files.map((f, idx) => (
+              <li key={idx}>{f.path}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {diff && (
+        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+          <span style={{ fontSize: "0.75rem", color: "var(--text-secondary)", fontWeight: "bold" }}>Diff Preview:</span>
+          <pre
+            style={{
+              fontSize: "0.75rem",
+              background: "rgba(0, 0, 0, 0.6)",
+              border: "1px solid rgba(255, 255, 255, 0.1)",
+              borderRadius: "4px",
+              padding: "8px",
+              maxHeight: "150px",
+              overflowY: "auto",
+              whiteSpace: "pre-wrap",
+              fontFamily: "monospace",
+              color: "#80cbc4",
+            }}
+          >
+            {diff}
+          </pre>
+        </div>
+      )}
+
+      <div style={{ display: "flex", gap: "8px", marginTop: "4px" }}>
+        <button type="button" className="btn btn-neon-blue btn-sm" style={{ flex: 1 }} onClick={onConfirm}>
+          Confirm & Open PR
+        </button>
+        <button type="button" className="btn btn-outline btn-sm" onClick={onCancel}>
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function SandboxExecutionCard({
+  code,
+  language,
+  stdout,
+  stderr,
+  executionTimeMs,
+}: {
+  code: string;
+  language?: string;
+  status?: string;
+  stdout?: string;
+  stderr?: string;
+  executionTimeMs?: number;
+}) {
+  return (
+    <div
+      style={{
+        padding: "12px",
+        borderRadius: "8px",
+        background: "rgba(10, 15, 25, 0.9)",
+        border: "1px solid var(--neon-purple, #b388ff)",
+        display: "flex",
+        flexDirection: "column",
+        gap: "6px",
+        fontSize: "0.85rem",
+      }}
+    >
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "1px", color: "var(--neon-purple, #b388ff)", fontWeight: "bold" }}>
+          Sandboxed Execution ({language || "python"})
+        </span>
+        <span style={{ fontSize: "0.7rem", color: "var(--text-secondary)" }}>
+          {executionTimeMs !== undefined ? `${executionTimeMs}ms` : "isolated runner"}
+        </span>
+      </div>
+
+      <pre
+        style={{
+          fontSize: "0.75rem",
+          background: "rgba(0,0,0,0.4)",
+          padding: "6px 8px",
+          borderRadius: "4px",
+          margin: 0,
+          fontFamily: "monospace",
+          maxHeight: "100px",
+          overflowY: "auto",
+          whiteSpace: "pre-wrap",
+          color: "#e0e0e0",
+        }}
+      >
+        {code}
+      </pre>
+
+      {stdout && (
+        <div style={{ fontSize: "0.8rem", color: "var(--neon-green)", fontFamily: "monospace" }}>
+          <strong>Output:</strong> {stdout}
+        </div>
+      )}
+      {stderr && (
+        <div style={{ fontSize: "0.8rem", color: "var(--neon-red)", fontFamily: "monospace" }}>
+          <strong>Error:</strong> {stderr}
+        </div>
+      )}
     </div>
   );
 }
