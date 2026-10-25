@@ -44,7 +44,8 @@ from code_review_graph.skills import (
 from code_review_graph import skills as skills_module
 
 _needs_tomllib = pytest.mark.skipif(
-    tomllib is None, reason="tomllib requires Python 3.11+",
+    tomllib is None,
+    reason="tomllib requires Python 3.11+",
 )
 
 
@@ -55,14 +56,14 @@ class TestStripJsonc:
         # The original #553 repro: a comma inside a string, immediately before a
         # line whose first non-space char is `}`. A naive regex deleted it.
         src = (
-            '{\n'
+            "{\n"
             '  "mcp": {\n'
             '    "my-server": {\n'
             '      "command": ["x"],\n'
             '      "description": "foo, bar"\n'
-            '    }\n'
-            '  }\n'
-            '}\n'
+            "    }\n"
+            "  }\n"
+            "}\n"
         )
         parsed = json.loads(_strip_jsonc(src))
         assert parsed["mcp"]["my-server"]["description"] == "foo, bar"
@@ -175,18 +176,18 @@ class TestGenerateSkills:
         skills_dir = generate_skills(tmp_path)
         for subdir in skills_dir.iterdir():
             content = (subdir / "SKILL.md").read_text()
-            assert "get_minimal_context" in content, (
-                f"{subdir.name} missing get_minimal_context reference"
-            )
+            assert (
+                "get_minimal_context" in content
+            ), f"{subdir.name} missing get_minimal_context reference"
 
     def test_skill_content_includes_detail_level(self, tmp_path):
         """Every skill template must reference detail_level."""
         skills_dir = generate_skills(tmp_path)
         for subdir in skills_dir.iterdir():
             content = (subdir / "SKILL.md").read_text()
-            assert "detail_level" in content, (
-                f"{subdir.name} missing detail_level reference"
-            )
+            assert (
+                "detail_level" in content
+            ), f"{subdir.name} missing detail_level reference"
 
     def test_idempotent(self, tmp_path):
         """Running twice should not fail and files should still be valid."""
@@ -237,7 +238,9 @@ class TestGenerateHooksConfig:
         for hook_type, entries in config["hooks"].items():
             for entry in entries:
                 assert "hooks" in entry, f"{hook_type} entry missing 'hooks' array"
-                assert "command" not in entry, f"{hook_type} has bare 'command' outside hooks[]"
+                assert (
+                    "command" not in entry
+                ), f"{hook_type} has bare 'command' outside hooks[]"
 
     def test_hooks_have_path_guard(self):
         """Regression test for #549: hooks must guard against missing binary."""
@@ -301,14 +304,14 @@ class TestGenerateHooksConfig:
                     f"{event_name} entry has a flat `command` field; "
                     "it must be wrapped in an inner `hooks` array"
                 )
-                assert "hooks" in entry, (
-                    f"{event_name} entry is missing the inner `hooks` array"
-                )
+                assert (
+                    "hooks" in entry
+                ), f"{event_name} entry is missing the inner `hooks` array"
                 assert isinstance(entry["hooks"], list)
                 for hook in entry["hooks"]:
-                    assert hook.get("type") == "command", (
-                        f"{event_name} inner hook missing type=\"command\""
-                    )
+                    assert (
+                        hook.get("type") == "command"
+                    ), f'{event_name} inner hook missing type="command"'
                     assert "command" in hook
                     assert "timeout" in hook
 
@@ -324,9 +327,7 @@ class TestShippedHooksFiles:
     STDIN_DRAIN = "cat >/dev/null || true; "
 
     def test_hooks_json_commands_drain_stdin(self):
-        data = json.loads(
-            (self.HOOKS_DIR / "hooks.json").read_text(encoding="utf-8")
-        )
+        data = json.loads((self.HOOKS_DIR / "hooks.json").read_text(encoding="utf-8"))
         commands = [
             hook["command"]
             for entries in data.values()
@@ -336,9 +337,9 @@ class TestShippedHooksFiles:
         ]
         assert commands, "hooks/hooks.json should define at least one command hook"
         for command in commands:
-            assert command.startswith(self.STDIN_DRAIN), (
-                f"hooks.json command lacks the stdin drain prefix: {command!r}"
-            )
+            assert command.startswith(
+                self.STDIN_DRAIN
+            ), f"hooks.json command lacks the stdin drain prefix: {command!r}"
 
     def test_session_start_script_drains_stdin(self):
         script = (self.HOOKS_DIR / "session-start.sh").read_text(encoding="utf-8")
@@ -427,8 +428,15 @@ class TestInstallGitHook:
         into the hooks path git actually consults (issue #313)."""
         main = self._init_real_repo(tmp_path / "main")
         self._git(
-            "-c", "user.email=test@example.com", "-c", "user.name=Test",
-            "commit", "--allow-empty", "-m", "init", cwd=main,
+            "-c",
+            "user.email=test@example.com",
+            "-c",
+            "user.name=Test",
+            "commit",
+            "--allow-empty",
+            "-m",
+            "init",
+            cwd=main,
         )
         worktree = tmp_path / "wt"
         self._git("worktree", "add", str(worktree), "-b", "wt-branch", cwd=main)
@@ -510,7 +518,6 @@ class TestGenerateCodexHooksConfig:
         assert "status" in inner["command"]
         assert inner["command"].startswith("cat >/dev/null || true; ")
         assert inner["statusMessage"] == "Checking code-review-graph status"
-
 
     def test_post_tool_use_command_handles_large_stdin_payload(self, tmp_path):
         config = generate_codex_hooks_config(tmp_path)
@@ -677,8 +684,12 @@ class TestInjectPlatformInstructionsFiltering:
     def test_all_writes_every_file(self, tmp_path):
         updated = inject_platform_instructions(tmp_path, target="all")
         assert set(updated) == {
-            "AGENTS.md", "GEMINI.md", ".cursorrules", ".windsurfrules",
-            "QODER.md", ".kiro/steering/code-review-graph.md",
+            "AGENTS.md",
+            "GEMINI.md",
+            ".cursorrules",
+            ".windsurfrules",
+            "QODER.md",
+            ".kiro/steering/code-review-graph.md",
             ".github/instructions/code-review-graph.instructions.md",
             "CODEBUDDY.md",
         }
@@ -686,8 +697,12 @@ class TestInjectPlatformInstructionsFiltering:
     def test_default_is_all(self, tmp_path):
         updated = inject_platform_instructions(tmp_path)
         assert set(updated) == {
-            "AGENTS.md", "GEMINI.md", ".cursorrules", ".windsurfrules",
-            "QODER.md", ".kiro/steering/code-review-graph.md",
+            "AGENTS.md",
+            "GEMINI.md",
+            ".cursorrules",
+            ".windsurfrules",
+            "QODER.md",
+            ".kiro/steering/code-review-graph.md",
             ".github/instructions/code-review-graph.instructions.md",
             "CODEBUDDY.md",
         }
@@ -701,10 +716,7 @@ class TestInjectPlatformInstructionsFiltering:
         assert not (tmp_path / ".windsurfrules").exists()
         assert not (tmp_path / "QODER.md").exists()
         assert not (
-            tmp_path
-            / ".github"
-            / "instructions"
-            / "code-review-graph.instructions.md"
+            tmp_path / ".github" / "instructions" / "code-review-graph.instructions.md"
         ).exists()
 
     def test_cursor_writes_only_cursor_files(self, tmp_path):
@@ -914,7 +926,10 @@ class TestCodeBuddyPlatform:
         crg_entry = next(
             entry
             for entry in data["hooks"]["PostToolUse"]
-            if any("code-review-graph" in hook.get("command", "") for hook in entry["hooks"])
+            if any(
+                "code-review-graph" in hook.get("command", "")
+                for hook in entry["hooks"]
+            )
         )
         assert crg_entry["matcher"] == "Edit|Write|Bash"
 
@@ -1087,7 +1102,9 @@ class TestInstallPlatformConfigs:
         }
         assert "cwd" not in entry
 
-    def test_install_opencode_prefers_existing_jsonc_and_preserves_servers(self, tmp_path):
+    def test_install_opencode_prefers_existing_jsonc_and_preserves_servers(
+        self, tmp_path
+    ):
         config_path = tmp_path / "opencode.jsonc"
         config_path.write_text(
             '{\n  // keep this server\n  "mcp": {\n'
@@ -1246,7 +1263,9 @@ class TestInstallPlatformConfigs:
         config_path = tmp_path / ".continue" / "config.json"
         config_path.parent.mkdir(parents=True)
         existing = {
-            "mcpServers": [{"name": "code-review-graph", "command": "uvx", "args": ["serve"]}]
+            "mcpServers": [
+                {"name": "code-review-graph", "command": "uvx", "args": ["serve"]}
+            ]
         }
         config_path.write_text(json.dumps(existing))
         with patch.dict(
@@ -1290,7 +1309,9 @@ class TestGeminiCLIInstall:
         settings_dir = tmp_path / ".gemini"
         settings_dir.mkdir(parents=True, exist_ok=True)
         settings_path = settings_dir / "settings.json"
-        settings_path.write_text(json.dumps({"customSetting": True}) + "\n", encoding="utf-8")
+        settings_path.write_text(
+            json.dumps({"customSetting": True}) + "\n", encoding="utf-8"
+        )
 
         out_path = install_gemini_cli_hooks(tmp_path)
         assert out_path == settings_path
@@ -1361,9 +1382,9 @@ class TestCursorHooksConfig:
         hooks_dir = str(Path.home() / ".cursor" / "hooks")
         for event, entries in config["hooks"].items():
             for entry in entries:
-                assert entry["command"].startswith(hooks_dir), (
-                    f"{event} command does not start with {hooks_dir}"
-                )
+                assert entry["command"].startswith(
+                    hooks_dir
+                ), f"{event} command does not start with {hooks_dir}"
 
 
 class TestCursorHookScripts:
@@ -1380,7 +1401,9 @@ class TestCursorHookScripts:
     def test_scripts_start_with_shebang(self):
         scripts = _cursor_hook_scripts()
         for name, content in scripts.items():
-            assert content.startswith("#!/usr/bin/env bash"), f"{name} missing shebang line"
+            assert content.startswith(
+                "#!/usr/bin/env bash"
+            ), f"{name} missing shebang line"
 
     def test_scripts_exit_zero(self):
         """Each script must end with exit 0 for graceful failure."""
@@ -1404,7 +1427,9 @@ class TestCursorHookScripts:
 
     def test_pre_commit_script_runs_detect_changes(self):
         scripts = _cursor_hook_scripts()
-        assert "code-review-graph detect-changes --brief" in scripts["crg-pre-commit.sh"]
+        assert (
+            "code-review-graph detect-changes --brief" in scripts["crg-pre-commit.sh"]
+        )
 
 
 class TestInstallCursorHooks:
@@ -1471,7 +1496,9 @@ class TestInstallCursorHooks:
         # Each event type should have exactly 1 crg hook
         for event, entries in data["hooks"].items():
             crg_hooks = [h for h in entries if "crg-" in h.get("command", "")]
-            assert len(crg_hooks) == 1, f"{event} has {len(crg_hooks)} crg hooks after reinstall"
+            assert (
+                len(crg_hooks) == 1
+            ), f"{event} has {len(crg_hooks)} crg hooks after reinstall"
 
     def test_handles_corrupt_existing_json(self, tmp_path):
         cursor_dir = tmp_path / ".cursor"
@@ -1640,10 +1667,7 @@ class TestCopilotPlatform:
     def test_copilot_instructions_idempotent(self, tmp_path):
         """Running inject twice produces identical content."""
         instructions = (
-            tmp_path
-            / ".github"
-            / "instructions"
-            / "code-review-graph.instructions.md"
+            tmp_path / ".github" / "instructions" / "code-review-graph.instructions.md"
         )
         inject_platform_instructions(tmp_path, target="copilot")
         first = instructions.read_text()
@@ -1661,9 +1685,7 @@ class TestCopilotPlatform:
     def test_copilot_writes_only_copilot_instructions(self, tmp_path):
         """inject_platform_instructions with target='copilot' writes only copilot file."""
         updated = inject_platform_instructions(tmp_path, target="copilot")
-        assert updated == [
-            ".github/instructions/code-review-graph.instructions.md"
-        ]
+        assert updated == [".github/instructions/code-review-graph.instructions.md"]
         assert not (tmp_path / "AGENTS.md").exists()
         assert not (tmp_path / "GEMINI.md").exists()
         assert not (tmp_path / ".cursorrules").exists()
@@ -1863,9 +1885,7 @@ class TestCopilotCLIPlatform:
         assert "servers" not in data
         assert "code-review-graph" in data["mcpServers"]
 
-    def test_install_copilot_cli_reinstall_is_byte_for_byte_idempotent(
-        self, tmp_path
-    ):
+    def test_install_copilot_cli_reinstall_is_byte_for_byte_idempotent(self, tmp_path):
         """A second install must not rewrite an already valid client config."""
         config_path = tmp_path / "fakehome" / ".copilot" / "mcp-config.json"
         with patch.dict(
@@ -1910,10 +1930,7 @@ class TestCopilotCLIPlatform:
 
         assert legacy.read_text(encoding="utf-8") == "# User notes\n"
         current = (
-            tmp_path
-            / ".github"
-            / "instructions"
-            / "code-review-graph.instructions.md"
+            tmp_path / ".github" / "instructions" / "code-review-graph.instructions.md"
         )
         assert current.exists()
 
@@ -1958,7 +1975,9 @@ class TestDetectServeCommand:
     def test_in_poetry_project_via_virtual_env(self, monkeypatch):
         """VIRTUAL_ENV containing 'pypoetry' signals a poetry run session."""
         monkeypatch.delenv("POETRY_ACTIVE", raising=False)
-        monkeypatch.setenv("VIRTUAL_ENV", "/home/user/.cache/pypoetry/virtualenvs/proj-xxx")
+        monkeypatch.setenv(
+            "VIRTUAL_ENV", "/home/user/.cache/pypoetry/virtualenvs/proj-xxx"
+        )
         assert _in_poetry_project() is True
 
     def test_in_poetry_project_false_for_plain_venv(self, monkeypatch):
@@ -1992,7 +2011,9 @@ class TestDetectServeCommand:
     def test_virtual_env_pypoetry_returns_poetry_run(self, monkeypatch):
         """VIRTUAL_ENV with 'pypoetry' (poetry run) → 'poetry run' invocation."""
         monkeypatch.delenv("POETRY_ACTIVE", raising=False)
-        monkeypatch.setenv("VIRTUAL_ENV", "/home/user/.cache/pypoetry/virtualenvs/proj-abc123")
+        monkeypatch.setenv(
+            "VIRTUAL_ENV", "/home/user/.cache/pypoetry/virtualenvs/proj-abc123"
+        )
         monkeypatch.setattr(
             "code_review_graph.skills.shutil.which",
             lambda x: "/usr/bin/poetry" if x == "poetry" else None,
@@ -2091,7 +2112,9 @@ class TestDetectServeCommand:
         fake_python.parent.mkdir(parents=True)
         fake_python.write_text("")
         monkeypatch.setattr("code_review_graph.skills.sys.executable", str(fake_python))
-        monkeypatch.setattr("code_review_graph.skills.Path.home", staticmethod(lambda: tmp_path))
+        monkeypatch.setattr(
+            "code_review_graph.skills.Path.home", staticmethod(lambda: tmp_path)
+        )
         assert _in_uv_project() is False
 
 
@@ -2294,10 +2317,7 @@ class TestInstallConfigDataLoss:
         settings = tmp_path / "zed" / "settings.json"
         settings.parent.mkdir(parents=True)
         settings.write_text(
-            "{\n"
-            '  // user theme preference\n'
-            '  "theme": "One Dark",\n'
-            "}\n",
+            "{\n" "  // user theme preference\n" '  "theme": "One Dark",\n' "}\n",
             encoding="utf-8",
         )
 
@@ -2434,7 +2454,8 @@ class TestNonAsciiConfigPreservation:
         settings_dir = tmp_path / ".claude"
         settings_dir.mkdir()
         (settings_dir / "settings.json").write_text(
-            json.dumps({"customSetting": self.NON_ASCII}), encoding="utf-8",
+            json.dumps({"customSetting": self.NON_ASCII}),
+            encoding="utf-8",
         )
 
         install_hooks(tmp_path, platform="claude")
@@ -2448,7 +2469,8 @@ class TestNonAsciiConfigPreservation:
         codex_dir = tmp_path / ".codex"
         codex_dir.mkdir()
         (codex_dir / "hooks.json").write_text(
-            json.dumps({"customSetting": self.NON_ASCII}), encoding="utf-8",
+            json.dumps({"customSetting": self.NON_ASCII}),
+            encoding="utf-8",
         )
 
         install_codex_hooks(tmp_path / "repo")
@@ -2461,7 +2483,8 @@ class TestNonAsciiConfigPreservation:
         settings_dir = tmp_path / ".gemini"
         settings_dir.mkdir()
         (settings_dir / "settings.json").write_text(
-            json.dumps({"customSetting": self.NON_ASCII}), encoding="utf-8",
+            json.dumps({"customSetting": self.NON_ASCII}),
+            encoding="utf-8",
         )
 
         install_gemini_cli_hooks(tmp_path)
@@ -2470,12 +2493,15 @@ class TestNonAsciiConfigPreservation:
         assert self.NON_ASCII in raw
         assert "\\u" not in raw
 
-    def test_install_cursor_hooks_preserves_non_ascii_field(self, tmp_path, monkeypatch):
+    def test_install_cursor_hooks_preserves_non_ascii_field(
+        self, tmp_path, monkeypatch
+    ):
         monkeypatch.setattr("code_review_graph.skills.Path.home", lambda: tmp_path)
         cursor_dir = tmp_path / ".cursor"
         cursor_dir.mkdir()
         (cursor_dir / "hooks.json").write_text(
-            json.dumps({"customSetting": self.NON_ASCII}), encoding="utf-8",
+            json.dumps({"customSetting": self.NON_ASCII}),
+            encoding="utf-8",
         )
 
         install_cursor_hooks()

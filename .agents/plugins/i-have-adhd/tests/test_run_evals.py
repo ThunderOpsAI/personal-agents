@@ -41,7 +41,9 @@ class EvaluationHarnessTest(unittest.TestCase):
         summary = run_evals.summarize_scores(scores)
 
         self.assertAlmostEqual(3.0, summary["conditions"]["baseline"]["weighted_score"])
-        self.assertAlmostEqual(4.0, summary["conditions"]["candidate"]["weighted_score"])
+        self.assertAlmostEqual(
+            4.0, summary["conditions"]["candidate"]["weighted_score"]
+        )
         self.assertTrue(summary["release_gate"]["passed"])
 
     def test_candidate_blocker_fails_release_gate(self):

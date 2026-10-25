@@ -147,7 +147,9 @@ def _handle_status(_args: argparse.Namespace) -> None:
             alive = child_pid is not None and pid_alive(child_pid)
             status_str = "alive" if alive else "dead"
             pid_str = str(child_pid) if child_pid is not None else "-"
-            print(f"  {repo.alias:<{alias_width}}  {status_str:<8}  {pid_str:<8}  {repo.path}")
+            print(
+                f"  {repo.alias:<{alias_width}}  {status_str:<8}  {pid_str:<8}  {repo.path}"
+            )
     else:
         print(f"  {'Alias':<{alias_width}}  Path")
         print(f"  {'-' * alias_width}  {'-' * 40}")
@@ -298,7 +300,9 @@ def main() -> None:
     )
 
     # remove
-    remove_cmd = sub.add_parser("remove", help="Remove a repository from the daemon config")
+    remove_cmd = sub.add_parser(
+        "remove", help="Remove a repository from the daemon config"
+    )
     remove_cmd.add_argument("path_or_alias", help="Repository path or alias to remove")
 
     args = ap.parse_args()

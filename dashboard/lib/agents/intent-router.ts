@@ -1,5 +1,8 @@
 import fs from 'fs';
 import path from 'path';
+import { z } from 'zod';
+import { tool, streamText, generateObject, generateText } from 'ai';
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { getAgendaItems, createAgendaItem, createNote, createPainLog, getNotes, getPainLogsFromDb, getSmsMessages } from '../db';
 import { logPain, PainLocationWeight, validatePainLog } from '../rehab-learning';
 import { selectWashingDays, WashingDay } from '../agenda-engine';
@@ -83,7 +86,7 @@ export interface ParsedPainLog {
 }
 
 export interface ActionPreview {
-  type: "pain_log" | "note" | "task" | "multi_action" | "calendar_event" | "send_email" | "send_sms";
+  type: "pain_log" | "note" | "task" | "multi_action" | "calendar_event" | "send_email" | "send_sms" | "budget_item" | "agent_report";
   data: Record<string, any>;
 }
 
@@ -94,6 +97,285 @@ export interface IntentRouteResult {
   preview?: ActionPreview;
   disclaimer?: string;
   data?: Record<string, any>;
+}
+
+// ==========================================
+// DST-SAFE AUSTRALIA/MELBOURNE HELPERS
+// ==========================================
+
+export function getMelbourneOffset(date: Date = new Date()): string {
+  const formatter = new Intl.DateTimeFormat("en-AU", {
+    timeZone: "Australia/Melbourne",
+    timeZoneName: "longOffset",
+  });
+  const parts = formatter.formatToParts(date);
+  const tzPart = parts.find((p) => p.type === "timeZoneName");
+  const match = tzPart?.value.match(/GMT([+-]\d{2}:\d{2})/);
+  return match ? match[1] : "+10:00";
+}
+
+export function formatMelbourneISO(date: Date = new Date()): string {
+  const offset = getMelbourneOffset(date);
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Australia/Melbourne",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  });
+  const parts = formatter.formatToParts(date);
+  const p: Record<string, string> = {};
+  for (const part of parts) {
+    p[part.type] = part.value;
+  }
+  const hour = p.hour === "24" ? "00" : p.hour;
+  return `${p.year}-${p.month}-${p.day}T${hour}:${p.minute}:${p.second}${offset}`;
+}
+
+// ==========================================
+// VERCEL AI SDK TYPED SCHEMAS
+// ==========================================
+
+export const painLocationSchema = z.object({
+  area: z.string().min(1, "Anatomical area is required"),
+  side: z.enum(["left", "right", "unspecified"]).default("unspecified"),
+  percentage: z.number().int().min(1).max(100),
+});
+
+export const painLogSchema = z.object({
+  score: z.number().int().min(1).max(10),
+  locations: z.array(painLocationSchema).min(1, "At least one location is required"),
+  mood: z.string().optional(),
+  notes: z.string().optional(),
+}).refine(
+  (data) => data.locations.reduce((acc, loc) => acc + loc.percentage, 0) === 100,
+  {
+    message: "Location percentage weights must sum to exactly 100%",
+    path: ["locations"],
+  }
+);
+
+export const agendaItemSchema = z.object({
+  action: z.enum(["create", "reschedule"]).default("create"),
+  title: z.string().min(1, "Title is required"),
+  scheduled_time: z.string().refine((val) => !isNaN(Date.parse(val)), {
+    message: "Must be a valid ISO 8601 datetime string",
+  }),
+  existing_item_id: z.string().optional(),
+});
+
+export const noteSchema = z.object({
+  content: z.string().min(1, "Note content is required"),
+  author: z.string().default("user"),
+});
+
+export const calendarActionSchema = z.object({
+  action: z.enum(["create", "modify", "delete"]).default("create"),
+  summary: z.string().min(1, "Summary is required"),
+  start_datetime: z.string().refine((val) => !isNaN(Date.parse(val)), {
+    message: "Must be a valid ISO 8601 datetime string",
+  }),
+  end_datetime: z.string().optional().refine((val) => !val || !isNaN(Date.parse(val)), {
+    message: "Must be a valid ISO 8601 datetime string",
+  }),
+  event_id: z.string().optional(),
+});
+
+export const emailActionSchema = z.object({
+  to: z.string().min(1, "Recipient is required"),
+  subject: z.string().min(1, "Subject is required"),
+  body: z.string().min(1, "Body is required"),
+  threadId: z.string().optional(),
+});
+
+export const smsActionSchema = z.object({
+  to: z.string().min(1, "Recipient is required"),
+  body: z.string().min(1, "Body is required"),
+});
+
+export const budgetItemSchema = z.object({
+  description: z.string().min(1, "Description is required"),
+  amount: z.number().positive("Amount must be positive"),
+  category: z.string().min(1, "Category is required"),
+  type: z.enum(["income", "expense"]).default("expense"),
+});
+
+export const routerActionSchema = z.object({
+  type: z.enum([
+    "task",
+    "pain_log",
+    "note",
+    "calendar_event",
+    "budget_item",
+    "agent_report",
+    "send_email",
+    "send_sms",
+  ]),
+  task_title: z.string().optional(),
+  task_scheduled_time: z.string().optional(),
+  calendar_summary: z.string().optional(),
+  calendar_start_datetime: z.string().optional(),
+  calendar_end_datetime: z.string().optional(),
+  email_to: z.string().optional(),
+  email_subject: z.string().optional(),
+  email_body: z.string().optional(),
+  email_thread_id: z.string().optional(),
+  sms_to: z.string().optional(),
+  sms_body: z.string().optional(),
+  pain_score: z.number().int().optional(),
+  pain_locations: z.array(z.object({
+    area: z.string(),
+    side: z.enum(["left", "right", "unspecified"]).optional(),
+    percentage: z.number().int(),
+  })).optional(),
+  pain_mood: z.string().optional(),
+  pain_notes: z.string().optional(),
+  note_content: z.string().optional(),
+  budget_description: z.string().optional(),
+  budget_amount: z.number().optional(),
+  budget_category: z.string().optional(),
+  budget_type: z.enum(["income", "expense"]).optional(),
+  agent_report_title: z.string().optional(),
+  agent_report_content: z.string().optional(),
+});
+
+export const routerOutputSchema = z.object({
+  reply: z.string().describe("The conversational response to the user."),
+  actions: z.array(routerActionSchema).default([]).describe("List of actions to preview and confirm before commit."),
+});
+
+// ==========================================
+// VERCEL AI SDK TYPED TOOLS (CONFIRM-BEFORE-WRITE)
+// ==========================================
+
+export const painLogTool = tool({
+  description: "Log a health symptom or pain tracking entry. Validates anatomical locations and percentage weights (must sum to 100%). Follows parse -> preview -> confirm -> commit.",
+  inputSchema: painLogSchema,
+  execute: async ({ score, locations, mood, notes }) => {
+    const preview: ActionPreview = {
+      type: "pain_log",
+      data: { score, locations, mood, notes },
+    };
+    const locSummary = locations
+      .map((l: any) => `${l.side && l.side !== "unspecified" ? l.side + " " : ""}${l.area} (${l.percentage}%)`)
+      .join(", ");
+    return {
+      requires_confirmation: true,
+      preview,
+      summary: `Pain Score ${score}/10 in ${locSummary}${mood ? ` (Mood: ${mood})` : ""}${notes ? ` - Notes: "${notes}"` : ""}`,
+    };
+  },
+});
+
+export const agendaItemTool = tool({
+  description: "Create or reschedule a task or agenda item in the operational schedule. Follows parse -> preview -> confirm -> commit.",
+  inputSchema: agendaItemSchema,
+  execute: async ({ action, title, scheduled_time, existing_item_id }) => {
+    const preview: ActionPreview = {
+      type: "task",
+      data: { title, scheduled_time, action, existing_item_id },
+    };
+    return {
+      requires_confirmation: true,
+      preview,
+      summary: `${action === "reschedule" ? "Reschedule" : "Create"} Task: "${title}" at ${scheduled_time}`,
+    };
+  },
+});
+
+export const noteTool = tool({
+  description: "Capture and record a personal note. Follows parse -> preview -> confirm -> commit.",
+  inputSchema: noteSchema,
+  execute: async ({ content, author }) => {
+    const preview: ActionPreview = {
+      type: "note",
+      data: { content, author },
+    };
+    return {
+      requires_confirmation: true,
+      preview,
+      summary: `Note: "${content}"`,
+    };
+  },
+});
+
+export const calendarActionTool = tool({
+  description: "Create, modify, or delete a Google Calendar event. Follows parse -> preview -> confirm -> commit.",
+  inputSchema: calendarActionSchema,
+  execute: async ({ action, summary, start_datetime, end_datetime, event_id }) => {
+    const preview: ActionPreview = {
+      type: "calendar_event",
+      data: { action, summary, start_datetime, end_datetime, event_id },
+    };
+    return {
+      requires_confirmation: true,
+      preview,
+      summary: `Calendar ${action}: "${summary}" (${start_datetime})`,
+    };
+  },
+});
+
+export const emailActionTool = tool({
+  description: "Draft or prepare an outbound email for dispatch. Follows parse -> preview -> confirm -> commit. Emails are NEVER sent autonomously.",
+  inputSchema: emailActionSchema,
+  execute: async ({ to, subject, body, threadId }) => {
+    const preview: ActionPreview = {
+      type: "send_email",
+      data: { to, subject, body, threadId },
+    };
+    return {
+      requires_confirmation: true,
+      preview,
+      summary: `Email to ${to}: "${subject}"`,
+    };
+  },
+});
+
+export const smsActionTool = tool({
+  description: "Draft an outbound SMS text message for dispatch. Follows parse -> preview -> confirm -> commit.",
+  inputSchema: smsActionSchema,
+  execute: async ({ to, body }) => {
+    const preview: ActionPreview = {
+      type: "send_sms",
+      data: { to, body },
+    };
+    return {
+      requires_confirmation: true,
+      preview,
+      summary: `SMS to ${to}: "${body}"`,
+    };
+  },
+});
+
+export const budgetItemTool = tool({
+  description: "Record an expense or income budget item. Follows parse -> preview -> confirm -> commit.",
+  inputSchema: budgetItemSchema,
+  execute: async ({ description, amount, category, type }) => {
+    const preview: ActionPreview = {
+      type: "budget_item",
+      data: { description, amount, category, type },
+    };
+    return {
+      requires_confirmation: true,
+      preview,
+      summary: `Budget ${type}: $${amount.toFixed(2)} for ${description} (${category})`,
+    };
+  },
+});
+
+export function createRumbleTools() {
+  return {
+    painLog: painLogTool,
+    manageAgenda: agendaItemTool,
+    saveNote: noteTool,
+    manageCalendar: calendarActionTool,
+    draftEmail: emailActionTool,
+    draftSms: smsActionTool,
+    logBudgetItem: budgetItemTool,
+  };
 }
 
 const BODY_AREAS = [
@@ -295,13 +577,11 @@ export function parseTaskDirective(message: string): { title: string; scheduled_
     title = title[0].toUpperCase() + title.slice(1);
   }
 
-  // Default to today + 1 day at 09:00 AM Melbourne
+  // Default to today + 1 day at 09:00 AM Melbourne (DST-safe)
   const now = new Date();
   now.setDate(now.getDate() + 1);
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  const scheduled_time = `${year}-${month}-${day}T09:00:00+10:00`;
+  now.setHours(9, 0, 0, 0);
+  const scheduled_time = formatMelbourneISO(now);
 
   return { title, scheduled_time };
 }
@@ -316,7 +596,7 @@ export async function callGemini(
   history: any[] = [],
   attachment?: { data: string; mimeType: string; filename?: string }
 ): Promise<string> {
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
   if (!apiKey) {
     if (responseSchema) {
       return JSON.stringify({
@@ -447,39 +727,8 @@ export async function formatSmsMessagesSummary(limit: number = 10): Promise<stri
   return `Here are your recent text messages:\n\n${items.join("\n\n")}`;
 }
 
-/**
- * Routes and handles incoming chat messages dynamically with multimodal support.
- */
-export async function routeChatMessage(
-  message: string,
-  history: any[] = [],
-  attachment?: { data: string; mimeType: string; filename?: string }
-): Promise<IntentRouteResult> {
-  const lowered = message.toLowerCase();
-  const detectedIntent = classifyIntent(message);
-
-  // Fast-path deterministic parsing for pure direct write commands without follow-up questions
-  const hasQuestion = message.includes("?") || /\b(?:what|how|why|should|can you recommend|advice)\b/i.test(message);
-  if (!hasQuestion && classifyIntent(message) === "LOG_PAIN") {
-    const parsedPain = parsePainLogDirective(message);
-    if (parsedPain.parsed) {
-      const preview: ActionPreview = {
-        type: "pain_log",
-        data: parsedPain.parsed,
-      };
-      const locSummary = parsedPain.parsed.locations
-        .map((l) => `${l.side && l.side !== "unspecified" ? l.side + " " : ""}${l.area} (${l.percentage}%)`)
-        .join(", ");
-      return {
-        reply: `I've prepared your pain log: **Score ${parsedPain.parsed.score}/10** in ${locSummary}${parsedPain.parsed.mood ? ` (Mood: ${parsedPain.parsed.mood})` : ""}${parsedPain.parsed.notes ? ` - Notes: "${parsedPain.parsed.notes}"` : ""}.\n\nPlease click Confirm to save this to your health records.`,
-        intent: "LOG_PAIN",
-        requires_confirmation: true,
-        preview,
-        disclaimer: MEDICAL_GUARDRAIL,
-      };
-    }
-  }
-
+export async function buildRumbleSystemPrompt(queryContext: string = ""): Promise<string> {
+  const lowered = queryContext.toLowerCase();
   const nowMel = new Date().toLocaleString("en-AU", { timeZone: "Australia/Melbourne" });
   
   let liveAgendaText = "No active agenda items.";
@@ -525,7 +774,6 @@ export async function routeChatMessage(
 
   let emailText = "No unread urgent emails.";
   try {
-    // 1. Fetch general recent emails
     const emailRes = await fetchLiveGmailMessages({ maxResults: 10 });
     const collectedMessages: any[] = [];
     const seenIds = new Set<string>();
@@ -539,7 +787,6 @@ export async function routeChatMessage(
       }
     }
 
-    // 2. Perform targeted searches in parallel if user mentions specific keywords/entities
     const targetedSearches: Array<{ query: string; maxResults: number }> = [];
     if (lowered.includes("deakin")) {
       targetedSearches.push({ query: "from:deakin OR subject:deakin OR enquire@deakin.edu.au OR deakin", maxResults: 15 });
@@ -579,7 +826,6 @@ export async function routeChatMessage(
       let attachmentContexts = "";
       for (const m of collectedMessages) {
         if (m.attachments && m.attachments.length > 0) {
-          // If message is from Shine or user asked about attachments/case/letter
           if (/shine|case|letter|claim|attachment/i.test(lowered) && /shine|asmedley/i.test(m.from || m.subject)) {
             const letterPart = m.attachments.find((a: any) => /letter|disclosure|case/i.test(a.filename));
             if (letterPart && letterPart.attachmentId) {
@@ -640,7 +886,7 @@ export async function routeChatMessage(
     console.warn("[IntentRouter Warning] Could not fetch SMS messages:", err);
   }
 
-  const systemPrompt = `You are Rumble, the expert personal operations and rehabilitation AI assistant for Rumble OS.
+  return `You are Rumble, the expert personal operations and rehabilitation AI assistant for Rumble OS.
 Current Time in Australia/Melbourne: ${nowMel}.
 Location: Wangaratta, Victoria, Australia.
 User Identity: James Jones.
@@ -704,6 +950,65 @@ ${weatherText}
     - When asked to read, check, or summarize texts, quote the sender, date/time, and actual body content for each message in [RECENT SMS / TEXT MESSAGES].
     - If a message body contains "{sms_body}", inform the user that the SMS was received from that sender, but their phone's MacroDroid action was configured with "{sms_body}" instead of "[sms_message]" (or "{sms_message}"), so the phone didn't pass the actual message text.
     - If asked to send an SMS or text message, draft the message and include a \`send_sms\` action with \`sms_to\` and \`sms_body\` for user confirmation.`;
+}
+
+export async function streamRumbleChat({
+  messages,
+  systemPromptOverride,
+}: {
+  messages: Array<{ role: "user" | "assistant" | "system"; content: string }>;
+  systemPromptOverride?: string;
+}) {
+  const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY || "";
+  const googleProvider = createGoogleGenerativeAI({ apiKey });
+  const preferredModel = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+  const lastUserMsg = [...messages].reverse().find(m => m.role === "user")?.content || "";
+  const systemPrompt = systemPromptOverride || (await buildRumbleSystemPrompt(lastUserMsg));
+  const tools = createRumbleTools();
+
+  return streamText({
+    model: googleProvider(preferredModel),
+    system: systemPrompt,
+    messages,
+    tools,
+  });
+}
+
+
+/**
+ * Routes and handles incoming chat messages dynamically with multimodal support.
+ */
+export async function routeChatMessage(
+  message: string,
+  history: any[] = [],
+  attachment?: { data: string; mimeType: string; filename?: string }
+): Promise<IntentRouteResult> {
+  const lowered = message.toLowerCase();
+  const detectedIntent = classifyIntent(message);
+
+  // Fast-path deterministic parsing for pure direct write commands without follow-up questions
+  const hasQuestion = message.includes("?") || /\b(?:what|how|why|should|can you recommend|advice)\b/i.test(message);
+  if (!hasQuestion && classifyIntent(message) === "LOG_PAIN") {
+    const parsedPain = parsePainLogDirective(message);
+    if (parsedPain.parsed) {
+      const preview: ActionPreview = {
+        type: "pain_log",
+        data: parsedPain.parsed,
+      };
+      const locSummary = parsedPain.parsed.locations
+        .map((l) => `${l.side && l.side !== "unspecified" ? l.side + " " : ""}${l.area} (${l.percentage}%)`)
+        .join(", ");
+      return {
+        reply: `I've prepared your pain log: **Score ${parsedPain.parsed.score}/10** in ${locSummary}${parsedPain.parsed.mood ? ` (Mood: ${parsedPain.parsed.mood})` : ""}${parsedPain.parsed.notes ? ` - Notes: "${parsedPain.parsed.notes}"` : ""}.\n\nPlease click Confirm to save this to your health records.`,
+        intent: "LOG_PAIN",
+        requires_confirmation: true,
+        preview,
+        disclaimer: MEDICAL_GUARDRAIL,
+      };
+    }
+  }
+
+  const systemPrompt = await buildRumbleSystemPrompt(message);
 
   const responseSchema = {
     type: "OBJECT",

@@ -27,7 +27,9 @@ CONDITIONS = {"baseline", "candidate", "comparator"}
 
 def read_jsonl(path: Path) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
-    for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+    for number, line in enumerate(
+        path.read_text(encoding="utf-8").splitlines(), start=1
+    ):
         if not line.strip():
             continue
         try:
@@ -35,7 +37,9 @@ def read_jsonl(path: Path) -> list[dict[str, Any]]:
         except json.JSONDecodeError as exc:
             raise ValueError(f"{path}: line {number}: {exc.msg}") from exc
         if not isinstance(row, dict):
-            raise ValueError(f"{path}: line {number}: expected a JSON object")  # noqa: TRY004
+            raise ValueError(  # noqa: TRY004
+                f"{path}: line {number}: expected a JSON object"
+            )
         rows.append(row)
     return rows
 
@@ -47,9 +51,16 @@ def load_cases(path: Path = DEFAULT_CASES) -> list[dict[str, Any]]:
 def completed_keys(rows: list[dict[str, Any]]) -> set[tuple[str, int, str, str]]:
     keys: set[tuple[str, int, str, str]] = set()
     for row in rows:
-        fields = (row.get("case_id"), row.get("trial"), row.get("condition"), row.get("runner"))
-        if isinstance(fields[0], str) and isinstance(fields[1], int) and all(
-            isinstance(value, str) for value in fields[2:]
+        fields = (
+            row.get("case_id"),
+            row.get("trial"),
+            row.get("condition"),
+            row.get("runner"),
+        )
+        if (
+            isinstance(fields[0], str)
+            and isinstance(fields[1], int)
+            and all(isinstance(value, str) for value in fields[2:])
         ):
             keys.add(fields)  # type: ignore[arg-type]
     return keys
@@ -84,7 +95,9 @@ def _validate_score(row: dict[str, Any], index: int) -> None:
     if missing:
         raise ValueError(f"Score row {index}: missing fields: {', '.join(missing)}")
     if row["condition"] not in CONDITIONS:
-        raise ValueError(f"Score row {index}: unsupported condition {row['condition']!r}")
+        raise ValueError(
+            f"Score row {index}: unsupported condition {row['condition']!r}"
+        )
     for metric in WEIGHTS:
         value = row[metric]
         if not isinstance(value, (int, float)) or not 1 <= value <= 5:
@@ -144,7 +157,9 @@ def summarize_scores(scores: list[dict[str, Any]]) -> dict[str, Any]:
         conditions[condition] = {
             "rows": len(rows),
             **metrics,
-            "weighted_score": sum(metrics[metric] * weight for metric, weight in WEIGHTS.items()),
+            "weighted_score": sum(
+                metrics[metric] * weight for metric, weight in WEIGHTS.items()
+            ),
             "blocking_findings": sum(bool(row["blocker"]) for row in rows),
         }
 
@@ -181,7 +196,9 @@ def _condition_prompt(task: str, condition: str, skill_path: Path | None) -> str
     )
 
 
-def _parse_response(output: str, response_format: str) -> tuple[str, dict[str, Any], float | None]:
+def _parse_response(
+    output: str, response_format: str
+) -> tuple[str, dict[str, Any], float | None]:
     if response_format == "text":
         return output.strip(), {}, None
     if response_format == "claude-json":
@@ -197,7 +214,10 @@ def _parse_response(output: str, response_format: str) -> tuple[str, dict[str, A
         usage: dict[str, Any] = {}
         for event in events:
             item = event.get("item", {})
-            if event.get("type") == "item.completed" and item.get("type") == "agent_message":
+            if (
+                event.get("type") == "item.completed"
+                and item.get("type") == "agent_message"
+            ):
                 text = item.get("text", text)
             if event.get("type") == "turn.completed":
                 usage = event.get("usage", usage)
@@ -242,13 +262,17 @@ def run_evaluations(args: argparse.Namespace) -> int:
                     continue
                 key = (case["id"], trial, args.condition, args.runner)
                 if key in done:
-                    print(f"skip completed {args.condition} trial {trial}: {case['id']}")
+                    print(
+                        f"skip completed {args.condition} trial {trial}: {case['id']}"
+                    )
                     continue
                 remaining = args.budget_usd - reported_cost
                 if remaining <= 0:
                     print("Budget exhausted; stopping.", file=sys.stderr)
                     return 2
-                prompt = _condition_prompt(case["prompt"], args.condition, args.condition_skill)
+                prompt = _condition_prompt(
+                    case["prompt"], args.condition, args.condition_skill
+                )
                 invocation = [*command]
                 if runner.get("budget_flag"):
                     invocation.extend([runner["budget_flag"], f"{remaining:.4f}"])
@@ -271,7 +295,9 @@ def run_evaluations(args: argparse.Namespace) -> int:
                     detail = completed.stderr.strip() or completed.stdout.strip()
                     if completed.stdout.strip():
                         try:
-                            parsed_text, _, _ = _parse_response(completed.stdout, response_format)
+                            parsed_text, _, _ = _parse_response(
+                                completed.stdout, response_format
+                            )
                             detail = parsed_text or detail
                         except (ValueError, json.JSONDecodeError):
                             pass
@@ -319,7 +345,9 @@ def _build_parser() -> argparse.ArgumentParser:
 
     run = subparsers.add_parser("run", help="Run one evaluation condition")
     run.add_argument("--cases", type=Path, default=DEFAULT_CASES)
-    run.add_argument("--runner-config", type=Path, default=ROOT / "evals" / "runners.example.json")
+    run.add_argument(
+        "--runner-config", type=Path, default=ROOT / "evals" / "runners.example.json"
+    )
     run.add_argument("--runner", required=True)
     run.add_argument("--condition", choices=sorted(CONDITIONS), required=True)
     run.add_argument("--condition-skill", type=Path)
@@ -357,7 +385,15 @@ def main(argv: list[str] | None = None) -> int:
         for trial in range(1, args.trials + 1):
             for case in cases:
                 for condition in conditions:
-                    print(json.dumps({"case_id": case["id"], "trial": trial, "condition": condition}))
+                    print(
+                        json.dumps(
+                            {
+                                "case_id": case["id"],
+                                "trial": trial,
+                                "condition": condition,
+                            }
+                        )
+                    )
         return 0
     if args.command == "score":
         print(json.dumps(summarize_scores(read_jsonl(args.scores)), indent=2))

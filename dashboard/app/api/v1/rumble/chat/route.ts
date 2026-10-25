@@ -34,6 +34,17 @@ export async function POST(request: Request) {
     }
   }
 
+  // Handle AI SDK UI streaming protocol (useChat)
+  if (payload && Array.isArray(payload.messages)) {
+    try {
+      const { streamRumbleChat } = await import("../../../../../lib/agents/intent-router");
+      const result = await streamRumbleChat({ messages: payload.messages });
+      return result.toUIMessageStreamResponse();
+    } catch (err: any) {
+      console.warn("[StreamRumbleChat Error, falling back to conversational pipeline]:", err);
+    }
+  }
+
   const input = parseChatRequest(payload);
   if (!input) return NextResponse.json({ status: "error", error: "A message and valid confirmed pain-log payload are required." }, { status: 400 });
 

@@ -177,20 +177,27 @@ def generate_readme_tables(results_dir: str | Path) -> str:
         lines.append("### Token Efficiency")
         lines.append("")
         headers = [
-            "Repo", "Files", "Naive Tokens", "Standard Tokens",
-            "Graph Tokens", "Naive/Graph", "Std/Graph",
+            "Repo",
+            "Files",
+            "Naive Tokens",
+            "Standard Tokens",
+            "Graph Tokens",
+            "Naive/Graph",
+            "Std/Graph",
         ]
         table_rows = []
         for r in te_rows:
-            table_rows.append([
-                r.get("repo", "-"),
-                r.get("changed_files", "-"),
-                r.get("naive_tokens", "-"),
-                r.get("standard_tokens", "-"),
-                r.get("graph_tokens", "-"),
-                r.get("naive_to_graph_ratio", "-"),
-                r.get("standard_to_graph_ratio", "-"),
-            ])
+            table_rows.append(
+                [
+                    r.get("repo", "-"),
+                    r.get("changed_files", "-"),
+                    r.get("naive_tokens", "-"),
+                    r.get("standard_tokens", "-"),
+                    r.get("graph_tokens", "-"),
+                    r.get("naive_to_graph_ratio", "-"),
+                    r.get("standard_to_graph_ratio", "-"),
+                ]
+            )
         lines.append(_md_table(headers, table_rows))
         lines.append("")
 
@@ -223,35 +230,33 @@ def generate_readme_tables(results_dir: str | Path) -> str:
             except (ValueError, TypeError):
                 pass
         for r in fc_rows:
-            repo_data.setdefault(r.get("repo", "?"), {})["recall"] = r.get("recall", "-")
+            repo_data.setdefault(r.get("repo", "?"), {})["recall"] = r.get(
+                "recall", "-"
+            )
         for r in sq_rows:
             repo = r.get("repo", "?")
             repo_data.setdefault(repo, {})
             try:
-                mrr_accum.setdefault(repo, []).append(float(r.get("reciprocal_rank", 0)))
+                mrr_accum.setdefault(repo, []).append(
+                    float(r.get("reciprocal_rank", 0))
+                )
             except (ValueError, TypeError):
                 pass
 
         table_rows = []
         for repo, d in sorted(repo_data.items()):
             mrr_vals = mrr_accum.get(repo, [])
-            mrr = (
-                str(round(sum(mrr_vals) / len(mrr_vals), 3))
-                if mrr_vals
-                else "-"
-            )
+            mrr = str(round(sum(mrr_vals) / len(mrr_vals), 3)) if mrr_vals else "-"
             f1_vals = f1_accum.get(repo, [])
-            f1 = (
-                str(round(sum(f1_vals) / len(f1_vals), 3))
-                if f1_vals
-                else "-"
+            f1 = str(round(sum(f1_vals) / len(f1_vals), 3)) if f1_vals else "-"
+            table_rows.append(
+                [
+                    repo,
+                    f1,
+                    str(d.get("recall", "-")),
+                    mrr,
+                ]
             )
-            table_rows.append([
-                repo,
-                f1,
-                str(d.get("recall", "-")),
-                mrr,
-            ])
         lines.append(_md_table(headers, table_rows))
         lines.append("")
 
@@ -261,19 +266,25 @@ def generate_readme_tables(results_dir: str | Path) -> str:
         lines.append("### Agent Baseline (grep top-k vs graph query)")
         lines.append("")
         headers = [
-            "Repo", "Question", "Baseline Tokens", "Graph Tokens",
-            "Baseline/Graph", "Status",
+            "Repo",
+            "Question",
+            "Baseline Tokens",
+            "Graph Tokens",
+            "Baseline/Graph",
+            "Status",
         ]
         table_rows = []
         for r in ab_rows:
-            table_rows.append([
-                r.get("repo", "-"),
-                r.get("question", "-"),
-                r.get("baseline_tokens", "-"),
-                r.get("graph_tokens", "-"),
-                r.get("baseline_to_graph_ratio", "-"),
-                r.get("status", "ok") or "ok",
-            ])
+            table_rows.append(
+                [
+                    r.get("repo", "-"),
+                    r.get("question", "-"),
+                    r.get("baseline_tokens", "-"),
+                    r.get("graph_tokens", "-"),
+                    r.get("baseline_to_graph_ratio", "-"),
+                    r.get("status", "ok") or "ok",
+                ]
+            )
         lines.append(_md_table(headers, table_rows))
         lines.append("")
 
@@ -285,13 +296,15 @@ def generate_readme_tables(results_dir: str | Path) -> str:
         headers = ["Repo", "Files", "Nodes", "Flow Det. (s)", "Search (ms)"]
         table_rows = []
         for r in bp_rows:
-            table_rows.append([
-                r.get("repo", "-"),
-                r.get("file_count", "-"),
-                r.get("node_count", "-"),
-                r.get("flow_detection_seconds", "-"),
-                r.get("search_avg_ms", "-"),
-            ])
+            table_rows.append(
+                [
+                    r.get("repo", "-"),
+                    r.get("file_count", "-"),
+                    r.get("node_count", "-"),
+                    r.get("flow_detection_seconds", "-"),
+                    r.get("search_avg_ms", "-"),
+                ]
+            )
         lines.append(_md_table(headers, table_rows))
         lines.append("")
 

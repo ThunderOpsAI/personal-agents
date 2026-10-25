@@ -22,7 +22,9 @@ class AlwaysOnHookTest(unittest.TestCase):
     def runtimes(self):
         runtimes = []
         if node := shutil.which("node"):
-            runtimes.append(("node", [node, self.plugin_root / "hooks" / "always-on.mjs"]))
+            runtimes.append(
+                ("node", [node, self.plugin_root / "hooks" / "always-on.mjs"])
+            )
         if sh := shutil.which("sh"):
             runtimes.append(("sh", [sh, self.plugin_root / "hooks" / "always-on.sh"]))
         if powershell := shutil.which("pwsh") or shutil.which("powershell"):

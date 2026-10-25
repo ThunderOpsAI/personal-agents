@@ -23,9 +23,7 @@ class _ScriptExtractor(HTMLParser):
         self.inline_scripts: list[str] = []
         self._inline_chunks: list[str] | None = None
 
-    def handle_starttag(
-        self, tag: str, attrs: list[tuple[str, str | None]]
-    ) -> None:
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         if tag != "script":
             return
         source = dict(attrs).get("src")
@@ -239,7 +237,9 @@ def _sha384_sri(data: bytes) -> str:
 
 
 @pytest.mark.parametrize("vis_mode", ["full", "community"])
-def test_generated_html_loads_d3_same_origin_with_sri(store_with_data, tmp_path, vis_mode):
+def test_generated_html_loads_d3_same_origin_with_sri(
+    store_with_data, tmp_path, vis_mode
+):
     """Regression test for #475: `visualize --serve` must not depend on the
     d3js.org CDN being reachable. The generated page loads a vendored,
     same-origin D3 file (with the SRI hash intact) and only falls back to
@@ -296,26 +296,50 @@ def test_graph_data_containing_script_sentinel_is_not_expanded(tmp_path, vis_mod
     store = GraphStore(tmp_path / "test.db")
     store.upsert_node(
         NodeInfo(
-            kind="File", name="evil.py", file_path="src/evil.py",
-            line_start=1, line_end=10, language="python", parent_name=None,
-            params=None, return_type=None, modifiers=None, is_test=False,
+            kind="File",
+            name="evil.py",
+            file_path="src/evil.py",
+            line_start=1,
+            line_end=10,
+            language="python",
+            parent_name=None,
+            params=None,
+            return_type=None,
+            modifiers=None,
+            is_test=False,
             extra={},
         )
     )
     store.upsert_node(
         NodeInfo(
-            kind="Function", name="__D3_SCRIPTS__", file_path="src/evil.py",
-            line_start=2, line_end=4, language="python", parent_name=None,
-            params=None, return_type=None, modifiers=None, is_test=False,
+            kind="Function",
+            name="__D3_SCRIPTS__",
+            file_path="src/evil.py",
+            line_start=2,
+            line_end=4,
+            language="python",
+            parent_name=None,
+            params=None,
+            return_type=None,
+            modifiers=None,
+            is_test=False,
             extra={},
         )
     )
     store.upsert_node(
         NodeInfo(
-            kind="Function", name="<img src=x onerror=alert(1)>",
-            file_path="src/evil.py", line_start=6, line_end=8,
-            language="python", parent_name=None, params=None,
-            return_type=None, modifiers=None, is_test=False, extra={},
+            kind="Function",
+            name="<img src=x onerror=alert(1)>",
+            file_path="src/evil.py",
+            line_start=6,
+            line_end=8,
+            language="python",
+            parent_name=None,
+            params=None,
+            return_type=None,
+            modifiers=None,
+            is_test=False,
+            extra={},
         )
     )
 
@@ -330,6 +354,7 @@ def test_graph_data_containing_script_sentinel_is_not_expanded(tmp_path, vis_mod
     assert data_scripts, "graphData script missing — data script was truncated"
     for script in data_scripts:
         assert "<script" not in script
+
     # The parser must not see repo-derived markup as real elements.
     class _TagCollector(HTMLParser):
         def __init__(self) -> None:
@@ -369,40 +394,58 @@ def test_cpp_include_resolution(tmp_path):
 
     def _file(name, path, lang="cpp"):
         return NodeInfo(
-            kind="File", name=name, file_path=path,
-            line_start=1, line_end=10, language=lang,
-            parent_name=None, params=None, return_type=None,
-            modifiers=None, is_test=False, extra={},
+            kind="File",
+            name=name,
+            file_path=path,
+            line_start=1,
+            line_end=10,
+            language=lang,
+            parent_name=None,
+            params=None,
+            return_type=None,
+            modifiers=None,
+            is_test=False,
+            extra={},
         )
 
-    store.upsert_node(_file("main.cpp",  "/abs/src/main.cpp"))
+    store.upsert_node(_file("main.cpp", "/abs/src/main.cpp"))
     store.upsert_node(_file("Renderer.hpp", "/abs/libs/rendering/Renderer.hpp"))
-    store.upsert_node(_file("Utils.hpp",    "/abs/libs/utils/Utils.hpp"))
+    store.upsert_node(_file("Utils.hpp", "/abs/libs/utils/Utils.hpp"))
 
     # Parser emits bare include paths as targets — exactly what Tree-sitter sees
-    store.upsert_edge(EdgeInfo(
-        kind="IMPORTS_FROM",
-        source="/abs/src/main.cpp",
-        target="rendering/Renderer.hpp",   # relative, one directory level
-        file_path="/abs/src/main.cpp", line=1, extra={},
-    ))
-    store.upsert_edge(EdgeInfo(
-        kind="IMPORTS_FROM",
-        source="/abs/src/main.cpp",
-        target="Utils.hpp",                # bare filename only
-        file_path="/abs/src/main.cpp", line=2, extra={},
-    ))
+    store.upsert_edge(
+        EdgeInfo(
+            kind="IMPORTS_FROM",
+            source="/abs/src/main.cpp",
+            target="rendering/Renderer.hpp",  # relative, one directory level
+            file_path="/abs/src/main.cpp",
+            line=1,
+            extra={},
+        )
+    )
+    store.upsert_edge(
+        EdgeInfo(
+            kind="IMPORTS_FROM",
+            source="/abs/src/main.cpp",
+            target="Utils.hpp",  # bare filename only
+            file_path="/abs/src/main.cpp",
+            line=2,
+            extra={},
+        )
+    )
     store.commit()
 
     data = export_graph_data(store)
-    resolved_targets = {e["target"] for e in data["edges"] if e["kind"] == "IMPORTS_FROM"}
+    resolved_targets = {
+        e["target"] for e in data["edges"] if e["kind"] == "IMPORTS_FROM"
+    }
 
-    assert "/abs/libs/rendering/Renderer.hpp" in resolved_targets, (
-        "bare relative include 'rendering/Renderer.hpp' was not resolved to its absolute path"
-    )
-    assert "/abs/libs/utils/Utils.hpp" in resolved_targets, (
-        "bare filename include 'Utils.hpp' was not resolved to its absolute path"
-    )
+    assert (
+        "/abs/libs/rendering/Renderer.hpp" in resolved_targets
+    ), "bare relative include 'rendering/Renderer.hpp' was not resolved to its absolute path"
+    assert (
+        "/abs/libs/utils/Utils.hpp" in resolved_targets
+    ), "bare filename include 'Utils.hpp' was not resolved to its absolute path"
 
 
 def test_generate_html_overwrites(store_with_data, tmp_path):
@@ -441,8 +484,15 @@ def test_generate_html_includes_all_edge_types(store_with_data, tmp_path):
     output_path = tmp_path / "graph.html"
     generate_html(store_with_data, output_path)
     content = output_path.read_text()
-    for edge_kind in ["CALLS", "IMPORTS_FROM", "INHERITS", "CONTAINS",
-                       "IMPLEMENTS", "TESTED_BY", "DEPENDS_ON"]:
+    for edge_kind in [
+        "CALLS",
+        "IMPORTS_FROM",
+        "INHERITS",
+        "CONTAINS",
+        "IMPLEMENTS",
+        "TESTED_BY",
+        "DEPENDS_ON",
+    ]:
         assert edge_kind in content, f"Edge type {edge_kind} missing from HTML"
 
 
@@ -540,9 +590,9 @@ def test_generate_html_uses_id_selector_for_svg(store_with_data, tmp_path):
         "HTML should use d3.select('#graph-svg') to target the main canvas, "
         "not d3.select('svg') which selects the first inline legend icon"
     )
-    assert 'd3.select("svg")' not in content, (
-        "No bare d3.select('svg') should remain — it selects legend icons"
-    )
+    assert (
+        'd3.select("svg")' not in content
+    ), "No bare d3.select('svg') should remain — it selects legend icons"
 
 
 def test_community_mode_uses_id_selector_for_svg(large_store, tmp_path):
@@ -554,9 +604,9 @@ def test_community_mode_uses_id_selector_for_svg(large_store, tmp_path):
     content = output_path.read_text()
     assert 'd3.select("#graph-svg")' in content
     assert 'd3.select("svg")' not in content
-    assert 'id="graph-svg"' in content, (
-        "Aggregated template's <svg> must have id='graph-svg' for the selector to work"
-    )
+    assert (
+        'id="graph-svg"' in content
+    ), "Aggregated template's <svg> must have id='graph-svg' for the selector to work"
 
 
 def _assert_responsive_graph_script(content):
@@ -568,7 +618,7 @@ def _assert_responsive_graph_script(content):
     assert "if (retries === undefined) retries = 10;" in content
     assert "requestAnimationFrame(function() { fitGraph(retries - 1); });" in content
     assert 'window.addEventListener("resize", function() {' in content
-    assert r'window.addEventListener(\"resize\"' not in content
+    assert r"window.addEventListener(\"resize\"" not in content
 
     node = shutil.which("node")
     if node is None:
@@ -631,48 +681,80 @@ def large_store(tmp_path):
     files = [f"src/mod{i}.py" for i in range(5)]
     for fp in files:
         file_node = NodeInfo(
-            kind="File", name=fp.split("/")[-1], file_path=fp,
-            line_start=1, line_end=100, language="python",
-            parent_name=None, params=None, return_type=None,
-            modifiers=None, is_test=False, extra={},
+            kind="File",
+            name=fp.split("/")[-1],
+            file_path=fp,
+            line_start=1,
+            line_end=100,
+            language="python",
+            parent_name=None,
+            params=None,
+            return_type=None,
+            modifiers=None,
+            is_test=False,
+            extra={},
         )
         store.upsert_node(file_node)
         # Add some functions per file
         for j in range(3):
             func_node = NodeInfo(
-                kind="Function", name=f"func_{j}",
-                file_path=fp, line_start=10 + j * 10, line_end=20 + j * 10,
-                language="python", parent_name=None,
-                params="x", return_type="int",
-                modifiers=None, is_test=False, extra={},
+                kind="Function",
+                name=f"func_{j}",
+                file_path=fp,
+                line_start=10 + j * 10,
+                line_end=20 + j * 10,
+                language="python",
+                parent_name=None,
+                params="x",
+                return_type="int",
+                modifiers=None,
+                is_test=False,
+                extra={},
             )
             store.upsert_node(func_node)
             # CONTAINS edge from file to function
-            store.upsert_edge(EdgeInfo(
-                kind="CONTAINS", source=fp,
-                target=f"{fp}::func_{j}",
-                file_path=fp, line=10 + j * 10, extra={},
-            ))
+            store.upsert_edge(
+                EdgeInfo(
+                    kind="CONTAINS",
+                    source=fp,
+                    target=f"{fp}::func_{j}",
+                    file_path=fp,
+                    line=10 + j * 10,
+                    extra={},
+                )
+            )
 
     # Add some cross-file CALLS edges
-    store.upsert_edge(EdgeInfo(
-        kind="CALLS",
-        source="src/mod0.py::func_0",
-        target="src/mod1.py::func_1",
-        file_path="src/mod0.py", line=15, extra={},
-    ))
-    store.upsert_edge(EdgeInfo(
-        kind="CALLS",
-        source="src/mod2.py::func_0",
-        target="src/mod3.py::func_2",
-        file_path="src/mod2.py", line=12, extra={},
-    ))
-    store.upsert_edge(EdgeInfo(
-        kind="CALLS",
-        source="src/mod1.py::func_2",
-        target="src/mod4.py::func_0",
-        file_path="src/mod1.py", line=35, extra={},
-    ))
+    store.upsert_edge(
+        EdgeInfo(
+            kind="CALLS",
+            source="src/mod0.py::func_0",
+            target="src/mod1.py::func_1",
+            file_path="src/mod0.py",
+            line=15,
+            extra={},
+        )
+    )
+    store.upsert_edge(
+        EdgeInfo(
+            kind="CALLS",
+            source="src/mod2.py::func_0",
+            target="src/mod3.py::func_2",
+            file_path="src/mod2.py",
+            line=12,
+            extra={},
+        )
+    )
+    store.upsert_edge(
+        EdgeInfo(
+            kind="CALLS",
+            source="src/mod1.py::func_2",
+            target="src/mod4.py::func_0",
+            file_path="src/mod1.py",
+            line=35,
+            extra={},
+        )
+    )
 
     # Set community_id on nodes (simulate community detection)
     store._conn.execute(
@@ -815,8 +897,11 @@ def test_auto_mode_switches_on_edge_count(large_store, tmp_path):
     # Under both limits -> full template
     output_full = tmp_path / "auto_under_both.html"
     generate_html(
-        large_store, output_full, mode="auto",
-        max_full_nodes=100000, max_full_edges=100000,
+        large_store,
+        output_full,
+        mode="auto",
+        max_full_nodes=100000,
+        max_full_edges=100000,
     )
     content_full = output_full.read_text()
     assert "btn-community" in content_full
@@ -825,8 +910,11 @@ def test_auto_mode_switches_on_edge_count(large_store, tmp_path):
     # Under the node limit but over the edge limit -> aggregated template
     output_agg = tmp_path / "auto_over_edges.html"
     generate_html(
-        large_store, output_agg, mode="auto",
-        max_full_nodes=100000, max_full_edges=1,
+        large_store,
+        output_agg,
+        mode="auto",
+        max_full_nodes=100000,
+        max_full_edges=1,
     )
     content_agg = output_agg.read_text()
     assert "btn-back" in content_agg
@@ -850,36 +938,52 @@ def test_auto_mode_decision_at_issue_609_boundary():
     assert DEFAULT_MAX_FULL_EDGES == 3 * DEFAULT_MAX_FULL_NODES
 
     # A graph under both caps stays in full mode
-    assert _resolve_auto_mode(
-        node_count=2792, edge_count=8000,
-        max_full_nodes=DEFAULT_MAX_FULL_NODES,
-        max_full_edges=DEFAULT_MAX_FULL_EDGES,
-        has_communities=True,
-    ) == "full"
+    assert (
+        _resolve_auto_mode(
+            node_count=2792,
+            edge_count=8000,
+            max_full_nodes=DEFAULT_MAX_FULL_NODES,
+            max_full_edges=DEFAULT_MAX_FULL_EDGES,
+            has_communities=True,
+        )
+        == "full"
+    )
 
     # The exact graph from issue #609: 2792 nodes (under), 17488 edges (over)
-    assert _resolve_auto_mode(
-        node_count=2792, edge_count=17488,
-        max_full_nodes=DEFAULT_MAX_FULL_NODES,
-        max_full_edges=DEFAULT_MAX_FULL_EDGES,
-        has_communities=True,
-    ) == "community"
+    assert (
+        _resolve_auto_mode(
+            node_count=2792,
+            edge_count=17488,
+            max_full_nodes=DEFAULT_MAX_FULL_NODES,
+            max_full_edges=DEFAULT_MAX_FULL_EDGES,
+            has_communities=True,
+        )
+        == "community"
+    )
 
     # Node count over the cap still switches (pre-existing behavior)
-    assert _resolve_auto_mode(
-        node_count=3001, edge_count=100,
-        max_full_nodes=DEFAULT_MAX_FULL_NODES,
-        max_full_edges=DEFAULT_MAX_FULL_EDGES,
-        has_communities=True,
-    ) == "community"
+    assert (
+        _resolve_auto_mode(
+            node_count=3001,
+            edge_count=100,
+            max_full_nodes=DEFAULT_MAX_FULL_NODES,
+            max_full_edges=DEFAULT_MAX_FULL_EDGES,
+            has_communities=True,
+        )
+        == "community"
+    )
 
     # Without community data the aggregated view falls back to file mode
-    assert _resolve_auto_mode(
-        node_count=2792, edge_count=17488,
-        max_full_nodes=DEFAULT_MAX_FULL_NODES,
-        max_full_edges=DEFAULT_MAX_FULL_EDGES,
-        has_communities=False,
-    ) == "file"
+    assert (
+        _resolve_auto_mode(
+            node_count=2792,
+            edge_count=17488,
+            max_full_nodes=DEFAULT_MAX_FULL_NODES,
+            max_full_edges=DEFAULT_MAX_FULL_EDGES,
+            has_communities=False,
+        )
+        == "file"
+    )
 
 
 def test_generate_html_defaults_match_constants():
@@ -897,17 +1001,18 @@ def test_generate_html_defaults_match_constants():
     assert sig.parameters["max_full_edges"].default == DEFAULT_MAX_FULL_EDGES
 
 
-def test_auto_mode_falls_back_to_file_without_communities(
-    store_with_data, tmp_path
-):
+def test_auto_mode_falls_back_to_file_without_communities(store_with_data, tmp_path):
     """Auto-switch without community data must aggregate by file, not lump
     everything into a single 'Uncategorized' community super-node."""
     from code_review_graph.visualization import generate_html
 
     output_path = tmp_path / "auto_no_communities.html"
     generate_html(
-        store_with_data, output_path, mode="auto",
-        max_full_nodes=1, max_full_edges=100000,
+        store_with_data,
+        output_path,
+        mode="auto",
+        max_full_nodes=1,
+        max_full_edges=100000,
     )
     content = output_path.read_text()
     # Aggregated template, file mode data
@@ -984,6 +1089,6 @@ def test_community_detail_data_complete(large_store):
         for n in detail["nodes"]:
             all_detail_qns.add(n["qualified_name"])
     original_qns = {n["qualified_name"] for n in data["nodes"]}
-    assert original_qns == all_detail_qns, (
-        "All original nodes should be accounted for in community details"
-    )
+    assert (
+        original_qns == all_detail_qns
+    ), "All original nodes should be accounted for in community details"

@@ -18,8 +18,7 @@ def resolve_python_imports(store: GraphStore) -> dict[str, int]:
     python_files = [
         row["file_path"]
         for row in conn.execute(
-            "SELECT file_path FROM nodes "
-            "WHERE kind = 'File' AND language = 'python'"
+            "SELECT file_path FROM nodes " "WHERE kind = 'File' AND language = 'python'"
         ).fetchall()
     ]
     if not python_files:
@@ -32,9 +31,7 @@ def resolve_python_imports(store: GraphStore) -> dict[str, int]:
 
     modules: dict[str, set[str]] = {}
     for file_path in python_files:
-        parts = [
-            part for part in file_path.replace("\\", "/").split("/") if part
-        ]
+        parts = [part for part in file_path.replace("\\", "/").split("/") if part]
         if not parts:
             continue
         filename = parts[-1]
@@ -95,11 +92,13 @@ def resolve_python_imports(store: GraphStore) -> dict[str, int]:
 
         if edge["target_qualified"] == desired_target and extra == desired_extra:
             continue
-        updates.append((
-            desired_target,
-            json.dumps(desired_extra, sort_keys=True),
-            edge["id"],
-        ))
+        updates.append(
+            (
+                desired_target,
+                json.dumps(desired_extra, sort_keys=True),
+                edge["id"],
+            )
+        )
         if len(candidates) == 1:
             resolved += 1
         elif candidates:

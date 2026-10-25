@@ -95,7 +95,11 @@ def _event_calls(store: GraphStore):
     rows = store._conn.execute(
         "SELECT source_qualified, target_qualified, extra FROM edges WHERE kind = 'CALLS'"
     ).fetchall()
-    return [row for row in rows if json.loads(row["extra"] or "{}").get("spring_event_resolved")]
+    return [
+        row
+        for row in rows
+        if json.loads(row["extra"] or "{}").get("spring_event_resolved")
+    ]
 
 
 def test_event_resolver_does_not_cross_link_same_named_packages(tmp_path: Path) -> None:
@@ -111,8 +115,14 @@ def test_event_resolver_does_not_cross_link_same_named_packages(tmp_path: Path) 
         assert result["event_resolution"]["calls_emitted"] == 2
         assert len(calls) == 2
         assert all(
-            ("/alpha/" in row["source_qualified"] and "/alpha/" in row["target_qualified"])
-            or ("/beta/" in row["source_qualified"] and "/beta/" in row["target_qualified"])
+            (
+                "/alpha/" in row["source_qualified"]
+                and "/alpha/" in row["target_qualified"]
+            )
+            or (
+                "/beta/" in row["source_qualified"]
+                and "/beta/" in row["target_qualified"]
+            )
             for row in calls
         )
         assert store.get_node("event::alpha.SharedEvent") is not None
@@ -175,7 +185,9 @@ def test_event_query_patterns_return_publishers_and_listeners(tmp_path: Path) ->
     assert {edge["kind"] for edge in listeners["edges"]} == {"HANDLES"}
 
 
-def test_event_query_patterns_respect_max_results_and_report_count(tmp_path: Path) -> None:
+def test_event_query_patterns_respect_max_results_and_report_count(
+    tmp_path: Path,
+) -> None:
     pkg = "demo"
     directory = tmp_path / pkg
     directory.mkdir(parents=True)
