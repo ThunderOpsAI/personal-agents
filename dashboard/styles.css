@@ -2385,5 +2385,64 @@ body.theme-forest {
     border: 1px solid rgba(0, 210, 255, 0.35);
 }
 
+/* Clinical Doctor Briefing & Print Styles */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    #painAnalyticsModal, #painAnalyticsModal * {
+        visibility: visible;
+    }
+    #painAnalyticsModal {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+        box-shadow: none !important;
+    }
+    #painAnalyticsModal .modal-content {
+        background: #ffffff !important;
+        color: #000000 !important;
+        border: none !important;
+        box-shadow: none !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        max-height: none !important;
+        overflow: visible !important;
+    }
+    #painAnalyticsModal .glass-panel {
+        background: #f8f9fa !important;
+        color: #111111 !important;
+        border: 1px solid #dee2e6 !important;
+        box-shadow: none !important;
+    }
+    #painAnalyticsModal h2, #painAnalyticsModal h3 {
+        color: #0d6efd !important;
+    }
+    #painAnalyticsModal .btn-close,
+    #painAnalyticsModal .modal-footer,
+    #painPeriodTabs,
+    #doctorSpecialtyFilter {
+        display: none !important;
+    }
+    #painLogsTable {
+        color: #000000 !important;
+    }
+    #painLogsTable th {
+        color: #495057 !important;
+        border-bottom: 2px solid #dee2e6 !important;
+    }
+    #painLogsTable td {
+        color: #212529 !important;
+        border-bottom: 1px solid #dee2e6 !important;
+    }
+}
+
+
 
 

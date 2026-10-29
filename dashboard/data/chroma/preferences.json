@@ -5919,5 +5919,191 @@
     "reliefDelta": 5,
     "timestamp": "2026-10-23T14:50:29.349Z",
     "chromaPath": "./data/chroma"
+  },
+  {
+    "id": "chroma_1793139565905_pujw8",
+    "routineId": "routine_lumbar_core",
+    "routineTitle": "Lumbar Core Stabilization",
+    "prePainScore": 8,
+    "postPainScore": 3,
+    "reliefDelta": 5,
+    "timestamp": "2026-10-27T22:19:25.905Z",
+    "notes": "Felt immediate relief in lower back",
+    "chromaPath": "./data/chroma"
+  },
+  {
+    "id": "chroma_1793139565993_i4iu8",
+    "routineId": "routine_glute_bridge",
+    "routineTitle": "Glute Bridges",
+    "prePainScore": 7,
+    "postPainScore": 3,
+    "reliefDelta": 4,
+    "timestamp": "2026-10-27T22:19:25.993Z",
+    "chromaPath": "./data/chroma"
+  },
+  {
+    "id": "chroma_1793139566021_fij7t",
+    "routineId": "routine_core",
+    "routineTitle": "Core Routine",
+    "prePainScore": 8,
+    "postPainScore": 2,
+    "reliefDelta": 6,
+    "timestamp": "2026-10-27T22:19:26.021Z",
+    "chromaPath": "./data/chroma"
+  },
+  {
+    "id": "chroma_1793139567641_4erjm",
+    "routineId": "routine_lumbar_strengthening",
+    "routineTitle": "Lumbar Core Strengthening",
+    "prePainScore": 7,
+    "postPainScore": 2,
+    "reliefDelta": 5,
+    "timestamp": "2026-10-27T22:19:27.641Z",
+    "notes": "Great improvement post exercise",
+    "chromaPath": "./data/chroma"
+  },
+  {
+    "id": "chroma_1793139567672_7vouy",
+    "routineId": "routine_glute_bridge",
+    "routineTitle": "Glute Bridges",
+    "prePainScore": 8,
+    "postPainScore": 3,
+    "reliefDelta": 5,
+    "timestamp": "2026-10-27T22:19:27.672Z",
+    "chromaPath": "./data/chroma"
+  },
+  {
+    "id": "chroma_1793139567711_o71h2",
+    "routineId": "routine_cat_cow",
+    "routineTitle": "Cat Cow Stretch",
+    "prePainScore": 7,
+    "postPainScore": 2,
+    "reliefDelta": 5,
+    "timestamp": "2026-10-27T22:19:27.711Z",
+    "chromaPath": "./data/chroma"
+  },
+  {
+    "id": "chroma_1793287820788_c79d8",
+    "routineId": "routine_lumbar_core",
+    "routineTitle": "Lumbar Core Stabilization",
+    "prePainScore": 8,
+    "postPainScore": 3,
+    "reliefDelta": 5,
+    "timestamp": "2026-10-29T15:30:20.788Z",
+    "notes": "Felt immediate relief in lower back",
+    "chromaPath": "./data/chroma"
+  },
+  {
+    "id": "chroma_1793287820804_mkx8u",
+    "routineId": "routine_glute_bridge",
+    "routineTitle": "Glute Bridges",
+    "prePainScore": 7,
+    "postPainScore": 3,
+    "reliefDelta": 4,
+    "timestamp": "2026-10-29T15:30:20.804Z",
+    "chromaPath": "./data/chroma"
+  },
+  {
+    "id": "chroma_1793287820807_hpdr4",
+    "routineId": "routine_core",
+    "routineTitle": "Core Routine",
+    "prePainScore": 8,
+    "postPainScore": 2,
+    "reliefDelta": 6,
+    "timestamp": "2026-10-29T15:30:20.807Z",
+    "chromaPath": "./data/chroma"
+  },
+  {
+    "id": "chroma_1793287821158_zol16",
+    "routineId": "routine_lumbar_strengthening",
+    "routineTitle": "Lumbar Core Strengthening",
+    "prePainScore": 7,
+    "postPainScore": 2,
+    "reliefDelta": 5,
+    "timestamp": "2026-10-29T15:30:21.158Z",
+    "notes": "Great improvement post exercise",
+    "chromaPath": "./data/chroma"
+  },
+  {
+    "id": "chroma_1793287821171_0p8b1",
+    "routineId": "routine_glute_bridge",
+    "routineTitle": "Glute Bridges",
+    "prePainScore": 8,
+    "postPainScore": 3,
+    "reliefDelta": 5,
+    "timestamp": "2026-10-29T15:30:21.171Z",
+    "chromaPath": "./data/chroma"
+  },
+  {
+    "id": "chroma_1793287821177_yzmbl",
+    "routineId": "routine_cat_cow",
+    "routineTitle": "Cat Cow Stretch",
+    "prePainScore": 7,
+    "postPainScore": 2,
+    "reliefDelta": 5,
+    "timestamp": "2026-10-29T15:30:21.177Z",
+    "chromaPath": "./data/chroma"
+  },
+  {
+    "id": "chroma_1793288328121_zigjs",
+    "routineId": "routine_lumbar_core",
+    "routineTitle": "Lumbar Core Stabilization",
+    "prePainScore": 8,
+    "postPainScore": 3,
+    "reliefDelta": 5,
+    "timestamp": "2026-10-29T15:38:48.121Z",
+    "notes": "Felt immediate relief in lower back",
+    "chromaPath": "./data/chroma"
+  },
+  {
+    "id": "chroma_1793288328138_ngpn6",
+    "routineId": "routine_glute_bridge",
+    "routineTitle": "Glute Bridges",
+    "prePainScore": 7,
+    "postPainScore": 3,
+    "reliefDelta": 4,
+    "timestamp": "2026-10-29T15:38:48.138Z",
+    "chromaPath": "./data/chroma"
+  },
+  {
+    "id": "chroma_1793288328142_7jtuo",
+    "routineId": "routine_core",
+    "routineTitle": "Core Routine",
+    "prePainScore": 8,
+    "postPainScore": 2,
+    "reliefDelta": 6,
+    "timestamp": "2026-10-29T15:38:48.142Z",
+    "chromaPath": "./data/chroma"
+  },
+  {
+    "id": "chroma_1793288328540_u6ar2",
+    "routineId": "routine_lumbar_strengthening",
+    "routineTitle": "Lumbar Core Strengthening",
+    "prePainScore": 7,
+    "postPainScore": 2,
+    "reliefDelta": 5,
+    "timestamp": "2026-10-29T15:38:48.540Z",
+    "notes": "Great improvement post exercise",
+    "chromaPath": "./data/chroma"
+  },
+  {
+    "id": "chroma_1793288328589_xre56",
+    "routineId": "routine_glute_bridge",
+    "routineTitle": "Glute Bridges",
+    "prePainScore": 8,
+    "postPainScore": 3,
+    "reliefDelta": 5,
+    "timestamp": "2026-10-29T15:38:48.589Z",
+    "chromaPath": "./data/chroma"
+  },
+  {
+    "id": "chroma_1793288328598_t91c4",
+    "routineId": "routine_cat_cow",
+    "routineTitle": "Cat Cow Stretch",
+    "prePainScore": 7,
+    "postPainScore": 2,
+    "reliefDelta": 5,
+    "timestamp": "2026-10-29T15:38:48.598Z",
+    "chromaPath": "./data/chroma"
   }
 ]

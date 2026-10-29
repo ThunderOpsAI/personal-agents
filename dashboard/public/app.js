@@ -8470,6 +8470,75 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Toggle Doctor Mode (Distraction-free high-contrast clinical view)
+    let isDoctorMode = false;
+    const btnToggleDoctorMode = document.getElementById('btnToggleDoctorMode');
+    const doctorSpecialtyFilter = document.getElementById('doctorSpecialtyFilter');
+    const btnCopyDoctorSummary = document.getElementById('btnCopyDoctorSummary');
+
+    if (btnToggleDoctorMode) {
+        btnToggleDoctorMode.addEventListener('click', () => {
+            isDoctorMode = !isDoctorMode;
+            const docContainer = document.getElementById('doctorBriefingContainer');
+            if (isDoctorMode) {
+                btnToggleDoctorMode.classList.remove('btn-outline');
+                btnToggleDoctorMode.classList.add('active', 'btn-neon-green');
+                btnToggleDoctorMode.innerText = '👨‍⚕️ Exit Doctor View';
+                if (docContainer) {
+                    docContainer.style.background = 'rgba(0, 240, 255, 0.12)';
+                    docContainer.style.border = '2px solid var(--neon-green)';
+                }
+            } else {
+                btnToggleDoctorMode.classList.remove('active', 'btn-neon-green');
+                btnToggleDoctorMode.classList.add('btn-outline');
+                btnToggleDoctorMode.innerText = '👨‍⚕️ Doctor Desk View';
+                if (docContainer) {
+                    docContainer.style.background = 'rgba(0, 240, 255, 0.04)';
+                    docContainer.style.border = '1px solid var(--glass-border)';
+                    docContainer.style.borderLeft = '4px solid var(--neon-blue)';
+                }
+            }
+        });
+    }
+
+    if (doctorSpecialtyFilter) {
+        doctorSpecialtyFilter.addEventListener('change', () => {
+            loadPainAnalytics(currentPainAnalyticsPeriod);
+        });
+    }
+
+    let latestAnalyticsData = null;
+
+    if (btnCopyDoctorSummary) {
+        btnCopyDoctorSummary.addEventListener('click', () => {
+            if (!latestAnalyticsData) return;
+            const syn = latestAnalyticsData.clinical_synopsis || {};
+            const textToCopy = `CLINICAL SUMMARY & LONGITUDINAL PAIN DATA
+Patient: James Jones (DOB: 20/01/1986)
+Period: ${latestAnalyticsData.period_label || 'Current Period'} (Total Logs: ${latestAnalyticsData.total_logs} of ${latestAnalyticsData.total_all_time_logs || latestAnalyticsData.total_logs} all-time)
+Average Pain: ${latestAnalyticsData.average_score}/10 (Range: ${latestAnalyticsData.min_score}-${latestAnalyticsData.max_score}/10)
+Primary Pain Generator: ${syn.primary_generator || 'Right Lumbar Spine'}
+Diurnal Variation: ${syn.diurnal_pattern || 'Morning stiffness escalating into evening'}
+
+ACUTE NEUROLOGICAL RED FLAGS:
+${(syn.neurological_red_flags || []).map((f, i) => `${i + 1}. ${f}`).join('\n')}
+
+SURGICAL BASELINE:
+${syn.surgical_context || 'C5-C7 ACDF (Prof Greg Cunningham). Right L4-L5/L5-S1 disc protrusion with radiculopathy.'}
+
+CONSULT ACTION REQUESTS:
+${(syn.recommended_consult_questions || []).map((q, i) => `${i + 1}. ${q}`).join('\n')}
+`;
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const prev = btnCopyDoctorSummary.innerText;
+                btnCopyDoctorSummary.innerText = '✅ Copied to Clipboard!';
+                setTimeout(() => { btnCopyDoctorSummary.innerText = prev; }, 2500);
+            }).catch(err => {
+                console.error("Failed to copy doctor text:", err);
+            });
+        });
+    }
+
     if (btnAskRumbleForGP) {
         btnAskRumbleForGP.addEventListener('click', () => {
             if (painAnalyticsModal) painAnalyticsModal.classList.add('hidden');
@@ -8499,6 +8568,54 @@ document.addEventListener('DOMContentLoaded', () => {
             const statPainTotalLogs = document.getElementById('statPainTotalLogs');
             const statPainMorningNight = document.getElementById('statPainMorningNight');
 
+            latestAnalyticsData = data;
+
+            // Render Doctor Clinical Briefing Box
+            const syn = data.clinical_synopsis;
+            if (syn) {
+                const redFlagsEl = document.getElementById('briefingRedFlagsList');
+                if (redFlagsEl && Array.isArray(syn.neurological_red_flags)) {
+                    redFlagsEl.innerHTML = syn.neurological_red_flags.map(f => `<li>${escapeHtml(f)}</li>`).join('');
+                }
+
+                const actionsEl = document.getElementById('briefingActionItemsList');
+                if (actionsEl && Array.isArray(syn.recommended_consult_questions)) {
+                    // Adapt if specialty filter is set
+                    const specialty = doctorSpecialtyFilter ? doctorSpecialtyFilter.value : 'all';
+                    let displayedActions = syn.recommended_consult_questions;
+                    if (specialty === 'pain') {
+                        displayedActions = [
+                            "Evaluate candidacy & timing for Spinal Cord Stimulation (SCS) trial vs dorsal column stimulation",
+                            "Review diagnostic nerve blocks / radiofrequency ablation for persistent facet/lumbar pain",
+                            "Assess nocturnal neuropathic breakthrough pain and adjust neuromodulator dosing"
+                        ];
+                    } else if (specialty === 'neuro') {
+                        displayedActions = [
+                            "Distinguish acute L4/L5 LMN root compression vs cervical UMN myelomalacic recurrence",
+                            "Assess necessity of urgent decompressive lumbar discectomy/foraminotomy",
+                            "Evaluate fall risk & verify immediate AFO orthotic splinting indication"
+                        ];
+                    } else if (specialty === 'rehab') {
+                        displayedActions = [
+                            "Gait re-education protocol with high-steppage compensation reduction",
+                            "Active hydrotherapy progression targeting lumbar core stabilization within restriction",
+                            "Ankle dorsiflexion active-assisted rehabilitation and proprioceptive balance training"
+                        ];
+                    }
+                    actionsEl.innerHTML = displayedActions.map(a => `<li>${escapeHtml(a)}</li>`).join('');
+                }
+
+                const diurnalNote = document.getElementById('briefingDiurnalNote');
+                if (diurnalNote && syn.diurnal_pattern) {
+                    diurnalNote.innerHTML = `<strong style="color: var(--text-primary);">Diurnal Load:</strong> ${escapeHtml(syn.diurnal_pattern)}`;
+                }
+
+                const alertBadge = document.getElementById('briefingAlertBadge');
+                if (alertBadge) {
+                    alertBadge.innerText = `${syn.neurological_red_flags?.length || 3} Neurological Red Flags`;
+                }
+            }
+
             if (statPainAvg) statPainAvg.innerText = `${data.average_score} / 10`;
             if (statPainRange) statPainRange.innerText = `Range: ${data.min_score} - ${data.max_score}`;
             
@@ -8512,7 +8629,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (statPainPrimaryPct) statPainPrimaryPct.innerText = '0% of Total Burden';
             }
 
-            if (statPainTotalLogs) statPainTotalLogs.innerText = `${data.total_logs} Entries`;
+            if (statPainTotalLogs) {
+                const allTimeTotal = data.total_all_time_logs || data.total_logs;
+                statPainTotalLogs.innerText = `${allTimeTotal} Entries`;
+                const statPainTotalSubtext = document.getElementById('statPainTotalSubtext');
+                if (statPainTotalSubtext) {
+                    statPainTotalSubtext.innerText = period === 'all' 
+                        ? 'All-Time Cumulative' 
+                        : `${data.total_logs} in ${data.period_label || period} · ${allTimeTotal} Total`;
+                }
+            }
 
             // Morning vs night
             const morningSlot = (data.time_of_day_distribution || []).find(t => t.slot.includes('Morning'));
