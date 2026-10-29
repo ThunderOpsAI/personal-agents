@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Clinical Consultation Briefing — Dr. Brett Todhunter (28 Oct 2026)</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 12mm 14mm 12mm 14mm;
+    }
+    *, *:before, *:after {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-size: 9.5pt;
+      line-height: 1.35;
+      color: #111827;
+      background: #f8fafc;
+      margin: 0;
+      padding: 20px;
+    }
+    .page-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 24px 28px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      border-radius: 4px;
+    }
+    .header-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 12px;
+      border-bottom: 2px solid #0f172a;
+      padding-bottom: 8px;
+    }
+    .header-table td {
+      vertical-align: top;
+      padding: 2px 0;
+    }
+    .title-main {
+      font-size: 15pt;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.02em;
+      text-transform: uppercase;
+      margin: 0 0 2px 0;
+    }
+    .subtitle {
+      font-size: 8.5pt;
+      color: #475569;
+      margin: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+    .patient-box {
+      background: #f1f5f9;
+      border-left: 3px solid #2563eb;
+      padding: 6px 10px;
+      font-size: 9pt;
+      border-radius: 0 4px 4px 0;
+    }
+    .alert-banner {
+      background: #fef2f2;
+      border: 1.5px solid #dc2626;
+      border-radius: 4px;
+      padding: 8px 10px;
+      margin: 10px 0 12px 0;
+    }
+    .alert-title {
+      font-weight: 800;
+      color: #991b1b;
+      font-size: 10pt;
+      margin-bottom: 3px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .section-title {
+      font-size: 10.5pt;
+      font-weight: 700;
+      color: #0f172a;
+      border-bottom: 1px solid #cbd5e1;
+      padding-bottom: 2px;
+      margin: 11px 0 6px 0;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .card {
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      padding: 8px 10px;
+      background: #ffffff;
+    }
+    .card-title {
+      font-weight: 700;
+      font-size: 9pt;
+      color: #1e293b;
+      margin-bottom: 4px;
+      border-bottom: 1px dashed #e2e8f0;
+      padding-bottom: 2px;
+    }
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 8.5pt;
+      margin: 4px 0 8px 0;
+    }
+    table.data-table th, table.data-table td {
+      border: 1px solid #cbd5e1;
+      padding: 4px 6px;
+      text-align: left;
+    }
+    table.data-table th {
+      background: #f1f5f9;
+      font-weight: 700;
+      color: #334155;
+    }
+    .checklist-item {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      margin-bottom: 5px;
+      font-size: 9pt;
+    }
+    .checkbox {
+      width: 13px;
+      height: 13px;
+      border: 1.5px solid #0f172a;
+      border-radius: 2px;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+    .signature-area {
+      margin-top: 15px;
+      padding-top: 8px;
+      border-top: 1px solid #cbd5e1;
+      display: flex;
+      justify-content: space-between;
+      font-size: 8.5pt;
+      color: #475569;
+    }
+    .no-print-bar {
+      position: sticky;
+      top: 0;
+      background: #0f172a;
+      color: white;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-radius: 4px;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+    .btn-print {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      font-weight: 700;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 10pt;
+    }
+    .btn-print:hover {
+      background: #1d4ed8;
+    }
+    @media print {
+      body {
+        background: #ffffff;
+        padding: 0;
+      }
+      .page-container {
+        box-shadow: none;
+        padding: 0;
+        max-width: 100%;
+      }
+      .no-print-bar {
+        display: none !important;
+      }
+      .page-break {
+        page-break-before: always;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="no-print-bar">
+    <div><strong>CLINICAL PRINT READY</strong> &mdash; Prepared for Dr. Brett Todhunter (28 Oct 2026, 11:00 AM)</div>
+    <button class="btn-print" onclick="window.print()">Print Report (PDF / Hardcopy)</button>
+  </div>
+
+  <div class="page-container">
+
+    <!-- Header Block -->
+    <table class="header-table">
+      <tr>
+        <td style="width: 58%;">
+          <div class="title-main">Clinical Consultation Brief</div>
+          <div class="subtitle">Interventional Pain Medicine &amp; Neuromodulation</div>
+          <div style="font-size: 8.5pt; color: #334155; margin-top: 4px;">
+            <strong>Consulting Specialist:</strong> Dr. Brett Todhunter, MBBS, FANZCA, FFPMANZCA<br>
+            <strong>Clinic:</strong> Regional Pain Clinic &mdash; Suite 2, 2 Ramsay Place, West Albury NSW 2640<br>
+            <strong>Consult Date &amp; Time:</strong> Wednesday, 28 October 2026 at 11:00 AM AEDT
+          </div>
+        </td>
+        <td style="width: 42%;">
+          <div class="patient-box">
+            <strong>PATIENT:</strong> James Jones<br>
+            <strong>DOB:</strong> 20/01/1986 (Age: 40) | <strong>Phone:</strong> 0402 270 259<br>
+            <strong>Address:</strong> 159 Tone Rd, Wangaratta VIC 3677<br>
+            <strong>Referring GP:</strong> Dr. Reno Riandito / Dr. Nathan Anderson<br>
+            <strong>Spine Surgeon:</strong> Prof. Greg Cunningham (C5&ndash;C7 Fusion)
+          </div>
+        </td>
+      </tr>
+    </table>
+
+    <!-- Acute Red Flag Banner -->
+    <div class="alert-banner">
+      <div class="alert-title">
+        <span>&#9888;</span> ACUTE NEUROLOGICAL ESCALATION: SEVERE FOOT DROP &amp; DAILY TRIPPING
+      </div>
+      <div style="font-size: 9pt; color: #7f1d1d; line-height: 1.35;">
+        <strong>Rapid Progression (Last 14 Days):</strong> Inability to walk normally or clear the ground without high knee elevation ("high steppage gait"). The right foot catches the ground repeatedly, causing <strong>daily tripping and acute fall risk</strong>. Direct clinical concern for <strong>acute L4/L5 motor nerve root compression</strong> (tibialis anterior / EHL weakness) versus upper motor neuron spastic paretic gait progression.
+      </div>
+    </div>
+
+    <!-- Section 1: Core Consult Agenda -->
+    <div class="section-title">1. Primary Consultation Objectives Today</div>
+    <div class="grid-2">
+      <div class="card" style="border-left: 3px solid #dc2626;">
+        <div class="card-title">A. Bedside Motor &amp; Fall Protection</div>
+        <ul style="margin: 2px 0 0 16px; padding: 0; font-size: 8.8pt;">
+          <li>Formal lower limb myotome testing: L4 dorsiflexion, L5 great toe lift.</li>
+          <li>Screen for sustained ankle clonus (>3 beats) and Babinski sign.</li>
+          <li>Immediate prescription/fitting of an <strong>Ankle-Foot Orthosis (AFO)</strong> or foot-up brace to protect against catastrophic falls.</li>
+        </ul>
+      </div>
+      <div class="card" style="border-left: 3px solid #2563eb;">
+        <div class="card-title">B. Imaging &amp; Neuromodulation Strategy</div>
+        <ul style="margin: 2px 0 0 16px; padding: 0; font-size: 8.8pt;">
+          <li>Order urgent <strong>3T Lumbar MRI</strong> to check for disc fragment sequestration compressing the L4/L5 root.</li>
+          <li>Clarify <strong>Spinal Cord Stimulation (SCS)</strong> trial timing vs. urgent open decompression (SCS manages sensory pain, not motor paralysis).</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Section 2: Surgical & Anatomical Baseline -->
+    <div class="section-title">2. Surgical History &amp; Baseline Pathophysiology</div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th style="width: 25%;">Region</th>
+          <th style="width: 40%;">Pathology &amp; Interventions</th>
+          <th style="width: 35%;">Current Clinical Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Cervical Spine (Fused C5&ndash;C7)</strong></td>
+          <td>Anterior Cervical Decompression &amp; Fusion (ACDF, June 2026, Prof. Cunningham) for severe spinal cord compression and myelomalacia. Titanium cage/plate.</td>
+          <td>Residual cord myelomalacia produces central hyperreflexia. Hardware is stable and MR-conditional. Contralateral left C7-T1 burning on right arm lift.</td>
+        </tr>
+        <tr>
+          <td><strong>Lumbar Spine (L4&ndash;S1)</strong></td>
+          <td>Multi-level degenerative disc disease with focal right-sided disc extrusion/bulge at L4&ndash;L5 and L5&ndash;S1 causing severe thecal sac &amp; root impingement.</td>
+          <td><strong>24/7 continuous agony (62% of pain burden)</strong> with acute dural tension. Sits as the primary candidate for targeted interventional pain management.</td>
+        </tr>
+        <tr>
+          <td><strong>Peripheral Joints</strong></td>
+          <td>Right knee and right ankle chronic ligamentous/chondral injuries.</td>
+          <td>Antalgic limp exacerbates pelvic tilt and transmits abnormal ground forces up into lumbar spine.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Section 3: Longitudinal Pain Data -->
+    <div class="section-title">3. Longitudinal Symptom Burden (777 Entries Analyzed &bull; 01/07/26 to 28/10/26)</div>
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 6px; text-align: center;">
+      <div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 6px; border-radius: 4px;">
+        <div style="font-size: 7.5pt; color: #64748b; text-transform: uppercase;">Average Pain</div>
+        <div style="font-size: 13pt; font-weight: 800; color: #dc2626;">7.4 / 10</div>
+        <div style="font-size: 7pt; color: #64748b;">Range: 5.0 - 9.5</div>
+      </div>
+      <div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 6px; border-radius: 4px;">
+        <div style="font-size: 7.5pt; color: #64748b; text-transform: uppercase;">Primary Driver</div>
+        <div style="font-size: 11pt; font-weight: 800; color: #7c3aed;">Right Lumbar</div>
+        <div style="font-size: 7pt; color: #64748b;">62% Total Burden</div>
+      </div>
+      <div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 6px; border-radius: 4px;">
+        <div style="font-size: 7.5pt; color: #64748b; text-transform: uppercase;">Diurnal Load</div>
+        <div style="font-size: 11pt; font-weight: 800; color: #0284c7;">6.8 AM &bull; 7.7 PM</div>
+        <div style="font-size: 7pt; color: #64748b;">Worse with Upright Load</div>
+      </div>
+      <div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 6px; border-radius: 4px;">
+        <div style="font-size: 7.5pt; color: #64748b; text-transform: uppercase;">Total Logs</div>
+        <div style="font-size: 13pt; font-weight: 800; color: #0f172a;">777 Logs</div>
+        <div style="font-size: 7pt; color: #64748b;">4x Daily Tracking</div>
+      </div>
+    </div>
+
+    <!-- Page Break for Clean 2-Page Print Layout -->
+    <div class="page-break" style="margin-top: 10px;"></div>
+
+    <!-- Section 4: Detailed Neurological Review -->
+    <div class="section-title">4. Neurological &amp; Interventional Symptom Mapping</div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">1. Provocative Sciatic Neurodynamic Shockwaves</div>
+        <p style="margin: 0; font-size: 8.5pt;"><strong>Reproducible Trigger:</strong> With the right knee slightly bent, leaning forward slightly triggers sharp electric "shockwaves" retrogradely up the posterior leg straight to the exact focal lumbar disc herniation site.</p>
+        <p style="margin: 3px 0 0 0; font-size: 8pt; color: #475569;"><em>Significance:</em> Confirms acute mechanical dural traction (positive seated Slump/Las&egrave;gue variant) caused by physical disc impingement against inflamed nerve root sleeve.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">2. Paradoxical Hyperreflexia Flaring with Sciatica</div>
+        <p style="margin: 0; font-size: 8.5pt;"><strong>Clinical Observation:</strong> Explosive bilateral patellar kicks that worsen significantly in direct tandem with acute sciatic nerve flare-ups.</p>
+        <p style="margin: 3px 0 0 0; font-size: 8pt; color: #475569;"><em>Significance:</em> Central sensitization where peripheral nociceptive barrage triggers dorsal horn hyperexcitability in a spinal cord lacking descending inhibition from prior cervical myelomalacia.</p>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">3. Cold-Induced Acral Pallor (Raynaud's Phenomenon)</div>
+        <p style="margin: 0; font-size: 8.5pt;"><strong>Symptom:</strong> Bilateral index fingertips turn completely chalk-white and numb with minor cold exposure, followed by burning paresthesia during rewarming.</p>
+        <p style="margin: 3px 0 0 0; font-size: 8pt; color: #475569;"><em>Significance:</em> Stellate ganglion / C7&ndash;T1 sympathetically driven vasospasm vs. secondary Raynaud's phenomenon. Recommend autoimmune screening &amp; cold protection.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">4. Contralateral C7&ndash;T1 Burning on Right Arm Lift</div>
+        <p style="margin: 0; font-size: 8.5pt;"><strong>Symptom:</strong> Raising the <em>right</em> arm overhead evokes sharp, intense burning along the <em>left</em> cervicothoracic junction (C7&ndash;T1 medial scapula).</p>
+        <p style="margin: 3px 0 0 0; font-size: 8pt; color: #475569;"><em>Significance:</em> Kinetic chain load transfer where right thoracic rotation forces eccentric contraction across sensitive adjacent-segment left C7-T1 stabilizing musculature and dorsal rami.</p>
+      </div>
+    </div>
+
+    <!-- Section 5: Clinician Bedside Checklist -->
+    <div class="section-title">5. Bedside Clinical Review Checklist for Dr. Brett Todhunter</div>
+    <div style="background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 4px; padding: 10px; margin-bottom: 10px;">
+      
+      <div class="checklist-item">
+        <div class="checkbox"></div>
+        <div><strong>L4/L5 Motor Power (Foot Drop Screen):</strong> Test resisted ankle dorsiflexion/inversion (L4 - tibialis anterior) &amp; great toe extension (L5 - EHL). Heel walk test.</div>
+      </div>
+
+      <div class="checklist-item">
+        <div class="checkbox"></div>
+        <div><strong>Upper Motor Neuron (UMN) Screen:</strong> Check patellar/Achilles reflexes, evaluate for sustained ankle clonus (>3 beats), and test bilateral Babinski / Hoffmann signs.</div>
+      </div>
+
+      <div class="checklist-item">
+        <div class="checkbox"></div>
+        <div><strong>Fall Protection Prescription:</strong> Prescribe or fit an immediate <strong>Ankle-Foot Orthosis (AFO)</strong> or foot-up splint to eliminate daily tripping and fall hazards.</div>
+      </div>
+
+      <div class="checklist-item">
+        <div class="checkbox"></div>
+        <div><strong>Urgent 3T Lumbar MRI Order:</strong> Re-image the lumbosacral spine (L1&ndash;S1) to evaluate disc fragment progression, nerve root compression, and central canal dimensions.</div>
+      </div>
+
+      <div class="checklist-item">
+        <div class="checkbox"></div>
+        <div><strong>Spinal Cord Stimulation (SCS) Feasibility:</strong> Assess candidate suitability for an SCS percutaneous trial vs. the necessity of acute neurosurgical decompression for foot drop.</div>
+      </div>
+
+      <div class="checklist-item">
+        <div class="checkbox"></div>
+        <div><strong>Interventional Nerve Block Candidacy:</strong> Consider targeted fluoroscopic right L4/L5 transforaminal epidural steroid injection or diagnostic C7&ndash;T1 facet/medial branch blocks.</div>
+      </div>
+
+    </div>
+
+    <!-- Signature & Footer -->
+    <div class="signature-area">
+      <div>
+        <strong>Patient Signature:</strong> ____________________________________<br>
+        <strong>James Jones</strong> &mdash; 28 October 2026
+      </div>
+      <div style="text-align: right;">
+        <strong>Treating Specialist Signature:</strong> ____________________________________<br>
+        <strong>Dr. Brett Todhunter</strong> (Regional Pain Clinic)
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>

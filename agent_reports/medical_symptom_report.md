@@ -1,8 +1,8 @@
 # Clinical Symptom & Anatomical Pain Tracking Report
-> **Period**: 2026-07-01 to 2026-08-25 (Longitudinal Data from 1st July)
+> **Period**: 2026-07-01 to 2026-10-27 (Longitudinal Data from 1st July — 777 Total Cumulative Clinical Logs)
 > **Patient ID**: Self-Tracked Rumble OS Log
 > **Ranked Anatomical Distribution**: 1. Right Lumbar (~62%), 2. Neck / Cervical (~15%), 3. Right Shoulder (~12%), 4. Sciatica (~8%), 5. Thoracic (~2%), 6. Right Ankle (~1%)
-> **Average Pain Score**: 7.4 / 10 (Range: 5.0 - 9.0)
+> **Average Pain Score**: 7.4 / 10 (Range: 5.0 - 9.5)
 
 ## Scheduled 3-Hour Pain Tracking Logs (6 AM, 9 AM, 2 PM, 9 PM)
 
@@ -773,3 +773,52 @@
 | 24/10/2026 | 1:50:30 am | **6.8/10** | right lumbar | 70% | right lumbar (70%), right ankle (15%), thoracic (15%) | Notes: Standard check-in (70% lumbar 7.5, 15% ankle 5.0, 15% thoracic 5.0). Mood: neutral. |
 | 24/10/2026 | 1:50:30 am | **6.8/10** | right lumbar | 70% | right lumbar (70%), right knee (15%), neck (15%) | Notes: Standard check-in (70% lumbar 7.5, 15% knee 5.0, 15% neck 5.0). Mood: neutral. |
 | 24/10/2026 | 1:50:30 am | **7.5/10** | right lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: API log test. Mood: neutral. |
+| 27/10/2026 | 04:30:00 pm | **8.5/10** | right lumbar / gait | 80% | right lumbar (50%), sciatica / motor (30%), neck (10%), right ankle (10%) | Notes: Rapidly deteriorating gait, inability to walk or step high (foot drop / steppage gait deficit), daily tripping over obstacles. Mood: stressed. |
+| 28/10/2026 | 9:19:27 am | **6/10** | lumbar | 80% | lumbar (80%), neck (20%) | Notes: Stiff after long drive. Mood: 7. |
+| 28/10/2026 | 9:19:27 am | **6/10** | lumbar | 70% | lumbar (70%), right right_hip (30%) | Notes: Pain after prolonged walking. Mood: frustrated. |
+| 16/10/2026 | 2:03:00 pm | **6.5/10** | lumbar | 100% | lumbar (100%) | Notes: None. Mood: Not specified. |
+| 28/10/2026 | 9:19:27 am | **5.5/10** | right lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Logged via Telegram preset (Mild - Baseline distribution). Mood: neutral. |
+| 28/10/2026 | 9:19:28 am | **9/10** | right lumbar | 85% | right lumbar (85%), neck (10%), right ankle (2.5%), left ankle (2.5%) | Notes: Logged via Telegram (Severe Lumbar Flare preset). Mood: stressed. |
+| 28/10/2026 | 9:19:29 am | **6.5/10** | neck | 60% | neck (60%), right lumbar (30%), right ankle (5%), left ankle (5%) | Notes: Logged via Telegram (Neck Tension preset). Mood: neutral. |
+| 28/10/2026 | 9:19:29 am | **9.5/10** | sciatica | 100% | sciatica (100%) | Notes: Sciatica pain attack. Mood: stressed. |
+| 28/10/2026 | 9:19:29 am | **7.5/10** | thoracic | 70% | thoracic (70%), neck (15%), scapula (15%) | Notes: Thoracic strain & fatigue (70% thoracic, 15% neck, 15% scapula @ 7.5). Mood: neutral. |
+| 28/10/2026 | 9:19:29 am | **6/10** | thoracic | 70% | thoracic (70%), neck (15%), scapula (15%) | Notes: Good hydrotherapy session, feeling slightly better. Mood: good. |
+| 28/10/2026 | 9:19:29 am | **6.8/10** | right lumbar | 70% | right lumbar (70%), right ankle (15%), thoracic (15%) | Notes: Standard check-in (70% lumbar 7.5, 15% ankle 5.0, 15% thoracic 5.0). Mood: neutral. |
+| 28/10/2026 | 9:19:29 am | **6.8/10** | right lumbar | 70% | right lumbar (70%), right knee (15%), neck (15%) | Notes: Standard check-in (70% lumbar 7.5, 15% knee 5.0, 15% neck 5.0). Mood: neutral. |
+| 28/10/2026 | 9:19:29 am | **8/10** | right lumbar | 70% | right lumbar (70%), right knee (20%), thoracic (10%) | Notes: Big Day: heavy physical exertion, cumulative loading flare. Mood: fatigued. |
+| 28/10/2026 | 9:19:29 am | **7.2/10** | right lumbar | 70% | right lumbar (70%), right knee (30%) | Notes: Post-walk loading flare, lumbar and lower extremity fatigue. Mood: frustrated. |
+| 28/10/2026 | 9:19:29 am | **3.5/10** | right lumbar | 100% | right lumbar (100%) | Notes: Rest day, managed baseline pain. Mood: calm. |
+| 28/10/2026 | 9:19:29 am | **7.5/10** | right lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: API log test. Mood: neutral. |
+| 28/10/2026 | 9:19:31 am | **6/10** | lumbar | 80% | lumbar (80%), neck (20%) | Notes: felt stiff after sitting.. Mood: 7. |
+| 30/10/2026 | 2:30:21 am | **6/10** | lumbar | 70% | lumbar (70%), right right_hip (30%) | Notes: Pain after prolonged walking. Mood: frustrated. |
+| 16/10/2026 | 2:03:00 pm | **6.5/10** | lumbar | 100% | lumbar (100%) | Notes: None. Mood: Not specified. |
+| 30/10/2026 | 2:30:21 am | **6/10** | lumbar | 80% | lumbar (80%), neck (20%) | Notes: Stiff after long drive. Mood: 7. |
+| 30/10/2026 | 2:30:21 am | **5.5/10** | right lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Logged via Telegram preset (Mild - Baseline distribution). Mood: neutral. |
+| 30/10/2026 | 2:30:22 am | **6/10** | lumbar | 80% | lumbar (80%), neck (20%) | Notes: felt stiff after sitting.. Mood: 7. |
+| 30/10/2026 | 2:30:22 am | **9/10** | right lumbar | 85% | right lumbar (85%), neck (10%), right ankle (2.5%), left ankle (2.5%) | Notes: Logged via Telegram (Severe Lumbar Flare preset). Mood: stressed. |
+| 30/10/2026 | 2:30:22 am | **6.5/10** | neck | 60% | neck (60%), right lumbar (30%), right ankle (5%), left ankle (5%) | Notes: Logged via Telegram (Neck Tension preset). Mood: neutral. |
+| 30/10/2026 | 2:30:22 am | **9.5/10** | sciatica | 100% | sciatica (100%) | Notes: Sciatica pain attack. Mood: stressed. |
+| 30/10/2026 | 2:30:22 am | **7.5/10** | thoracic | 70% | thoracic (70%), neck (15%), scapula (15%) | Notes: Thoracic strain & fatigue (70% thoracic, 15% neck, 15% scapula @ 7.5). Mood: neutral. |
+| 30/10/2026 | 2:30:22 am | **6/10** | thoracic | 70% | thoracic (70%), neck (15%), scapula (15%) | Notes: Good hydrotherapy session, feeling slightly better. Mood: good. |
+| 30/10/2026 | 2:30:22 am | **6.8/10** | right lumbar | 70% | right lumbar (70%), right ankle (15%), thoracic (15%) | Notes: Standard check-in (70% lumbar 7.5, 15% ankle 5.0, 15% thoracic 5.0). Mood: neutral. |
+| 30/10/2026 | 2:30:22 am | **6.8/10** | right lumbar | 70% | right lumbar (70%), right knee (15%), neck (15%) | Notes: Standard check-in (70% lumbar 7.5, 15% knee 5.0, 15% neck 5.0). Mood: neutral. |
+| 30/10/2026 | 2:30:22 am | **8/10** | right lumbar | 70% | right lumbar (70%), right knee (20%), thoracic (10%) | Notes: Big Day: heavy physical exertion, cumulative loading flare. Mood: fatigued. |
+| 30/10/2026 | 2:30:22 am | **7.2/10** | right lumbar | 70% | right lumbar (70%), right knee (30%) | Notes: Post-walk loading flare, lumbar and lower extremity fatigue. Mood: frustrated. |
+| 30/10/2026 | 2:30:22 am | **3.5/10** | right lumbar | 100% | right lumbar (100%) | Notes: Rest day, managed baseline pain. Mood: calm. |
+| 30/10/2026 | 2:30:22 am | **7.5/10** | right lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: API log test. Mood: neutral. |
+| 30/10/2026 | 2:38:48 am | **6/10** | lumbar | 70% | lumbar (70%), right right_hip (30%) | Notes: Pain after prolonged walking. Mood: frustrated. |
+| 16/10/2026 | 2:03:00 pm | **6.5/10** | lumbar | 100% | lumbar (100%) | Notes: None. Mood: Not specified. |
+| 30/10/2026 | 2:38:48 am | **6/10** | lumbar | 80% | lumbar (80%), neck (20%) | Notes: Stiff after long drive. Mood: 7. |
+| 30/10/2026 | 2:38:48 am | **5.5/10** | right lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: Logged via Telegram preset (Mild - Baseline distribution). Mood: neutral. |
+| 30/10/2026 | 2:38:50 am | **9/10** | right lumbar | 85% | right lumbar (85%), neck (10%), right ankle (2.5%), left ankle (2.5%) | Notes: Logged via Telegram (Severe Lumbar Flare preset). Mood: stressed. |
+| 30/10/2026 | 2:38:50 am | **6.5/10** | neck | 60% | neck (60%), right lumbar (30%), right ankle (5%), left ankle (5%) | Notes: Logged via Telegram (Neck Tension preset). Mood: neutral. |
+| 30/10/2026 | 2:38:50 am | **9.5/10** | sciatica | 100% | sciatica (100%) | Notes: Sciatica pain attack. Mood: stressed. |
+| 30/10/2026 | 2:38:50 am | **7.5/10** | thoracic | 70% | thoracic (70%), neck (15%), scapula (15%) | Notes: Thoracic strain & fatigue (70% thoracic, 15% neck, 15% scapula @ 7.5). Mood: neutral. |
+| 30/10/2026 | 2:38:50 am | **6/10** | thoracic | 70% | thoracic (70%), neck (15%), scapula (15%) | Notes: Good hydrotherapy session, feeling slightly better. Mood: good. |
+| 30/10/2026 | 2:38:50 am | **6.8/10** | right lumbar | 70% | right lumbar (70%), right ankle (15%), thoracic (15%) | Notes: Standard check-in (70% lumbar 7.5, 15% ankle 5.0, 15% thoracic 5.0). Mood: neutral. |
+| 30/10/2026 | 2:38:50 am | **6.8/10** | right lumbar | 70% | right lumbar (70%), right knee (15%), neck (15%) | Notes: Standard check-in (70% lumbar 7.5, 15% knee 5.0, 15% neck 5.0). Mood: neutral. |
+| 30/10/2026 | 2:38:50 am | **8/10** | right lumbar | 70% | right lumbar (70%), right knee (20%), thoracic (10%) | Notes: Big Day: heavy physical exertion, cumulative loading flare. Mood: fatigued. |
+| 30/10/2026 | 2:38:50 am | **7.2/10** | right lumbar | 70% | right lumbar (70%), right knee (30%) | Notes: Post-walk loading flare, lumbar and lower extremity fatigue. Mood: frustrated. |
+| 30/10/2026 | 2:38:50 am | **3.5/10** | right lumbar | 100% | right lumbar (100%) | Notes: Rest day, managed baseline pain. Mood: calm. |
+| 30/10/2026 | 2:38:50 am | **7.5/10** | right lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: API log test. Mood: neutral. |
+| 30/10/2026 | 2:38:50 am | **6/10** | lumbar | 80% | lumbar (80%), neck (20%) | Notes: felt stiff after sitting.. Mood: 7. |

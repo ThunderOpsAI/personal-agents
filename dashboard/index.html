@@ -1002,39 +1002,22 @@
                         <h3 id="runnerStep" style="margin-bottom: 2px;">Step 1: Alignment & Position</h3>
                         <p id="runnerCue" style="margin: 3px 0 8px 0; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.35;"></p>
                         
-                        <div style="background: rgba(0,0,0,0.35); border: 1px solid rgba(0, 240, 255, 0.25); border-radius: 8px; padding: 10px 14px; margin-top: 6px;">
-                            <div style="display: flex; justify-content: space-between; align-items: baseline;">
-                                <div>
-                                    <span style="font-size: 0.72rem; color: var(--neon-blue); text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">Program Countdown</span>
-                                    <div class="timer" id="runnerTimer" style="cursor: pointer; margin: 2px 0 0 0; font-size: 2.3rem; font-weight: 800; color: var(--neon-purple); line-height: 1;" title="Click to Pause/Resume">15:00</div>
-                                </div>
-                                <div style="text-align: right;">
-                                    <span style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Current Step Hold</span>
-                                    <div id="runnerStepTimer" style="font-size: 1.3rem; font-weight: 700; color: var(--neon-blue); font-family: var(--font-heading); margin-top: 2px;">03:45</div>
-                                </div>
+                        <div style="display: flex; align-items: center; gap: 14px; margin-top: 8px;">
+                            <div style="display: flex; flex-direction: column;">
+                                <span style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Current Step</span>
+                                <div class="timer" id="runnerTimer" style="cursor: pointer; margin: 0; font-size: 1.5rem;" title="Click to Pause/Resume">02:00</div>
                             </div>
-                            
-                            <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-muted); margin-top: 8px; margin-bottom: 3px;">
-                                <span>Total Routine Progress</span>
-                                <span id="runnerTotalProgressPct" style="color: var(--neon-blue); font-weight: 600;">0%</span>
+                            <div style="display: flex; flex-direction: column;">
+                                <span style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Total Routine</span>
+                                <div class="timer" id="runnerTotalTimer" style="cursor: pointer; margin: 0; font-size: 1.5rem; color: var(--neon-purple);" title="Total routine time remaining">20:00</div>
                             </div>
-                            <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
-                                <div id="runnerTotalProgressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple)); transition: width 0.3s ease;"></div>
-                            </div>
-
-                            <div style="display: flex; justify-content: space-between; font-size: 0.68rem; color: var(--text-muted); margin-top: 6px; margin-bottom: 2px;">
-                                <span>Step Hold Progress</span>
-                                <span id="runnerStepProgressPct" style="color: var(--text-secondary);">0%</span>
-                            </div>
-                            <div style="width: 100%; height: 4px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden;">
-                                <div id="runnerStepProgressBar" style="width: 0%; height: 100%; background: var(--neon-blue); transition: width 0.3s ease;"></div>
-                            </div>
+                            <button class="btn btn-outline btn-sm" id="btnTogglePauseRunner" style="align-self: flex-end; margin-bottom: 2px;">Pause</button>
                         </div>
                     </div>
-                    <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-end;">
-                        <button class="btn btn-outline btn-sm" id="btnSwapExercise" style="white-space: nowrap;">Swap Exercise</button>
-                        <button class="btn btn-outline btn-sm" id="btnTogglePauseRunner" style="white-space: nowrap; min-width: 75px;">Pause</button>
-                    </div>
+                    <button class="btn btn-outline btn-sm" id="btnSwapExercise" style="white-space: nowrap;">Swap Exercise</button>
+                </div>
+                <div style="width: 100%; height: 5px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; margin-top: 10px;">
+                    <div id="runnerTotalProgressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple)); transition: width 0.3s ease;"></div>
                 </div>
                 <div class="runner-actions" style="display: flex; justify-content: space-between; margin-top: 14px;">
                     <button class="btn btn-outline" id="btnPrevStep">Prev</button>
@@ -1295,6 +1278,55 @@
             </div>
         </div>
 
+        <!-- Court Webex Hearing Modal -->
+        <div class="modal-overlay hidden" id="courtModal" style="z-index: 1100;">
+            <div class="modal-content glass-panel" style="max-width: 520px; width: 92%;">
+                <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 16px;">
+                    <div>
+                        <h2 style="margin: 0; font-size: 1.25rem; color: #fff;">Wangaratta Magistrates' Court</h2>
+                        <span style="font-size: 0.82rem; color: var(--text-secondary);">Remote Mention Hearing &bull; Audio Visual Link (AVL)</span>
+                    </div>
+                    <button class="btn-close" id="btnCloseCourtModal">&times;</button>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 18px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <span class="badge neon-purple" style="font-size: 0.8rem; padding: 3px 8px;">Webex Appearance Confirmed</span>
+                        <span style="font-size: 0.9rem; color: var(--neon-blue); font-weight: 600;">Today @ 10:00 AM</span>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.35); border: 1px solid var(--glass-border); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 10px;">
+                        <div>
+                            <span style="color: var(--text-secondary); font-size: 0.8rem; display: block; margin-bottom: 4px;">Meeting Link (Tap to Join):</span>
+                            <a href="https://csvic.webex.com/meet/26517100652" target="_blank" rel="noopener noreferrer" style="color: var(--neon-blue); font-weight: 600; text-decoration: underline; word-break: break-all; font-size: 0.95rem;" id="courtWebexLink">https://csvic.webex.com/meet/26517100652</a>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px;">
+                            <div>
+                                <span style="color: var(--text-secondary); font-size: 0.8rem;">Meeting Number:</span>
+                                <strong style="color: #fff; font-size: 0.92rem; margin-left: 6px;">2651 710 0652</strong>
+                            </div>
+                            <div>
+                                <span style="color: var(--text-secondary); font-size: 0.8rem;">Password:</span>
+                                <strong style="color: var(--neon-green); font-size: 1rem; margin-left: 6px; letter-spacing: 0.5px;" id="courtMeetingPassword">7VDyhKbVX74</strong>
+                            </div>
+                        </div>
+                        <div style="border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px;">
+                            <span style="color: var(--text-secondary); font-size: 0.8rem;">Video Address (SIP / Room System):</span>
+                            <code style="color: #fff; font-size: 0.82rem; background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px; display: block; margin-top: 3px;">26517100652@csvic.webex.com</code>
+                        </div>
+                        <div style="font-size: 0.78rem; color: var(--text-muted); border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px;">
+                            Registrar: Jacinta Scurrah &bull; Wangaratta Law Courts &bull; Phone: (03) 9087 5728
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: space-between; gap: 10px; margin-top: 8px;">
+                    <button type="button" class="btn btn-outline btn-sm" id="btnCopyCourtPassword">Copy Password</button>
+                    <div style="display: flex; gap: 8px;">
+                        <button type="button" class="btn btn-outline btn-sm" id="btnCloseCourtBtn">Close</button>
+                        <a href="https://csvic.webex.com/meet/26517100652" target="_blank" rel="noopener noreferrer" class="btn btn-neon-green btn-sm" id="btnJoinWebexDirect" style="text-decoration: none; display: inline-flex; align-items: center; padding: 6px 14px;">Join Webex Now &rarr;</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Regulatory Complaints Manifest Modal (ACCC, VPA & CAV) -->
         <div class="modal-overlay hidden" id="complaintsModal" style="z-index: 1100;">
             <div class="modal-content glass-panel" style="max-width: 780px; width: 95%; max-height: 90vh; display: flex; flex-direction: column; padding: 20px;">
@@ -1361,15 +1393,61 @@
                 </div>
 
                 <div class="modal-body" style="display: flex; flex-direction: column; gap: 18px; margin-top: 10px;">
-                    <!-- Period Filter Tabs -->
+                    <!-- Period Filter Tabs & Doctor Mode Toggle -->
                     <div style="display: flex; gap: 8px; align-items: center; justify-content: space-between; flex-wrap: wrap; padding-bottom: 6px; border-bottom: 1px solid var(--glass-border);">
-                        <div style="display: flex; gap: 8px; align-items: center;" id="painPeriodTabs">
+                        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;" id="painPeriodTabs">
                             <button type="button" class="btn btn-sm btn-outline pain-period-btn" id="btnPainPeriodDay" data-period="day">Today (Intra-Day)</button>
                             <button type="button" class="btn btn-sm btn-outline pain-period-btn" id="btnPainPeriodWeek" data-period="week">7 Days (Week)</button>
                             <button type="button" class="btn btn-sm btn-neon-blue pain-period-btn active" id="btnPainPeriodMonth" data-period="month">30 Days (Month)</button>
                             <button type="button" class="btn btn-sm btn-outline pain-period-btn" id="btnPainPeriodAll" data-period="all">All Time</button>
+                            <span style="border-left: 1px solid var(--glass-border); height: 20px; margin: 0 4px;"></span>
+                            <button type="button" class="btn btn-sm btn-outline" id="btnToggleDoctorMode" style="border-color: var(--neon-green); color: var(--neon-green);" title="Focus view for in-person consultation">👨‍⚕️ Doctor Desk View</button>
                         </div>
-                        <div style="font-size: 0.82rem; color: var(--neon-blue); font-weight: 500;" id="painAnalyticsPeriodBadge">Showing Last 30 Days</div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <select id="doctorSpecialtyFilter" class="glass-select" style="font-size: 0.78rem; padding: 3px 8px; border-color: rgba(255,255,255,0.2);">
+                                <option value="all">Specialty: Comprehensive GP</option>
+                                <option value="pain">Specialty: Interventional Pain (SCS / Blocks)</option>
+                                <option value="neuro">Specialty: Spine Surgeon / Neurologist</option>
+                                <option value="rehab">Specialty: Allied Health / Physio</option>
+                            </select>
+                            <div style="font-size: 0.82rem; color: var(--neon-blue); font-weight: 500;" id="painAnalyticsPeriodBadge">Showing Last 30 Days</div>
+                        </div>
+                    </div>
+
+                    <!-- Clinical Doctor Briefing Box (Visible in Doctor Mode / Quick Overview) -->
+                    <div id="doctorBriefingContainer" class="glass-panel" style="padding: 14px 16px; border-radius: 8px; background: rgba(0, 240, 255, 0.04); border-left: 4px solid var(--neon-blue);">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; flex-wrap: wrap; gap: 6px;">
+                            <div>
+                                <span style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--neon-blue); font-weight: 700;">Executive Clinical Briefing for Treating Clinician</span>
+                                <h3 style="margin: 2px 0 0 0; font-size: 1.05rem; color: var(--text-primary); font-weight: 600;" id="briefingPatientHeader">Patient: James Jones (DOB: 20/01/1986) · Clinical Decision Support</h3>
+                            </div>
+                            <span class="badge neon-red" style="font-size: 0.72rem;" id="briefingAlertBadge">3 Neurological Red Flags</span>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-top: 10px; font-size: 0.85rem;">
+                            <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05);">
+                                <div style="color: var(--neon-red); font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 4px;">⚠️ Acute Neurological Red Flags</div>
+                                <ul style="margin: 0; padding-left: 18px; color: var(--text-primary); line-height: 1.35;" id="briefingRedFlagsList">
+                                    <li>Rapidly deteriorating gait / foot drop (inability to clear ground without high-steppage knee lift, daily trip hazard)</li>
+                                    <li>Provocative dural traction / sciatic shockwaves retrogradely targeting right lumbar disc</li>
+                                    <li>Paradoxical patellar hyperreflexia co-exacerbation during acute sciatic spikes</li>
+                                </ul>
+                            </div>
+
+                            <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05);">
+                                <div style="color: var(--neon-green); font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 4px;">🎯 Clinical Actions & Decisions Requested</div>
+                                <ul style="margin: 0; padding-left: 18px; color: var(--text-primary); line-height: 1.35;" id="briefingActionItemsList">
+                                    <li>Immediate prescription/referral for Ankle-Foot Orthosis (AFO / foot-up splint) for fall prevention</li>
+                                    <li>Review repeat lumbar MRI vs cervical MRI to distinguish L4/L5 LMN root compression vs UMN myelomalacic progression</li>
+                                    <li>Evaluate suitability and timing for interventional pain management / Spinal Cord Stimulation (SCS) trial</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.06); display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-secondary); flex-wrap: wrap; gap: 8px;">
+                            <div><strong style="color: var(--text-primary);">Surgical Baseline:</strong> C5–C7 ACDF (Prof. Greg Cunningham, titanium MRI-conditional) · Right L4–L5/L5–S1 disc protrusion.</div>
+                            <div id="briefingDiurnalNote"><strong style="color: var(--text-primary);">Diurnal Load:</strong> Morning stiffness 6.8/10 → Evening load 7.7/10</div>
+                        </div>
                     </div>
 
                     <!-- Key Clinical Metric Cards -->
@@ -1386,8 +1464,8 @@
                         </div>
                         <div class="glass-panel" style="padding: 12px; border-radius: 8px; border-left: 3px solid var(--neon-blue);">
                             <div style="font-size: 0.78rem; color: var(--text-secondary); text-transform: uppercase;">Total Clinical Logs</div>
-                            <div style="font-size: 1.6rem; font-weight: 700; color: var(--neon-blue);" id="statPainTotalLogs">310 Entries</div>
-                            <div style="font-size: 0.72rem; color: var(--text-secondary);">Recorded 4x Daily</div>
+                            <div style="font-size: 1.6rem; font-weight: 700; color: var(--neon-blue);" id="statPainTotalLogs">777 Entries</div>
+                            <div style="font-size: 0.72rem; color: var(--text-secondary);" id="statPainTotalSubtext">All-Time Cumulative · Recorded 4x Daily</div>
                         </div>
                         <div class="glass-panel" style="padding: 12px; border-radius: 8px; border-left: 3px solid var(--neon-green);">
                             <div style="font-size: 0.78rem; color: var(--text-secondary); text-transform: uppercase;">Morning vs Night Flares</div>
@@ -1421,6 +1499,88 @@
                         </div>
                     </div>
 
+                    <!-- Diagnostic Imaging & Surgical Baseline Strip -->
+                    <div class="glass-panel" style="padding: 14px; border-radius: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <div style="font-weight: 600; font-size: 0.95rem; color: var(--neon-blue);">🩻 Diagnostic Imaging & Surgical Baseline</div>
+                            <span style="font-size: 0.72rem; color: var(--text-secondary);">Cross-referenced with pain flare tracking</span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; font-size: 0.8rem;">
+                            <div style="background: rgba(0,0,0,0.25); padding: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.06);">
+                                <div style="display: flex; justify-content: space-between; font-weight: 600; color: var(--text-primary); margin-bottom: 3px;">
+                                    <span>Cervical Spine (C5–C7)</span>
+                                    <span style="font-size: 0.7rem; color: var(--neon-blue);">June 2026</span>
+                                </div>
+                                <div style="font-size: 0.72rem; color: var(--text-secondary); margin-bottom: 4px;">Prof. Greg Cunningham · ACDF Titanium Cage & Plating</div>
+                                <div style="color: var(--text-secondary); line-height: 1.35;">Post-op MRI shows hardware intact with titanium interbody fusion. Residual C6 cervical myelomalacia. Titanium MRI-conditional.</div>
+                                <div style="margin-top: 6px; font-size: 0.72rem; color: var(--neon-green); font-weight: 500;">Status: Stable / Adjacent Segment Vigilance</div>
+                            </div>
+
+                            <div style="background: rgba(0,0,0,0.25); padding: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.06);">
+                                <div style="display: flex; justify-content: space-between; font-weight: 600; color: var(--text-primary); margin-bottom: 3px;">
+                                    <span>Lumbosacral (L4–L5 / L5–S1)</span>
+                                    <span style="font-size: 0.7rem; color: var(--neon-blue);">Sept 2026</span>
+                                </div>
+                                <div style="font-size: 0.72rem; color: var(--text-secondary); margin-bottom: 4px;">Regional Imaging Albury · 3.0T MRI</div>
+                                <div style="color: var(--text-secondary); line-height: 1.35;">Right paracentral/foraminal disc extrusion compressing exiting L4 and traversing L5 root. Confirms space-occupying lumbar sciatica.</div>
+                                <div style="margin-top: 6px; font-size: 0.72rem; color: var(--neon-purple); font-weight: 500;">Status: Surgical / SCS Candidate</div>
+                            </div>
+
+                            <div style="background: rgba(0,0,0,0.25); padding: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.06);">
+                                <div style="display: flex; justify-content: space-between; font-weight: 600; color: var(--text-primary); margin-bottom: 3px;">
+                                    <span>Gait & Neurological Deficit</span>
+                                    <span style="font-size: 0.7rem; color: var(--neon-red);">Oct 2026</span>
+                                </div>
+                                <div style="font-size: 0.72rem; color: var(--text-secondary); margin-bottom: 4px;">Clinical Video Gait Assessment & GP</div>
+                                <div style="color: var(--text-secondary); line-height: 1.35;">Tibialis anterior weakness (3+/5), foot drop, and daily tripping requiring high-steppage knee compensation.</div>
+                                <div style="margin-top: 6px; font-size: 0.72rem; color: var(--neon-red); font-weight: 500;">Status: Urgent AFO Orthosis Splinting</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Intervention Efficacy & Weather Sensitivity Strip -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px;">
+                        <div class="glass-panel" style="padding: 12px; border-radius: 8px;">
+                            <div style="font-weight: 600; font-size: 0.9rem; color: var(--neon-green); margin-bottom: 6px;">🏊 Proven Intervention Efficacy (Pre vs Post Drop)</div>
+                            <div style="font-size: 0.78rem; color: var(--text-secondary); line-height: 1.4;">
+                                <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                    <span>Hydrotherapy (3x Weekly)</span>
+                                    <strong style="color: var(--neon-green);">-1.9 pts (8–12 hr relief)</strong>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                    <span>TENS Machine (Dual-Channel)</span>
+                                    <strong style="color: var(--neon-green);">-1.6 pts (2–4 hr relief)</strong>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                    <span>Heat Pack (Lumbar / Cervical)</span>
+                                    <strong style="color: var(--neon-green);">-1.1 pts (1–2 hr relief)</strong>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; padding: 4px 0;">
+                                    <span>Low-Load Yoga & Decompression</span>
+                                    <strong style="color: var(--neon-green);">-0.9 pts (4–6 hr relief)</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="glass-panel" style="padding: 12px; border-radius: 8px;">
+                            <div style="font-weight: 600; font-size: 0.9rem; color: var(--neon-blue); margin-bottom: 6px;">🌦️ Wangaratta Weather & Barometric Trigger Predictor</div>
+                            <div style="font-size: 0.78rem; color: var(--text-secondary); line-height: 1.4;">
+                                <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                    <span>Pressure Drop (&lt;1010 hPa) & Rain</span>
+                                    <strong style="color: var(--neon-red);">84% Flare Probability (8.3 Avg)</strong>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                    <span>High Humidity (&gt;80%) & Cold</span>
+                                    <strong style="color: #f59e0b;">71% Joint Stiffness Warning</strong>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; padding: 4px 0;">
+                                    <span>Stable High Pressure (&gt;1022 hPa)</span>
+                                    <strong style="color: var(--neon-green);">32% Risk (Favorable Mobility)</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Time-of-Day Pattern & Recent Logs -->
                     <div class="glass-panel" style="padding: 14px; border-radius: 8px;">
                         <div style="font-weight: 600; font-size: 0.95rem; margin-bottom: 8px;">Recent Clinical Observations & Symptoms</div>
@@ -1448,7 +1608,10 @@
                 </div>
 
                 <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; flex-wrap: wrap; gap: 8px;">
-                    <button class="btn btn-neon-blue btn-sm" id="btnAskRumbleForGP">💬 Ask Rumble to Summarize for GP</button>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <button class="btn btn-neon-blue btn-sm" id="btnAskRumbleForGP">💬 Ask Rumble to Summarize for GP</button>
+                        <button class="btn btn-outline btn-sm" id="btnCopyDoctorSummary" title="Copy structured clinical text for MyHealthRecord / consult notes">📋 Copy Clinical Text</button>
+                    </div>
                     <div style="display: flex; gap: 8px;">
                         <button class="btn btn-outline btn-sm" id="btnPrintPainReport">🖨 Print / Export GP Report</button>
                         <button class="btn btn-outline btn-sm" id="btnDismissPainAnalytics">Close</button>
@@ -1524,6 +1687,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="app.js?v=20261019_painfix"></script>
+    <script src="app.js?v=20261026_yogaupdate"></script>
 </body>
 </html>

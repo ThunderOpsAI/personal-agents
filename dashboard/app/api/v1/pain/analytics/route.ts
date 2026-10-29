@@ -171,14 +171,53 @@ export async function GET(request: Request) {
 
     const periodLabel = period === 'day' ? 'Today' : period === 'week' ? 'Last 7 Days' : period === 'all' ? 'All Time' : 'Last 30 Days';
 
+    // Clinical Doctor Synopsis synthesis
+    const severeSpikes = sorted.filter(l => Number(l.score) >= 7.0).length;
+    const severePercentage = sorted.length > 0 ? Math.round((severeSpikes / sorted.length) * 100) : 0;
+    
+    // Sort anatomical contributors
+    const sortedAnatomyList = Object.entries(anatomicalDistribution).sort((a, b) => b[1] - a[1]);
+    const primaryGenerator = sortedAnatomyList.length > 0 ? `${sortedAnatomyList[0][0]} (${sortedAnatomyList[0][1]}%)` : "Unspecified";
+    const secondaryGenerator = sortedAnatomyList.length > 1 ? `${sortedAnatomyList[1][0]} (${sortedAnatomyList[1][1]}%)` : null;
+
+    // Diurnal variation calculation
+    const morningAvg = timeOfDayScores["06:00 AM (Morning)"].count > 0 
+      ? Math.round((timeOfDayScores["06:00 AM (Morning)"].total / timeOfDayScores["06:00 AM (Morning)"].count) * 10) / 10 
+      : null;
+    const eveningAvg = timeOfDayScores["09:00 PM (Evening)"].count > 0 
+      ? Math.round((timeOfDayScores["09:00 PM (Evening)"].total / timeOfDayScores["09:00 PM (Evening)"].count) * 10) / 10 
+      : null;
+
+    const clinicalSynopsis = {
+      primary_generator: primaryGenerator,
+      secondary_generator: secondaryGenerator,
+      severe_flare_frequency: `${severeSpikes} logs (≥7/10, ${severePercentage}% of period)`,
+      diurnal_pattern: morningAvg && eveningAvg
+        ? `Morning stiffness ${morningAvg}/10 escalating to Evening load ${eveningAvg}/10 (+${Math.round((eveningAvg - morningAvg)*10)/10})`
+        : "Consistent diurnal baseline",
+      neurological_red_flags: [
+        "Rapidly deteriorating gait / foot drop (inability to clear ground without knee lift, daily trip hazard)",
+        "Provocative dural traction / sciatic shockwaves retrogradely targeting right lumbar disc",
+        "Paradoxical patellar hyperreflexia co-exacerbation during acute sciatic spikes"
+      ],
+      surgical_context: "C5-C7 ACDF status post-op (Prof. Greg Cunningham, titanium MRI-conditional). Right L4-L5 / L5-S1 disc protrusion with radiculopathy.",
+      recommended_consult_questions: [
+        "Consider immediate prescription/referral for Ankle-Foot Orthosis (AFO / foot-up splint) for fall prevention",
+        "Review repeat lumbar MRI vs cervical MRI to distinguish L4/L5 LMN root compression vs UMN myelomalacic progression",
+        "Evaluate suitability and timing for interventional pain management / Spinal Cord Stimulation (SCS) trial"
+      ]
+    };
+
     return NextResponse.json({
       status: "success",
       period,
       period_label: periodLabel,
       total_logs: sorted.length,
+      total_all_time_logs: allLogs.length,
       average_score: averageScore,
       min_score: minScore,
       max_score: maxScore,
+      clinical_synopsis: clinicalSynopsis,
       daily_trends: dailyTrends,
       intra_day_trends: intraDayTrends,
       anatomical_distribution: anatomicalDistribution,

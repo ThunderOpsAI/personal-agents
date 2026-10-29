@@ -7,7 +7,7 @@
 **Source Email Subject:** `Notes for Dr. Nathan Anderson/Brett Toddhunter`  
 **Distribution / Recipients:**  
 - Dr. Nathan Anderson (General Practitioner / Primary Care Physician)  
-- Brett Toddhunter (Physiotherapist / Spinal Rehabilitation Lead)  
+- Brett Toddhunter (Pain Specialist / Interventional Pain & Neuromodulation Lead)  
 - Multidisciplinary Medical Team (MDT) Records  
 
 ---
