@@ -38,16 +38,16 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
     precautions: ["Avoid aggressive lumbar flexion during acute disc flare-ups.", "Keep movements gentle and pain-free."],
     contraindications: ["acute disc herniation"],
     steps: [
-      { title: "Diaphragmatic 360 Core Awakening", duration: 120, cue: "Lie supine with knees bent, breathe deep into lateral ribs and lower abdomen.", frames: ["/exercises/diaphragmatic-breathing.svg"] },
-      { title: "Supine Pelvic Tilts & Neutral Finding", duration: 120, cue: "Flatten lower back gently on exhale, slight neutral arch on inhale.", frames: ["/exercises/supine_pelvic_tilts.jpg"] },
-      { title: "Supine Pelvic Clocks & Transverse Holds", duration: 120, cue: "Gentle circular micro-mobilization of the pelvis without straining lumbar discs.", frames: ["/exercises/pelvic-tilts-transverse-holds.svg"] },
-      { title: "Supine Single Knee-to-Chest (Right)", duration: 120, cue: "Hug right knee gently towards shoulder, keeping left foot grounded flat.", frames: ["/exercises/knee_to_chest_stretch.jpg"] },
-      { title: "Supine Single Knee-to-Chest (Left)", duration: 120, cue: "Switch and hug left knee gently, decompressing lumbar facet joints.", frames: ["/exercises/supine-single-knee-to-chest.svg"] },
-      { title: "Gentle Supported Bridge Activation", duration: 120, cue: "Press through heels to lift pelvis slightly, engaging glutes without arching lumbar spine.", frames: ["/exercises/hip_glute_bridge.jpg"] },
-      { title: "Supported Child's Pose Decompression", duration: 120, cue: "Knees wide, sink hips toward heels, rest torso on cushion or mat.", frames: ["/exercises/supported_childs_pose.jpg"] },
-      { title: "Cat-Cow Spine Awakening", duration: 120, cue: "Gentle rhythmic undulation of spine on hands and knees, keeping neck neutral.", frames: ["/exercises/core_cat_cow.jpg"] },
-      { title: "Gentle Supine Torso Twist", duration: 120, cue: "Drop knees gently 45 degrees to each side to mobilize lumbar rotation safely.", frames: ["/exercises/thoracic_supine_twist.jpg"] },
-      { title: "Restorative Savasana with Bolster", duration: 120, cue: "Rest with bolster beneath knees to unload psoas and settle lumbar spine.", frames: ["/exercises/restorative_savasana.jpg"] }
+      { title: "Diaphragmatic 360 Core Awakening", duration: 120, cue: "Lie supine with knees bent, breathe deep into lateral ribs and lower abdomen.", frames: ["/exercises/diaphragmatic_breathing_hud.jpg"] },
+      { title: "Supine Pelvic Tilts & Neutral Finding", duration: 120, cue: "Flatten lower back gently on exhale, slight neutral arch on inhale.", frames: ["/exercises/supine_pelvic_tilts_hud.jpg"] },
+      { title: "Supine Pelvic Clocks & Transverse Holds", duration: 120, cue: "Gentle circular micro-mobilization of the pelvis without straining lumbar discs.", frames: ["/exercises/supine_pelvic_clocks_hud.jpg"] },
+      { title: "Supine Single Knee-to-Chest (Right)", duration: 120, cue: "Hug right knee gently towards shoulder, keeping left foot grounded flat.", frames: ["/exercises/knee_to_chest_right_hud.jpg"] },
+      { title: "Supine Single Knee-to-Chest (Left)", duration: 120, cue: "Switch and hug left knee gently, decompressing lumbar facet joints.", frames: ["/exercises/knee_to_chest_left_hud.jpg"] },
+      { title: "Gentle Supported Bridge Activation", duration: 120, cue: "Press through heels to lift pelvis slightly, engaging glutes without arching lumbar spine.", frames: ["/exercises/hip_glute_bridge_hud.jpg"] },
+      { title: "Supported Child's Pose Decompression", duration: 120, cue: "Knees wide, sink hips toward heels, rest torso on cushion or mat.", frames: ["/exercises/supported_childs_pose_hud.jpg"] },
+      { title: "Cat-Cow Spine Awakening", duration: 120, cue: "Gentle rhythmic undulation of spine on hands and knees, keeping neck neutral.", frames: ["/exercises/cat_cow_hud.jpg"] },
+      { title: "Gentle Supine Torso Twist", duration: 120, cue: "Drop knees gently 45 degrees to each side to mobilize lumbar rotation safely.", frames: ["/exercises/gentle_supine_torso_twist_hud.jpg"] },
+      { title: "Restorative Savasana with Bolster", duration: 120, cue: "Rest with bolster beneath knees to unload psoas and settle lumbar spine.", frames: ["/exercises/restorative_savasana_hud.jpg"] }
     ],
     video_url: "https://www.youtube.com/watch?v=zeWO_635loM"
   },
@@ -89,15 +89,15 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
     contraindications: [],
     steps: [
       { title: "Supported Reclined Bound Angle", duration: 180, cue: "Soles together, knees supported wide on cushions or bolsters, hands on abdomen.", frames: ["/exercises/supported_reclined_bound_angle.jpg"] },
-      { title: "Gentle Diaphragmatic Breath Grounding", duration: 180, cue: "Slow 4-second nasal inhale expanding abdomen 360 degrees, 6-second relaxed exhale.", frames: ["/exercises/diaphragmatic-breathing.svg"] },
+      { title: "Gentle Diaphragmatic Breath Grounding", duration: 180, cue: "Slow 4-second nasal inhale expanding abdomen 360 degrees, 6-second relaxed exhale.", frames: ["/exercises/gentle_diaphragmatic_breath_hud.jpg"] },
       { title: "Gentle Cat-Cow Spine Wave", duration: 180, cue: "Flow smoothly on hands and knees with breath, avoiding end-range extremes.", frames: ["/exercises/gentle_cat_cow.jpg", "/exercises/cat_cow_1.jpg"] },
       { title: "Supported Gentle Sphinx", duration: 180, cue: "Rest elbows on mat under shoulders, gentle passive thoracic extension.", frames: ["/exercises/supported_gentle_sphinx.jpg"] },
-      { title: "Supported Child's Pose with Bolster", duration: 180, cue: "Wide knees, torso fully resting forward on bolster, lengthen spine.", frames: ["/exercises/supported-childs-pose-bolster.svg"] },
-      { title: "Gentle Supine Torso Twist", duration: 180, cue: "Arms in gentle cactus or T, knees softly roll side to side with pillow support.", frames: ["/exercises/thoracic_supine_twist.jpg"] },
-      { title: "Supported Pelvic Bridge on Block", duration: 180, cue: "Yoga block or firm cushion under sacrum, letting hip flexors and psoas release.", frames: ["/exercises/supported-bridge-block.svg"] },
-      { title: "Constructive Rest Position with Bolster", duration: 180, cue: "Knees bent and resting together, feet wide, lower back fully unloaded.", frames: ["/exercises/constructive-rest.svg"] },
+      { title: "Supported Child's Pose with Bolster", duration: 180, cue: "Wide knees, torso fully resting forward on bolster, lengthen spine.", frames: ["/exercises/supported_childs_pose_bolster_hud.jpg"] },
+      { title: "Gentle Supine Torso Twist", duration: 180, cue: "Arms in gentle cactus or T, knees softly roll side to side with pillow support.", frames: ["/exercises/gentle_supine_torso_twist_hud.jpg"] },
+      { title: "Supported Pelvic Bridge on Block", duration: 180, cue: "Yoga block or firm cushion under sacrum, letting hip flexors and psoas release.", frames: ["/exercises/supported_bridge_block_hud.jpg"] },
+      { title: "Constructive Rest Position with Bolster", duration: 180, cue: "Knees bent and resting together, feet wide, lower back fully unloaded.", frames: ["/exercises/constructive_rest_bolster_hud.jpg"] },
       { title: "Legs Up the Wall (Viparita Karani)", duration: 180, cue: "Elevate legs against wall to facilitate venous return and spinal decompression.", frames: ["/exercises/legs_up_the_wall.jpg"] },
-      { title: "Acupressure Mat & Bolster Wind-Down Savasana", duration: 180, cue: "Rest spine on acupressure mat or soft bolster, complete still surrender.", frames: ["/exercises/acupressure-mat-bolster-wind-down.svg"] }
+      { title: "Acupressure Mat & Bolster Wind-Down Savasana", duration: 180, cue: "Rest spine on acupressure mat or soft bolster, complete still surrender.", frames: ["/exercises/acupressure_mat_savasana_hud.jpg"] }
     ],
     video_url: "https://www.youtube.com/watch?v=FXPGuNU-BYA"
   },
@@ -167,13 +167,13 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
     contraindications: ["acute back spasm"],
     steps: [
       { title: "Morning Breath & Centering", duration: 120, cue: "Deep diaphragmatic breaths to oxygenate tissues and awaken spinal circulation.", frames: ["/exercises/diaphragmatic-breathing.svg"] },
-      { title: "Cat-Cow Rhythmic Spine Mobilization", duration: 120, cue: "Coordinate gentle spinal flexion and extension with breathing rhythm.", frames: ["/exercises/core_cat_cow.jpg"] },
+      { title: "Cat-Cow Rhythmic Spine Mobilization", duration: 120, cue: "Coordinate gentle spinal flexion and extension with breathing rhythm.", frames: ["/exercises/cat_cow_hud.jpg"] },
       { title: "Child's Pose Lateral Side Stretch", duration: 120, cue: "Walk hands gently to right side feeling left rib cage stretch, then to left side.", frames: ["/exercises/supported_childs_pose.jpg"] },
       { title: "Puppy Pose Thoracic Melt", duration: 120, cue: "Hips stay over knees, walk hands forward melting chest towards floor.", frames: ["/exercises/yoga_puppy_pose_thoracic.svg"] },
       { title: "Open Book Thoracic Opener (Right)", duration: 120, cue: "Side-lying, rotate top arm open like a book, following hand with eyes.", frames: ["/exercises/open-book-thoracic.svg"] },
       { title: "Open Book Thoracic Opener (Left)", duration: 120, cue: "Roll to other side, repeat smooth thoracic opening with full breath.", frames: ["/exercises/open-book-thoracic.svg"] },
       { title: "Supported Low Kneeling Lunge", duration: 120, cue: "Step foot forward, tuck tailbone to open front hip without hyperextending lower back.", frames: ["/exercises/hip_kneeling_lunge.jpg"] },
-      { title: "Gentle Supine Torso Twist", duration: 120, cue: "Knees bent, drop softly side to side to loosen spinal rotators.", frames: ["/exercises/thoracic_supine_twist.jpg"] },
+      { title: "Gentle Supine Torso Twist", duration: 120, cue: "Knees bent, drop softly side to side to loosen spinal rotators.", frames: ["/exercises/gentle_supine_torso_twist_hud.jpg"] },
       { title: "Supported Gentle Sphinx Micro-Lifts", duration: 120, cue: "Rest prone on forearms, gentle upward gaze with active mid-back engagement.", frames: ["/exercises/supported-sphinx-micro-lifts.svg"] },
       { title: "Constructive Rest Neutral Settle", duration: 120, cue: "Lie on back with knees bent, resting hands on belly to integrate spinal mobility.", frames: ["/exercises/constructive-rest.svg"] }
     ],
@@ -274,7 +274,7 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
       { title: "Wide Knee Child's Pose with Bolster", duration: 150, cue: "Allow belly to soften between thighs onto bolster, relaxing shoulders.", frames: ["/exercises/supported-childs-pose-bolster.svg"] },
       { title: "Thread the Needle Shoulder Glide", duration: 150, cue: "Slide arm under chest to gently release posterior shoulder and upper thoracic tension.", frames: ["/exercises/thread-the-needle-modified.svg"] },
       { title: "Supported Bridge on Soft Block", duration: 150, cue: "Pillow or block under sacrum, arms relaxed at sides, releasing anterior chain tension.", frames: ["/exercises/supported-bridge-block.svg"] },
-      { title: "Supine Gentle Twist with Bolster", duration: 150, cue: "Knees stacked over bolster on right side, breathe into ribcage, repeat left.", frames: ["/exercises/thoracic_supine_twist.jpg"] },
+      { title: "Supine Gentle Twist with Bolster", duration: 150, cue: "Knees stacked over bolster on right side, breathe into ribcage, repeat left.", frames: ["/exercises/gentle_supine_torso_twist_hud.jpg"] },
       { title: "Legs-Elevated Relaxation (Wall or Bolster)", duration: 150, cue: "Elevate lower legs on bolster or against wall to ease lower limb circulation.", frames: ["/exercises/legs-elevated-relaxation.svg"] },
       { title: "Corpse Pose Deep Relaxation (Savasana)", duration: 150, cue: "Full body surrender into mat or mattress, jaw loose, releasing all muscular hold.", frames: ["/exercises/restorative_savasana.jpg"] }
     ],

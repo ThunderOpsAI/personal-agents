@@ -1,5 +1,12 @@
 import { WashingDay, WeatherData } from '../types';
 
+/**
+ * Regional barometric and meteorology service for Wangaratta, VIC.
+ *
+ * Integrates Open-Meteo forecasts to track ambient temperature, barometric shifts,
+ * and rainfall probability. Correlates weather triggers against patient flare logs
+ * and identifies low-humidity dry windows for daily scheduling.
+ */
 export async function fetchLiveWangarattaWeather(): Promise<WeatherData> {
   try {
     const url =

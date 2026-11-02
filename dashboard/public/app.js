@@ -173,6 +173,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnPrevChapter = document.getElementById('btnPrevChapter');
     const btnNextChapter = document.getElementById('btnNextChapter');
     const btnSaveSummaryLearn = document.getElementById('btnSaveSummaryLearn');
+    const btnSimplifyLearn = document.getElementById('btnSimplifyLearn');
+    const learnSimplifyPanel = document.getElementById('learnSimplifyPanel');
+    const learnSimplifyContent = document.getElementById('learnSimplifyContent');
+    const btnToggleSimplifyPanel = document.getElementById('btnToggleSimplifyPanel');
+    const simplifyMemoryCache = new Map();
     
     const notesModal = document.getElementById('notesModal');
     const btnCloseNotes = document.getElementById('btnCloseNotes');
@@ -1981,6 +1986,94 @@ document.addEventListener('DOMContentLoaded', () => {
             btnNextChapter.disabled = activeChapterIndex >= currentEncyclopediaMeta.totalChapters - 1;
             btnNextChapter.style.opacity = activeChapterIndex >= currentEncyclopediaMeta.totalChapters - 1 ? '0.5' : '1';
         }
+
+        // Simplified Summary State
+        const simplifyKey = `${activeEncyclopediaId}:${currentChapterData.id}`;
+        if (simplifyMemoryCache.has(simplifyKey)) {
+            if (learnSimplifyPanel) learnSimplifyPanel.classList.remove('hidden');
+            renderSimplifyView(simplifyMemoryCache.get(simplifyKey));
+        } else {
+            if (learnSimplifyPanel) learnSimplifyPanel.classList.add('hidden');
+            if (learnSimplifyContent) learnSimplifyContent.innerHTML = '';
+            if (btnSimplifyLearn) {
+                btnSimplifyLearn.disabled = false;
+                btnSimplifyLearn.innerText = "Summarise for Dummies";
+            }
+        }
+    }
+
+    function renderSimplifyView(data) {
+        if (!learnSimplifyContent) return;
+        if (!data || !Array.isArray(data.bullets) || data.bullets.length === 0) {
+            learnSimplifyContent.innerHTML = '<div style="color: var(--text-muted); font-size: 0.85rem;">No summary points available.</div>';
+            return;
+        }
+        const bulletsHtml = data.bullets.map(b => `<li style="margin-bottom: 6px;">${escapeHtml(b)}</li>`).join('');
+        const noteHtml = data.note ? `<div style="margin-top: 10px; padding: 8px 12px; background: rgba(0, 229, 255, 0.08); border-left: 3px solid var(--neon-blue); border-radius: 4px; font-size: 0.78rem; color: var(--text-secondary); line-height: 1.5;"><strong>Clinical Note:</strong> ${escapeHtml(data.note)}</div>` : '';
+        learnSimplifyContent.innerHTML = `
+            <ul style="margin: 0; padding-left: 18px; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+                ${bulletsHtml}
+            </ul>
+            ${noteHtml}
+        `;
+    }
+
+    async function handleSimplifyChapter() {
+        if (!activeEncyclopediaId || !currentChapterData) return;
+        const cacheKey = `${activeEncyclopediaId}:${currentChapterData.id}`;
+
+        if (learnSimplifyPanel) learnSimplifyPanel.classList.remove('hidden');
+
+        if (simplifyMemoryCache.has(cacheKey)) {
+            renderSimplifyView(simplifyMemoryCache.get(cacheKey));
+            return;
+        }
+
+        if (btnSimplifyLearn) {
+            btnSimplifyLearn.disabled = true;
+            btnSimplifyLearn.innerText = "Summarising...";
+        }
+        if (learnSimplifyContent) {
+            learnSimplifyContent.innerHTML = '<div style="padding: 10px 0; color: var(--neon-blue); font-size: 0.85rem;">Simplifying chapter for complete beginners with Gemini...</div>';
+        }
+
+        try {
+            const res = await fetch('/api/v1/learn/simplify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    encyclopediaId: activeEncyclopediaId,
+                    chapterId: currentChapterData.id
+                })
+            });
+
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(errData.error || `Server returned ${res.status}`);
+            }
+
+            const data = await res.json();
+            simplifyMemoryCache.set(cacheKey, data);
+            renderSimplifyView(data);
+        } catch (err) {
+            if (learnSimplifyContent) {
+                learnSimplifyContent.innerHTML = `
+                    <div style="padding: 10px 14px; background: rgba(255, 68, 68, 0.08); border: 1px solid rgba(255, 68, 68, 0.3); border-radius: 6px;">
+                        <p style="margin: 0 0 8px 0; color: #ff6b6b; font-size: 0.85rem;">Failed to simplify: ${escapeHtml(err.message || 'Unknown error')}</p>
+                        <button id="btnRetrySimplify" class="btn btn-outline btn-sm" style="font-size: 0.75rem; padding: 3px 10px;">Retry</button>
+                    </div>
+                `;
+                const retryBtn = document.getElementById('btnRetrySimplify');
+                if (retryBtn) {
+                    retryBtn.addEventListener('click', handleSimplifyChapter);
+                }
+            }
+        } finally {
+            if (btnSimplifyLearn) {
+                btnSimplifyLearn.disabled = false;
+                btnSimplifyLearn.innerText = "Summarise for Dummies";
+            }
+        }
     }
 
     // Save Summary to learning/ folder and advance
@@ -2054,6 +2147,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (btnSaveSummaryLearn) {
         btnSaveSummaryLearn.addEventListener('click', saveChapterSummary);
+    }
+
+    if (btnSimplifyLearn) {
+        btnSimplifyLearn.addEventListener('click', handleSimplifyChapter);
+    }
+
+    if (btnToggleSimplifyPanel) {
+        btnToggleSimplifyPanel.addEventListener('click', () => {
+            if (learnSimplifyPanel) learnSimplifyPanel.classList.add('hidden');
+        });
     }
 
     if (btnCloseLearnModal) {
@@ -4558,7 +4661,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 120,
                                 "cue": "Lie supine with knees bent, breathe deep into lateral ribs and lower abdomen.",
                                 "frames": [
-                                        "/exercises/diaphragmatic-breathing.svg"
+                                        "/exercises/diaphragmatic_breathing_hud.jpg"
                                 ]
                         },
                         {
@@ -4566,7 +4669,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 120,
                                 "cue": "Flatten lower back gently on exhale, slight neutral arch on inhale.",
                                 "frames": [
-                                        "/exercises/supine_pelvic_tilts.jpg"
+                                        "/exercises/supine_pelvic_tilts_hud.jpg"
                                 ]
                         },
                         {
@@ -4574,7 +4677,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 120,
                                 "cue": "Gentle circular micro-mobilization of the pelvis without straining lumbar discs.",
                                 "frames": [
-                                        "/exercises/pelvic-tilts-transverse-holds.svg"
+                                        "/exercises/supine_pelvic_clocks_hud.jpg"
                                 ]
                         },
                         {
@@ -4582,7 +4685,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 120,
                                 "cue": "Hug right knee gently towards shoulder, keeping left foot grounded flat.",
                                 "frames": [
-                                        "/exercises/knee_to_chest_stretch.jpg"
+                                        "/exercises/knee_to_chest_right_hud.jpg"
                                 ]
                         },
                         {
@@ -4590,7 +4693,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 120,
                                 "cue": "Switch and hug left knee gently, decompressing lumbar facet joints.",
                                 "frames": [
-                                        "/exercises/supine-single-knee-to-chest.svg"
+                                        "/exercises/knee_to_chest_left_hud.jpg"
                                 ]
                         },
                         {
@@ -4598,7 +4701,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 120,
                                 "cue": "Press through heels to lift pelvis slightly, engaging glutes without arching lumbar spine.",
                                 "frames": [
-                                        "/exercises/hip_glute_bridge.jpg"
+                                        "/exercises/hip_glute_bridge_hud.jpg"
                                 ]
                         },
                         {
@@ -4606,7 +4709,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 120,
                                 "cue": "Knees wide, sink hips toward heels, rest torso on cushion or mat.",
                                 "frames": [
-                                        "/exercises/supported_childs_pose.jpg"
+                                        "/exercises/supported_childs_pose_hud.jpg"
                                 ]
                         },
                         {
@@ -4614,7 +4717,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 120,
                                 "cue": "Gentle rhythmic undulation of spine on hands and knees, keeping neck neutral.",
                                 "frames": [
-                                        "/exercises/core_cat_cow.jpg"
+                                        "/exercises/cat_cow_hud.jpg"
                                 ]
                         },
                         {
@@ -4622,7 +4725,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 120,
                                 "cue": "Drop knees gently 45 degrees to each side to mobilize lumbar rotation safely.",
                                 "frames": [
-                                        "/exercises/thoracic_supine_twist.jpg"
+                                        "/exercises/gentle_supine_torso_twist_hud.jpg"
                                 ]
                         },
                         {
@@ -4630,7 +4733,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 120,
                                 "cue": "Rest with bolster beneath knees to unload psoas and settle lumbar spine.",
                                 "frames": [
-                                        "/exercises/restorative_savasana.jpg"
+                                        "/exercises/restorative_savasana_hud.jpg"
                                 ]
                         }
                 ]
@@ -4747,7 +4850,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Slow 4-second nasal inhale expanding abdomen 360 degrees, 6-second relaxed exhale.",
                                 "frames": [
-                                        "/exercises/diaphragmatic-breathing.svg"
+                                        "/exercises/gentle_diaphragmatic_breath_hud.jpg"
                                 ]
                         },
                         {
@@ -4772,7 +4875,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Wide knees, torso fully resting forward on bolster, lengthen spine.",
                                 "frames": [
-                                        "/exercises/supported-childs-pose-bolster.svg"
+                                        "/exercises/supported_childs_pose_bolster_hud.jpg"
                                 ]
                         },
                         {
@@ -4780,7 +4883,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Arms in gentle cactus or T, knees softly roll side to side with pillow support.",
                                 "frames": [
-                                        "/exercises/thoracic_supine_twist.jpg"
+                                        "/exercises/gentle_supine_torso_twist_hud.jpg"
                                 ]
                         },
                         {
@@ -4788,7 +4891,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Yoga block or firm cushion under sacrum, letting hip flexors and psoas release.",
                                 "frames": [
-                                        "/exercises/supported-bridge-block.svg"
+                                        "/exercises/supported_bridge_block_hud.jpg"
                                 ]
                         },
                         {
@@ -4796,7 +4899,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Knees bent and resting together, feet wide, lower back fully unloaded.",
                                 "frames": [
-                                        "/exercises/constructive-rest.svg"
+                                        "/exercises/constructive_rest_bolster_hud.jpg"
                                 ]
                         },
                         {
@@ -4812,7 +4915,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Rest spine on acupressure mat or soft bolster, complete still surrender.",
                                 "frames": [
-                                        "/exercises/acupressure-mat-bolster-wind-down.svg"
+                                        "/exercises/acupressure_mat_savasana_hud.jpg"
                                 ]
                         }
                 ]
@@ -5044,7 +5147,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 120,
                                 "cue": "Coordinate gentle spinal flexion and extension with breathing rhythm.",
                                 "frames": [
-                                        "/exercises/core_cat_cow.jpg"
+                                        "/exercises/cat_cow_hud.jpg"
                                 ]
                         },
                         {
@@ -5092,7 +5195,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 120,
                                 "cue": "Knees bent, drop softly side to side to loosen spinal rotators.",
                                 "frames": [
-                                        "/exercises/thoracic_supine_twist.jpg"
+                                        "/exercises/gentle_supine_torso_twist_hud.jpg"
                                 ]
                         },
                         {
@@ -5443,7 +5546,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Knees stacked over bolster on right side, breathe into ribcage, repeat left.",
                                 "frames": [
-                                        "/exercises/thoracic_supine_twist.jpg"
+                                        "/exercises/gentle_supine_torso_twist_hud.jpg"
                                 ]
                         },
                         {

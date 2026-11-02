@@ -127,18 +127,19 @@ export async function scanRetrievalForAlerts(
   // Process Calendar events
   for (const evt of calendarEvents) {
     const textToScan = `${evt.summary || ""} ${evt.description || ""}`;
+    const rawStart = typeof evt.start === "string" ? evt.start : (evt.start?.dateTime || evt.start?.date || "");
+    let scheduledTime = rawStart;
+    if (!scheduledTime || typeof scheduledTime !== "string" || !scheduledTime.includes("T")) {
+      const { timeSlot } = extractTimeSlot(textToScan);
+      scheduledTime = `${dateStr}T${timeSlot}:00+10:00`;
+    }
+
     const isActionRequired =
       evt.status === "confirmed" &&
       /action required|action_required|due|urgent|important/i.test(textToScan);
 
     if (isActionRequired) {
       const alertId = `alert_evt_${evt.id}`;
-      let rawStart = typeof evt.start === "string" ? evt.start : (evt.start?.dateTime || evt.start?.date || "");
-      let scheduledTime = rawStart;
-      if (!scheduledTime || typeof scheduledTime !== "string" || !scheduledTime.includes("T")) {
-        const { timeSlot } = extractTimeSlot(textToScan);
-        scheduledTime = `${dateStr}T${timeSlot}:00+10:00`;
-      }
       const summary = evt.summary || "Calendar Event";
       const title = summary.startsWith("Agenda Alert:")
         ? summary
@@ -163,6 +164,50 @@ export async function scanRetrievalForAlerts(
         });
         existingMap.set(alertId, newItem);
         injectedItems.push(newItem);
+      }
+    }
+
+    // 24h Pre-Consult Auto-Prep
+    const evtStartTime = new Date(rawStart).getTime();
+    const isWithin36Hours = !isNaN(evtStartTime) && (evtStartTime - refDate.getTime() >= 0 && evtStartTime - refDate.getTime() <= 36 * 60 * 60 * 1000);
+    const isConsult = /dr\b|doctor|consult|specialist|neuro|ortho|physio|lawyer|solicitor|khan|clancy|riandito|cunningham/i.test(textToScan);
+
+    if (isWithin36Hours && isConsult) {
+      let specialist = "gp";
+      if (/neuro|cunningham/i.test(textToScan)) specialist = "neurosurgeon";
+      else if (/ortho/i.test(textToScan)) specialist = "orthopaedic";
+      else if (/physio/i.test(textToScan)) specialist = "physio";
+      else if (/lawyer|solicitor|clancy|court/i.test(textToScan)) specialist = "legal";
+
+      const preConsultAlertId = `alert_preconsult_${evt.id}`;
+      if (existingMap.has(preConsultAlertId)) {
+        injectedItems.push(existingMap.get(preConsultAlertId)!);
+      } else {
+        try {
+          const { generateConsultPackMarkdown } = await import("./consult-pack");
+          const consultPack = await generateConsultPackMarkdown(specialist, "month");
+          const doctorName = evt.summary || "Doctor";
+          const consultTitle = `[Pre-Consult Auto-Prep] Upcoming Consult (${doctorName}) - 1-Tap Review Consult Pack`;
+
+          const newItem = await createAgendaItem({
+            id: preConsultAlertId,
+            item_type: "alert",
+            title: consultTitle,
+            scheduled_time: scheduledTime,
+            status: "pending",
+            audit_trail: [
+              {
+                timestamp: new Date().toISOString(),
+                new_status: "pending",
+                note: `Auto-generated ${specialist} consult pack saved to ${consultPack.filePath}`,
+              },
+            ],
+          });
+          existingMap.set(preConsultAlertId, newItem);
+          injectedItems.push(newItem);
+        } catch (packErr) {
+          console.error("[Alert Scanner] Failed to auto-generate consult pack:", packErr);
+        }
       }
     }
   }

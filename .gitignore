@@ -47,3 +47,11 @@ node_modules/
 dashboard/scratch/
 *.tsbuildinfo
 
+# Tooling artifacts
+.agents/
+.codex-plugin/
+.gemini/
+skills/
+*.docx
+~$*
+

@@ -9,6 +9,14 @@ import {
   getAgendaItems,
   createAgendaItem,
   updateAgendaItemStatus,
+  createMedicalReceipt,
+  getMedicalReceipts,
+  getBillsSubscriptions,
+  upsertBillSubscription,
+  saveExercisePreference,
+  getExercisePreferences,
+  persistSoulRule,
+  getSoulLearnedRules,
 } from './db';
 
 const TEST_DB_PATH = path.join(__dirname, 'test_agenda.db');
@@ -132,5 +140,89 @@ describe('Database Persistence Layer (db.ts)', () => {
     expect(completedItem!.completed_at).not.toBeNull();
     expect(completedItem!.audit_trail).toHaveLength(2);
     expect(completedItem!.audit_trail[1].note).toBe('Finished meditation');
+  });
+
+  it('handles medical receipts CRUD correctly', async () => {
+    const created = await createMedicalReceipt({
+      provider: 'Dr. Riandito',
+      service: 'Neurosurgical Consult',
+      amount: 280.0,
+      receipt_date: '2026-10-31',
+    });
+    expect(created.id).toBeDefined();
+    expect(created.provider).toBe('Dr. Riandito');
+    expect(created.amount).toBe(280.0);
+
+    const receipts = await getMedicalReceipts();
+    expect(receipts.length).toBeGreaterThanOrEqual(1);
+    expect(receipts.some((r) => r.provider === 'Dr. Riandito')).toBe(true);
+  });
+
+  it('handles bills/subscriptions and detects price creep via upsertBillSubscription', async () => {
+    // Initial insert
+    const bill1 = await upsertBillSubscription({
+      title: 'Origin Energy',
+      amount: 140.0,
+      frequency: 'monthly',
+      next_due_date: '2026-11-15',
+    });
+    expect(bill1.previous_amount).toBeNull();
+    expect(bill1.price_increased).toBe(false);
+    expect(bill1.price_delta).toBe(0);
+
+    // Update with price increase (price creep)
+    const bill2 = await upsertBillSubscription({
+      title: 'Origin Energy',
+      amount: 165.5,
+      frequency: 'monthly',
+      next_due_date: '2026-12-15',
+    });
+    expect(bill2.previous_amount).toBe(140.0);
+    expect(bill2.price_increased).toBe(true);
+    expect(bill2.price_delta).toBe(25.5);
+    expect(bill2.amount).toBe(165.5);
+
+    const allBills = await getBillsSubscriptions();
+    expect(allBills.some((b) => b.title === 'Origin Energy')).toBe(true);
+  });
+
+  it('filters exercise preferences by routine and area', async () => {
+    await saveExercisePreference({
+      routineId: 'lumbar_decompression',
+      routineTitle: 'Lumbar Decompression Flow',
+      prePainScore: 7,
+      postPainScore: 4,
+      reliefDelta: 3,
+      notes: 'Focused on lower back and right lumbar nerve glide',
+    });
+    await saveExercisePreference({
+      routineId: 'cervical_rehab',
+      routineTitle: 'Cervical Spine Mobility',
+      prePainScore: 5,
+      postPainScore: 3,
+      reliefDelta: 2,
+      notes: 'Gentle neck traction',
+    });
+
+    const all = await getExercisePreferences();
+    expect(all.length).toBeGreaterThanOrEqual(2);
+
+    const lumbarOnly = await getExercisePreferences({ routine_id: 'lumbar_decompression' });
+    expect(lumbarOnly.length).toBe(1);
+    expect(lumbarOnly[0].routine_id).toBe('lumbar_decompression');
+
+    const neckOnly = await getExercisePreferences({ area: 'neck' });
+    expect(neckOnly.length).toBe(1);
+    expect(neckOnly[0].routine_title).toBe('Cervical Spine Mobility');
+  });
+
+  it('persists and retrieves learned rules from SOUL.md', async () => {
+    const res = await persistSoulRule('Morning walking reduces right lumbar pain by 1.5 points', 'REHAB RULE');
+    expect(res.success).toBe(true);
+    expect(res.ruleId).toBeDefined();
+
+    const rules = await getSoulLearnedRules();
+    expect(rules.length).toBeGreaterThan(0);
+    expect(rules.some((r) => r.includes('Morning walking reduces right lumbar pain'))).toBe(true);
   });
 });

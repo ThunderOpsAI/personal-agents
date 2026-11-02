@@ -115,4 +115,50 @@ describe('Pain Analytics Period Breakdown Engine (Day, Week, Month, All Time)', 
     expect(data.min_score).toBe(5.0);
     expect(data.max_score).toBe(9.0);
   });
+
+  it('5. 4D Clinical Change Analytics: computes period deltas, anatomical migration, and correlation matrix', async () => {
+    const req = new Request('http://localhost:3000/api/v1/pain/analytics?period=week');
+    const res = await getPainAnalytics(req);
+    const data = await res.json();
+
+    expect(data.status).toBe('success');
+    expect(data.period_deltas).toBeDefined();
+    expect(data.period_deltas.prior_period_label).toBe('Prior 7 Days');
+    expect(data.period_deltas.current_severe_count).toBeGreaterThanOrEqual(1);
+
+    expect(Array.isArray(data.anatomical_migration)).toBe(true);
+    expect(data.anatomical_migration.length).toBeGreaterThan(0);
+    expect(data.anatomical_migration[0].trend).toMatch(/increasing|decreasing|stable/);
+
+    expect(data.correlation_matrix).toBeDefined();
+    expect(Array.isArray(data.correlation_matrix.relief_drivers)).toBe(true);
+    expect(Array.isArray(data.correlation_matrix.flare_triggers)).toBe(true);
+  });
+
+  it('6. NLP Symptom Progression: tracks clinical terms across log notes', async () => {
+    const req = new Request('http://localhost:3000/api/v1/pain/analytics?period=all');
+    const res = await getPainAnalytics(req);
+    const data = await res.json();
+
+    expect(Array.isArray(data.symptom_progression)).toBe(true);
+    expect(data.symptom_progression.length).toBeGreaterThan(0);
+
+    const spasmCat = data.symptom_progression.find((c: any) => c.category.includes('Spasm'));
+    expect(spasmCat).toBeDefined();
+    expect(spasmCat.mention_count).toBeGreaterThan(0);
+  });
+
+  it('7. 1-Tap Specialist-Tailored Consult Pack: generates tailored markdown and writes report file', async () => {
+    const req = new Request('http://localhost:3000/api/v1/pain/analytics?export=consult_pack&specialist=neurosurgeon');
+    const res = await getPainAnalytics(req);
+    const data = await res.json();
+
+    expect(data.status).toBe('success');
+    expect(data.specialist).toBe('neurosurgeon');
+    expect(data.file_path).toContain('consult_pack_neurosurgeon_');
+    expect(data.markdown).toContain('Physician Consult Pack: Neurosurgeon / Spine Specialist');
+    expect(data.markdown).toContain('MEDICAL DISCLAIMER:');
+    expect(data.markdown).toContain('C5-C7 ACDF');
+    expect(data.markdown).toContain('Right L4-S1 radiculopathy');
+  });
 });

@@ -173,6 +173,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnPrevChapter = document.getElementById('btnPrevChapter');
     const btnNextChapter = document.getElementById('btnNextChapter');
     const btnSaveSummaryLearn = document.getElementById('btnSaveSummaryLearn');
+    const btnSimplifyLearn = document.getElementById('btnSimplifyLearn');
+    const learnSimplifyPanel = document.getElementById('learnSimplifyPanel');
+    const learnSimplifyContent = document.getElementById('learnSimplifyContent');
+    const btnToggleSimplifyPanel = document.getElementById('btnToggleSimplifyPanel');
+    const simplifyMemoryCache = new Map();
     
     const notesModal = document.getElementById('notesModal');
     const btnCloseNotes = document.getElementById('btnCloseNotes');
@@ -527,7 +532,17 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="protocol-info">
                             <h3${isOverdue ? ' style="color: var(--neon-red);"' : ''}>${item.time}${isOverdue ? ' <span class="badge" style="background: rgba(255,0,60,0.25); border: 1px solid var(--neon-red); color: var(--neon-red); font-size: 0.72rem; margin-left: 6px; padding: 1px 6px;">Overdue</span>' : ''}</h3>
                             <p>${escapeHtml(item.title)}</p>
-                            ${item.choices ? `<small class="form-hint">Choices: ${item.choices.join(' · ')}</small>` : ''}
+                            ${item.routine_details && item.routine_details.length > 0 ? `
+                                <div class="yoga-routine-badges" style="margin-top: 6px; display: flex; flex-direction: column; gap: 4px;">
+                                    ${item.routine_details.map(rd => `
+                                        <div style="font-size: 0.78rem; color: var(--text-muted); background: rgba(255,255,255,0.04); padding: 4px 8px; border-radius: 4px; border-left: 2px solid var(--neon-purple);">
+                                            <strong style="color: var(--text-normal);">${escapeHtml(rd.title)}</strong> (${rd.duration_minutes || 15}m)
+                                            ${rd.selection_reason ? `<br><span class="badge neon-blue" style="font-size: 0.7rem; padding: 1px 5px; margin-top: 2px; display: inline-block;">${escapeHtml(rd.selection_reason)}</span>` : ''}
+                                            ${rd.adapted ? ` <span class="badge neon-green" style="font-size: 0.7rem; padding: 1px 5px;">${rd.adapted_poses || 1} pose adapted</span>` : ''}
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            ` : (item.choices ? `<small class="form-hint">Choices: ${item.choices.join(' · ')}</small>` : '')}
                         </div>
                         <div class="protocol-actions">
                             ${item.item_type === 'insight' ? `
@@ -1981,6 +1996,94 @@ document.addEventListener('DOMContentLoaded', () => {
             btnNextChapter.disabled = activeChapterIndex >= currentEncyclopediaMeta.totalChapters - 1;
             btnNextChapter.style.opacity = activeChapterIndex >= currentEncyclopediaMeta.totalChapters - 1 ? '0.5' : '1';
         }
+
+        // Simplified Summary State
+        const simplifyKey = `${activeEncyclopediaId}:${currentChapterData.id}`;
+        if (simplifyMemoryCache.has(simplifyKey)) {
+            if (learnSimplifyPanel) learnSimplifyPanel.classList.remove('hidden');
+            renderSimplifyView(simplifyMemoryCache.get(simplifyKey));
+        } else {
+            if (learnSimplifyPanel) learnSimplifyPanel.classList.add('hidden');
+            if (learnSimplifyContent) learnSimplifyContent.innerHTML = '';
+            if (btnSimplifyLearn) {
+                btnSimplifyLearn.disabled = false;
+                btnSimplifyLearn.innerText = "Summarise for Dummies";
+            }
+        }
+    }
+
+    function renderSimplifyView(data) {
+        if (!learnSimplifyContent) return;
+        if (!data || !Array.isArray(data.bullets) || data.bullets.length === 0) {
+            learnSimplifyContent.innerHTML = '<div style="color: var(--text-muted); font-size: 0.85rem;">No summary points available.</div>';
+            return;
+        }
+        const bulletsHtml = data.bullets.map(b => `<li style="margin-bottom: 6px;">${escapeHtml(b)}</li>`).join('');
+        const noteHtml = data.note ? `<div style="margin-top: 10px; padding: 8px 12px; background: rgba(0, 229, 255, 0.08); border-left: 3px solid var(--neon-blue); border-radius: 4px; font-size: 0.78rem; color: var(--text-secondary); line-height: 1.5;"><strong>Clinical Note:</strong> ${escapeHtml(data.note)}</div>` : '';
+        learnSimplifyContent.innerHTML = `
+            <ul style="margin: 0; padding-left: 18px; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+                ${bulletsHtml}
+            </ul>
+            ${noteHtml}
+        `;
+    }
+
+    async function handleSimplifyChapter() {
+        if (!activeEncyclopediaId || !currentChapterData) return;
+        const cacheKey = `${activeEncyclopediaId}:${currentChapterData.id}`;
+
+        if (learnSimplifyPanel) learnSimplifyPanel.classList.remove('hidden');
+
+        if (simplifyMemoryCache.has(cacheKey)) {
+            renderSimplifyView(simplifyMemoryCache.get(cacheKey));
+            return;
+        }
+
+        if (btnSimplifyLearn) {
+            btnSimplifyLearn.disabled = true;
+            btnSimplifyLearn.innerText = "Summarising...";
+        }
+        if (learnSimplifyContent) {
+            learnSimplifyContent.innerHTML = '<div style="padding: 10px 0; color: var(--neon-blue); font-size: 0.85rem;">Simplifying chapter for complete beginners with Gemini...</div>';
+        }
+
+        try {
+            const res = await fetch('/api/v1/learn/simplify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    encyclopediaId: activeEncyclopediaId,
+                    chapterId: currentChapterData.id
+                })
+            });
+
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(errData.error || `Server returned ${res.status}`);
+            }
+
+            const data = await res.json();
+            simplifyMemoryCache.set(cacheKey, data);
+            renderSimplifyView(data);
+        } catch (err) {
+            if (learnSimplifyContent) {
+                learnSimplifyContent.innerHTML = `
+                    <div style="padding: 10px 14px; background: rgba(255, 68, 68, 0.08); border: 1px solid rgba(255, 68, 68, 0.3); border-radius: 6px;">
+                        <p style="margin: 0 0 8px 0; color: #ff6b6b; font-size: 0.85rem;">Failed to simplify: ${escapeHtml(err.message || 'Unknown error')}</p>
+                        <button id="btnRetrySimplify" class="btn btn-outline btn-sm" style="font-size: 0.75rem; padding: 3px 10px;">Retry</button>
+                    </div>
+                `;
+                const retryBtn = document.getElementById('btnRetrySimplify');
+                if (retryBtn) {
+                    retryBtn.addEventListener('click', handleSimplifyChapter);
+                }
+            }
+        } finally {
+            if (btnSimplifyLearn) {
+                btnSimplifyLearn.disabled = false;
+                btnSimplifyLearn.innerText = "Summarise for Dummies";
+            }
+        }
     }
 
     // Save Summary to learning/ folder and advance
@@ -2056,6 +2159,16 @@ document.addEventListener('DOMContentLoaded', () => {
         btnSaveSummaryLearn.addEventListener('click', saveChapterSummary);
     }
 
+    if (btnSimplifyLearn) {
+        btnSimplifyLearn.addEventListener('click', handleSimplifyChapter);
+    }
+
+    if (btnToggleSimplifyPanel) {
+        btnToggleSimplifyPanel.addEventListener('click', () => {
+            if (learnSimplifyPanel) learnSimplifyPanel.classList.add('hidden');
+        });
+    }
+
     if (btnCloseLearnModal) {
         btnCloseLearnModal.addEventListener('click', () => {
             if (learnModal) learnModal.classList.add('hidden');
@@ -2104,23 +2217,83 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const actionsRow = document.createElement('div');
         actionsRow.className = 'pending-action-buttons-row';
-        actionsRow.style.cssText = 'margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;';
+        actionsRow.style.cssText = 'margin-top: 10px; display: flex; flex-direction: column; gap: 8px;';
         
-        let confirmLabel = 'Confirm';
-        const hasSendEmail = preview.type === 'send_email' || (preview.data?.actions && preview.data.actions.some(a => a.type === 'send_email'));
-        if (hasSendEmail) {
-            confirmLabel = 'Confirm & Send Email';
-        } else if (preview.type === 'pain_log') {
-            confirmLabel = 'Confirm Pain Log';
+        // Check if multi_action or receipt split
+        const isMulti = preview.type === 'multi_action' && Array.isArray(preview.data?.actions);
+        const subActions = isMulti ? preview.data.actions : [preview];
+
+        // Render Itemized breakdown if multiple actions
+        if (isMulti && subActions.length > 0) {
+            const card = document.createElement('div');
+            card.className = 'pending-actions-card';
+            card.style.cssText = 'background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 10px; font-size: 0.85rem;';
+            card.innerHTML = `<strong style="display:block; margin-bottom: 6px; color: var(--accent-cyan, #00e5ff);">Itemized Action Plan (${subActions.length} items):</strong>` +
+                subActions.map((a) => {
+                    let desc = a.type;
+                    if (a.type === 'budget_item') desc = `Expense: ${a.data?.description || 'Item'} ($${a.data?.amount}) • ${a.data?.category || 'General'}`;
+                    else if (a.type === 'medical_receipt') desc = `Medical Receipt: ${a.data?.provider || 'Provider'} ($${a.data?.amount}) • ${a.data?.service || 'Consult'}`;
+                    else if (a.type === 'rehab_relief') desc = `Rehab Relief: ${a.data?.routineTitle || 'Routine'} (${a.data?.prePainScore} → ${a.data?.postPainScore})`;
+                    else if (a.type === 'pain_log') desc = `Pain Log: Score ${a.data?.score}/10`;
+                    else if (a.type === 'task') desc = `Agenda Task: ${a.data?.title || 'Task'}`;
+                    else if (a.type === 'calendar_event') desc = `Calendar Event: ${a.data?.summary || 'Event'}`;
+                    else if (a.type === 'note') desc = `Note: ${a.data?.content || ''}`;
+                    else if (a.type === 'bill_subscription') desc = `Bill: ${a.data?.title} ($${a.data?.amount}) Due: ${a.data?.next_due_date}`;
+                    return `<div style="padding: 2px 0; border-bottom: 1px dashed rgba(255,255,255,0.05);">• ${desc}</div>`;
+                }).join('');
+            actionsRow.appendChild(card);
         }
 
-        const btnConfirm = document.createElement('button');
-        btnConfirm.className = 'btn btn-neon-green btn-sm';
-        btnConfirm.innerText = confirmLabel;
-        btnConfirm.onclick = () => {
-            actionsRow.remove();
-            sendRumbleChatMessage('Confirm', preview);
-        };
+        const buttonsContainer = document.createElement('div');
+        buttonsContainer.style.cssText = 'display: flex; gap: 8px; flex-wrap: wrap; align-items: center;';
+
+        const isReceiptSplit = isMulti && subActions.every(a => a.type === 'budget_item');
+
+        if (isReceiptSplit) {
+            // Option 1: Confirm Itemized Splits
+            const btnConfirmSplits = document.createElement('button');
+            btnConfirmSplits.className = 'btn btn-neon-green btn-sm';
+            btnConfirmSplits.innerText = `Confirm Itemized Splits (${subActions.length})`;
+            btnConfirmSplits.onclick = () => {
+                actionsRow.remove();
+                sendRumbleChatMessage('Confirm', preview);
+            };
+            buttonsContainer.appendChild(btnConfirmSplits);
+
+            // Option 2: Merge into Single Total
+            const totalSum = subActions.reduce((sum, a) => sum + (Number(a.data?.amount) || 0), 0);
+            const btnMerge = document.createElement('button');
+            btnMerge.className = 'btn btn-outline btn-sm';
+            btnMerge.innerText = `Merge as Single Total ($${totalSum.toFixed(2)})`;
+            btnMerge.onclick = () => {
+                actionsRow.remove();
+                const mergedPreview = {
+                    type: 'budget_item',
+                    data: {
+                        description: 'Merged Receipt Expense',
+                        amount: parseFloat(totalSum.toFixed(2)),
+                        category: subActions[0]?.data?.category || 'Groceries',
+                        type: 'expense'
+                    }
+                };
+                sendRumbleChatMessage('Confirm', mergedPreview);
+            };
+            buttonsContainer.appendChild(btnMerge);
+        } else {
+            let confirmLabel = isMulti ? `Confirm All (${subActions.length} Actions)` : 'Confirm';
+            const hasSendEmail = preview.type === 'send_email' || (subActions.some(a => a.type === 'send_email'));
+            if (hasSendEmail) confirmLabel = 'Confirm & Send Email';
+            else if (preview.type === 'pain_log') confirmLabel = 'Confirm Pain Log';
+
+            const btnConfirm = document.createElement('button');
+            btnConfirm.className = 'btn btn-neon-green btn-sm';
+            btnConfirm.innerText = confirmLabel;
+            btnConfirm.onclick = () => {
+                actionsRow.remove();
+                sendRumbleChatMessage('Confirm', preview);
+            };
+            buttonsContainer.appendChild(btnConfirm);
+        }
 
         const btnCancel = document.createElement('button');
         btnCancel.className = 'btn btn-outline btn-sm';
@@ -2142,8 +2315,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }).catch(console.error);
         };
 
-        actionsRow.appendChild(btnConfirm);
-        actionsRow.appendChild(btnCancel);
+        buttonsContainer.appendChild(btnCancel);
+        actionsRow.appendChild(buttonsContainer);
+
         if (targetContainer) {
             targetContainer.appendChild(actionsRow);
         } else {
@@ -2430,19 +2604,21 @@ document.addEventListener('DOMContentLoaded', () => {
             rumbleChatMessages.appendChild(rumbleDiv);
             rumbleChatMessages.scrollTop = rumbleChatMessages.scrollHeight;
 
-            if (data.intent) {
-                if (data.intent === 'ADD_NOTE' && actionToCommit) {
+            const activeIntents = Array.isArray(data.intents) ? data.intents : (data.intent ? [data.intent] : []);
+            for (const it of activeIntents) {
+                if (it === 'ADD_NOTE' && actionToCommit) {
                     if (typeof loadNotes === 'function') loadNotes();
                     showToast('Note saved to notebook', 'success');
-                } else if (data.intent === 'LOG_PAIN' && actionToCommit) {
+                } else if (it === 'LOG_PAIN' && actionToCommit) {
+                    if (typeof loadPainAnalytics === 'function') loadPainAnalytics();
                     showToast('Pain log recorded', 'success');
-                } else if (data.intent === 'ADD_TASK' && actionToCommit) {
+                } else if (it === 'ADD_TASK' && actionToCommit) {
                     if (typeof loadAgenda === 'function') loadAgenda();
                     showToast('Task added to agenda', 'success');
-                } else if (data.intent === 'ADD_EXPENSE') {
+                } else if (it === 'ADD_EXPENSE') {
                     if (typeof loadBudget === 'function') loadBudget();
-                    showToast('Expense added', 'success');
-                } else if (data.intent === 'SEND_EMAIL' && actionToCommit) {
+                    showToast('Expense added to budget', 'success');
+                } else if (it === 'SEND_EMAIL' && actionToCommit) {
                     if (data.status === 'success') {
                         showToast('Email sent via Gmail', 'success');
                     } else {
@@ -2455,9 +2631,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (typeof loadAgenda === 'function') loadAgenda();
                 if (typeof loadNotes === 'function') loadNotes();
                 if (typeof loadBudget === 'function') loadBudget();
-                if (actionToCommit.type === 'budget_item') {
-                    showToast('Expense added to budget', 'success');
-                }
+                if (typeof loadPainAnalytics === 'function') loadPainAnalytics();
             }
         } catch (err) {
             const rumbleDiv = document.createElement('div');
@@ -4415,6 +4589,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (stream) {
                         stream.appendChild(card);
                     }
+
+                    if (type === 'insight') {
+                        showToast('Rule approved to Rumble Brain & SOUL.md', 'success');
+                        if (id) {
+                            await fetch(API_AGENDA, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ id, action: 'approve_insight' })
+                            });
+                            loadAgenda();
+                        }
+                        return;
+                    }
+
                     showToast(`Completed: ${title}`, 'success');
 
                     if (id) {
@@ -4558,7 +4746,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 120,
                                 "cue": "Lie supine with knees bent, breathe deep into lateral ribs and lower abdomen.",
                                 "frames": [
-                                        "/exercises/diaphragmatic-breathing.svg"
+                                        "/exercises/diaphragmatic_breathing_hud.jpg"
                                 ]
                         },
                         {
@@ -4566,7 +4754,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 120,
                                 "cue": "Flatten lower back gently on exhale, slight neutral arch on inhale.",
                                 "frames": [
-                                        "/exercises/supine_pelvic_tilts.jpg"
+                                        "/exercises/supine_pelvic_tilts_hud.jpg"
                                 ]
                         },
                         {
@@ -4574,7 +4762,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 120,
                                 "cue": "Gentle circular micro-mobilization of the pelvis without straining lumbar discs.",
                                 "frames": [
-                                        "/exercises/pelvic-tilts-transverse-holds.svg"
+                                        "/exercises/supine_pelvic_clocks_hud.jpg"
                                 ]
                         },
                         {
@@ -4582,7 +4770,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 120,
                                 "cue": "Hug right knee gently towards shoulder, keeping left foot grounded flat.",
                                 "frames": [
-                                        "/exercises/knee_to_chest_stretch.jpg"
+                                        "/exercises/knee_to_chest_right_hud.jpg"
                                 ]
                         },
                         {
@@ -4590,7 +4778,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 120,
                                 "cue": "Switch and hug left knee gently, decompressing lumbar facet joints.",
                                 "frames": [
-                                        "/exercises/supine-single-knee-to-chest.svg"
+                                        "/exercises/knee_to_chest_left_hud.jpg"
                                 ]
                         },
                         {
@@ -4598,7 +4786,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 120,
                                 "cue": "Press through heels to lift pelvis slightly, engaging glutes without arching lumbar spine.",
                                 "frames": [
-                                        "/exercises/hip_glute_bridge.jpg"
+                                        "/exercises/hip_glute_bridge_hud.jpg"
                                 ]
                         },
                         {
@@ -4606,7 +4794,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 120,
                                 "cue": "Knees wide, sink hips toward heels, rest torso on cushion or mat.",
                                 "frames": [
-                                        "/exercises/supported_childs_pose.jpg"
+                                        "/exercises/supported_childs_pose_hud.jpg"
                                 ]
                         },
                         {
@@ -4614,7 +4802,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 120,
                                 "cue": "Gentle rhythmic undulation of spine on hands and knees, keeping neck neutral.",
                                 "frames": [
-                                        "/exercises/core_cat_cow.jpg"
+                                        "/exercises/cat_cow_hud.jpg"
                                 ]
                         },
                         {
@@ -4622,7 +4810,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 120,
                                 "cue": "Drop knees gently 45 degrees to each side to mobilize lumbar rotation safely.",
                                 "frames": [
-                                        "/exercises/thoracic_supine_twist.jpg"
+                                        "/exercises/gentle_supine_torso_twist_hud.jpg"
                                 ]
                         },
                         {
@@ -4630,7 +4818,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 120,
                                 "cue": "Rest with bolster beneath knees to unload psoas and settle lumbar spine.",
                                 "frames": [
-                                        "/exercises/restorative_savasana.jpg"
+                                        "/exercises/restorative_savasana_hud.jpg"
                                 ]
                         }
                 ]
@@ -4747,7 +4935,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Slow 4-second nasal inhale expanding abdomen 360 degrees, 6-second relaxed exhale.",
                                 "frames": [
-                                        "/exercises/diaphragmatic-breathing.svg"
+                                        "/exercises/gentle_diaphragmatic_breath_hud.jpg"
                                 ]
                         },
                         {
@@ -4772,7 +4960,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Wide knees, torso fully resting forward on bolster, lengthen spine.",
                                 "frames": [
-                                        "/exercises/supported-childs-pose-bolster.svg"
+                                        "/exercises/supported_childs_pose_bolster_hud.jpg"
                                 ]
                         },
                         {
@@ -4780,7 +4968,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Arms in gentle cactus or T, knees softly roll side to side with pillow support.",
                                 "frames": [
-                                        "/exercises/thoracic_supine_twist.jpg"
+                                        "/exercises/gentle_supine_torso_twist_hud.jpg"
                                 ]
                         },
                         {
@@ -4788,7 +4976,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Yoga block or firm cushion under sacrum, letting hip flexors and psoas release.",
                                 "frames": [
-                                        "/exercises/supported-bridge-block.svg"
+                                        "/exercises/supported_bridge_block_hud.jpg"
                                 ]
                         },
                         {
@@ -4796,7 +4984,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Knees bent and resting together, feet wide, lower back fully unloaded.",
                                 "frames": [
-                                        "/exercises/constructive-rest.svg"
+                                        "/exercises/constructive_rest_bolster_hud.jpg"
                                 ]
                         },
                         {
@@ -4812,7 +5000,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 180,
                                 "cue": "Rest spine on acupressure mat or soft bolster, complete still surrender.",
                                 "frames": [
-                                        "/exercises/acupressure-mat-bolster-wind-down.svg"
+                                        "/exercises/acupressure_mat_savasana_hud.jpg"
                                 ]
                         }
                 ]
@@ -5044,7 +5232,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 120,
                                 "cue": "Coordinate gentle spinal flexion and extension with breathing rhythm.",
                                 "frames": [
-                                        "/exercises/core_cat_cow.jpg"
+                                        "/exercises/cat_cow_hud.jpg"
                                 ]
                         },
                         {
@@ -5092,7 +5280,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 120,
                                 "cue": "Knees bent, drop softly side to side to loosen spinal rotators.",
                                 "frames": [
-                                        "/exercises/thoracic_supine_twist.jpg"
+                                        "/exercises/gentle_supine_torso_twist_hud.jpg"
                                 ]
                         },
                         {
@@ -5443,7 +5631,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 "duration": 150,
                                 "cue": "Knees stacked over bolster on right side, breathe into ribcage, repeat left.",
                                 "frames": [
-                                        "/exercises/thoracic_supine_twist.jpg"
+                                        "/exercises/gentle_supine_torso_twist_hud.jpg"
                                 ]
                         },
                         {
@@ -7561,6 +7749,45 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.alert_triggered) {
                 alertBannerText.innerText = data.alert_message;
                 alertBanner.classList.remove('hidden');
+                const btnTriage = document.getElementById('btnActivateFlareTriage');
+                if (btnTriage) {
+                    if (data.flare_triage_proposal && data.flare_triage_proposal.deferredTasks && data.flare_triage_proposal.deferredTasks.length > 0) {
+                        btnTriage.classList.remove('hidden');
+                        btnTriage.onclick = async () => {
+                            btnTriage.disabled = true;
+                            btnTriage.innerText = 'Activating...';
+                            try {
+                                const triageRes = await fetch('/api/v1/rumble/chat', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        confirm_action: {
+                                            type: 'flare_triage',
+                                            data: data.flare_triage_proposal
+                                        }
+                                    })
+                                });
+                                const triageData = await triageRes.json();
+                                if (triageRes.ok) {
+                                    showToast(triageData.reply || 'Low-Spoon Flare Triage activated', 'success');
+                                    btnTriage.classList.add('hidden');
+                                    alertBanner.classList.add('hidden');
+                                    if (typeof loadAgenda === 'function') loadAgenda();
+                                    else if (typeof loadAgendaItems === 'function') loadAgendaItems();
+                                } else {
+                                    showToast(triageData.error || 'Failed to activate triage');
+                                }
+                            } catch (triageErr) {
+                                showToast(triageErr.message || 'Error executing flare triage');
+                            } finally {
+                                btnTriage.disabled = false;
+                                btnTriage.innerText = 'Activate Flare Triage';
+                            }
+                        };
+                    } else {
+                        btnTriage.classList.add('hidden');
+                    }
+                }
             }
             if (activePainLogAgendaId) {
                 try {
@@ -8547,6 +8774,47 @@ ${(syn.recommended_consult_questions || []).map((q, i) => `${i + 1}. ${q}`).join
         });
     }
 
+    const btnExportConsultPack = document.getElementById('btnExportConsultPack');
+    if (btnExportConsultPack) {
+        btnExportConsultPack.addEventListener('click', async () => {
+            try {
+                const specialty = doctorSpecialtyFilter ? doctorSpecialtyFilter.value : 'gp';
+                btnExportConsultPack.disabled = true;
+                btnExportConsultPack.innerText = 'Generating...';
+
+                const res = await fetch('/api/v1/pain/analytics', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        specialist: specialty === 'all' ? 'gp' : specialty,
+                        period: currentPainAnalyticsPeriod
+                    })
+                });
+                const result = await res.json();
+                if (result.status === 'success') {
+                    showToast(`Consult pack saved to ${result.file_path}`, 'success');
+                    const blob = new Blob([result.markdown], { type: 'text/markdown' });
+                    const downloadUrl = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = downloadUrl;
+                    a.download = `consult_pack_${specialty}_${new Date().toISOString().split('T')[0]}.md`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(downloadUrl);
+                } else {
+                    showToast('Failed to export consult pack');
+                }
+            } catch (err) {
+                console.error("Export error:", err);
+                showToast('Failed to export consult pack');
+            } finally {
+                btnExportConsultPack.disabled = false;
+                btnExportConsultPack.innerText = 'Export Consult Pack';
+            }
+        });
+    }
+
     async function loadPainAnalytics(period = 'month') {
         try {
             const res = await fetch(`/api/v1/pain/analytics?period=${encodeURIComponent(period)}`);
@@ -8652,6 +8920,122 @@ ${(syn.recommended_consult_questions || []).map((q, i) => `${i + 1}. ${q}`).join
                     statPainMorningNight.innerText = `${eveningSlot.average} PM (Evening)`;
                 } else {
                     statPainMorningNight.innerText = `${data.average_score} Avg`;
+                }
+            }
+
+            // Populate Period-over-Period Deltas
+            const deltas = data.period_deltas;
+            const painDeltasLabel = document.getElementById('painDeltasLabel');
+            const deltaMeanScore = document.getElementById('deltaMeanScore');
+            const deltaSevereFlares = document.getElementById('deltaSevereFlares');
+            const deltaDiurnalSlope = document.getElementById('deltaDiurnalSlope');
+
+            if (painDeltasLabel && deltas) {
+                painDeltasLabel.innerText = deltas.prior_period_label ? `Compared against ${deltas.prior_period_label}` : 'Prior Period Baseline';
+            }
+            if (deltaMeanScore && deltas) {
+                if (deltas.score_delta !== null && deltas.score_delta !== undefined) {
+                    const prefix = deltas.score_delta > 0 ? '+' : '';
+                    const color = deltas.score_delta > 0 ? 'var(--neon-red)' : deltas.score_delta < 0 ? 'var(--neon-green)' : 'var(--text-secondary)';
+                    const label = deltas.score_delta > 0 ? 'Worsening' : deltas.score_delta < 0 ? 'Improving' : 'Stable';
+                    deltaMeanScore.innerHTML = `<span style="color: ${color};">${prefix}${deltas.score_delta} pts</span> <span style="font-size: 0.72rem; color: var(--text-muted);">(${label})</span>`;
+                } else {
+                    deltaMeanScore.innerHTML = `<span style="color: var(--text-muted);">Baseline Period</span>`;
+                }
+            }
+            if (deltaSevereFlares && deltas) {
+                if (deltas.severe_count_delta !== null && deltas.severe_count_delta !== undefined) {
+                    const prefix = deltas.severe_count_delta > 0 ? '+' : '';
+                    const color = deltas.severe_count_delta > 0 ? 'var(--neon-red)' : deltas.severe_count_delta < 0 ? 'var(--neon-green)' : 'var(--text-secondary)';
+                    deltaSevereFlares.innerHTML = `<span style="color: ${color};">${prefix}${deltas.severe_count_delta} flares</span> <span style="font-size: 0.72rem; color: var(--text-muted);">(${deltas.current_severe_count} current)</span>`;
+                } else {
+                    deltaSevereFlares.innerHTML = `<span>${deltas.current_severe_count || 0} flares</span>`;
+                }
+            }
+            if (deltaDiurnalSlope && deltas) {
+                if (deltas.diurnal_slope?.escalation !== null && deltas.diurnal_slope?.escalation !== undefined) {
+                    const esc = deltas.diurnal_slope.escalation;
+                    const prefix = esc > 0 ? '+' : '';
+                    const color = esc >= 1.0 ? 'var(--neon-red)' : 'var(--neon-blue)';
+                    deltaDiurnalSlope.innerHTML = `<span style="color: ${color};">${prefix}${esc} pts</span> <span style="font-size: 0.72rem; color: var(--text-muted);">(Morning ${deltas.diurnal_slope.morning_avg || '—'} → Evening ${deltas.diurnal_slope.evening_avg || '—'})</span>`;
+                } else {
+                    deltaDiurnalSlope.innerHTML = `<span style="color: var(--text-muted);">Stable Baseline</span>`;
+                }
+            }
+
+            // Populate Anatomical Migration Shifts
+            const migrationListEl = document.getElementById('anatomicalMigrationList');
+            if (migrationListEl && Array.isArray(data.anatomical_migration)) {
+                if (data.anatomical_migration.length === 0) {
+                    migrationListEl.innerHTML = `<div style="font-size: 0.8rem; color: var(--text-muted); padding: 8px;">No migration shifts detected for this period.</div>`;
+                } else {
+                    migrationListEl.innerHTML = data.anatomical_migration.map(m => {
+                        const trendColor = m.trend === 'increasing' ? 'var(--neon-red)' : m.trend === 'decreasing' ? 'var(--neon-green)' : 'var(--text-muted)';
+                        const prefix = m.delta_pct > 0 ? '+' : '';
+                        return `
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 4px; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.82rem;">
+                                <div>
+                                    <strong style="color: var(--text-primary);">${escapeHtml(m.area)}</strong>
+                                    <span style="font-size: 0.72rem; color: var(--text-muted); margin-left: 6px;">${m.prior_pct}% → ${m.current_pct}%</span>
+                                </div>
+                                <span class="badge" style="background: rgba(255,255,255,0.06); color: ${trendColor}; font-size: 0.72rem;">
+                                    ${prefix}${m.delta_pct}% ${m.trend}
+                                </span>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            }
+
+            // Populate NLP Symptom Progression Timeline
+            const symptomProgressionEl = document.getElementById('symptomProgressionList');
+            if (symptomProgressionEl && Array.isArray(data.symptom_progression)) {
+                symptomProgressionEl.innerHTML = data.symptom_progression.map(s => {
+                    const badgeClass = s.mention_count >= 2 ? 'neon-red' : s.mention_count === 1 ? 'neon-orange' : '';
+                    return `
+                        <div style="padding: 6px 4px; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.82rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <strong style="color: var(--text-primary);">${escapeHtml(s.category)}</strong>
+                                <span class="badge ${badgeClass}" style="font-size: 0.7rem;">${s.mention_count} log${s.mention_count === 1 ? '' : 's'}</span>
+                            </div>
+                            ${s.recent_snippets && s.recent_snippets.length > 0 ? `
+                                <div style="font-size: 0.73rem; color: var(--text-muted); margin-top: 2px; font-style: italic;">
+                                    "${escapeHtml(s.recent_snippets[0])}"
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Populate Intervention Efficacy & Flare Triggers (Correlation Matrix)
+            const reliefDriversEl = document.getElementById('reliefDriversList');
+            if (reliefDriversEl) {
+                const drivers = data.correlation_matrix?.relief_drivers || [];
+                if (drivers.length === 0) {
+                    reliefDriversEl.innerHTML = `<div style="padding: 6px 0; color: var(--text-muted);">No recorded rehabilitation sessions for this period.</div>`;
+                } else {
+                    reliefDriversEl.innerHTML = drivers.map(d => `
+                        <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                            <span>${escapeHtml(d.intervention)} (${d.session_count} session${d.session_count === 1 ? '' : 's'})</span>
+                            <strong style="color: var(--neon-green);">${d.avg_relief > 0 ? '-' : ''}${d.avg_relief} pts avg relief</strong>
+                        </div>
+                    `).join('');
+                }
+            }
+
+            const flareTriggersEl = document.getElementById('flareTriggersList');
+            if (flareTriggersEl) {
+                const triggers = data.correlation_matrix?.flare_triggers || [];
+                if (triggers.length === 0) {
+                    flareTriggersEl.innerHTML = `<div style="padding: 6px 0; color: var(--text-muted);">No flare triggers detected in log notes.</div>`;
+                } else {
+                    flareTriggersEl.innerHTML = triggers.map(t => `
+                        <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                            <span>${escapeHtml(t.trigger)} (${t.sample_count} log${t.sample_count === 1 ? '' : 's'})</span>
+                            <strong style="color: var(--neon-red);">${t.flare_association_pct}% flare correlation</strong>
+                        </div>
+                    `).join('');
                 }
             }
 

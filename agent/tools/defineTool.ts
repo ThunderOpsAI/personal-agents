@@ -1,3 +1,10 @@
+/**
+ * Tool definition and human-in-the-loop approval protocol.
+ *
+ * Provides typed schemas for agent capabilities and safety gates. Mutating operations
+ * (e.g. sending emails, modifying calendar events, or altering financial records)
+ * yield a `needsApproval` envelope requiring explicit user confirmation before execution.
+ */
 import { NeedsApprovalRequest } from "./types";
 
 export interface ToolOptions {

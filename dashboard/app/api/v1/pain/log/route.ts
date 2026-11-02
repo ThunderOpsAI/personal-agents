@@ -75,12 +75,24 @@ export async function POST(request: Request) {
     ? `High Pain Alert: ${primaryLoc.side !== "unspecified" ? primaryLoc.side.toUpperCase() + " " : ""}${primaryLoc.area.toUpperCase()} at ${result.entry.score}/10. Agenda adjusted.`
     : null;
 
+  let flareTriageProposal = null;
+  if (isHighPain) {
+    try {
+      const { proposeFlareTriage } = await import("../../../../../lib/agents/smart-rescheduler");
+      const areas = result.entry.locations.map((l) => l.area);
+      flareTriageProposal = await proposeFlareTriage(result.entry.score, areas, { baseDate: result.entry.timestamp });
+    } catch (err) {
+      console.error("[Pain Log API] Failed to compute flare triage proposal:", err);
+    }
+  }
+
   return NextResponse.json(
     {
       status: "success",
       data: result.entry,
       alert_triggered: isHighPain,
       alert_message: alertMessage,
+      flare_triage_proposal: flareTriageProposal,
     },
     { status: 201 }
   );

@@ -232,6 +232,53 @@ describe("POST /api/v1/rumble/chat", () => {
       expect(turn2Data.reply).toContain("Rumble: Executed actions:");
     });
 
+    it("Action Confirmation Intent Mapping: maps budget_item, medical_receipt, rehab_relief to correct UI refresh intents", async () => {
+      // budget_item confirmation
+      const resBudget = await POST(
+        jsonRequest({
+          confirm_action: {
+            id: "act_budget_1",
+            type: "budget_item",
+            data: { description: "Groceries", amount: 45.2, category: "Groceries", type: "expense" },
+          },
+        })
+      );
+      expect(resBudget.status).toBe(200);
+      const budgetData = await resBudget.json();
+      expect(budgetData.status).toBe("success");
+      expect(budgetData.intent).toBe("ADD_EXPENSE");
+
+      // medical_receipt confirmation
+      const resMed = await POST(
+        jsonRequest({
+          confirm_action: {
+            id: "act_med_1",
+            type: "medical_receipt",
+            data: { provider: "Dr Riandito", service: "Consult", amount: 250, receipt_date: "2026-10-31" },
+          },
+        })
+      );
+      expect(resMed.status).toBe(200);
+      const medData = await resMed.json();
+      expect(medData.status).toBe("success");
+      expect(medData.intent).toBe("ADD_EXPENSE");
+
+      // rehab_relief confirmation
+      const resRehab = await POST(
+        jsonRequest({
+          confirm_action: {
+            id: "act_rehab_1",
+            type: "rehab_relief",
+            data: { routineId: "lumbar_flow", prePainScore: 7, postPainScore: 4, notes: "Relief observed" },
+          },
+        })
+      );
+      expect(resRehab.status).toBe(200);
+      const rehabData = await resRehab.json();
+      expect(rehabData.status).toBe("success");
+      expect(rehabData.intent).toBe("LOG_PAIN");
+    });
+
     it("ATTACHMENT: passes attached photo or document to conversational chat", async () => {
       chat.mockResolvedValueOnce({
         reply: "I analyzed the doctor referral photo and prepared an appointment for Dr Churchill.",

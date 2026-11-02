@@ -2,6 +2,68 @@ import { NextResponse } from "next/server";
 import { LiveIntegrationUnavailableError, persistConfirmedPainLog, sendConversationalChat } from "../../../../../lib/rumble-integrations";
 import { parseChatRequest } from "../../../../../lib/rumble-request-validation";
 
+function resolveActionIntent(action: any): string {
+  if (!action || !action.type) return "ADD_TASK";
+  switch (action.type) {
+    case "budget_item":
+    case "medical_receipt":
+    case "bill_subscription":
+      return "ADD_EXPENSE";
+    case "pain_log":
+    case "rehab_relief":
+      return "LOG_PAIN";
+    case "note":
+      return "ADD_NOTE";
+    case "send_email":
+      return "SEND_EMAIL";
+    case "send_sms":
+      return "SEND_SMS";
+    case "calendar_event":
+    case "task":
+    case "flare_triage":
+      return "ADD_TASK";
+    case "multi_action": {
+      const actions: any[] = Array.isArray(action.actions)
+        ? action.actions
+        : Array.isArray(action.data?.actions)
+        ? action.data.actions
+        : [];
+      const types = actions.map((a: any) => a.type);
+      if (types.includes("budget_item") || types.includes("medical_receipt") || types.includes("bill_subscription")) {
+        return "ADD_EXPENSE";
+      }
+      if (types.includes("pain_log") || types.includes("rehab_relief")) {
+        return "LOG_PAIN";
+      }
+      if (types.includes("note")) {
+        return "ADD_NOTE";
+      }
+      return "ADD_TASK";
+    }
+    default:
+      return "ADD_TASK";
+  }
+}
+
+function resolveAllActionIntents(action: any): string[] {
+  if (!action || !action.type) return ["ADD_TASK"];
+  if (action.type === "multi_action") {
+    const actions: any[] = Array.isArray(action.actions)
+      ? action.actions
+      : Array.isArray(action.data?.actions)
+      ? action.data.actions
+      : [];
+    if (actions.length > 0) {
+      const set = new Set<string>();
+      for (const sub of actions) {
+        set.add(resolveActionIntent(sub));
+      }
+      return Array.from(set);
+    }
+  }
+  return [resolveActionIntent(action)];
+}
+
 export async function POST(request: Request) {
   const payload = await request.json().catch(() => null);
 
@@ -12,11 +74,14 @@ export async function POST(request: Request) {
       const { resolvePendingAction } = await import("../../../../../lib/db");
       const result = await executeConfirmedAction(payload.confirm_action);
       await resolvePendingAction(payload.pending_action_id || payload.confirm_action.id);
+      const primaryIntent = resolveActionIntent(payload.confirm_action);
+      const intents = resolveAllActionIntents(payload.confirm_action);
       return NextResponse.json({
         status: result.success === false ? "error" : "success",
         reply: result.message,
         data: result.result,
-        intent: payload.confirm_action.type === "pain_log" ? "LOG_PAIN" : payload.confirm_action.type === "note" ? "ADD_NOTE" : payload.confirm_action.type === "send_email" ? "SEND_EMAIL" : payload.confirm_action.type === "send_sms" ? "SEND_SMS" : "ADD_TASK",
+        intent: primaryIntent,
+        intents,
       });
     } catch (error: any) {
       return NextResponse.json({ status: "error", error: error.message || "Failed to execute confirmed action" }, { status: 400 });

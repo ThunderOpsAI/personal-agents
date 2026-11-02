@@ -57,8 +57,9 @@
                 </div>
                 <div id="urgentTasksBannerList" style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;"></div>
             </div>
-            <div class="alert-banner hidden" id="alertBanner">
+            <div class="alert-banner hidden" id="alertBanner" style="display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;">
                 <span class="alert-text" id="alertBannerText">High Pain Alert: Lumbar at 8/10.</span>
+                <button class="btn btn-sm btn-neon-red hidden" id="btnActivateFlareTriage" style="font-size: 0.75rem; padding: 4px 10px; border-radius: 4px; font-weight: 700;">Activate Flare Triage</button>
             </div>
         </header>
 
@@ -418,10 +419,24 @@
                             <div id="modalProgressBar" style="height: 100%; width: 16%; background: var(--neon-blue); transition: width 0.3s ease;"></div>
                         </div>
                     </div>
-                    <select id="modalChapterSelect" class="glass-input" style="padding: 4px 8px; font-size: 0.78rem; max-width: 200px; height: auto;"></select>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <button class="btn btn-outline btn-sm" id="btnSimplifyLearn" style="font-size: 0.78rem; white-space: nowrap; padding: 4px 10px;">Summarise for Dummies</button>
+                        <select id="modalChapterSelect" class="glass-input" style="padding: 4px 8px; font-size: 0.78rem; max-width: 200px; height: auto;"></select>
+                    </div>
                 </div>
 
                 <div class="modal-body-learn" style="flex: 1; overflow-y: auto; padding: 16px; line-height: 1.6;">
+                    <!-- Collapsible Simplified Summary Panel -->
+                    <div id="learnSimplifyPanel" class="hidden" style="margin-bottom: 16px; padding: 14px 16px; background: rgba(0, 229, 255, 0.04); border: 1px solid rgba(0, 229, 255, 0.25); border-radius: 10px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <h4 style="margin: 0; font-size: 0.92rem; color: var(--neon-blue); display: flex; align-items: center; gap: 6px;">
+                                Simplified Summary (Beginner Edition)
+                            </h4>
+                            <button id="btnToggleSimplifyPanel" class="btn btn-outline btn-sm" style="padding: 2px 8px; font-size: 0.72rem;">Close</button>
+                        </div>
+                        <div id="learnSimplifyContent"></div>
+                    </div>
+
                     <div id="modalLearnContent" class="learn-reading-prose">
                         <!-- Reading HTML injected here -->
                     </div>
@@ -1409,6 +1424,7 @@
                                 <option value="pain">Specialty: Interventional Pain (SCS / Blocks)</option>
                                 <option value="neuro">Specialty: Spine Surgeon / Neurologist</option>
                                 <option value="rehab">Specialty: Allied Health / Physio</option>
+                                <option value="legal">Specialty: WorkCover / Medicolegal</option>
                             </select>
                             <div style="font-size: 0.82rem; color: var(--neon-blue); font-weight: 500;" id="painAnalyticsPeriodBadge">Showing Last 30 Days</div>
                         </div>
@@ -1474,6 +1490,28 @@
                         </div>
                     </div>
 
+                    <!-- 4D Clinical Change Analytics: Period-over-Period Deltas Strip -->
+                    <div id="painDeltasStrip" class="glass-panel" style="padding: 12px 16px; border-radius: 8px; background: rgba(0, 240, 255, 0.03); border: 1px solid rgba(0, 240, 255, 0.15);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--neon-blue); font-weight: 700;">Period-over-Period Delta Analysis</span>
+                            <span style="font-size: 0.75rem; color: var(--text-muted);" id="painDeltasLabel">Compared against Prior Period</span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; font-size: 0.85rem;" id="painDeltasGrid">
+                            <div style="background: rgba(0,0,0,0.25); padding: 8px 12px; border-radius: 6px;">
+                                <div style="font-size: 0.72rem; color: var(--text-secondary);">Mean Pain Delta</div>
+                                <div style="font-size: 1.15rem; font-weight: 700;" id="deltaMeanScore">—</div>
+                            </div>
+                            <div style="background: rgba(0,0,0,0.25); padding: 8px 12px; border-radius: 6px;">
+                                <div style="font-size: 0.72rem; color: var(--text-secondary);">Severe Flares (≥7/10) Delta</div>
+                                <div style="font-size: 1.15rem; font-weight: 700;" id="deltaSevereFlares">—</div>
+                            </div>
+                            <div style="background: rgba(0,0,0,0.25); padding: 8px 12px; border-radius: 6px;">
+                                <div style="font-size: 0.72rem; color: var(--text-secondary);">Diurnal Escalation Slope</div>
+                                <div style="font-size: 1.15rem; font-weight: 700;" id="deltaDiurnalSlope">—</div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Visual Graphs Grid -->
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 16px;">
                         <!-- 30-Day Trend Chart -->
@@ -1495,6 +1533,28 @@
                             </div>
                             <div style="position: relative; height: 220px; display: flex; justify-content: center;">
                                 <canvas id="painAnatomyChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4D Clinical Change Analytics: Anatomical Migration Shifts & NLP Symptom Progression -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 16px;">
+                        <div class="glass-panel" style="padding: 14px; border-radius: 8px;">
+                            <div style="font-weight: 600; font-size: 0.95rem; margin-bottom: 8px; display: flex; justify-content: space-between;">
+                                <span>Anatomical Migration Shifts</span>
+                                <span class="badge neon-blue" style="font-size: 0.72rem;">Period Comparison</span>
+                            </div>
+                            <div style="max-height: 180px; overflow-y: auto;" id="anatomicalMigrationList">
+                                <!-- Injected dynamically -->
+                            </div>
+                        </div>
+                        <div class="glass-panel" style="padding: 14px; border-radius: 8px;">
+                            <div style="font-weight: 600; font-size: 0.95rem; margin-bottom: 8px; display: flex; justify-content: space-between;">
+                                <span>NLP Red-Flag Symptom Progression</span>
+                                <span class="badge neon-red" style="font-size: 0.72rem;">Objective Timeline</span>
+                            </div>
+                            <div style="max-height: 180px; overflow-y: auto;" id="symptomProgressionList">
+                                <!-- Injected dynamically -->
                             </div>
                         </div>
                     </div>
@@ -1538,45 +1598,19 @@
                         </div>
                     </div>
 
-                    <!-- Intervention Efficacy & Weather Sensitivity Strip -->
+                    <!-- 4D Correlation Matrix: Intervention Efficacy & Flare Triggers Strip -->
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px;">
                         <div class="glass-panel" style="padding: 12px; border-radius: 8px;">
-                            <div style="font-weight: 600; font-size: 0.9rem; color: var(--neon-green); margin-bottom: 6px;">🏊 Proven Intervention Efficacy (Pre vs Post Drop)</div>
-                            <div style="font-size: 0.78rem; color: var(--text-secondary); line-height: 1.4;">
-                                <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
-                                    <span>Hydrotherapy (3x Weekly)</span>
-                                    <strong style="color: var(--neon-green);">-1.9 pts (8–12 hr relief)</strong>
-                                </div>
-                                <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
-                                    <span>TENS Machine (Dual-Channel)</span>
-                                    <strong style="color: var(--neon-green);">-1.6 pts (2–4 hr relief)</strong>
-                                </div>
-                                <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
-                                    <span>Heat Pack (Lumbar / Cervical)</span>
-                                    <strong style="color: var(--neon-green);">-1.1 pts (1–2 hr relief)</strong>
-                                </div>
-                                <div style="display: flex; justify-content: space-between; padding: 4px 0;">
-                                    <span>Low-Load Yoga & Decompression</span>
-                                    <strong style="color: var(--neon-green);">-0.9 pts (4–6 hr relief)</strong>
-                                </div>
+                            <div style="font-weight: 600; font-size: 0.9rem; color: var(--neon-green); margin-bottom: 6px;">Proven Intervention Efficacy (Top Relief Drivers)</div>
+                            <div id="reliefDriversList" style="font-size: 0.78rem; color: var(--text-secondary); line-height: 1.4;">
+                                <!-- Injected dynamically from data.correlation_matrix.relief_drivers -->
                             </div>
                         </div>
 
                         <div class="glass-panel" style="padding: 12px; border-radius: 8px;">
-                            <div style="font-weight: 600; font-size: 0.9rem; color: var(--neon-blue); margin-bottom: 6px;">🌦️ Wangaratta Weather & Barometric Trigger Predictor</div>
-                            <div style="font-size: 0.78rem; color: var(--text-secondary); line-height: 1.4;">
-                                <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
-                                    <span>Pressure Drop (&lt;1010 hPa) & Rain</span>
-                                    <strong style="color: var(--neon-red);">84% Flare Probability (8.3 Avg)</strong>
-                                </div>
-                                <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
-                                    <span>High Humidity (&gt;80%) & Cold</span>
-                                    <strong style="color: #f59e0b;">71% Joint Stiffness Warning</strong>
-                                </div>
-                                <div style="display: flex; justify-content: space-between; padding: 4px 0;">
-                                    <span>Stable High Pressure (&gt;1022 hPa)</span>
-                                    <strong style="color: var(--neon-green);">32% Risk (Favorable Mobility)</strong>
-                                </div>
+                            <div style="font-weight: 600; font-size: 0.9rem; color: var(--neon-red); margin-bottom: 6px;">Identified Flare Triggers & Aggravators</div>
+                            <div id="flareTriggersList" style="font-size: 0.78rem; color: var(--text-secondary); line-height: 1.4;">
+                                <!-- Injected dynamically from data.correlation_matrix.flare_triggers -->
                             </div>
                         </div>
                     </div>
@@ -1613,7 +1647,8 @@
                         <button class="btn btn-outline btn-sm" id="btnCopyDoctorSummary" title="Copy structured clinical text for MyHealthRecord / consult notes">📋 Copy Clinical Text</button>
                     </div>
                     <div style="display: flex; gap: 8px;">
-                        <button class="btn btn-outline btn-sm" id="btnPrintPainReport">🖨 Print / Export GP Report</button>
+                        <button class="btn btn-neon-green btn-sm" id="btnExportConsultPack" title="Generate tailored Physician Consult Pack in Markdown">Export Consult Pack</button>
+                        <button class="btn btn-outline btn-sm" id="btnPrintPainReport">Print Report</button>
                         <button class="btn btn-outline btn-sm" id="btnDismissPainAnalytics">Close</button>
                     </div>
                 </div>

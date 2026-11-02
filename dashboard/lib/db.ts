@@ -1,11 +1,20 @@
+import fs from 'fs';
+import path from 'path';
 import { Pool } from '@neondatabase/serverless';
 import { drizzle as drizzleServerless, NeonDatabase } from 'drizzle-orm/neon-serverless';
 import * as drizzleSchema from './db/schema';
 import {
   indexSemanticMemory,
   searchSemanticMemories,
-  SemanticSearchResult,
+  resetInMemorySemanticMemories,
+  type SemanticSearchResult,
 } from './semantic-memory';
+export {
+  indexSemanticMemory,
+  searchSemanticMemories,
+  resetInMemorySemanticMemories,
+  type SemanticSearchResult,
+};
 // import Database from 'better-sqlite3';
 import {
   AgendaItem,
@@ -30,6 +39,8 @@ import {
   CREATE_BUDGET_REPORTS_TABLE_SQL,
   BillSubscription,
   CreateBillSubscriptionInput,
+  UpsertBillSubscriptionInput,
+  UpsertBillSubscriptionResult,
   CREATE_BILLS_SUBSCRIPTIONS_TABLE_SQL,
   MaintenanceRecord,
   CreateMaintenanceRecordInput,
@@ -51,6 +62,8 @@ import {
   CreateTaskInput,
   TaskStatus,
   CREATE_TASKS_TABLE_SQL,
+  SemanticMemory,
+  CREATE_SEMANTIC_MEMORIES_TABLE_SQL,
 } from './schema';
 
 let pgPool: Pool | null = null;
@@ -1115,16 +1128,22 @@ export async function saveExercisePreference(record: {
   };
 }
 
-export async function getExercisePreferences(): Promise<ExercisePreferenceRecord[]> {
+export async function getExercisePreferences(filter?: {
+  routine_id?: string;
+  routine_title?: string;
+  area?: string;
+}): Promise<ExercisePreferenceRecord[]> {
   await ensureTableExists();
   const status = getDbStatus();
+
+  let records: ExercisePreferenceRecord[] = [];
 
   if (status.provider === 'neon' && pgPool) {
     const res = await pgPool.query(
       `SELECT id, routine_id, routine_title, pre_pain_score, post_pain_score, relief_delta, notes, created_at
        FROM exercise_preferences ORDER BY created_at DESC`
     );
-    return res.rows.map((r: any) => ({
+    records = res.rows.map((r: any) => ({
       id: r.id,
       routine_id: r.routine_id,
       routine_title: r.routine_title,
@@ -1134,9 +1153,7 @@ export async function getExercisePreferences(): Promise<ExercisePreferenceRecord
       notes: r.notes || undefined,
       created_at: r.created_at,
     }));
-  }
-
-  if (sqliteDb) {
+  } else if (sqliteDb) {
     const rows = sqliteDb
       .prepare(
         `SELECT id, routine_id, routine_title, pre_pain_score, post_pain_score, relief_delta, notes, created_at
@@ -1144,7 +1161,7 @@ export async function getExercisePreferences(): Promise<ExercisePreferenceRecord
       )
       .all() as any[];
 
-    return rows.map((r) => ({
+    records = rows.map((r) => ({
       id: r.id,
       routine_id: r.routine_id,
       routine_title: r.routine_title,
@@ -1156,7 +1173,21 @@ export async function getExercisePreferences(): Promise<ExercisePreferenceRecord
     }));
   }
 
-  return [];
+  if (filter) {
+    if (filter.routine_id) {
+      records = records.filter((r) => r.routine_id === filter.routine_id);
+    }
+    if (filter.routine_title) {
+      const q = filter.routine_title.toLowerCase();
+      records = records.filter((r) => r.routine_title.toLowerCase().includes(q));
+    }
+    if (filter.area) {
+      const areaQ = filter.area.toLowerCase();
+      records = records.filter((r) => r.notes && r.notes.toLowerCase().includes(areaQ));
+    }
+  }
+
+  return records;
 }
 
 
@@ -1307,6 +1338,166 @@ export async function getBillSubscriptions(): Promise<BillSubscription[]> {
     }));
   }
   return [];
+}
+
+export const getBillsSubscriptions = getBillSubscriptions;
+
+export async function upsertBillSubscription(
+  input: UpsertBillSubscriptionInput
+): Promise<UpsertBillSubscriptionResult> {
+  await ensureTableExists();
+  const status = getDbStatus();
+  const existingBills = await getBillSubscriptions();
+
+  const inputTitleClean = input.title ? input.title.trim().toLowerCase() : '';
+  const existing = existingBills.find(
+    (b) =>
+      (input.id && b.id === input.id) ||
+      (inputTitleClean && b.title.trim().toLowerCase() === inputTitleClean)
+  );
+
+  if (existing) {
+    const previous_amount = existing.amount;
+    const price_increased = input.amount > previous_amount;
+    const price_delta = Number((input.amount - previous_amount).toFixed(2));
+    const billStatus = input.status || existing.status;
+    const frequency = input.frequency || existing.frequency;
+    const next_due_date = input.next_due_date || existing.next_due_date;
+
+    if (status.provider === 'neon' && pgPool) {
+      await pgPool.query(
+        `UPDATE bills_subscriptions
+         SET title = $1, amount = $2, frequency = $3, next_due_date = $4, status = $5
+         WHERE id = $6`,
+        [input.title, input.amount, frequency, next_due_date, billStatus, existing.id]
+      );
+    } else if (sqliteDb) {
+      const stmt = sqliteDb.prepare(
+        `UPDATE bills_subscriptions
+         SET title = ?, amount = ?, frequency = ?, next_due_date = ?, status = ?
+         WHERE id = ?`
+      );
+      stmt.run(input.title, input.amount, frequency, next_due_date, billStatus, existing.id);
+    }
+
+    return {
+      id: existing.id,
+      title: input.title,
+      amount: input.amount,
+      frequency,
+      next_due_date,
+      status: billStatus,
+      created_at: existing.created_at,
+      previous_amount,
+      price_increased,
+      price_delta,
+    };
+  }
+
+  const created = await createBillSubscription({
+    id: input.id,
+    title: input.title,
+    amount: input.amount,
+    frequency: input.frequency,
+    next_due_date: input.next_due_date,
+    status: input.status,
+  });
+
+  return {
+    ...created,
+    previous_amount: null,
+    price_increased: false,
+    price_delta: 0,
+  };
+}
+
+function getSoulFilePath(): string {
+  const directPath = path.resolve(process.cwd(), 'SOUL.md');
+  if (fs.existsSync(directPath)) return directPath;
+  const parentPath = path.resolve(process.cwd(), '../SOUL.md');
+  if (fs.existsSync(parentPath)) return parentPath;
+  return directPath;
+}
+
+export async function getSoulLearnedRules(): Promise<string[]> {
+  const soulPath = getSoulFilePath();
+  if (!fs.existsSync(soulPath)) return [];
+  try {
+    const content = fs.readFileSync(soulPath, 'utf8');
+    const lines = content.split('\n');
+    const rules: string[] = [];
+    let inLearnedSection = false;
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (
+        trimmed.startsWith('## ') &&
+        (trimmed.toLowerCase().includes('learned') || trimmed.toLowerCase().includes('rules'))
+      ) {
+        inLearnedSection = true;
+        continue;
+      } else if (trimmed.startsWith('## ')) {
+        inLearnedSection = false;
+      }
+
+      if (inLearnedSection && trimmed.startsWith('- ')) {
+        rules.push(trimmed.slice(2).trim());
+      }
+    }
+    return rules;
+  } catch (err) {
+    console.warn('[SOUL.md Read Error]:', err);
+    return [];
+  }
+}
+
+export async function persistSoulRule(
+  ruleText: string,
+  category: string = 'Learned Rule'
+): Promise<{ success: boolean; ruleId: string; alreadyExisted?: boolean }> {
+  const ruleId = `rule_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+  const cleanRule = ruleText.trim();
+  const soulPath = getSoulFilePath();
+
+  let content = '';
+  if (fs.existsSync(soulPath)) {
+    content = fs.readFileSync(soulPath, 'utf8');
+  }
+
+  // Check if rule already exists in SOUL.md to avoid duplicates
+  if (content.toLowerCase().includes(cleanRule.toLowerCase())) {
+    return { success: true, ruleId, alreadyExisted: true };
+  }
+
+  const sectionHeader = '## Learned Rules & Insights';
+  const formattedEntry = `- [${category.toUpperCase()}] ${cleanRule}`;
+
+  if (content.includes(sectionHeader)) {
+    content = content.replace(sectionHeader, `${sectionHeader}\n${formattedEntry}`);
+  } else {
+    content = `${content.trim()}\n\n${sectionHeader}\n${formattedEntry}\n`;
+  }
+
+  try {
+    fs.writeFileSync(soulPath, content, 'utf8');
+  } catch (err) {
+    console.warn('[SOUL.md Write Warning]:', err);
+  }
+
+  // Also index into semantic memories
+  try {
+    await indexSemanticMemory({
+      sourceType: 'soul_reflection',
+      sourceId: ruleId,
+      content: `[${category.toUpperCase()}] ${cleanRule}`,
+      metadata: { category, persisted_to_soul: true },
+      pgPool,
+    });
+  } catch (err) {
+    console.warn('[Semantic Memory Indexing Warning]:', err);
+  }
+
+  return { success: true, ruleId };
 }
 
 // --- Maintenance Records ---

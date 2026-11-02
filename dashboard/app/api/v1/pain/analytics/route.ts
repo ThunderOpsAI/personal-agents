@@ -1,10 +1,45 @@
 import { NextResponse } from "next/server";
-import { getPainLogsFromDb } from "../../../../../lib/db";
+import { getPainLogsFromDb, getExercisePreferences } from "../../../../../lib/db";
+import { MEDICAL_GUARDRAIL } from "../../../../../lib/agents/intent-router";
+import { generateConsultPackMarkdown } from "../../../../../lib/consult-pack";
+import * as fs from "fs";
+import * as path from "path";
+
+export async function POST(request: Request) {
+  try {
+    const body = await request.json().catch(() => ({}));
+    const specialist = (body.specialist || "gp").toLowerCase();
+    const period = (body.period || "month").toLowerCase();
+
+    const consultPack = await generateConsultPackMarkdown(specialist, period);
+    return NextResponse.json({
+      status: "success",
+      specialist,
+      file_path: consultPack.filePath,
+      markdown: consultPack.markdown,
+    });
+  } catch (error: any) {
+    console.error("[Consult Pack Export Error]:", error);
+    return NextResponse.json({ status: "error", error: error.message || "Failed to generate consult pack" }, { status: 500 });
+  }
+}
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const period = (searchParams.get('period') || 'month').toLowerCase();
+    const exportType = searchParams.get('export');
+    const specialist = (searchParams.get('specialist') || 'gp').toLowerCase();
+
+    if (exportType === 'consult_pack') {
+      const consultPack = await generateConsultPackMarkdown(specialist, period);
+      return NextResponse.json({
+        status: "success",
+        specialist,
+        file_path: consultPack.filePath,
+        markdown: consultPack.markdown,
+      });
+    }
 
     const allLogs = await getPainLogsFromDb();
 
@@ -22,7 +57,11 @@ export async function GET(request: Request) {
         anatomical_distribution: {},
         time_of_day_distribution: [],
         logs: [],
-        recent_logs: []
+        recent_logs: [],
+        period_deltas: null,
+        anatomical_migration: [],
+        correlation_matrix: { relief_drivers: [], flare_triggers: [] },
+        symptom_progression: []
       });
     }
 
@@ -57,6 +96,37 @@ export async function GET(request: Request) {
 
     // Sort ascending by date for chronological analytics
     const sorted = [...filteredLogs].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+
+    // 1. Calculate Prior Window Logs for Period-over-Period Deltas
+    let priorLogs: any[] = [];
+    let priorPeriodLabel = "Prior Period";
+    const nowMs = now.getTime();
+
+    if (period === 'day') {
+      const yesterdayStart = new Date(nowMs - 48 * 60 * 60 * 1000);
+      const yesterdayEnd = new Date(nowMs - 24 * 60 * 60 * 1000);
+      priorLogs = allLogs.filter((l) => {
+        const t = new Date(l.created_at);
+        return t >= yesterdayStart && t < yesterdayEnd;
+      });
+      priorPeriodLabel = "Yesterday";
+    } else if (period === 'week') {
+      const priorStart = new Date(nowMs - 14 * 24 * 60 * 60 * 1000);
+      const priorEnd = new Date(nowMs - 7 * 24 * 60 * 60 * 1000);
+      priorLogs = allLogs.filter((l) => {
+        const t = new Date(l.created_at);
+        return t >= priorStart && t < priorEnd;
+      });
+      priorPeriodLabel = "Prior 7 Days";
+    } else if (period === 'month') {
+      const priorStart = new Date(nowMs - 60 * 24 * 60 * 60 * 1000);
+      const priorEnd = new Date(nowMs - 30 * 24 * 60 * 60 * 1000);
+      priorLogs = allLogs.filter((l) => {
+        const t = new Date(l.created_at);
+        return t >= priorStart && t < priorEnd;
+      });
+      priorPeriodLabel = "Prior 30 Days";
+    }
 
     let totalScore = 0;
     let minScore = 10;
@@ -208,6 +278,147 @@ export async function GET(request: Request) {
       ]
     };
 
+    // 2. Compute Period-over-Period Deltas
+    let priorAverageScore: number | null = null;
+    let scoreDelta: number | null = null;
+    let priorSevereSpikes = 0;
+    let severeDelta: number | null = null;
+
+    if (priorLogs.length > 0) {
+      const priorTotal = priorLogs.reduce((acc, l) => acc + Number(l.score), 0);
+      priorAverageScore = Math.round((priorTotal / priorLogs.length) * 10) / 10;
+      scoreDelta = Math.round((averageScore - priorAverageScore) * 10) / 10;
+      priorSevereSpikes = priorLogs.filter((l) => Number(l.score) >= 7.0).length;
+      severeDelta = severeSpikes - priorSevereSpikes;
+    }
+
+    const periodDeltas = {
+      prior_period_label: priorPeriodLabel,
+      prior_average_score: priorAverageScore,
+      score_delta: scoreDelta,
+      current_severe_count: severeSpikes,
+      prior_severe_count: priorLogs.length > 0 ? priorSevereSpikes : null,
+      severe_count_delta: severeDelta,
+      diurnal_slope: {
+        morning_avg: morningAvg,
+        evening_avg: eveningAvg,
+        escalation: morningAvg && eveningAvg ? Math.round((eveningAvg - morningAvg) * 10) / 10 : null,
+      },
+    };
+
+    // 3. Compute Anatomical Migration Shifts
+    const priorAnatomicalWeights: Record<string, number> = {};
+    if (priorLogs.length > 0) {
+      priorLogs.forEach((log) => {
+        if (Array.isArray(log.locations)) {
+          log.locations.forEach((loc: any) => {
+            const areaName = `${loc.side && loc.side !== "unspecified" ? loc.side.charAt(0).toUpperCase() + loc.side.slice(1) + " " : ""}${loc.area.charAt(0).toUpperCase() + loc.area.slice(1)}`;
+            const weight = loc.percentage || loc.weight || 0;
+            priorAnatomicalWeights[areaName] = (priorAnatomicalWeights[areaName] || 0) + weight;
+          });
+        }
+      });
+    }
+
+    let priorTotalWeight = 0;
+    Object.values(priorAnatomicalWeights).forEach((w) => (priorTotalWeight += w));
+    const priorAnatomicalDistribution: Record<string, number> = {};
+    Object.entries(priorAnatomicalWeights).forEach(([area, weight]) => {
+      priorAnatomicalDistribution[area] = priorTotalWeight > 0 ? Math.round((weight / priorTotalWeight) * 100) : 0;
+    });
+
+    const allAnatomicalKeys = Array.from(new Set([...Object.keys(anatomicalDistribution), ...Object.keys(priorAnatomicalDistribution)]));
+    const anatomicalMigration = allAnatomicalKeys.map((area) => {
+      const currentPct = anatomicalDistribution[area] || 0;
+      const priorPct = priorAnatomicalDistribution[area] || 0;
+      const deltaPct = currentPct - priorPct;
+      let trend: "increasing" | "decreasing" | "stable" = "stable";
+      if (deltaPct >= 3) trend = "increasing";
+      else if (deltaPct <= -3) trend = "decreasing";
+
+      return {
+        area,
+        current_pct: currentPct,
+        prior_pct: priorPct,
+        delta_pct: deltaPct,
+        trend,
+      };
+    }).sort((a, b) => b.current_pct - a.current_pct);
+
+    // 4. Compute Intervention & Trigger Correlation Matrix
+    const exercisePreferences = await getExercisePreferences().catch(() => []);
+    const reliefMap = new Map<string, { totalRelief: number; count: number }>();
+    exercisePreferences.forEach((pref: any) => {
+      const key = pref.routine_title || pref.routine_id;
+      const delta = (Number(pref.pre_pain_score) || 0) - (Number(pref.post_pain_score) || 0);
+      const cur = reliefMap.get(key) || { totalRelief: 0, count: 0 };
+      cur.totalRelief += delta;
+      cur.count += 1;
+      reliefMap.set(key, cur);
+    });
+
+    const reliefDrivers = Array.from(reliefMap.entries()).map(([intervention, data]) => ({
+      intervention,
+      avg_relief: Math.round((data.totalRelief / data.count) * 10) / 10,
+      session_count: data.count,
+    })).sort((a, b) => b.avg_relief - a.avg_relief);
+
+    // Flare Triggers analysis across log notes
+    const triggerDefinitions = [
+      { name: "Prolonged Sitting / Desk Strain", regex: /sitting|desk|drive|driving|chair|screen/i },
+      { name: "Barometric / Cold Weather Shift", regex: /cold|rain|storm|weather|damp|chilly/i },
+      { name: "Heavy Physical Straining / Lifting", regex: /lift|lifting|stairs|straining|heavy|overreach/i },
+      { name: "Nocturnal Sleep Interruption", regex: /sleep|insomnia|poor rest|waking|tossing/i },
+    ];
+
+    const flareTriggers = triggerDefinitions.map((def) => {
+      let matchesTotal = 0;
+      let matchesSevere = 0;
+      allLogs.forEach((l) => {
+        const text = `${l.notes || ""} ${l.mood || ""}`;
+        if (def.regex.test(text)) {
+          matchesTotal++;
+          if (Number(l.score) >= 7.0) matchesSevere++;
+        }
+      });
+      return {
+        trigger: def.name,
+        flare_association_pct: matchesTotal > 0 ? Math.round((matchesSevere / matchesTotal) * 100) : 0,
+        sample_count: matchesTotal,
+      };
+    }).filter((t) => t.sample_count > 0).sort((a, b) => b.flare_association_pct - a.flare_association_pct);
+
+    const correlationMatrix = {
+      relief_drivers: reliefDrivers,
+      flare_triggers: flareTriggers,
+    };
+
+    // 5. NLP Symptom Progression Timeline
+    const symptomCategories = [
+      { category: "Foot Drop & Gait Instability", regex: /foot drop|trip|tripping|clear ground|catch toe|drag|splint|afo/i },
+      { category: "Sciatic Shockwaves & Dural Traction", regex: /sciatic|shockwave|dural|electric|radiation|radiculopathy|shooting/i },
+      { category: "Lower Extremity Numbness & Neuropathy", regex: /numb|numbness|paresthesia|tingling|pins and needles/i },
+      { category: "Paraspinal Spasms & Rigidity", regex: /spasm|stiffness|locked|cramp|rigidity|tight/i },
+      { category: "Sleep Disruption & Night Pain", regex: /sleep|insomnia|woke up|night pain|broken sleep/i },
+    ];
+
+    const symptomProgression = symptomCategories.map((cat) => {
+      const matchingLogs = allLogs.filter((l) => cat.regex.test(`${l.notes || ""} ${l.mood || ""}`));
+      const recentSnippets: string[] = [];
+      matchingLogs.slice(-3).reverse().forEach((l) => {
+        if (l.notes) {
+          recentSnippets.push(`[${new Date(l.created_at).toLocaleDateString("en-AU", { month: "short", day: "numeric", timeZone: tz })}] ${l.notes.substring(0, 100)}`);
+        }
+      });
+
+      return {
+        category: cat.category,
+        mention_count: matchingLogs.length,
+        last_mentioned: matchingLogs.length > 0 ? matchingLogs[matchingLogs.length - 1].created_at : null,
+        recent_snippets: recentSnippets,
+      };
+    });
+
     return NextResponse.json({
       status: "success",
       period,
@@ -218,6 +429,10 @@ export async function GET(request: Request) {
       min_score: minScore,
       max_score: maxScore,
       clinical_synopsis: clinicalSynopsis,
+      period_deltas: periodDeltas,
+      anatomical_migration: anatomicalMigration,
+      correlation_matrix: correlationMatrix,
+      symptom_progression: symptomProgression,
       daily_trends: dailyTrends,
       intra_day_trends: intraDayTrends,
       anatomical_distribution: anatomicalDistribution,
@@ -230,3 +445,4 @@ export async function GET(request: Request) {
     return NextResponse.json({ status: "error", error: "Failed to generate pain analytics" }, { status: 500 });
   }
 }
+

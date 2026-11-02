@@ -1,3 +1,9 @@
+/**
+ * Rumble OS core backend server.
+ * Integrates Vite SPA development middleware with operational API endpoints
+ * for weather-driven washing schedules, pain logs, and clinical routines.
+ */
+
 import express from "express";
 import dotenv from "dotenv";
 import path from "path";
@@ -15,12 +21,17 @@ const port = 3000;
 
 app.use(express.json({ limit: "5mb" }));
 
-// Ensure GEMINI_API_KEY takes precedence and invalid GOOGLE_API_KEY is not picked up
+/**
+ * Environment credential precedence guard.
+ *
+ * Forces GEMINI_API_KEY resolution over ambient GOOGLE_API_KEY to prevent
+ * accidental quota collisions with standard GCP project credentials.
+ */
 if (process.env.GEMINI_API_KEY) {
   delete process.env.GOOGLE_API_KEY;
 }
 
-// Initialize Google GenAI client
+// Client initialization for generative telemetry
 const apiKey = process.env.GEMINI_API_KEY || "";
 const ai = apiKey
   ? new GoogleGenAI({
@@ -42,7 +53,16 @@ app.get("/api/health", (_req, res) => {
   res.status(200).json({ status: "healthy", service: "Rumble OS API", geminiConfigured: !!ai });
 });
 
-// Helper: Rule-based fallback summary if Gemini API is unreachable or key is not set
+/**
+ * Deterministic rule-based symptom synthesis engine.
+ *
+ * Evaluates patient pain logs across anatomical distributions, aggravators, and relief
+ * interventions to generate structured clinical insights when remote inference endpoints
+ * are offline or unconfigured.
+ *
+ * @param painLogs - Array of recorded clinical log entries for the evaluation window
+ * @returns Structured clinical trajectory, load distributions, and pacing guidance
+ */
 function generateRuleBasedInsight(painLogs: any[]) {
   if (!painLogs || painLogs.length === 0) {
     return {
@@ -143,8 +163,14 @@ function generateRuleBasedInsight(painLogs: any[]) {
   };
 }
 
-// POST /api/insights/daily
-// Generates clinical insight summarizing key patterns from day's pain logs using Gemini API
+/**
+ * Daily symptom pattern extraction endpoint.
+ *
+ * Implements a resilient two-tier LLM pipeline with deterministic rule-based fallback:
+ * 1. Primary: Low-latency structured JSON generation via Gemini Flash.
+ * 2. Secondary: Fallback to Flash-Lite if primary times out or encounters upstream throttling.
+ * 3. Tertiary: Local deterministic rule-based analysis ensuring zero downtime for clinical tracking.
+ */
 app.post("/api/insights/daily", async (req, res) => {
   const { painLogs, date, weather } = req.body;
 

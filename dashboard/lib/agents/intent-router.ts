@@ -9,6 +9,14 @@ import { selectWashingDays, WashingDay } from '../agenda-engine';
 import { fetchLiveGmailMessages, fetchLiveCalendarEvents } from '../google-auth';
 import { executeSandboxedCode } from '../sandbox/runner';
 import { preparePrPreview, executeOpenPr } from '../sandbox/pr-creator';
+import {
+  INTENT_CONTEXT_MAP,
+  ALL_LOADERS,
+  LOADERS,
+  LoaderName,
+  loadSms,
+  loadEmail,
+} from './context-loaders';
 
 export const MEDICAL_GUARDRAIL =
   "Medical output is decision support, not diagnosis. Preserve clinician restrictions; recommend clinician review for worsening or concerning symptoms.";
@@ -72,6 +80,7 @@ export type IntentType =
   | "CHECK_SMS"
   | "AGENDA_QUERY"
   | "WEATHER_QUERY"
+  | "BUDGET_QUERY"
   | "MEDICAL_TRIAGE"
   | "CONVERSATION"
   | "GENERAL";
@@ -88,7 +97,7 @@ export interface ParsedPainLog {
 }
 
 export interface ActionPreview {
-  type: "pain_log" | "note" | "task" | "multi_action" | "calendar_event" | "send_email" | "send_sms" | "budget_item" | "agent_report" | "create_pr";
+  type: "pain_log" | "note" | "task" | "multi_action" | "calendar_event" | "send_email" | "send_sms" | "budget_item" | "agent_report" | "create_pr" | "rehab_relief" | "medical_receipt" | "bill_subscription" | "flare_triage";
   data: Record<string, any>;
 }
 
@@ -215,6 +224,11 @@ export const routerActionSchema = z.object({
     "agent_report",
     "send_email",
     "send_sms",
+    "medical_receipt",
+    "bill_subscription",
+    "rehab_relief",
+    "multi_action",
+    "flare_triage",
   ]),
   task_title: z.string().optional(),
   task_scheduled_time: z.string().optional(),
@@ -242,6 +256,20 @@ export const routerActionSchema = z.object({
   budget_type: z.enum(["income", "expense"]).optional(),
   agent_report_title: z.string().optional(),
   agent_report_content: z.string().optional(),
+  medical_provider: z.string().optional(),
+  medical_service: z.string().optional(),
+  medical_amount: z.number().optional(),
+  medical_receipt_date: z.string().optional(),
+  bill_title: z.string().optional(),
+  bill_amount: z.number().optional(),
+  bill_frequency: z.string().optional(),
+  bill_next_due_date: z.string().optional(),
+  bill_status: z.string().optional(),
+  rehab_routine_id: z.string().optional(),
+  rehab_routine_title: z.string().optional(),
+  rehab_pre_pain: z.number().optional(),
+  rehab_post_pain: z.number().optional(),
+  rehab_notes: z.string().optional(),
 });
 
 export const routerOutputSchema = z.object({
@@ -488,12 +516,12 @@ export function classifyIntent(message: string): IntentType {
   }
 
   // 3. Notes Directive (Write)
-  if (/\b(?:add\s+(?:this\s+)?to\s+notes?|add\s+note|take\s+a?\s*note|note:)\b/i.test(lowered)) {
+  if (/\b(?:add\s+.+\s+to\s+notes?|add\s+(?:this\s+)?to\s+notes?|add\s+note|take\s+a?\s*note|note:)\b/i.test(lowered)) {
     return "ADD_NOTE";
   }
 
   // 4. Task / Reminder / Agenda Add Directive (Write)
-  if (/\b(?:add\s+(?:a\s+)?(?:task|reminder|to-do|todo)|create\s+(?:a\s+)?task|remind\s+me|add\s+to\s+agenda)\b/i.test(lowered)) {
+  if (/\b(?:add\s+.+\s+to\s+agenda|add\s+(?:a\s+)?(?:task|reminder|to-do|todo)|create\s+(?:a\s+)?task|remind\s+me|add\s+to\s+agenda)\b/i.test(lowered)) {
     return "ADD_TASK";
   }
 
@@ -515,6 +543,11 @@ export function classifyIntent(message: string): IntentType {
   // 7. Weather / Washing Query (Read)
   if (/\b(?:weather|rain|temperature|forecast|washing\s+days?|wangaratta)\b/i.test(lowered)) {
     return "WEATHER_QUERY";
+  }
+
+  // 7b. Budget & Bills Query (Read)
+  if (/\b(?:budget|spending|expenses?|bills?|subscriptions?)\b/i.test(lowered)) {
+    return "BUDGET_QUERY";
   }
 
   // 8. Medical Triage & Questions
@@ -631,9 +664,13 @@ export function parsePainLogDirective(message: string): {
 }
 
 /**
- * Parses note addition directive e.g. "Add this to notes: buy ergonomic lumbar roll"
+ * Parses note addition directive e.g. "Add this to notes: buy ergonomic lumbar roll" or "add buy milk to notes"
  */
 export function parseNoteDirective(message: string): string | null {
+  const suffixMatch = message.match(/^(?:can\s+you\s+)?(?:please\s+)?add\s+(.+?)\s+to\s+notes?$/i);
+  if (suffixMatch) {
+    return suffixMatch[1].trim();
+  }
   const cleaned = message
     .replace(/^(?:can\s+you\s+)?(?:please\s+)?(?:add\s+(?:this\s+)?to\s+notes?|add\s+note|take\s+a?\s*note|note)\s*[:=]?\s*/i, "")
     .trim();
@@ -641,27 +678,170 @@ export function parseNoteDirective(message: string): string | null {
 }
 
 /**
- * Parses task creation directive e.g. "Add task: Call Dr. Anderson" or "Remind me to do hydrotherapy tomorrow"
+ * Parses task creation directive e.g. "Add task: Call Dr. Anderson", "Remind me to do hydrotherapy tomorrow", or "add buy milk at 3pm to agenda"
  */
 export function parseTaskDirective(message: string): { title: string; scheduled_time?: string } | null {
-  let title = message
-    .replace(/^(?:can\s+you\s+)?(?:please\s+)?(?:add\s+(?:a\s+)?(?:task|reminder|to-do|todo)|create\s+(?:a\s+)?task|remind\s+me\s+to|add\s+to\s+agenda)\s*[:=]?\s*/i, "")
-    .trim();
+  const lowered = message.toLowerCase();
+  const suffixMatch = message.match(/^(?:can\s+you\s+)?(?:please\s+)?add\s+(.+?)\s+to\s+(?:the\s+)?agenda$/i);
+  let raw = suffixMatch
+    ? suffixMatch[1].trim()
+    : message.replace(/^(?:can\s+you\s+)?(?:please\s+)?(?:add\s+(?:a\s+)?(?:task|reminder|to-do|todo)|create\s+(?:a\s+)?task|remind\s+me\s+to|add\s+to\s+agenda)\s*[:=]?\s*/i, "").trim();
 
-  if (!title) return null;
+  if (!raw || (!suffixMatch && raw === message.trim())) return null;
 
-  // Capitalize first letter
+  // Extract optional time like "at 3pm", "at 3:30pm", "at 15:00"
+  let hour = 9;
+  let min = 0;
+  let timeSpecified = false;
+  const timeMatch = raw.match(/\s+at\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/i);
+  if (timeMatch) {
+    timeSpecified = true;
+    let h = parseInt(timeMatch[1], 10);
+    const m = timeMatch[2] ? parseInt(timeMatch[2], 10) : 0;
+    const meridiem = timeMatch[3]?.toLowerCase();
+    if (meridiem === "pm" && h < 12) h += 12;
+    if (meridiem === "am" && h === 12) h = 0;
+    hour = h;
+    min = m;
+    raw = raw.replace(/\s+at\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/i, "").trim();
+  }
+
+  // Clean relative date markers if present
+  let isTomorrow = lowered.includes("tomorrow");
+  if (isTomorrow) {
+    raw = raw.replace(/\s+tomorrow\b/i, "").trim();
+  }
+
+  if (!raw) return null;
+
+  let title = raw;
   if (title.length > 1) {
     title = title[0].toUpperCase() + title.slice(1);
   }
 
-  // Default to today + 1 day at 09:00 AM Melbourne (DST-safe)
-  const now = new Date();
-  now.setDate(now.getDate() + 1);
-  now.setHours(9, 0, 0, 0);
-  const scheduled_time = formatMelbourneISO(now);
+  const targetDate = new Date();
+  if (isTomorrow || !timeSpecified) {
+    targetDate.setDate(targetDate.getDate() + 1);
+  }
+  targetDate.setHours(hour, min, 0, 0);
+  const scheduled_time = formatMelbourneISO(targetDate);
 
   return { title, scheduled_time };
+}
+
+/**
+ * Deterministically unpacks a multi-action natural-language voice/text sentence into individual actions.
+ * e.g. "Had hydro today, pain dropped from 7 to 5, cost $8.50 entry, and remind me to ask Dr. Riandito about the referral Friday"
+ */
+export function parseMultiActionSentence(message: string): {
+  isMultiAction: boolean;
+  actions: ActionPreview[];
+  reply: string;
+} {
+  const lowered = message.toLowerCase();
+  const actions: ActionPreview[] = [];
+  const bullets: string[] = [];
+
+  // 1. Rehab relief check
+  const rehabMatch = lowered.match(/\b(?:had|did|went\s+to|finished)\s+(hydro|hydrotherapy|yoga|rehab|stretching|swimming|physio)\b/i) ||
+                     lowered.match(/\bpain\s+(?:dropped|went\s+down|reduced)\s+from\s+(\d+)\s+to\s+(\d+)\b/i);
+
+  let preScore = 7;
+  let postScore = 5;
+  const painDropMatch = lowered.match(/\bpain\s+(?:dropped|went\s+down|reduced)\s+from\s+(\d+)\s+to\s+(\d+)\b/i);
+  if (painDropMatch) {
+    preScore = parseInt(painDropMatch[1], 10);
+    postScore = parseInt(painDropMatch[2], 10);
+  } else {
+    const toMatch = lowered.match(/\bpain\s+(?:dropped|down|to)\s+(?:to\s+)?(\d+)\b/i);
+    if (toMatch) {
+      postScore = parseInt(toMatch[1], 10);
+      preScore = postScore + 2;
+    }
+  }
+
+  if (rehabMatch || painDropMatch) {
+    const isHydro = lowered.includes("hydro");
+    const routineId = isHydro ? "hydrotherapy" : lowered.includes("yoga") ? "yoga_adaptive" : "rehab_session";
+    const routineTitle = isHydro ? "Hydrotherapy Pool Session" : lowered.includes("yoga") ? "Daily Adaptive Yoga" : "Rehab Protocol";
+    
+    actions.push({
+      type: "rehab_relief",
+      data: {
+        routineId,
+        routineTitle,
+        prePainScore: preScore,
+        postPainScore: postScore,
+        notes: "Unpacked from session update",
+      },
+    });
+    bullets.push(`• **Rehab Relief:** ${routineTitle} (${preScore}/10 → ${postScore}/10, relief: -${preScore - postScore} pts)`);
+
+    // Auto-log post-session pain entry
+    actions.push({
+      type: "pain_log",
+      data: {
+        score: postScore,
+        locations: [{ area: "lumbar", side: "unspecified", percentage: 100 }],
+        mood: "6",
+        notes: `Post-${routineTitle.toLowerCase()} pain score ${postScore}/10`,
+      },
+    });
+    bullets.push(`• **Pain Log:** Score ${postScore}/10 in Lumbar (100%)`);
+  }
+
+  // 2. Budget / Entry Expense check
+  const costMatch = lowered.match(/\b(?:cost|entry|spent|paid|fee)[:\s]*\$?([0-9]+(?:\.[0-9]{2})?)\b/i) ||
+                    lowered.match(/\$([0-9]+(?:\.[0-9]{2})?)\s*(?:entry|fee|ticket|cost)?/i);
+  if (costMatch) {
+    const amount = parseFloat(costMatch[1]);
+    const desc = lowered.includes("hydro") ? "Hydrotherapy Entry" : "Medical / Activity Fee";
+    actions.push({
+      type: "budget_item",
+      data: {
+        description: desc,
+        amount,
+        category: "Medical",
+        type: "expense",
+      },
+    });
+    bullets.push(`• **Expense:** $${amount.toFixed(2)} (${desc}) → Category: Medical`);
+  }
+
+  // 3. Task / Reminder check
+  const taskMatch = message.match(/\b(?:remind\s+me\s+to|add\s+task\s+to?|don't\s+forget\s+to)\s+(.*?)(?:\s+(?:on\s+friday|on\s+monday|on\s+tuesday|on\s+wednesday|on\s+thursday|on\s+saturday|on\s+sunday|friday|tomorrow|\.|$))/i);
+  if (taskMatch) {
+    const rawTaskTitle = taskMatch[1].trim();
+    if (rawTaskTitle.length > 2) {
+      let targetDate = new Date();
+      targetDate.setDate(targetDate.getDate() + 1);
+      if (lowered.includes("friday")) {
+        const day = targetDate.getDay();
+        const diff = (5 + 7 - day) % 7 || 7;
+        targetDate.setDate(targetDate.getDate() + diff);
+      }
+      targetDate.setHours(9, 0, 0, 0);
+      const scheduled_time = formatMelbourneISO(targetDate);
+
+      actions.push({
+        type: "task",
+        data: {
+          title: rawTaskTitle.charAt(0).toUpperCase() + rawTaskTitle.slice(1),
+          scheduled_time,
+        },
+      });
+      bullets.push(`• **Agenda Task:** ${rawTaskTitle} (Scheduled for ${targetDate.toLocaleDateString("en-AU", { weekday: "long" })})`);
+    }
+  }
+
+  const isMultiAction = actions.length >= 2;
+  const reply = `I've unpacked your update into ${actions.length} actions for confirmation:\n\n${bullets.join("\n")}\n\nPlease confirm to execute and save these items to your records.`;
+
+  return {
+    isMultiAction,
+    actions,
+    reply,
+  };
 }
 
 /**
@@ -672,7 +852,8 @@ export async function callGemini(
   userMessage: string,
   responseSchema?: any,
   history: any[] = [],
-  attachment?: { data: string; mimeType: string; filename?: string }
+  attachment?: { data: string; mimeType: string; filename?: string },
+  modelOverride?: string
 ): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
   if (!apiKey) {
@@ -685,7 +866,7 @@ export async function callGemini(
     return `Rumble: I received your message: "${userMessage}". Let me know if you would like to log pain, create a note, or check your agenda.`;
   }
 
-  const preferredModel = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+  const preferredModel = modelOverride || process.env.GEMINI_MODEL || "gemini-2.5-flash";
   const modelPool = [
     preferredModel,
     "gemini-2.5-flash",
@@ -805,164 +986,22 @@ export async function formatSmsMessagesSummary(limit: number = 10): Promise<stri
   return `Here are your recent text messages:\n\n${items.join("\n\n")}`;
 }
 
-export async function buildRumbleSystemPrompt(queryContext: string = ""): Promise<string> {
-  const lowered = queryContext.toLowerCase();
+export async function buildRumbleSystemPrompt(
+  queryContext: string = "",
+  intent?: IntentType
+): Promise<string> {
   const nowMel = new Date().toLocaleString("en-AU", { timeZone: "Australia/Melbourne" });
-  
-  let liveAgendaText = "No active agenda items.";
-  try {
-    const items = await getAgendaItems();
-    const pending = items.filter(i => i.status === "pending");
-    if (pending.length > 0) {
-      liveAgendaText = pending
-        .map(i => `• [ID: ${i.id}] ${i.title} (${i.item_type}) | Scheduled: ${new Date(i.scheduled_time).toLocaleString("en-AU", { timeZone: "Australia/Melbourne" })} | Status: ${i.status}`)
-        .join("\n");
-    }
-  } catch {}
+  const intentKey = intent || "DEFAULT";
+  const loaderNames: LoaderName[] = intent && INTENT_CONTEXT_MAP[intent]
+    ? INTENT_CONTEXT_MAP[intent]
+    : ALL_LOADERS;
 
-  let liveNotesText = "No recent notes.";
-  try {
-    const notes = (await getNotes()).slice(0, 5);
-    if (notes.length > 0) {
-      liveNotesText = notes.map(n => `• [${new Date(n.created_at).toLocaleDateString("en-AU")}] ${n.content}`).join("\n");
-    }
-  } catch {}
-
-  let livePainText = "No recent pain logs recorded.";
-  try {
-    const painLogs = await getPainLogsFromDb();
-    if (painLogs.length > 0) {
-      const pl = painLogs[0];
-      const locs = pl.locations.map((l: any) => `${l.side && l.side !== "unspecified" ? l.side + " " : ""}${l.area} (${l.percentage}%)`).join(", ");
-      livePainText = `Latest score: ${pl.score}/10 in ${locs} (Mood: ${pl.mood || "N/A"}, Notes: ${pl.notes || "None"})`;
-    }
-  } catch {}
-
-  let calendarText = "No live Google Calendar events scheduled for the next 30 days.";
-  try {
-    const calRes = await fetchLiveCalendarEvents();
-    if (calRes.status === "auth_required") {
-      calendarText = "Google Calendar is NOT connected (OAuth authorization required at /api/v1/auth/google).";
-    } else if (calRes.status === "success" && calRes.events && calRes.events.length > 0) {
-      calendarText = calRes.events
-        .map((e: any) => `• ${e.summary || "Event"} (${new Date(e.start?.dateTime || e.start?.date || e.start).toLocaleString("en-AU", { timeZone: "Australia/Melbourne" })}) [ID: ${e.id}]`)
-        .join("\n");
-    }
-  } catch {}
-
-  let emailText = "No unread urgent emails.";
-  try {
-    const emailRes = await fetchLiveGmailMessages({ maxResults: 10 });
-    const collectedMessages: any[] = [];
-    const seenIds = new Set<string>();
-
-    if (emailRes.status === "success" && emailRes.messages) {
-      for (const m of emailRes.messages) {
-        if (!seenIds.has(m.id)) {
-          seenIds.add(m.id);
-          collectedMessages.push(m);
-        }
-      }
-    }
-
-    const targetedSearches: Array<{ query: string; maxResults: number }> = [];
-    if (lowered.includes("deakin")) {
-      targetedSearches.push({ query: "from:deakin OR subject:deakin OR enquire@deakin.edu.au OR deakin", maxResults: 15 });
-    }
-    if (lowered.includes("medibank")) {
-      targetedSearches.push({ query: "from:medibank OR subject:medibank OR medibank", maxResults: 10 });
-    }
-    if (lowered.includes("shine") || lowered.includes("lawyer")) {
-      targetedSearches.push({ query: "from:shine.com.au OR subject:shine OR asmedley@shine.com.au OR shine", maxResults: 10 });
-    }
-    if (lowered.includes("court") || lowered.includes("coordinator") || lowered.includes("wangaratta")) {
-      targetedSearches.push({ query: "court OR coordinator OR magistrates OR wangaratta", maxResults: 10 });
-    }
-    if (lowered.includes("police") || lowered.includes("carter")) {
-      targetedSearches.push({ query: "from:police.vic.gov.au OR Carter OR police", maxResults: 10 });
-    }
-
-    if (targetedSearches.length > 0) {
-      const searchResults = await Promise.all(
-        targetedSearches.map(s => fetchLiveGmailMessages(s).catch(() => ({ status: "error", messages: [] })))
-      );
-      for (const res of searchResults) {
-        if (res.status === "success" && res.messages) {
-          for (const m of res.messages) {
-            if (!seenIds.has(m.id)) {
-              seenIds.add(m.id);
-              collectedMessages.push(m);
-            }
-          }
-        }
-      }
-    }
-
-    if (emailRes.status === "auth_required") {
-      emailText = "Gmail is NOT connected (OAuth authorization required at /api/v1/auth/google).";
-    } else if (collectedMessages.length > 0) {
-      let attachmentContexts = "";
-      for (const m of collectedMessages) {
-        if (m.attachments && m.attachments.length > 0) {
-          if (/shine|case|letter|claim|attachment/i.test(lowered) && /shine|asmedley/i.test(m.from || m.subject)) {
-            const letterPart = m.attachments.find((a: any) => /letter|disclosure|case/i.test(a.filename));
-            if (letterPart && letterPart.attachmentId) {
-              attachmentContexts += `\n[ATTACHED LEGAL DOCUMENT: ${letterPart.filename}]\n`;
-              attachmentContexts += `• Claimant: Mr. James Jones\n`;
-              attachmentContexts += `• Practitioners/Hospitals Investigated: Dr. Reno Riandito (GP), Prof. Greg Cunningham (Neurosurgeon), Mr. James Churchill (Orthopaedic Surgeon), Royal Melbourne Hospital, Northeast Health Wangaratta, Wangaratta Private Hospital, Gateway Health Wangaratta, Hastings Family Medical Centre.\n`;
-              attachmentContexts += `• Claim Summary: Alleged medical negligence regarding delayed diagnosis and treatment of severe cervical spinal cord compression (leading to anterior and posterior cervical spine surgery on 24 June 2026 at Royal Melbourne Hospital).\n`;
-              attachmentContexts += `• Key Timeline: Lower back WorkCover injury at Aldi on 4 Feb 2016; Orthopaedic consult with Mr. James Churchill on 5 Jan 2026; Cervical spinal cord compression diagnosed Jan 2026 (Date of Discoverability); Surgery 24 June 2026; Statutory Limitation deadline to file court proceedings: January 2029 (3-year limit).\n`;
-              attachmentContexts += `• Current Stage & Next Steps: Shine Lawyers is currently collecting medical records across all treating hospitals and clinics (~3 month retrieval window). Following records review, they will brief an independent GP and independent neurosurgeon/spinal surgeon for liability and 'Significant Injury' threshold reports under the Wrongs Act 1958.\n`;
-            }
-          }
-        }
-      }
-
-      emailText = collectedMessages
-        .map((m: any) => {
-          const attStr = m.attachments && m.attachments.length > 0
-            ? ` | Attachments: [${m.attachments.map((a: any) => `${a.filename} (${Math.round(a.size/1024)}KB)`).join(", ")}]`
-            : "";
-          return `• From: ${m.from || "Unknown"} | To: ${m.to || ""} | Subject: "${m.subject || "No Subject"}" | Date: ${m.date || ""}${attStr} | Snippet: ${m.snippet || ""}\n  Body Content: ${m.body || m.bodySummary || "No body content"}`;
-        })
-        .join("\n\n");
-
-      if (attachmentContexts) {
-        emailText += `\n\n=== EXTRACTED EMAIL ATTACHMENT CONTENT ===\n${attachmentContexts}`;
-      }
-    }
-  } catch {}
-
-  let weatherText = "Weather forecast currently unavailable.";
-  try {
-    const washRes = await selectWashingDays();
-    if (washRes.status === "success") {
-      weatherText = washRes.days.map((d: any) => {
-        const dayName = new Date(d.date).toLocaleDateString("en-AU", { weekday: "long", timeZone: "Australia/Melbourne" });
-        return `• ${dayName}: ${d.precipitationProbability}% rain risk, max ${d.tempMax}°C`;
-      }).join("\n");
-    }
-  } catch {}
-
-  let smsText = "No text messages received yet.";
-  try {
-    const smsMessages = await getSmsMessages({ limit: 15 });
-    if (smsMessages && smsMessages.length > 0) {
-      smsText = smsMessages
-        .map(
-          (m: any) => {
-            let bodyText = m.body;
-            if (bodyText === "{sms_body}" || bodyText?.startsWith("{sms_body}")) {
-              bodyText = `${bodyText} (⚠️ MacroDroid phone tag issue: configure [sms_message] instead of {sms_body} in HTTP Request body)`;
-            }
-            return `• From: ${m.sender} | Date: ${m.received_at || m.created_at} | Status: ${m.read ? "Read" : "Unread"}\n  Body: "${bodyText}"`;
-          }
-        )
-        .join("\n\n");
-    }
-  } catch (err) {
-    console.warn("[IntentRouter Warning] Could not fetch SMS messages:", err);
-  }
+  const startTime = Date.now();
+  const loadedSections = await Promise.all(
+    loaderNames.map((name) => LOADERS[name](queryContext))
+  );
+  const durationMs = Date.now() - startTime;
+  console.info(`[rumble] intent=${intentKey} loaders=[${loaderNames.join(",")}] ms=${durationMs}`);
 
   return `You are Rumble, the expert personal operations and rehabilitation AI assistant for Rumble OS.
 Current Time in Australia/Melbourne: ${nowMel}.
@@ -970,26 +1009,7 @@ Location: Wangaratta, Victoria, Australia.
 User Identity: James Jones.
 
 === LIVE USER DATA (SOURCE OF TRUTH) ===
-[ACTIVE AGENDA ITEMS]
-${liveAgendaText}
-
-[RECENT USER NOTES]
-${liveNotesText}
-
-[LATEST HEALTH & PAIN LOG]
-${livePainText}
-
-[LIVE GOOGLE CALENDAR]
-${calendarText}
-
-[LIVE GMAIL INBOX & ARCHIVE]
-${emailText}
-
-[RECENT SMS / TEXT MESSAGES]
-${smsText}
-
-[WANGARATTA WEATHER & WASHING FORECAST]
-${weatherText}
+${loadedSections.join("\n\n")}
 
 === CRITICAL BEHAVIORAL & FORMATTING RULES ===
 1. MEDICAL DISCLAIMER: "${MEDICAL_GUARDRAIL}". Always append this to any medical, symptom, or treatment discussion.
@@ -1039,9 +1059,25 @@ export async function streamRumbleChat({
 }) {
   const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY || "";
   const googleProvider = createGoogleGenerativeAI({ apiKey });
-  const preferredModel = process.env.GEMINI_MODEL || "gemini-2.5-flash";
   const lastUserMsg = [...messages].reverse().find(m => m.role === "user")?.content || "";
-  const systemPrompt = systemPromptOverride || (await buildRumbleSystemPrompt(lastUserMsg));
+  const detectedIntent = classifyIntent(lastUserMsg);
+
+  const isSmallIntent = [
+    "GREETING",
+    "WEATHER_QUERY",
+    "BUDGET_QUERY",
+    "AGENDA_QUERY",
+    "ADD_TASK",
+    "ADD_NOTE",
+    "CHECK_EMAIL",
+    "CHECK_SMS",
+  ].includes(detectedIntent);
+
+  const preferredModel = isSmallIntent
+    ? (process.env.GEMINI_FAST_MODEL || "gemini-2.5-flash-lite")
+    : (process.env.GEMINI_MODEL || "gemini-2.5-flash");
+
+  const systemPrompt = systemPromptOverride || (await buildRumbleSystemPrompt(lastUserMsg, detectedIntent));
   const tools = createRumbleTools();
 
   return streamText({
@@ -1052,6 +1088,93 @@ export async function streamRumbleChat({
   });
 }
 
+
+/**
+ * Converts structured document extraction into executable preview actions.
+ */
+export function buildDocumentActions(extraction: any): { reply: string; actions: ActionPreview[] } | null {
+  if (!extraction || extraction.docType === "general") return null;
+
+  const actions: ActionPreview[] = [];
+  let reply = "";
+
+  if (extraction.docType === "mixed_receipt") {
+    if (extraction.splits && extraction.splits.length > 0) {
+      for (const split of extraction.splits) {
+        actions.push({
+          type: "budget_item",
+          data: {
+            description: split.description,
+            amount: split.amount,
+            category: split.category,
+            type: "expense",
+          },
+        });
+      }
+      reply = `I analyzed your receipt from **${extraction.merchant || "Store"}** ($${(extraction.amount ?? 0).toFixed(2)}). Categorized into ${actions.length} expense split(s):\n${extraction.splits.map((s: any) => `• **${s.category}:** $${s.amount.toFixed(2)} (${s.description})`).join("\n")}\n\nPlease confirm to log these expenses to your budget.`;
+    }
+  } else if (extraction.docType === "medical_receipt") {
+    const prov = extraction.provider || "Medical Provider";
+    const serv = extraction.service || "Clinical Consult";
+    const amt = extraction.amount || 0;
+    const date = extraction.receipt_date || new Date().toISOString().split("T")[0];
+
+    actions.push({
+      type: "medical_receipt",
+      data: { provider: prov, service: serv, amount: amt, receipt_date: date },
+    });
+    actions.push({
+      type: "budget_item",
+      data: { description: `${prov} - ${serv}`, amount: amt, category: "Medical", type: "expense" },
+    });
+    reply = `I extracted a clinical invoice from **${prov}** for **${serv}** ($${amt.toFixed(2)}).\n\nDual-logging prepared:\n• **Medical Receipt:** Recorded for Medicare / WorkCover threshold accumulation.\n• **Budget Expense:** $${amt.toFixed(2)} under Medical category.\n\nPlease confirm to save both entries.`;
+  } else if (extraction.docType === "recurring_bill") {
+    const title = extraction.title || "Utility Bill";
+    const amt = extraction.amount || 0;
+    const dueDate = extraction.due_date || new Date().toISOString().split("T")[0];
+    const freq = extraction.frequency || "monthly";
+
+    actions.push({
+      type: "bill_subscription",
+      data: { title, amount: amt, next_due_date: dueDate, frequency: freq, status: "active" },
+    });
+    actions.push({
+      type: "task",
+      data: {
+        title: `Pay bill: ${title} ($${amt.toFixed(2)})`,
+        scheduled_time: dueDate.includes("T") ? dueDate : `${dueDate}T09:00:00+10:00`,
+      },
+    });
+    reply = `Recurring bill detected: **${title}** ($${amt.toFixed(2)}) due on **${dueDate}**.\n\nPrepared actions:\n• **Bill / Subscription:** Track recurring billing and price-creep monitoring.\n• **Agenda Task:** Due date payment reminder.\n\nPlease confirm to track this bill and add the reminder.`;
+  } else if (extraction.docType === "referral_letter") {
+    const prov = extraction.provider || "Specialist Physician";
+    actions.push({
+      type: "note",
+      data: { content: `Specialist Referral: ${prov}. ${extraction.clinicalNotes || ""}`.trim(), author: "rumble" },
+    });
+    if (extraction.appointmentDate) {
+      actions.push({
+        type: "task",
+        data: { title: `Consultation with ${prov}`, scheduled_time: extraction.appointmentDate },
+      });
+    }
+    reply = `Clinical referral letter detected for **${prov}**${extraction.appointmentDate ? ` on **${extraction.appointmentDate}**` : ""}.\n\nPrepared actions:\n• **Clinical Note:** Stored referral details.\n${extraction.appointmentDate ? `• **Agenda Task:** Consultation scheduled for ${extraction.appointmentDate}.\n` : ""}Please confirm to save to your records.`;
+  } else if (extraction.docType === "medication_box") {
+    const med = extraction.medication || { name: "Medication", dosage: "", instructions: "" };
+    actions.push({
+      type: "note",
+      data: { content: `Medication: ${med.name} (${med.dosage}) - ${med.instructions}`, author: "rumble" },
+    });
+    actions.push({
+      type: "task",
+      data: { title: `Take ${med.name} (${med.dosage})`, scheduled_time: new Date().toISOString() },
+    });
+    reply = `Medication detected: **${med.name}** (${med.dosage}).\nInstructions: ${med.instructions}\n\nPrepared actions:\n• **Clinical Note:** Added to active medications.\n• **Agenda Reminder:** Daily medication protocol.\n\nPlease confirm to save.`;
+  }
+
+  if (actions.length === 0) return null;
+  return { reply, actions };
+}
 
 /**
  * Routes and handles incoming chat messages dynamically with multimodal support.
@@ -1066,19 +1189,140 @@ export async function routeChatMessage(
 
   // Fast-path deterministic parsing for pure direct write commands without follow-up questions
   const hasQuestion = message.includes("?") || /\b(?:what|how|why|should|can you recommend|advice)\b/i.test(message);
-  if (!hasQuestion && classifyIntent(message) === "LOG_PAIN") {
-    const parsedPain = parsePainLogDirective(message);
-    if (parsedPain.parsed) {
-      const preview: ActionPreview = {
-        type: "pain_log",
-        data: parsedPain.parsed,
-      };
-      const locSummary = parsedPain.parsed.locations
-        .map((l) => `${l.side && l.side !== "unspecified" ? l.side + " " : ""}${l.area} (${l.percentage}%)`)
-        .join(", ");
+  if (!hasQuestion) {
+    if (detectedIntent === "LOG_PAIN") {
+      const parsedPain = parsePainLogDirective(message);
+      if (parsedPain.parsed) {
+        const preview: ActionPreview = {
+          type: "pain_log",
+          data: parsedPain.parsed,
+        };
+        const locSummary = parsedPain.parsed.locations
+          .map((l) => `${l.side && l.side !== "unspecified" ? l.side + " " : ""}${l.area} (${l.percentage}%)`)
+          .join(", ");
+        return {
+          reply: `I've prepared your pain log: **Score ${parsedPain.parsed.score}/10** in ${locSummary}${parsedPain.parsed.mood ? ` (Mood: ${parsedPain.parsed.mood})` : ""}${parsedPain.parsed.notes ? ` - Notes: "${parsedPain.parsed.notes}"` : ""}.\n\nPlease click Confirm to save this to your health records.`,
+          intent: "LOG_PAIN",
+          requires_confirmation: true,
+          preview,
+          disclaimer: MEDICAL_GUARDRAIL,
+        };
+      }
+    }
+
+    if (detectedIntent === "ADD_TASK") {
+      const parsedTask = parseTaskDirective(message);
+      if (parsedTask) {
+        const preview: ActionPreview = {
+          type: "task",
+          data: {
+            title: parsedTask.title,
+            scheduled_time: parsedTask.scheduled_time || new Date().toISOString(),
+          },
+        };
+        const timeDisplay = parsedTask.scheduled_time
+          ? new Date(parsedTask.scheduled_time).toLocaleString("en-AU", { timeZone: "Australia/Melbourne" })
+          : "Scheduled";
+        return {
+          reply: `I've prepared to add this task to your agenda:\n\n• **Task:** ${parsedTask.title}\n• **Scheduled:** ${timeDisplay}\n\nPlease click Confirm to add this to your agenda.`,
+          intent: "ADD_TASK",
+          requires_confirmation: true,
+          preview,
+          disclaimer: MEDICAL_GUARDRAIL,
+        };
+      }
+    }
+
+    if (detectedIntent === "ADD_NOTE") {
+      const noteContent = parseNoteDirective(message);
+      if (noteContent) {
+        const preview: ActionPreview = {
+          type: "note",
+          data: {
+            content: noteContent,
+            author: "user",
+          },
+        };
+        return {
+          reply: `I've prepared your note:\n\n• "${noteContent}"\n\nPlease click Confirm to save this note.`,
+          intent: "ADD_NOTE",
+          requires_confirmation: true,
+          preview,
+          disclaimer: MEDICAL_GUARDRAIL,
+        };
+      }
+    }
+
+    // Deterministic simple reads for SMS
+    if (detectedIntent === "CHECK_SMS" && /\b(?:show|read|check|get|list|display|my|recent|last)\b/i.test(message)) {
+      const summary = await formatSmsMessagesSummary();
       return {
-        reply: `I've prepared your pain log: **Score ${parsedPain.parsed.score}/10** in ${locSummary}${parsedPain.parsed.mood ? ` (Mood: ${parsedPain.parsed.mood})` : ""}${parsedPain.parsed.notes ? ` - Notes: "${parsedPain.parsed.notes}"` : ""}.\n\nPlease click Confirm to save this to your health records.`,
-        intent: "LOG_PAIN",
+        reply: `${summary}\n\n${MEDICAL_GUARDRAIL}`,
+        intent: "CHECK_SMS",
+        requires_confirmation: false,
+        disclaimer: MEDICAL_GUARDRAIL,
+      };
+    }
+
+    // Deterministic simple reads for Email
+    if (detectedIntent === "CHECK_EMAIL" && /\b(?:show|read|check|get|list|display|my|recent|last)\b/i.test(message)) {
+      const emailSection = await loadEmail(message);
+      return {
+        reply: `${emailSection}\n\n${MEDICAL_GUARDRAIL}`,
+        intent: "CHECK_EMAIL",
+        requires_confirmation: false,
+        disclaimer: MEDICAL_GUARDRAIL,
+      };
+    }
+  }
+
+  // Fast-path 1-sentence multi-action unpacking (e.g. hydro + pain drop + entry cost + task reminder)
+  const multiActionRes = parseMultiActionSentence(message);
+  if (multiActionRes.isMultiAction && multiActionRes.actions.length > 0) {
+    const preview: ActionPreview = {
+      type: "multi_action",
+      data: { actions: multiActionRes.actions },
+    };
+    return {
+      reply: `${multiActionRes.reply}\n\n${MEDICAL_GUARDRAIL}`,
+      intent: "GENERAL",
+      requires_confirmation: true,
+      preview,
+      disclaimer: MEDICAL_GUARDRAIL,
+    };
+  }
+
+  // Multimodal OCR & Structured Document Extraction Pipeline
+  let ocrText = "";
+  if (attachment && attachment.data) {
+    try {
+      const { parseOCR } = await import("./ocr-parser");
+      ocrText = await parseOCR(attachment.data, { mimeType: attachment.mimeType });
+    } catch {
+      // In test environments or when GEMINI_API_KEY is not set, proceed gracefully
+    }
+  }
+
+  const textToAnalyze = ocrText || message;
+  let documentExtraction: any = null;
+  try {
+    const { parseDocumentTextToExtraction, detectDocumentType } = await import("./ocr-parser");
+    const docType = detectDocumentType(textToAnalyze);
+    if (docType !== "general") {
+      documentExtraction = parseDocumentTextToExtraction(textToAnalyze);
+    }
+  } catch {}
+
+  // Fast-path for direct document text / receipt uploads without open conversational questions
+  if (documentExtraction && !hasQuestion && (attachment || textToAnalyze.includes("\n") || /\b(?:receipt|invoice|bill|referral|prescription)\b/i.test(message))) {
+    const docActions = buildDocumentActions(documentExtraction);
+    if (docActions) {
+      const preview: ActionPreview = docActions.actions.length === 1
+        ? docActions.actions[0]
+        : { type: "multi_action", data: { actions: docActions.actions } };
+      return {
+        reply: `${docActions.reply}\n\n${MEDICAL_GUARDRAIL}`,
+        intent: "GENERAL",
         requires_confirmation: true,
         preview,
         disclaimer: MEDICAL_GUARDRAIL,
@@ -1086,7 +1330,25 @@ export async function routeChatMessage(
     }
   }
 
-  const systemPrompt = await buildRumbleSystemPrompt(message);
+  let systemPrompt = await buildRumbleSystemPrompt(message, detectedIntent);
+  if (documentExtraction) {
+    systemPrompt += `\n\n[STRUCTURED DOCUMENT EXTRACTION]:\n${JSON.stringify(documentExtraction, null, 2)}\nIf the user is submitting this document or receipt, generate the appropriate actions matching this extraction (e.g. budget splits, dual-logging medical receipt + budget item, or recurring bill subscription + payment task).`;
+  }
+
+  const isSmallIntent = [
+    "GREETING",
+    "WEATHER_QUERY",
+    "BUDGET_QUERY",
+    "AGENDA_QUERY",
+    "ADD_TASK",
+    "ADD_NOTE",
+    "CHECK_EMAIL",
+    "CHECK_SMS",
+  ].includes(detectedIntent);
+
+  const chosenModel = isSmallIntent
+    ? (process.env.GEMINI_FAST_MODEL || "gemini-2.5-flash-lite")
+    : (process.env.GEMINI_MODEL || "gemini-2.5-flash");
 
   const responseSchema = {
     type: "OBJECT",
@@ -1098,7 +1360,7 @@ export async function routeChatMessage(
         items: {
           type: "OBJECT",
           properties: {
-            type: { type: "STRING", description: "One of: 'task', 'pain_log', 'note', 'calendar_event', 'budget_item', 'agent_report', 'send_email', 'send_sms'" },
+            type: { type: "STRING", description: "One of: 'task', 'pain_log', 'note', 'calendar_event', 'budget_item', 'agent_report', 'send_email', 'send_sms', 'medical_receipt', 'bill_subscription', 'rehab_relief'" },
             task_title: { type: "STRING" },
             task_scheduled_time: { type: "STRING", description: "Must be a valid ISO 8601 string in Australia/Melbourne timezone" },
             calendar_summary: { type: "STRING" },
@@ -1119,7 +1381,20 @@ export async function routeChatMessage(
             budget_category: { type: "STRING" },
             budget_type: { type: "STRING", description: "Either 'income' or 'expense'" },
             agent_report_title: { type: "STRING" },
-            agent_report_content: { type: "STRING" }
+            agent_report_content: { type: "STRING" },
+            medical_provider: { type: "STRING" },
+            medical_service: { type: "STRING" },
+            medical_amount: { type: "NUMBER" },
+            medical_receipt_date: { type: "STRING" },
+            bill_title: { type: "STRING" },
+            bill_amount: { type: "NUMBER" },
+            bill_frequency: { type: "STRING" },
+            bill_next_due_date: { type: "STRING" },
+            rehab_routine_id: { type: "STRING" },
+            rehab_routine_title: { type: "STRING" },
+            rehab_pre_pain: { type: "INTEGER" },
+            rehab_post_pain: { type: "INTEGER" },
+            rehab_notes: { type: "STRING" }
           },
           required: ["type"]
         }
@@ -1129,7 +1404,14 @@ export async function routeChatMessage(
   };
 
   try {
-    const replyStr = await callGemini(systemPrompt, message, responseSchema, history, attachment);
+    const replyStr = await callGemini(
+      systemPrompt,
+      message,
+      responseSchema,
+      history,
+      attachment,
+      chosenModel
+    );
     const parsed = JSON.parse(replyStr);
     
     let finalReply = parsed.reply;
@@ -1151,6 +1433,22 @@ export async function routeChatMessage(
         loweredReply.includes("do not have access to the actual text message bodies")
       ) {
         finalReply = await formatSmsMessagesSummary();
+      }
+    }
+
+    if ((!parsed.actions || parsed.actions.length === 0) && documentExtraction) {
+      const docActions = buildDocumentActions(documentExtraction);
+      if (docActions) {
+        const preview: ActionPreview = docActions.actions.length === 1
+          ? docActions.actions[0]
+          : { type: "multi_action", data: { actions: docActions.actions } };
+        return {
+          reply: `${docActions.reply}\n\n${MEDICAL_GUARDRAIL}`,
+          intent: "GENERAL",
+          requires_confirmation: true,
+          preview,
+          disclaimer: MEDICAL_GUARDRAIL,
+        };
       }
     }
 
@@ -1190,6 +1488,9 @@ export async function routeChatMessage(
         if (a.type === "note") data = { content: a.note_content, author: 'rumble' };
         if (a.type === "agent_report") data = { title: a.agent_report_title, content: a.agent_report_content };
         if (a.type === "budget_item") data = { description: a.budget_description, amount: a.budget_amount, category: a.budget_category, type: a.budget_type };
+        if (a.type === "medical_receipt") data = { provider: a.medical_provider || a.budget_description || "Medical Provider", service: a.medical_service || "Clinical Service", amount: a.medical_amount || a.budget_amount || 0, receipt_date: a.medical_receipt_date || new Date().toISOString().split("T")[0] };
+        if (a.type === "bill_subscription") data = { title: a.bill_title || a.budget_description || "Subscription", amount: a.bill_amount || a.budget_amount || 0, frequency: a.bill_frequency || "monthly", next_due_date: a.bill_next_due_date || a.task_scheduled_time || new Date().toISOString().split("T")[0], status: a.bill_status || "active" };
+        if (a.type === "rehab_relief") data = { routineId: a.rehab_routine_id || "hydrotherapy", routineTitle: a.rehab_routine_title || "Rehab Routine", prePainScore: a.rehab_pre_pain ?? 7, postPainScore: a.rehab_post_pain ?? 5, notes: a.rehab_notes || a.note_content };
         if (a.type === "send_email") data = { to: a.email_to, subject: a.email_subject, body: a.email_body, threadId: a.email_thread_id };
         if (a.type === "send_sms") data = { to: a.sms_to, body: a.sms_body };
         return { type: a.type, data };
@@ -1234,6 +1535,22 @@ export async function routeChatMessage(
       }
     }
 
+    if (documentExtraction) {
+      const docActions = buildDocumentActions(documentExtraction);
+      if (docActions) {
+        const preview: ActionPreview = docActions.actions.length === 1
+          ? docActions.actions[0]
+          : { type: "multi_action", data: { actions: docActions.actions } };
+        return {
+          reply: `${docActions.reply}\n\n${MEDICAL_GUARDRAIL}`,
+          intent: "GENERAL",
+          requires_confirmation: true,
+          preview,
+          disclaimer: MEDICAL_GUARDRAIL,
+        };
+      }
+    }
+
     if (classifyIntent(message) === "LOG_PAIN") {
       const parsedPain = parsePainLogDirective(message);
       if (parsedPain.parsed) {
@@ -1269,6 +1586,7 @@ export async function executeConfirmedAction(action: ActionPreview | { type: str
   success: boolean;
   message: string;
   result?: any;
+  flare_triage_proposal?: any;
 }> {
   if (action.type === "pain_log") {
     const { score, locations, mood, notes } = action.data;
@@ -1292,10 +1610,22 @@ export async function executeConfirmedAction(action: ActionPreview | { type: str
     // Automatically export to clean Markdown report in agent_reports/
     exportPainReportToMarkdown(logResult.entry);
 
+    let flareTriageProposal = null;
+    if (score >= 7) {
+      try {
+        const { proposeFlareTriage } = await import("./smart-rescheduler");
+        const areas = (locations || []).map((l: any) => l.area);
+        flareTriageProposal = await proposeFlareTriage(score, areas);
+      } catch (err) {
+        console.error("Failed to generate flare triage proposal:", err);
+      }
+    }
+
     return {
       success: true,
       message: `Confirmed and saved pain log (${score}/10).`,
       result: savedRecord,
+      flare_triage_proposal: flareTriageProposal,
     };
   }
 
@@ -1332,6 +1662,69 @@ export async function executeConfirmedAction(action: ActionPreview | { type: str
       success: true,
       message: `Expense logged ($${amount}).`,
       result: savedItem,
+    };
+  }
+
+  if (action.type === "medical_receipt") {
+    const { createMedicalReceipt, createBudgetItem } = await import('../db');
+    const { provider, service, amount, receipt_date } = action.data;
+    const medReceipt = await createMedicalReceipt({ provider, service, amount, receipt_date });
+    try {
+      await createBudgetItem({
+        description: `${provider} - ${service}`,
+        amount,
+        category: "Medical",
+        type: "expense",
+      });
+    } catch (e) {
+      // dual-logging best effort
+    }
+    return {
+      success: true,
+      message: `Medical receipt recorded for ${provider} ($${amount}).`,
+      result: medReceipt,
+    };
+  }
+
+  if (action.type === "bill_subscription") {
+    const { upsertBillSubscription, createAgendaItem } = await import('../db');
+    const { title, amount, frequency, next_due_date, status } = action.data;
+    const upsertRes = await upsertBillSubscription({ title, amount, frequency, next_due_date, status });
+    let reminder = null;
+    if (next_due_date) {
+      try {
+        reminder = await createAgendaItem({
+          item_type: "task",
+          title: `Pay bill: ${title} ($${amount})`,
+          scheduled_time: next_due_date.includes("T") ? next_due_date : `${next_due_date}T09:00:00+10:00`,
+          status: "pending",
+        });
+      } catch (e) {}
+    }
+    const creepMsg = upsertRes.price_increased ? ` (Price increase detected: +$${upsertRes.price_delta})` : "";
+    return {
+      success: true,
+      message: `Bill/Subscription updated for ${title} ($${amount})${creepMsg}.`,
+      result: { bill: upsertRes, reminder },
+    };
+  }
+
+  if (action.type === "rehab_relief") {
+    const { saveExercisePreference } = await import('../db');
+    const { routineId, routineTitle, prePainScore, postPainScore, notes } = action.data;
+    const reliefDelta = (Number(prePainScore) || 0) - (Number(postPainScore) || 0);
+    const pref = await saveExercisePreference({
+      routineId: routineId || "rehab_routine",
+      routineTitle: routineTitle || "Rehab Routine",
+      prePainScore: Number(prePainScore) || 0,
+      postPainScore: Number(postPainScore) || 0,
+      reliefDelta,
+      notes,
+    });
+    return {
+      success: true,
+      message: `Rehab relief logged for ${routineTitle || "routine"}: ${prePainScore}/10 -> ${postPainScore}/10 (delta: ${pref.relief_delta}).`,
+      result: pref,
     };
   }
 
@@ -1451,6 +1844,16 @@ export async function executeConfirmedAction(action: ActionPreview | { type: str
       success: true,
       message: `Rumble: Confirmed and added to agenda: "${action.data.summary}".`,
       result: savedAgendaItem,
+    };
+  }
+
+  if (action.type === "flare_triage") {
+    const { executeFlareTriage } = await import("./smart-rescheduler");
+    const triageRes = await executeFlareTriage(action.data);
+    return {
+      success: triageRes.success,
+      message: `Low-Spoon Flare Triage executed: deferred ${triageRes.rescheduledCount} non-urgent task(s).`,
+      result: triageRes,
     };
   }
 

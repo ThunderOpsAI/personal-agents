@@ -368,6 +368,29 @@ function addOrUpdateRule(params: {
 }
 
 /**
+ * Registers an approved rehab recalibration rule directly into active learning.
+ */
+export function registerApprovedRehabRule(params: {
+  routineId?: string;
+  routineTitle?: string;
+  recommendation: string;
+  reason?: string;
+}): ExerciseRecalibrationRule {
+  const newRule: ExerciseRecalibrationRule = {
+    id: `rule_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+    routineId: params.routineId || "rehab_adaptive",
+    routineTitle: params.routineTitle || "Adaptive Protocol",
+    action: "increase_frequency",
+    recommendation: params.recommendation,
+    reason: params.reason || "Approved cross-domain insight",
+    status: "approved",
+    createdAt: new Date().toISOString(),
+  };
+  SundayBriefingRules.push(newRule);
+  return newRule;
+}
+
+/**
  * Returns all learned exercise recalibration rules for Sunday briefing.
  */
 export function getSundayBriefingRules(): ExerciseRecalibrationRule[] {

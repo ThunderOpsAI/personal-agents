@@ -134,13 +134,28 @@ export async function GET(request: Request) {
       return (isNaN(timeA) ? 0 : timeA) - (isNaN(timeB) ? 0 : timeB);
     });
 
+    const { getSuggestedYogaRoutines } = await import("../../../../lib/agents/yoga-engine");
+    const dynamicYogaRoutines = await getSuggestedYogaRoutines().catch(() => []);
+
     const daily = dailyItemsForDate.map((item) => {
       const d = new Date(item.scheduled_time);
       const timeStr = isNaN(d.getTime())
         ? "09:00 AM"
         : d.toLocaleTimeString("en-AU", { hour: "2-digit", minute: "2-digit", timeZone: "Australia/Melbourne" });
       let choices: string[] | undefined;
-      if (item.item_type === "yoga") choices = ["Hip Flow", "Lumbar Core", "Shoulder Rehab"];
+      let routine_details: any[] | undefined;
+
+      if (item.item_type === "yoga") {
+        choices = dynamicYogaRoutines.map((r: any) => r.title);
+        routine_details = dynamicYogaRoutines.map((r: any) => ({
+          id: r.id,
+          title: r.title,
+          duration_minutes: r.duration_minutes,
+          selection_reason: r.selection_reason,
+          adapted: r.adapted,
+          adapted_poses: r.adapted_poses,
+        }));
+      }
       if (item.item_type === "learning") choices = ["Neuroplasticity", "Myofascial Release", "Breathing Mechanics"];
       return {
         id: item.id,
@@ -150,6 +165,7 @@ export async function GET(request: Request) {
         status: item.status,
         scheduled_time: item.scheduled_time,
         choices,
+        routine_details,
       };
     });
 
@@ -306,6 +322,14 @@ export async function GET(request: Request) {
           m.generateWeeklyInsights(weeklyInsightId);
         }).catch(console.error);
       }
+    } else {
+      // Background cross-domain insight check if no insight item exists in recent window
+      const hasRecentInsight = rawItems.some(i => i.item_type === "insight" && (now.getTime() - new Date(i.created_at || i.scheduled_time).getTime() < 7 * 24 * 60 * 60 * 1000));
+      if (!hasRecentInsight) {
+        import("../../../../lib/agents/insight-engine").then(m => {
+          m.generateCrossDomainInsights().catch(console.error);
+        }).catch(console.error);
+      }
     }
 
     return NextResponse.json({
@@ -346,6 +370,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ status: "error", error: "Payload must be an object" }, { status: 400 });
   }
 
+
+  if (body.action === "approve_insight" && (body.id || body.rule_text)) {
+    try {
+      const { approveInsightToBrain } = await import("../../../../lib/agents/insight-engine");
+      const res = await approveInsightToBrain(body.id || body.rule_text, body.category);
+      return NextResponse.json({ status: "success", result: res });
+    } catch (error: any) {
+      return NextResponse.json({ status: "error", error: error.message || "Failed to approve insight" }, { status: 500 });
+    }
+  }
 
   if (body.action === "reschedule" && body.id && body.new_date) {
     try {

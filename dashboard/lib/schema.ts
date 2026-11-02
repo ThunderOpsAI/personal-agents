@@ -235,6 +235,21 @@ export interface CreateBillSubscriptionInput {
   status?: string;
 }
 
+export interface UpsertBillSubscriptionInput {
+  id?: string;
+  title: string;
+  amount: number;
+  frequency: string;
+  next_due_date: string;
+  status?: string;
+}
+
+export interface UpsertBillSubscriptionResult extends BillSubscription {
+  previous_amount: number | null;
+  price_increased: boolean;
+  price_delta: number;
+}
+
 export const CREATE_BILLS_SUBSCRIPTIONS_TABLE_SQL = `
 CREATE TABLE IF NOT EXISTS bills_subscriptions (
     id TEXT PRIMARY KEY,
@@ -438,6 +453,29 @@ CREATE TABLE IF NOT EXISTS tasks (
     updated_at TEXT NOT NULL
 );
 `;
+
+export interface SemanticMemory {
+  id: string;
+  source_type: 'medical_note' | 'soul_reflection' | 'pain_log' | string;
+  source_id: string;
+  content: string;
+  metadata?: Record<string, any>;
+  embedding?: number[];
+  created_at: string;
+}
+
+export const CREATE_SEMANTIC_MEMORIES_TABLE_SQL = `
+CREATE TABLE IF NOT EXISTS semantic_memories (
+  id TEXT PRIMARY KEY,
+  source_type TEXT NOT NULL,
+  source_id TEXT NOT NULL,
+  content TEXT NOT NULL,
+  metadata JSONB,
+  embedding vector(768),
+  created_at TEXT NOT NULL
+);
+`;
+
 
 
 
