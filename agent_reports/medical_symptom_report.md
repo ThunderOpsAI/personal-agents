@@ -1,5 +1,5 @@
 # Clinical Symptom & Anatomical Pain Tracking Report
-> **Period**: 2026-07-01 to 2026-10-27 (Longitudinal Data from 1st July — 777 Total Cumulative Clinical Logs)
+> **Period**: 2026-07-01 to 2026-11-03 (Longitudinal Data from 1st July — 1069 Total Cumulative Clinical Logs)
 > **Patient ID**: Self-Tracked Rumble OS Log
 > **Ranked Anatomical Distribution**: 1. Right Lumbar (~62%), 2. Neck / Cervical (~15%), 3. Right Shoulder (~12%), 4. Sciatica (~8%), 5. Thoracic (~2%), 6. Right Ankle (~1%)
 > **Average Pain Score**: 7.4 / 10 (Range: 5.0 - 9.5)
@@ -1055,3 +1055,25 @@
 | 03/11/2026 | 3:23:37 am | **7.2/10** | right lumbar | 70% | right lumbar (70%), right knee (30%) | Notes: Post-walk loading flare, lumbar and lower extremity fatigue. Mood: frustrated. |
 | 03/11/2026 | 3:23:37 am | **3.5/10** | right lumbar | 100% | right lumbar (100%) | Notes: Rest day, managed baseline pain. Mood: calm. |
 | 03/11/2026 | 3:23:37 am | **7.5/10** | right lumbar | 75% | right lumbar (75%), neck (10%), right ankle (5%), left ankle (5%), thoracic (5%) | Notes: API log test. Mood: neutral. |
+| 07/10/2026 | 2:15:30 pm | **7.0/10** | thoracic | 70% | thoracic (70%), left scapula (20%), neck (10%) | Notes: Mid-thoracic spinal stiffness and interscapular ache after seated work. Mood: neutral. |
+| 08/10/2026 | 8:45:10 pm | **7.5/10** | scapula | 65% | left scapula (65%), thoracic (25%), neck (10%) | Notes: Sharp burning medial scapular border pain and muscular spasm. Mood: fatigued. |
+| 10/10/2026 | 11:30:45 am | **8.0/10** | thoracic | 75% | thoracic (75%), scapula (15%), neck (10%) | Notes: Postural fatigue between shoulder blades, compensatory strain. Mood: uncomfortable. |
+| 11/10/2026 | 4:20:15 pm | **6.5/10** | scapula | 60% | scapula (60%), thoracic (25%), right shoulder (15%) | Notes: Scapular fatigue following reaching tasks, dull ache. Mood: neutral. |
+| 12/10/2026 | 9:10:00 pm | **8.5/10** | thoracic | 70% | thoracic (70%), left scapula (20%), neck (10%) | Notes: Severe mid-thoracic ache and periscapular tension after driving. Mood: stressed. |
+| 14/10/2026 | 1:45:20 pm | **7.5/10** | thoracic | 70% | thoracic (70%), scapula (20%), neck (10%) | Notes: Costovertebral stiffness and mid-back fatigue upright. Mood: neutral. |
+| 15/10/2026 | 7:15:40 pm | **8.0/10** | scapula | 65% | left scapula (65%), thoracic (20%), neck (15%) | Notes: Burning pain on contralateral medial scapula when using right arm. Mood: frustrated. |
+| 16/10/2026 | 10:30:10 am | **7.0/10** | thoracic | 70% | thoracic (70%), scapula (15%), neck (15%) | Notes: Thoracic tightness upon rising, eased slightly with warm shower. Mood: calm. |
+| 17/10/2026 | 3:40:55 pm | **7.5/10** | thoracic | 65% | thoracic (65%), scapula (20%), right shoulder (15%) | Notes: Heavy dull ache between shoulder blades during afternoon sitting. Mood: neutral. |
+| 19/10/2026 | 8:50:20 pm | **9.0/10** | thoracic | 80% | thoracic (80%), left scapula (15%), neck (5%) | Notes: Acute thoracic paraspinal spasm and interscapular locking. Mood: severe distress. |
+| 21/10/2026 | 11:15:30 am | **7.0/10** | scapula | 70% | left scapula (70%), thoracic (20%), neck (10%) | Notes: Rhomboid and levator scapulae trigger bands tight and aching. Mood: tired. |
+| 22/10/2026 | 4:50:10 pm | **8.0/10** | thoracic | 75% | thoracic (75%), scapula (15%), neck (10%) | Notes: Mid-thoracic spinal fatigue; difficulty holding upright thoracic extension. Mood: fatigued. |
+| 23/10/2026 | 9:30:45 pm | **7.5/10** | scapula | 65% | scapula (65%), thoracic (20%), neck (15%) | Notes: Scapular anchoring strain and tightness radiating to lower neck. Mood: neutral. |
+| 24/10/2026 | 2:10:00 pm | **6.5/10** | thoracic | 65% | thoracic (65%), left scapula (20%), neck (15%) | Notes: Moderate mid-back ache after light chores, heat pack applied. Mood: calm. |
+| 25/10/2026 | 8:00:30 pm | **8.5/10** | thoracic | 70% | thoracic (70%), scapula (20%), neck (10%) | Notes: Severe mid-thoracic muscular fatigue and interscapular burn. Mood: irritable. |
+| 26/10/2026 | 1:25:15 pm | **7.5/10** | scapula | 70% | left scapula (70%), thoracic (15%), neck (15%) | Notes: Medial scapular burning worsened on reaching forward. Mood: frustrated. |
+| 28/10/2026 | 10:40:00 am | **7.0/10** | thoracic | 70% | thoracic (70%), scapula (20%), neck (10%) | Notes: Mid-thoracic junction ache, costovertebral tenderness on palpation. Mood: neutral. |
+| 29/10/2026 | 5:15:40 pm | **8.0/10** | thoracic | 75% | thoracic (75%), left scapula (15%), neck (10%) | Notes: Compensatory thoracic strain between cervical fusion and lumbar curve. Mood: fatigued. |
+| 30/10/2026 | 8:45:20 pm | **7.5/10** | scapula | 65% | scapula (65%), thoracic (20%), neck (15%) | Notes: Interscapular muscular knotting and burning ache in evening. Mood: weary. |
+| 01/11/2026 | 2:30:10 pm | **7.0/10** | thoracic | 70% | thoracic (70%), scapula (20%), neck (10%) | Notes: Afternoon mid-back fatigue; pressure sensation between scapulae. Mood: neutral. |
+| 02/11/2026 | 7:20:50 pm | **8.5/10** | scapula | 70% | left scapula (70%), thoracic (20%), neck (10%) | Notes: Acute left scapular burning flare after lifting groceries with right arm. Mood: stressed. |
+| 03/11/2026 | 11:15:00 am | **8.0/10** | thoracic | 75% | thoracic (75%), scapula (15%), neck (10%) | Notes: Mid-thoracic stiffness and postural muscular strain during consult prep. Mood: focused. |
