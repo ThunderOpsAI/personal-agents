@@ -907,3 +907,83 @@ export function searchExercises(options: {
 
   return results;
 }
+
+// ==========================================
+// ADAPTIVE YOGA GENERATOR
+// ==========================================
+
+export const ADAPTIVE_MORNING_POOL: ExerciseStep[] = [
+  { title: "Diaphragmatic 360 Core Awakening", duration: 120, cue: "Lie supine with knees bent, breathe deep into lateral ribs and lower abdomen.", frames: ["/exercises/diaphragmatic_breathing_hud.jpg"] },
+  { title: "Supine Pelvic Tilts & Neutral Finding", duration: 120, cue: "Flatten lower back gently on exhale, slight neutral arch on inhale.", frames: ["/exercises/supine_pelvic_tilts_hud.jpg"] },
+  { title: "Cat-Cow Spine Awakening", duration: 120, cue: "Gentle rhythmic undulation of spine on hands and knees, keeping neck neutral.", frames: ["/exercises/cat_cow_hud.jpg"] },
+  { title: "Supine Single Knee-to-Chest (Right)", duration: 120, cue: "Hug right knee gently towards shoulder, keeping left foot grounded flat.", frames: ["/exercises/knee_to_chest_right_hud.jpg"] },
+  { title: "Supine Single Knee-to-Chest (Left)", duration: 120, cue: "Switch and hug left knee gently, decompressing lumbar facet joints.", frames: ["/exercises/knee_to_chest_left_hud.jpg"] },
+  { title: "Gentle Supported Bridge Activation", duration: 120, cue: "Press through heels to lift pelvis slightly, engaging glutes without arching lumbar spine.", frames: ["/exercises/hip_glute_bridge_hud.jpg"] },
+  { title: "Puppy Pose Thoracic Stretch", duration: 120, cue: "Hips stay over knees, walk hands forward melting chest towards floor.", frames: ["/exercises/yoga_puppy_pose_thoracic.svg"] },
+  { title: "Seated Axial Retraction (Chin Tuck)", duration: 120, cue: "Gently draw chin backwards creating a double chin, lengthening back of neck.", frames: ["/exercises/cervical_chin_tuck.jpg"] },
+  { title: "Open Book Thoracic Opener", duration: 120, cue: "Side-lying arm sweep opening chest, following hand with gentle gaze.", frames: ["/exercises/open-book-thoracic.svg"] },
+  { title: "Low Kneeling Lunge Hip Flexor", duration: 120, cue: "Step foot forward, tuck tailbone to open front hip without hyperextending lower back.", frames: ["/exercises/hip_kneeling_lunge.jpg"] },
+  { title: "Supported Gentle Sphinx", duration: 120, cue: "Rest elbows on mat under shoulders, gentle passive thoracic extension.", frames: ["/exercises/supported_gentle_sphinx.jpg"] },
+  { title: "Gentle Supine Torso Twist", duration: 120, cue: "Drop knees gently 45 degrees to each side to mobilize lumbar rotation safely.", frames: ["/exercises/gentle_supine_torso_twist_hud.jpg"] },
+  { title: "Constructive Rest Position", duration: 120, cue: "Rest flat on back with knees bent, allowing cervical and lumbar spine to lengthen.", frames: ["/exercises/constructive-rest.svg"] },
+];
+
+export const ADAPTIVE_NIGHT_POOL: ExerciseStep[] = [
+  { title: "Diaphragmatic Parasympathetic Reset", duration: 150, cue: "Hand on heart and hand on belly, lengthen exhales to signal nervous system downregulation.", frames: ["/exercises/diaphragmatic-breathing.svg"] },
+  { title: "Supported Reclined Bound Angle", duration: 150, cue: "Feet together with pillow support beneath outer knees, softening groins and lower belly.", frames: ["/exercises/supported_reclined_bound_angle.jpg"] },
+  { title: "Gentle Pelvic Tilts & Lumbopelvic Clocks", duration: 150, cue: "Micro-tilts rocking sacrum between 12 and 6 o'clock to release lower back guarding.", frames: ["/exercises/supine_pelvic_tilts.jpg"] },
+  { title: "Wide Knee Child's Pose with Bolster", duration: 150, cue: "Allow belly to soften between thighs onto bolster, relaxing shoulders.", frames: ["/exercises/supported-childs-pose-bolster.svg"] },
+  { title: "Thread the Needle Shoulder Glide", duration: 150, cue: "Slide arm under chest to gently release posterior shoulder and upper thoracic tension.", frames: ["/exercises/thread-the-needle-modified.svg"] },
+  { title: "Supported Bridge on Soft Block", duration: 150, cue: "Pillow or block under sacrum, arms relaxed at sides, releasing anterior chain tension.", frames: ["/exercises/supported-bridge-block.svg"] },
+  { title: "Supine Gentle Twist with Bolster", duration: 150, cue: "Knees stacked over bolster on right side, breathe into ribcage, repeat left.", frames: ["/exercises/gentle_supine_torso_twist_hud.jpg"] },
+  { title: "Legs-Elevated Relaxation (Wall or Bolster)", duration: 150, cue: "Elevate lower legs on bolster or against wall to ease lower limb circulation.", frames: ["/exercises/legs-elevated-relaxation.svg"] },
+  { title: "Suboccipital Massage with Rolled Towel", duration: 150, cue: "Rest base of skull on rolled towel, gentle micro-turns of head relaxing suboccipital band.", frames: ["/exercises/cervical_chin_tuck.jpg"] },
+  { title: "Oculomotor Vagal Reset", duration: 150, cue: "Keep head straight, look fully right for 30s until spontaneous swallow or sigh, then repeat left.", frames: ["/exercises/restorative_savasana.jpg"] },
+  { title: "Acupressure Mat & Bolster Wind-Down", duration: 150, cue: "Rest spine on acupressure mat or soft bolster, complete parasympathetic stillness.", frames: ["/exercises/acupressure_mat_savasana_hud.jpg"] },
+  { title: "Corpse Pose Deep Relaxation (Savasana)", duration: 180, cue: "Full body surrender into mat or mattress, jaw loose, releasing all muscular hold.", frames: ["/exercises/restorative_savasana.jpg"] }
+];
+
+export function getAdaptiveYogaRoutine(dateStr: string, isNight = false): ExerciseItem {
+  // Use date string (e.g. "2026-11-06") to generate a deterministic daily seed
+  let hash = 0;
+  for (let i = 0; i < dateStr.length; i++) {
+    hash = (hash * 31 + dateStr.charCodeAt(i)) & 0xffffffff;
+  }
+  const dayShift = Math.abs(hash) % 100;
+
+  const pool = isNight ? ADAPTIVE_NIGHT_POOL : ADAPTIVE_MORNING_POOL;
+  // Base routine consists of first 6 core anchor exercises
+  // The last 2 slots are dynamically rotated from pool variations (1-2 exercises change daily)
+  const coreAnchors = pool.slice(0, 5);
+  const variationPool = pool.slice(5);
+
+  const varIndex1 = dayShift % variationPool.length;
+  const varIndex2 = (dayShift + 1) % variationPool.length;
+
+  const selectedVariations = [
+    variationPool[varIndex1],
+    variationPool[varIndex2 === varIndex1 ? (varIndex2 + 1) % variationPool.length : varIndex2],
+  ];
+
+  const finalSteps = [...coreAnchors, ...selectedVariations, pool[pool.length - 1]];
+
+  const routineId = isNight ? "y_night_adaptive" : "y_morning_adaptive";
+  const title = isNight 
+    ? `Evening Adaptive Restorative Wind-Down (${selectedVariations.map(v => v.title.split(" ")[0]).join(" + ")})`
+    : `Morning Adaptive Spine Flow (${selectedVariations.map(v => v.title.split(" ")[0]).join(" + ")})`;
+
+  return {
+    id: routineId,
+    name: title,
+    title,
+    category: "yoga",
+    focus_areas: isNight ? ["nervous system", "restorative", "lumbar", "sleep"] : ["lumbar", "thoracic", "spine", "mobility"],
+    duration_minutes: isNight ? 22 : 18,
+    intensity: "Gentle Restorative",
+    instruction: `Daily adaptive restorative yoga sequence specifically varied for ${dateStr} with 2 dynamic rotational variations to prevent adaptation plateaus while protecting spinal integrity.`,
+    description: `Daily adaptive restorative yoga sequence specifically varied for ${dateStr} with 2 dynamic rotational variations to prevent adaptation plateaus while protecting spinal integrity.`,
+    precautions: ["Move gently within pain-free boundaries.", "Avoid aggressive flexion or end-range rotations."],
+    contraindications: ["acute disc herniation"],
+    steps: finalSteps,
+  };
+}

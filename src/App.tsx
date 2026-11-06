@@ -9,7 +9,7 @@ import {
   INITIAL_SMS_MESSAGES,
   INITIAL_TASKS,
 } from "./data/initialData";
-import { EXERCISE_DATABASE, ExerciseItem } from "./data/exercise-db";
+import { EXERCISE_DATABASE, ExerciseItem, getAdaptiveYogaRoutine } from "./data/exercise-db";
 import { ENCYCLOPEDIAS, ROTATING_LEARNING_TOPICS } from "./data/encyclopedias";
 import { fetchLiveWangarattaWeather } from "./services/weatherService";
 import { formatWashingDayLabel } from "./utils/formatWashDay";
@@ -177,6 +177,112 @@ export function App() {
   const [chatInitialMessage, setChatInitialMessage] = useState("");
   const [demoExercise, setDemoExercise] = useState<ExerciseItem | null>(null);
 
+  // Check and auto-transfer missed agenda items to the current day, and ensure daily adaptive yoga + hydrotherapy routines
+  useEffect(() => {
+    const today = new Date();
+    const todayDateStr = today.toISOString().split("T")[0]; // YYYY-MM-DD
+    const isWeekend = today.getDay() === 0 || today.getDay() === 6;
+    const hydroTime = isWeekend ? "14:00" : "18:00";
+
+    setAgendaItems((prevItems: AgendaItem[]): AgendaItem[] => {
+      let changed = false;
+      const nowIso = new Date().toISOString();
+
+      // 1. Rollover missed pending items from prior days
+      const updated: AgendaItem[] = prevItems.map((item) => {
+        if (item.status === "pending" && item.scheduled_time) {
+          const itemDateStr = item.scheduled_time.split("T")[0];
+          if (itemDateStr && itemDateStr < todayDateStr) {
+            // Missed on a previous day -> roll over to today retaining original time component
+            changed = true;
+            const timePart = item.scheduled_time.includes("T")
+              ? item.scheduled_time.split("T")[1]
+              : "09:00:00+11:00";
+            const newScheduledTime = `${todayDateStr}T${timePart}`;
+            return {
+              ...item,
+              scheduled_time: newScheduledTime,
+              audit_trail: [
+                ...item.audit_trail,
+                {
+                  timestamp: nowIso,
+                  new_status: "pending" as const,
+                  note: `Auto-transferred missed item from ${itemDateStr} to ${todayDateStr}`,
+                },
+              ],
+            };
+          }
+        }
+        return item;
+      });
+
+      // 2. Ensure today's Morning and Evening Adaptive Yoga and Hydrotherapy exist
+      const hasMorningYogaToday = updated.some(
+        (i) => i.item_type === "yoga" && i.id.startsWith("yoga_am_") && i.scheduled_time.startsWith(todayDateStr)
+      );
+      const hasNightYogaToday = updated.some(
+        (i) => i.item_type === "yoga" && i.id.startsWith("yoga_pm_") && i.scheduled_time.startsWith(todayDateStr)
+      );
+      const hasHydroToday = updated.some(
+        (i) => i.item_type === "hydrotherapy" && i.scheduled_time.startsWith(todayDateStr)
+      );
+
+      const itemsToAdd: AgendaItem[] = [];
+
+      if (!hasMorningYogaToday) {
+        changed = true;
+        const morningRoutine = getAdaptiveYogaRoutine(todayDateStr, false);
+        itemsToAdd.push({
+          id: `yoga_am_${todayDateStr}`,
+          item_type: "yoga",
+          title: morningRoutine.title,
+          scheduled_time: `${todayDateStr}T09:00:00+11:00`,
+          status: "pending",
+          completed_at: null,
+          dismissed_at: null,
+          audit_trail: [{ timestamp: nowIso, new_status: "pending" as const, note: "Adaptive morning yoga auto-scheduled" }],
+          created_at: nowIso,
+          description: morningRoutine.instruction,
+        });
+      }
+
+      if (!hasNightYogaToday) {
+        changed = true;
+        const nightRoutine = getAdaptiveYogaRoutine(todayDateStr, true);
+        itemsToAdd.push({
+          id: `yoga_pm_${todayDateStr}`,
+          item_type: "yoga",
+          title: nightRoutine.title,
+          scheduled_time: `${todayDateStr}T20:30:00+11:00`,
+          status: "pending",
+          completed_at: null,
+          dismissed_at: null,
+          audit_trail: [{ timestamp: nowIso, new_status: "pending" as const, note: "Adaptive evening yoga auto-scheduled" }],
+          created_at: nowIso,
+          description: nightRoutine.instruction,
+        });
+      }
+
+      if (!hasHydroToday) {
+        changed = true;
+        itemsToAdd.push({
+          id: `hydrotherapy_${todayDateStr}`,
+          item_type: "hydrotherapy",
+          title: `Hydrotherapy Session (${isWeekend ? "Weekend 2:00 PM" : "Weekday 6:00 PM"})`,
+          scheduled_time: `${todayDateStr}T${hydroTime}:00+11:00`,
+          status: "pending",
+          completed_at: null,
+          dismissed_at: null,
+          audit_trail: [{ timestamp: nowIso, new_status: "pending" as const, note: `Hydrotherapy auto-scheduled at ${hydroTime}` }],
+          created_at: nowIso,
+          description: `Buoyancy spinal decompression, water walking, and hydrostatic relaxation scheduled for ${isWeekend ? "2:00 PM" : "6:00 PM"}.`,
+        });
+      }
+
+      return changed ? [...updated, ...itemsToAdd] : prevItems;
+    });
+  }, []);
+
   // Sync state to localStorage
   useEffect(() => {
     localStorage.setItem("rumble_agenda_items", JSON.stringify(agendaItems));
@@ -337,6 +443,25 @@ export function App() {
       return;
     }
     const cleanName = routineName.toLowerCase();
+    const todayDateStr = new Date().toISOString().split("T")[0];
+
+    // Check for adaptive yoga routines first
+    if (cleanName.includes("yoga") || cleanName.includes("spine") || cleanName.includes("wind-down")) {
+      const isNight = cleanName.includes("night") || cleanName.includes("evening") || cleanName.includes("wind-down") || cleanName.includes("pm");
+      const adaptiveRoutine = getAdaptiveYogaRoutine(todayDateStr, isNight);
+      setActiveRunnerRoutine(adaptiveRoutine);
+      setIsProtocolRunnerOpen(true);
+      return;
+    }
+
+    // Check for hydrotherapy routines
+    if (cleanName.includes("hydro") || cleanName.includes("water") || cleanName.includes("pool")) {
+      const hydroRoutine = EXERCISE_DATABASE.find((e) => e.category === "hydrotherapy") || EXERCISE_DATABASE[0];
+      setActiveRunnerRoutine(hydroRoutine);
+      setIsProtocolRunnerOpen(true);
+      return;
+    }
+
     const matched = EXERCISE_DATABASE.find(
       (ex) =>
         cleanName.includes(ex.title.toLowerCase()) ||
@@ -714,6 +839,15 @@ export function App() {
                     )}
                   </div>
                   <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+                    {!isCompleted && (item.item_type === "yoga" || item.item_type === "hydrotherapy") && (
+                      <button
+                        className="btn btn-neon-blue btn-sm"
+                        onClick={() => handleLaunchInsightProtocol(item.title)}
+                        type="button"
+                      >
+                        Start Session
+                      </button>
+                    )}
                     {!isCompleted && (
                       <button
                         className="btn btn-neon-green btn-sm"
