@@ -141,7 +141,7 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
     contraindications: ["recent hip arthroplasty"],
     steps: [
       { title: "Diaphragmatic Breath & Psoas Awareness", duration: 120, cue: "Inhale expanding lower belly, releasing deep anterior tension in psoas.", frames: ["/exercises/diaphragmatic-breathing.svg"] },
-      { title: "Supine Pelvic Tilts to Neutral", duration: 120, cue: "Gently tilt pelvis backwards to flatten lumbar spine, then return to neutral.", frames: ["/exercises/supine_pelvic_tilts.jpg"] },
+      { title: "Supine Pelvic Tilts to Neutral", duration: 120, cue: "Gently tilt pelvis backwards to flatten lumbar spine, then return to neutral.", frames: ["/exercises/supine_pelvic_tilts_hud.jpg"] },
       { title: "Gentle Glute Bridge Activation", duration: 120, cue: "Drive through heels, squeeze glutes to open hip flexors at the top.", frames: ["/exercises/hip_glute_bridge.jpg"] },
       { title: "Low Kneeling Lunge (Right Hip Flexor)", duration: 120, cue: "Right leg forward, tuck pelvis, feel gentle elongation in left anterior hip.", frames: ["/exercises/hip_kneeling_lunge.jpg"] },
       { title: "Low Kneeling Lunge (Left Hip Flexor)", duration: 120, cue: "Left leg forward, tuck pelvis, breathe into right anterior hip.", frames: ["/exercises/hip_kneeling_lunge.jpg"] },
@@ -149,7 +149,7 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
       { title: "Reclined Figure-4 Hip Opener (Right)", duration: 120, cue: "Right ankle on left knee, gentle stretch in right deep glute/piriformis.", frames: ["/exercises/hip_figure_four.jpg"] },
       { title: "Reclined Figure-4 Hip Opener (Left)", duration: 120, cue: "Left ankle on right knee, keeping head and shoulders relaxed.", frames: ["/exercises/supine-figure-four-strap.svg"] },
       { title: "Supported Reclined Bound Angle", duration: 120, cue: "Soles together with knees supported, releasing adductors and hip capsules.", frames: ["/exercises/supported_reclined_bound_angle.jpg"] },
-      { title: "Savasana Psoas Decompression", duration: 120, cue: "Lie flat with bolster under knees, letting hip flexors fully melt.", frames: ["/exercises/restorative_savasana.jpg"] }
+      { title: "Savasana Psoas Decompression", duration: 120, cue: "Lie flat with bolster under knees, letting hip flexors fully melt.", frames: ["/exercises/restorative_savasana_hud.jpg"] }
     ],
     video_url: "https://www.youtube.com/watch?v=JsE4csvlUfA"
   },
@@ -168,7 +168,7 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
     steps: [
       { title: "Morning Breath & Centering", duration: 120, cue: "Deep diaphragmatic breaths to oxygenate tissues and awaken spinal circulation.", frames: ["/exercises/diaphragmatic-breathing.svg"] },
       { title: "Cat-Cow Rhythmic Spine Mobilization", duration: 120, cue: "Coordinate gentle spinal flexion and extension with breathing rhythm.", frames: ["/exercises/cat_cow_hud.jpg"] },
-      { title: "Child's Pose Lateral Side Stretch", duration: 120, cue: "Walk hands gently to right side feeling left rib cage stretch, then to left side.", frames: ["/exercises/supported_childs_pose.jpg"] },
+      { title: "Child's Pose Lateral Side Stretch", duration: 120, cue: "Walk hands gently to right side feeling left rib cage stretch, then to left side.", frames: ["/exercises/supported_childs_pose_hud.jpg"] },
       { title: "Puppy Pose Thoracic Melt", duration: 120, cue: "Hips stay over knees, walk hands forward melting chest towards floor.", frames: ["/exercises/yoga_puppy_pose_thoracic.svg"] },
       { title: "Open Book Thoracic Opener (Right)", duration: 120, cue: "Side-lying, rotate top arm open like a book, following hand with eyes.", frames: ["/exercises/open-book-thoracic.svg"] },
       { title: "Open Book Thoracic Opener (Left)", duration: 120, cue: "Roll to other side, repeat smooth thoracic opening with full breath.", frames: ["/exercises/open-book-thoracic.svg"] },
@@ -222,7 +222,7 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
       { title: "4-7-8 Parasympathetic Breathing", duration: 150, cue: "Inhale 4 sec through nose, hold 7 sec, exhale 8 sec through pursed lips.", frames: ["/exercises/diaphragmatic-breathing.svg"] },
       { title: "Caremax Auricular Ear Clip Setup (Optional)", duration: 150, cue: "Attach clip to LEFT tragus with gel/water; place companion pad on posterior left shoulder. Set TENS DIY U1 to 25 Hz, 200 µs, low comfortable tingling.", frames: ["/exercises/caremax_ear_clip_vagus.svg"] },
       { title: "Suboccipital Massage with Towel", duration: 150, cue: "Rest base of skull on rolled towel, gentle micro-turns of head.", frames: ["/exercises/cervical_chin_tuck.jpg"] },
-      { title: "Oculomotor Vagal Reset", duration: 150, cue: "Keep head straight, look fully right for 30s until swallow/sigh, then left.", frames: ["/exercises/restorative_savasana.jpg"] },
+      { title: "Oculomotor Vagal Reset", duration: 150, cue: "Keep head straight, look fully right for 30s until swallow/sigh, then left.", frames: ["/exercises/restorative_savasana_hud.jpg"] },
       { title: "Supported Reclined Bound Angle", duration: 150, cue: "Soles together with pillows under thighs, hands resting gently on low belly.", frames: ["/exercises/supported_reclined_bound_angle.jpg"] },
       { title: "Gentle Heart-Belly Grounding", duration: 150, cue: "One hand on heart, one on belly. Feel warmth and safety.", frames: ["/exercises/diaphragmatic-breathing.svg"] },
       { title: "Constructive Rest Position", duration: 150, cue: "Rest with knees bent and leaning together, completely softening back.", frames: ["/exercises/constructive-rest.svg"] },
@@ -244,13 +244,13 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
     contraindications: ["acute sciatica flare-up"],
     steps: [
       { title: "Diaphragmatic Breath & Pelvic Alignment", duration: 150, cue: "Ground sacrum flat against mat, knees bent, gentle diaphragmatic breaths.", frames: ["/exercises/diaphragmatic-breathing.svg"] },
-      { title: "Supine Pelvic Tilts", duration: 150, cue: "Gently oscillate between gentle arch and imprint to mobilize lumbar vertebrae.", frames: ["/exercises/supine_pelvic_tilts.jpg"] },
+      { title: "Supine Pelvic Tilts", duration: 150, cue: "Gently oscillate between gentle arch and imprint to mobilize lumbar vertebrae.", frames: ["/exercises/supine_pelvic_tilts_hud.jpg"] },
       { title: "Supine Strap Leg Extension (Right)", duration: 150, cue: "Loop strap under right foot, extend leg upward keeping pelvis flat.", frames: ["/exercises/supine-strap-hamstring-calf.svg"] },
       { title: "Supine Strap Leg Extension (Left)", duration: 150, cue: "Loop strap under left foot, extend leg upward keeping sacrum anchored.", frames: ["/exercises/supine-strap-hamstring-calf.svg"] },
       { title: "Gentle IT Band Cross-Body (Right)", duration: 150, cue: "Draw right leg slightly across midline (2-3 inches max) feeling lateral hip stretch.", frames: ["/exercises/supine-strap-hamstring-calf.svg"] },
       { title: "Gentle IT Band Cross-Body (Left)", duration: 150, cue: "Draw left leg slightly across midline, keeping shoulders and pelvis rooted.", frames: ["/exercises/supine-strap-hamstring-calf.svg"] },
       { title: "Ankle & Foot Mobility Pumps", duration: 150, cue: "Point and flex toes in air to gently glide sciatic and tibial nerves.", frames: ["/exercises/ankle_foot_mobility.svg"] },
-      { title: "Restorative Leg Rest Savasana", duration: 150, cue: "Rest legs long on mat with bolster under knees, noticing length in posterior chain.", frames: ["/exercises/restorative_savasana.jpg"] }
+      { title: "Restorative Leg Rest Savasana", duration: 150, cue: "Rest legs long on mat with bolster under knees, noticing length in posterior chain.", frames: ["/exercises/restorative_savasana_hud.jpg"] }
     ],
     video_url: "https://www.youtube.com/watch?v=2xF_teT2_V0"
   },
@@ -269,14 +269,14 @@ export const EXERCISE_DATABASE: ExerciseItem[] = [
     steps: [
       { title: "Diaphragmatic Parasympathetic Reset", duration: 150, cue: "Hand on heart and hand on belly, lengthen exhales to signal nervous system downregulation.", frames: ["/exercises/diaphragmatic-breathing.svg"] },
       { title: "Supported Reclined Bound Angle", duration: 150, cue: "Feet together with pillow support beneath outer knees, softening groins and lower belly.", frames: ["/exercises/supported_reclined_bound_angle.jpg"] },
-      { title: "Gentle Pelvic Tilts & Lumbopelvic Clocks", duration: 150, cue: "Micro-tilts rocking sacrum between 12 and 6 o'clock to release lower back guarding.", frames: ["/exercises/supine_pelvic_tilts.jpg"] },
+      { title: "Gentle Pelvic Tilts & Lumbopelvic Clocks", duration: 150, cue: "Micro-tilts rocking sacrum between 12 and 6 o'clock to release lower back guarding.", frames: ["/exercises/supine_pelvic_tilts_hud.jpg"] },
       { title: "Supine Single Knee-to-Chest Hug", duration: 150, cue: "Gently hug right knee towards chest, then left knee, keeping neck and head grounded.", frames: ["/exercises/knee_to_chest_stretch.jpg"] },
-      { title: "Wide Knee Child's Pose with Bolster", duration: 150, cue: "Allow belly to soften between thighs onto bolster, relaxing shoulders.", frames: ["/exercises/supported-childs-pose-bolster.svg"] },
+      { title: "Wide Knee Child's Pose with Bolster", duration: 150, cue: "Allow belly to soften between thighs onto bolster, relaxing shoulders.", frames: ["/exercises/supported_childs_pose_bolster_hud.jpg"] },
       { title: "Thread the Needle Shoulder Glide", duration: 150, cue: "Slide arm under chest to gently release posterior shoulder and upper thoracic tension.", frames: ["/exercises/thread-the-needle-modified.svg"] },
-      { title: "Supported Bridge on Soft Block", duration: 150, cue: "Pillow or block under sacrum, arms relaxed at sides, releasing anterior chain tension.", frames: ["/exercises/supported-bridge-block.svg"] },
+      { title: "Supported Bridge on Soft Block", duration: 150, cue: "Pillow or block under sacrum, arms relaxed at sides, releasing anterior chain tension.", frames: ["/exercises/supported_bridge_block_hud.jpg"] },
       { title: "Supine Gentle Twist with Bolster", duration: 150, cue: "Knees stacked over bolster on right side, breathe into ribcage, repeat left.", frames: ["/exercises/gentle_supine_torso_twist_hud.jpg"] },
       { title: "Legs-Elevated Relaxation (Wall or Bolster)", duration: 150, cue: "Elevate lower legs on bolster or against wall to ease lower limb circulation.", frames: ["/exercises/legs-elevated-relaxation.svg"] },
-      { title: "Corpse Pose Deep Relaxation (Savasana)", duration: 150, cue: "Full body surrender into mat or mattress, jaw loose, releasing all muscular hold.", frames: ["/exercises/restorative_savasana.jpg"] }
+      { title: "Corpse Pose Deep Relaxation (Savasana)", duration: 150, cue: "Full body surrender into mat or mattress, jaw loose, releasing all muscular hold.", frames: ["/exercises/restorative_savasana_hud.jpg"] }
     ],
     video_url: "https://www.youtube.com/watch?v=BiWDsfZ3zbo"
   },
@@ -931,16 +931,16 @@ export const ADAPTIVE_MORNING_POOL: ExerciseStep[] = [
 export const ADAPTIVE_NIGHT_POOL: ExerciseStep[] = [
   { title: "Diaphragmatic Parasympathetic Reset", duration: 150, cue: "Hand on heart and hand on belly, lengthen exhales to signal nervous system downregulation.", frames: ["/exercises/diaphragmatic-breathing.svg"] },
   { title: "Supported Reclined Bound Angle", duration: 150, cue: "Feet together with pillow support beneath outer knees, softening groins and lower belly.", frames: ["/exercises/supported_reclined_bound_angle.jpg"] },
-  { title: "Gentle Pelvic Tilts & Lumbopelvic Clocks", duration: 150, cue: "Micro-tilts rocking sacrum between 12 and 6 o'clock to release lower back guarding.", frames: ["/exercises/supine_pelvic_tilts.jpg"] },
-  { title: "Wide Knee Child's Pose with Bolster", duration: 150, cue: "Allow belly to soften between thighs onto bolster, relaxing shoulders.", frames: ["/exercises/supported-childs-pose-bolster.svg"] },
+  { title: "Gentle Pelvic Tilts & Lumbopelvic Clocks", duration: 150, cue: "Micro-tilts rocking sacrum between 12 and 6 o'clock to release lower back guarding.", frames: ["/exercises/supine_pelvic_tilts_hud.jpg"] },
+  { title: "Wide Knee Child's Pose with Bolster", duration: 150, cue: "Allow belly to soften between thighs onto bolster, relaxing shoulders.", frames: ["/exercises/supported_childs_pose_bolster_hud.jpg"] },
   { title: "Thread the Needle Shoulder Glide", duration: 150, cue: "Slide arm under chest to gently release posterior shoulder and upper thoracic tension.", frames: ["/exercises/thread-the-needle-modified.svg"] },
-  { title: "Supported Bridge on Soft Block", duration: 150, cue: "Pillow or block under sacrum, arms relaxed at sides, releasing anterior chain tension.", frames: ["/exercises/supported-bridge-block.svg"] },
+  { title: "Supported Bridge on Soft Block", duration: 150, cue: "Pillow or block under sacrum, arms relaxed at sides, releasing anterior chain tension.", frames: ["/exercises/supported_bridge_block_hud.jpg"] },
   { title: "Supine Gentle Twist with Bolster", duration: 150, cue: "Knees stacked over bolster on right side, breathe into ribcage, repeat left.", frames: ["/exercises/gentle_supine_torso_twist_hud.jpg"] },
   { title: "Legs-Elevated Relaxation (Wall or Bolster)", duration: 150, cue: "Elevate lower legs on bolster or against wall to ease lower limb circulation.", frames: ["/exercises/legs-elevated-relaxation.svg"] },
   { title: "Suboccipital Massage with Rolled Towel", duration: 150, cue: "Rest base of skull on rolled towel, gentle micro-turns of head relaxing suboccipital band.", frames: ["/exercises/cervical_chin_tuck.jpg"] },
-  { title: "Oculomotor Vagal Reset", duration: 150, cue: "Keep head straight, look fully right for 30s until spontaneous swallow or sigh, then repeat left.", frames: ["/exercises/restorative_savasana.jpg"] },
+  { title: "Oculomotor Vagal Reset", duration: 150, cue: "Keep head straight, look fully right for 30s until spontaneous swallow or sigh, then repeat left.", frames: ["/exercises/restorative_savasana_hud.jpg"] },
   { title: "Acupressure Mat & Bolster Wind-Down", duration: 150, cue: "Rest spine on acupressure mat or soft bolster, complete parasympathetic stillness.", frames: ["/exercises/acupressure_mat_savasana_hud.jpg"] },
-  { title: "Corpse Pose Deep Relaxation (Savasana)", duration: 180, cue: "Full body surrender into mat or mattress, jaw loose, releasing all muscular hold.", frames: ["/exercises/restorative_savasana.jpg"] }
+  { title: "Corpse Pose Deep Relaxation (Savasana)", duration: 180, cue: "Full body surrender into mat or mattress, jaw loose, releasing all muscular hold.", frames: ["/exercises/restorative_savasana_hud.jpg"] }
 ];
 
 export function getAdaptiveYogaRoutine(dateStr: string, isNight = false): ExerciseItem {
