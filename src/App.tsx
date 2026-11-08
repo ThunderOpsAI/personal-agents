@@ -101,7 +101,7 @@ export function App() {
     return saved ? JSON.parse(saved) : INITIAL_NOTES;
   });
 
-  const PAIN_LOGS_VERSION = "2026-11-03_v3_thoracic_scapula";
+  const PAIN_LOGS_VERSION = "2026-11-08_v1_ankle_thoracic";
   const [painLogs, setPainLogs] = useState<PainLogRecord[]>(() => {
     const saved = localStorage.getItem("rumble_pain_logs");
     const ver = localStorage.getItem("rumble_pain_logs_ver");

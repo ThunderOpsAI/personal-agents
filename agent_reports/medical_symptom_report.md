@@ -1077,3 +1077,12 @@
 | 01/11/2026 | 2:30:10 pm | **7.0/10** | thoracic | 70% | thoracic (70%), scapula (20%), neck (10%) | Notes: Afternoon mid-back fatigue; pressure sensation between scapulae. Mood: neutral. |
 | 02/11/2026 | 7:20:50 pm | **8.5/10** | scapula | 70% | left scapula (70%), thoracic (20%), neck (10%) | Notes: Acute left scapular burning flare after lifting groceries with right arm. Mood: stressed. |
 | 03/11/2026 | 11:15:00 am | **8.0/10** | thoracic | 75% | thoracic (75%), scapula (15%), neck (10%) | Notes: Mid-thoracic stiffness and postural muscular strain during consult prep. Mood: focused. |
+| 06/11/2026 | 10:00:00 pm | **7.5/10** | thoracic | 70% | thoracic (70%), neck (15%), scapula (15%) | Notes: Thoracic strain & fatigue (70% thoracic, 15% neck, 15% scapula @ 7.5). Mood: neutral. |
+| 07/11/2026 | 10:00:00 am | **7.2/10** | right ankle | 75% | right ankle (75%), right lumbar (25%) | Notes: Right ankle soreness and stiffness upon morning gait. Mood: neutral. |
+| 07/11/2026 | 2:00:00 pm | **7.5/10** | right ankle | 75% | right ankle (75%), right lumbar (25%) | Notes: Right ankle loading ache and gait fatigue after walking. Mood: neutral. |
+| 07/11/2026 | 6:00:00 pm | **7.0/10** | right ankle | 75% | right ankle (75%), right lumbar (25%) | Notes: Ankle fatigue and perimalleolar tenderness after day activities. Mood: neutral. |
+| 07/11/2026 | 10:00:00 pm | **7.5/10** | thoracic | 70% | thoracic (70%), neck (15%), scapula (15%) | Notes: Thoracic strain & fatigue (70% thoracic, 15% neck, 15% scapula @ 7.5). Mood: neutral. |
+| 08/11/2026 | 10:00:00 am | **7.2/10** | right ankle | 75% | right ankle (75%), right lumbar (25%) | Notes: Right ankle stiffness and lateral tendon strain upon waking. Mood: neutral. |
+| 08/11/2026 | 2:00:00 pm | **7.4/10** | right ankle | 75% | right ankle (75%), right lumbar (25%) | Notes: Right ankle dull ache and gait compensation during afternoon. Mood: neutral. |
+| 08/11/2026 | 6:00:00 pm | **7.5/10** | thoracic | 70% | thoracic (70%), neck (15%), scapula (15%) | Notes: Thoracic strain & fatigue (70% thoracic, 15% neck, 15% scapula @ 7.5). Mood: neutral. |
+| 08/11/2026 | 10:00:00 pm | **7.5/10** | thoracic | 70% | thoracic (70%), neck (15%), scapula (15%) | Notes: Thoracic postural muscular fatigue and interscapular tension. Mood: neutral. |
