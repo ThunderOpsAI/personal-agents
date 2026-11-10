@@ -57,8 +57,9 @@
                 </div>
                 <div id="urgentTasksBannerList" style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;"></div>
             </div>
-            <div class="alert-banner hidden" id="alertBanner">
+            <div class="alert-banner hidden" id="alertBanner" style="display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;">
                 <span class="alert-text" id="alertBannerText">High Pain Alert: Lumbar at 8/10.</span>
+                <button class="btn btn-sm btn-neon-red hidden" id="btnActivateFlareTriage" style="font-size: 0.75rem; padding: 4px 10px; border-radius: 4px; font-weight: 700;">Activate Flare Triage</button>
             </div>
         </header>
 
@@ -1006,9 +1007,9 @@
                     </div>
                     <button class="btn-close" id="btnCancelRunner">&times;</button>
                 </div>
-                <div class="runner-visual" style="position: relative; width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px; overflow: hidden; margin: 15px 0; display: flex; align-items: center; justify-content: center;">
-                    <img id="runnerImg" alt="Exercise Demo" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; display: none; transition: opacity 0.4s ease;">
-                    <video id="runnerVideo" playsinline autoplay muted loop style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; display: none;"></video>
+                <div class="runner-visual" style="position: relative; width: 100%; aspect-ratio: 16/9; background: #070d19; border-radius: 12px; overflow: hidden; margin: 15px 0; display: flex; align-items: center; justify-content: center;">
+                    <img id="runnerImg" alt="Exercise Demo" style="width: 100%; height: 100%; object-fit: contain; position: absolute; top: 0; left: 0; display: none; transition: opacity 0.4s ease; background: #070d19;">
+                    <video id="runnerVideo" playsinline autoplay muted loop style="width: 100%; height: 100%; object-fit: contain; position: absolute; top: 0; left: 0; display: none; background: #070d19;"></video>
                     <div class="visual-placeholder" id="runnerPlaceholder" style="z-index: 1;">START</div>
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
@@ -1028,7 +1029,10 @@
                             <button class="btn btn-outline btn-sm" id="btnTogglePauseRunner" style="align-self: flex-end; margin-bottom: 2px;">Pause</button>
                         </div>
                     </div>
-                    <button class="btn btn-outline btn-sm" id="btnSwapExercise" style="white-space: nowrap;">Swap Exercise</button>
+                    <div style="display: flex; gap: 8px; align-items: center; flex-shrink: 0;">
+                        <button class="btn btn-outline btn-sm" id="btnSwapRoutine" style="white-space: nowrap;" title="Switch to a different routine">Swap Routine</button>
+                        <button class="btn btn-outline btn-sm" id="btnSwapExercise" style="white-space: nowrap;" title="Swap current exercise step in-place">Swap Exercise</button>
+                    </div>
                 </div>
                 <div style="width: 100%; height: 5px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; margin-top: 10px;">
                     <div id="runnerTotalProgressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple)); transition: width 0.3s ease;"></div>
@@ -1040,15 +1044,18 @@
             </div>
         </div>
 
-        <!-- Swap Exercise Modal -->
+        <!-- Swap Routine / Exercise Modal -->
         <div class="modal-overlay hidden" id="swapModal">
-            <div class="modal-content glass-panel">
+            <div class="modal-content glass-panel" style="max-width: 520px;">
                 <div class="modal-header">
-                    <h2>Swap Exercise</h2>
+                    <h2 id="swapModalTitle">Swap Routine</h2>
                     <button class="btn-close" id="btnCloseSwap">&times;</button>
                 </div>
-                <p class="form-hint" style="margin-bottom: 10px;">Select an alternative exercise from your backlog.</p>
-                <div class="swap-list" id="swapList" style="display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto;">
+                <p class="form-hint" id="swapModalHint" style="margin-bottom: 10px;">Select a different routine to start from the beginning.</p>
+                <div style="margin-bottom: 12px;">
+                    <input type="text" id="swapSearchInput" class="form-control" placeholder="Search routines or exercises..." style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 8px 12px; color: var(--text-primary); font-size: 0.85rem;">
+                </div>
+                <div class="swap-list" id="swapList" style="display: flex; flex-direction: column; gap: 8px; max-height: 360px; overflow-y: auto;">
                     <!-- Backlog items go here -->
                 </div>
             </div>
@@ -1423,6 +1430,7 @@
                                 <option value="pain">Specialty: Interventional Pain (SCS / Blocks)</option>
                                 <option value="neuro">Specialty: Spine Surgeon / Neurologist</option>
                                 <option value="rehab">Specialty: Allied Health / Physio</option>
+                                <option value="legal">Specialty: WorkCover / Medicolegal</option>
                             </select>
                             <div style="font-size: 0.82rem; color: var(--neon-blue); font-weight: 500;" id="painAnalyticsPeriodBadge">Showing Last 30 Days</div>
                         </div>
@@ -1488,6 +1496,28 @@
                         </div>
                     </div>
 
+                    <!-- 4D Clinical Change Analytics: Period-over-Period Deltas Strip -->
+                    <div id="painDeltasStrip" class="glass-panel" style="padding: 12px 16px; border-radius: 8px; background: rgba(0, 240, 255, 0.03); border: 1px solid rgba(0, 240, 255, 0.15);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--neon-blue); font-weight: 700;">Period-over-Period Delta Analysis</span>
+                            <span style="font-size: 0.75rem; color: var(--text-muted);" id="painDeltasLabel">Compared against Prior Period</span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; font-size: 0.85rem;" id="painDeltasGrid">
+                            <div style="background: rgba(0,0,0,0.25); padding: 8px 12px; border-radius: 6px;">
+                                <div style="font-size: 0.72rem; color: var(--text-secondary);">Mean Pain Delta</div>
+                                <div style="font-size: 1.15rem; font-weight: 700;" id="deltaMeanScore">—</div>
+                            </div>
+                            <div style="background: rgba(0,0,0,0.25); padding: 8px 12px; border-radius: 6px;">
+                                <div style="font-size: 0.72rem; color: var(--text-secondary);">Severe Flares (≥7/10) Delta</div>
+                                <div style="font-size: 1.15rem; font-weight: 700;" id="deltaSevereFlares">—</div>
+                            </div>
+                            <div style="background: rgba(0,0,0,0.25); padding: 8px 12px; border-radius: 6px;">
+                                <div style="font-size: 0.72rem; color: var(--text-secondary);">Diurnal Escalation Slope</div>
+                                <div style="font-size: 1.15rem; font-weight: 700;" id="deltaDiurnalSlope">—</div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Visual Graphs Grid -->
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 16px;">
                         <!-- 30-Day Trend Chart -->
@@ -1509,6 +1539,84 @@
                             </div>
                             <div style="position: relative; height: 220px; display: flex; justify-content: center;">
                                 <canvas id="painAnatomyChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4D Clinical Change Analytics: Anatomical Migration Shifts & NLP Symptom Progression -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 16px;">
+                        <div class="glass-panel" style="padding: 14px; border-radius: 8px;">
+                            <div style="font-weight: 600; font-size: 0.95rem; margin-bottom: 8px; display: flex; justify-content: space-between;">
+                                <span>Anatomical Migration Shifts</span>
+                                <span class="badge neon-blue" style="font-size: 0.72rem;">Period Comparison</span>
+                            </div>
+                            <div style="max-height: 180px; overflow-y: auto;" id="anatomicalMigrationList">
+                                <!-- Injected dynamically -->
+                            </div>
+                        </div>
+                        <div class="glass-panel" style="padding: 14px; border-radius: 8px;">
+                            <div style="font-weight: 600; font-size: 0.95rem; margin-bottom: 8px; display: flex; justify-content: space-between;">
+                                <span>NLP Red-Flag Symptom Progression</span>
+                                <span class="badge neon-red" style="font-size: 0.72rem;">Objective Timeline</span>
+                            </div>
+                            <div style="max-height: 180px; overflow-y: auto;" id="symptomProgressionList">
+                                <!-- Injected dynamically -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Diagnostic Imaging & Surgical Baseline Strip -->
+                    <div class="glass-panel" style="padding: 14px; border-radius: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <div style="font-weight: 600; font-size: 0.95rem; color: var(--neon-blue);">🩻 Diagnostic Imaging & Surgical Baseline</div>
+                            <span style="font-size: 0.72rem; color: var(--text-secondary);">Cross-referenced with pain flare tracking</span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; font-size: 0.8rem;">
+                            <div style="background: rgba(0,0,0,0.25); padding: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.06);">
+                                <div style="display: flex; justify-content: space-between; font-weight: 600; color: var(--text-primary); margin-bottom: 3px;">
+                                    <span>Cervical Spine (C5–C7)</span>
+                                    <span style="font-size: 0.7rem; color: var(--neon-blue);">June 2026</span>
+                                </div>
+                                <div style="font-size: 0.72rem; color: var(--text-secondary); margin-bottom: 4px;">Prof. Greg Cunningham · ACDF Titanium Cage & Plating</div>
+                                <div style="color: var(--text-secondary); line-height: 1.35;">Post-op MRI shows hardware intact with titanium interbody fusion. Residual C6 cervical myelomalacia. Titanium MRI-conditional.</div>
+                                <div style="margin-top: 6px; font-size: 0.72rem; color: var(--neon-green); font-weight: 500;">Status: Stable / Adjacent Segment Vigilance</div>
+                            </div>
+
+                            <div style="background: rgba(0,0,0,0.25); padding: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.06);">
+                                <div style="display: flex; justify-content: space-between; font-weight: 600; color: var(--text-primary); margin-bottom: 3px;">
+                                    <span>Lumbosacral (L4–L5 / L5–S1)</span>
+                                    <span style="font-size: 0.7rem; color: var(--neon-blue);">Sept 2026</span>
+                                </div>
+                                <div style="font-size: 0.72rem; color: var(--text-secondary); margin-bottom: 4px;">Regional Imaging Albury · 3.0T MRI</div>
+                                <div style="color: var(--text-secondary); line-height: 1.35;">Right paracentral/foraminal disc extrusion compressing exiting L4 and traversing L5 root. Confirms space-occupying lumbar sciatica.</div>
+                                <div style="margin-top: 6px; font-size: 0.72rem; color: var(--neon-purple); font-weight: 500;">Status: Surgical / SCS Candidate</div>
+                            </div>
+
+                            <div style="background: rgba(0,0,0,0.25); padding: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.06);">
+                                <div style="display: flex; justify-content: space-between; font-weight: 600; color: var(--text-primary); margin-bottom: 3px;">
+                                    <span>Gait & Neurological Deficit</span>
+                                    <span style="font-size: 0.7rem; color: var(--neon-red);">Oct 2026</span>
+                                </div>
+                                <div style="font-size: 0.72rem; color: var(--text-secondary); margin-bottom: 4px;">Clinical Video Gait Assessment & GP</div>
+                                <div style="color: var(--text-secondary); line-height: 1.35;">Tibialis anterior weakness (3+/5), foot drop, and daily tripping requiring high-steppage knee compensation.</div>
+                                <div style="margin-top: 6px; font-size: 0.72rem; color: var(--neon-red); font-weight: 500;">Status: Urgent AFO Orthosis Splinting</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4D Correlation Matrix: Intervention Efficacy & Flare Triggers Strip -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px;">
+                        <div class="glass-panel" style="padding: 12px; border-radius: 8px;">
+                            <div style="font-weight: 600; font-size: 0.9rem; color: var(--neon-green); margin-bottom: 6px;">Proven Intervention Efficacy (Top Relief Drivers)</div>
+                            <div id="reliefDriversList" style="font-size: 0.78rem; color: var(--text-secondary); line-height: 1.4;">
+                                <!-- Injected dynamically from data.correlation_matrix.relief_drivers -->
+                            </div>
+                        </div>
+
+                        <div class="glass-panel" style="padding: 12px; border-radius: 8px;">
+                            <div style="font-weight: 600; font-size: 0.9rem; color: var(--neon-red); margin-bottom: 6px;">Identified Flare Triggers & Aggravators</div>
+                            <div id="flareTriggersList" style="font-size: 0.78rem; color: var(--text-secondary); line-height: 1.4;">
+                                <!-- Injected dynamically from data.correlation_matrix.flare_triggers -->
                             </div>
                         </div>
                     </div>
@@ -1545,7 +1653,8 @@
                         <button class="btn btn-outline btn-sm" id="btnCopyDoctorSummary" title="Copy structured clinical text for MyHealthRecord / consult notes">📋 Copy Clinical Text</button>
                     </div>
                     <div style="display: flex; gap: 8px;">
-                        <button class="btn btn-outline btn-sm" id="btnPrintPainReport">🖨 Print / Export GP Report</button>
+                        <button class="btn btn-neon-green btn-sm" id="btnExportConsultPack" title="Generate tailored Physician Consult Pack in Markdown">Export Consult Pack</button>
+                        <button class="btn btn-outline btn-sm" id="btnPrintPainReport">Print Report</button>
                         <button class="btn btn-outline btn-sm" id="btnDismissPainAnalytics">Close</button>
                     </div>
                 </div>

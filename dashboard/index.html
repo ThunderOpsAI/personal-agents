@@ -1007,9 +1007,9 @@
                     </div>
                     <button class="btn-close" id="btnCancelRunner">&times;</button>
                 </div>
-                <div class="runner-visual" style="position: relative; width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px; overflow: hidden; margin: 15px 0; display: flex; align-items: center; justify-content: center;">
-                    <img id="runnerImg" alt="Exercise Demo" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; display: none; transition: opacity 0.4s ease;">
-                    <video id="runnerVideo" playsinline autoplay muted loop style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; display: none;"></video>
+                <div class="runner-visual" style="position: relative; width: 100%; aspect-ratio: 16/9; background: #070d19; border-radius: 12px; overflow: hidden; margin: 15px 0; display: flex; align-items: center; justify-content: center;">
+                    <img id="runnerImg" alt="Exercise Demo" style="width: 100%; height: 100%; object-fit: contain; position: absolute; top: 0; left: 0; display: none; transition: opacity 0.4s ease; background: #070d19;">
+                    <video id="runnerVideo" playsinline autoplay muted loop style="width: 100%; height: 100%; object-fit: contain; position: absolute; top: 0; left: 0; display: none; background: #070d19;"></video>
                     <div class="visual-placeholder" id="runnerPlaceholder" style="z-index: 1;">START</div>
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
@@ -1029,7 +1029,10 @@
                             <button class="btn btn-outline btn-sm" id="btnTogglePauseRunner" style="align-self: flex-end; margin-bottom: 2px;">Pause</button>
                         </div>
                     </div>
-                    <button class="btn btn-outline btn-sm" id="btnSwapExercise" style="white-space: nowrap;">Swap Exercise</button>
+                    <div style="display: flex; gap: 8px; align-items: center; flex-shrink: 0;">
+                        <button class="btn btn-outline btn-sm" id="btnSwapRoutine" style="white-space: nowrap;" title="Switch to a different routine">Swap Routine</button>
+                        <button class="btn btn-outline btn-sm" id="btnSwapExercise" style="white-space: nowrap;" title="Swap current exercise step in-place">Swap Exercise</button>
+                    </div>
                 </div>
                 <div style="width: 100%; height: 5px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; margin-top: 10px;">
                     <div id="runnerTotalProgressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple)); transition: width 0.3s ease;"></div>
@@ -1041,15 +1044,18 @@
             </div>
         </div>
 
-        <!-- Swap Exercise Modal -->
+        <!-- Swap Routine / Exercise Modal -->
         <div class="modal-overlay hidden" id="swapModal">
-            <div class="modal-content glass-panel">
+            <div class="modal-content glass-panel" style="max-width: 520px;">
                 <div class="modal-header">
-                    <h2>Swap Exercise</h2>
+                    <h2 id="swapModalTitle">Swap Routine</h2>
                     <button class="btn-close" id="btnCloseSwap">&times;</button>
                 </div>
-                <p class="form-hint" style="margin-bottom: 10px;">Select an alternative exercise from your backlog.</p>
-                <div class="swap-list" id="swapList" style="display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto;">
+                <p class="form-hint" id="swapModalHint" style="margin-bottom: 10px;">Select a different routine to start from the beginning.</p>
+                <div style="margin-bottom: 12px;">
+                    <input type="text" id="swapSearchInput" class="form-control" placeholder="Search routines or exercises..." style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 8px 12px; color: var(--text-primary); font-size: 0.85rem;">
+                </div>
+                <div class="swap-list" id="swapList" style="display: flex; flex-direction: column; gap: 8px; max-height: 360px; overflow-y: auto;">
                     <!-- Backlog items go here -->
                 </div>
             </div>

@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="800" height="450">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#070d19"/>
+      <stop offset="100%" stop-color="#0b1526"/>
+    </linearGradient>
+    <linearGradient id="cyanGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00e5ff"/>
+      <stop offset="100%" stop-color="#2dd4bf"/>
+    </linearGradient>
+    <linearGradient id="panelGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="rgba(15, 23, 42, 0.75)"/>
+      <stop offset="100%" stop-color="rgba(11, 21, 38, 0.85)"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#00e5ff"/>
+    </marker>
+  </defs>
+
+  <!-- Background Base -->
+  <rect width="800" height="450" fill="url(#bgGrad)"/>
+
+  <!-- Subtle Precision Grid -->
+  <g stroke="#00e5ff" stroke-width="0.5" stroke-opacity="0.07">
+    <line x1="40" y1="75" x2="760" y2="75"/>
+    <line x1="40" y1="150" x2="760" y2="150"/>
+    <line x1="40" y1="225" x2="760" y2="225"/>
+    <line x1="40" y1="300" x2="760" y2="300"/>
+    <line x1="40" y1="375" x2="760" y2="375"/>
+    <line x1="160" y1="40" x2="160" y2="410"/>
+    <line x1="320" y1="40" x2="320" y2="410"/>
+    <line x1="480" y1="40" x2="480" y2="410"/>
+    <line x1="640" y1="40" x2="640" y2="410"/>
+  </g>
+
+  <!-- HUD Corner Reticles -->
+  <path d="M 24 45 L 24 24 L 45 24" stroke="#00e5ff" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <path d="M 776 45 L 776 24 L 755 24" stroke="#00e5ff" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <path d="M 24 405 L 24 426 L 45 426" stroke="#00e5ff" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <path d="M 776 405 L 776 426 L 755 426" stroke="#00e5ff" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+
+  <!-- Top Telemetry Header Bar -->
+  <rect x="35" y="20" width="730" height="32" rx="6" fill="rgba(15, 23, 42, 0.6)" stroke="#1e293b" stroke-width="1"/>
+  <circle cx="52" cy="36" r="4" fill="#00e5ff" filter="url(#glow)"/>
+  <text x="66" y="40" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="700" fill="#38bdf8" letter-spacing="1.5">CLINICAL PILATES // TELEMETRY ENGINE</text>
+  <rect x="440" y="26" width="150" height="20" rx="10" fill="rgba(0, 229, 255, 0.1)" stroke="rgba(0, 229, 255, 0.3)" stroke-width="1"/>
+  <text x="455" y="39" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9" font-weight="700" fill="#00e5ff" letter-spacing="1">16:9 ACTIVE HUD</text>
+
+  <!-- Waveform Indicator -->
+  <path d="M 610 36 L 630 36 L 635 28 L 642 44 L 648 30 L 654 39 L 660 36 L 750 36" stroke="#2dd4bf" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/>
+
+  <!-- Left Main Visual Stage Frame -->
+  <rect x="35" y="64" width="430" height="350" rx="10" fill="url(#panelGrad)" stroke="#1e293b" stroke-width="1.5"/>
+  <line x1="60" y1="370" x2="440" y2="370" stroke="#334155" stroke-width="2" stroke-dasharray="6,4"/>
+  <text x="60" y="392" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" font-weight="600" fill="#64748b" letter-spacing="1">BIOMECHANICAL GROUND AXIS</text>
+
+  <!-- Stage Sub-Badge -->
+  <rect x="52" y="80" width="140" height="20" rx="4" fill="rgba(56, 189, 248, 0.12)" stroke="rgba(56, 189, 248, 0.25)" stroke-width="1"/>
+  <text x="60" y="94" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9.5" font-weight="700" fill="#38bdf8" letter-spacing="0.8">LATERAL HIP CHAIN</text>
+
+  <!-- Dynamic Pose Vectors -->
+  <g id="anatomical-pose">
+    
+  <g transform="translate(100, 160)">
+    <line x1="220" y1="130" x2="120" y2="130" stroke="#38bdf8" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="245" cy="130" r="22" fill="rgba(56, 189, 248, 0.15)" stroke="#38bdf8" stroke-width="3"/>
+    <line x1="120" y1="130" x2="85" y2="150" stroke="#64748b" stroke-width="5" stroke-linecap="round"/>
+    <!-- Top Left Leg straight abduction -->
+    <line x1="120" y1="130" x2="25" y2="75" stroke="#2dd4bf" stroke-width="5.5" stroke-linecap="round" filter="url(#glow)"/>
+    <path d="M 50 120 L 35 85" stroke="#00e5ff" stroke-width="2.5"/>
+    <polygon points="33,80 40,87 31,90" fill="#00e5ff"/>
+    <circle cx="115" cy="120" r="7" fill="#2dd4bf"/>
+    <text x="40" y="45" font-family="sans-serif" font-size="9.5" font-weight="700" fill="#00e5ff">LEFT STRAIGHT LEG ABDUCTION</text>
+  </g>
+
+  </g>
+
+  <!-- Right Side Clinical Callout Box -->
+  <rect x="480" y="64" width="285" height="350" rx="10" fill="url(#panelGrad)" stroke="#1e293b" stroke-width="1.5"/>
+  <rect x="500" y="82" width="150" height="22" rx="4" fill="rgba(0, 229, 255, 0.12)" stroke="rgba(0, 229, 255, 0.35)" stroke-width="1"/>
+  <text x="510" y="97" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10" font-weight="700" fill="#00e5ff" letter-spacing="1">PILATES STABILIZATION</text>
+
+  <!-- Exercise Title -->
+  <text x="500" y="132" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="16" font-weight="800" fill="#f8fafc">Side-Lying Leg Lift (Left</text>
+  <text x="500" y="152" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="14" font-weight="700" fill="#94a3b8">Side)</text>
+
+  <!-- Target Focus Line -->
+  <text x="500" y="178" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10" font-weight="700" fill="#38bdf8" letter-spacing="0.5">TARGET MUSCULATURE:</text>
+  <text x="500" y="194" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="600" fill="#cbd5e1">Left Glute Medius, Tensor Fasciae Latae</text>
+
+  <!-- Divider -->
+  <line x1="500" y1="208" x2="745" y2="208" stroke="#1e293b" stroke-width="1"/>
+
+  <!-- 3 Key Benefits -->
+  <g transform="translate(500, 220)">
+    <circle cx="6" cy="8" r="4" fill="none" stroke="#2dd4bf" stroke-width="1.5"/>
+    <path d="M 4 8 L 6 10 L 9 6" stroke="#2dd4bf" stroke-width="1.2" fill="none"/>
+    <text x="18" y="12" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10" font-weight="600" fill="#e2e8f0">Straight-leg abduction with neutral pelvis</text>
+
+    <circle cx="6" cy="38" r="4" fill="none" stroke="#2dd4bf" stroke-width="1.5"/>
+    <path d="M 4 38 L 6 40 L 9 36" stroke="#2dd4bf" stroke-width="1.2" fill="none"/>
+    <text x="18" y="42" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10" font-weight="600" fill="#e2e8f0">Increases lever arm demand safely</text>
+
+    <circle cx="6" cy="68" r="4" fill="none" stroke="#2dd4bf" stroke-width="1.5"/>
+    <path d="M 4 68 L 6 70 L 9 66" stroke="#2dd4bf" stroke-width="1.2" fill="none"/>
+    <text x="18" y="72" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10" font-weight="600" fill="#e2e8f0">Toes angled slightly downward</text>
+  </g>
+
+  <!-- Execution Parameters Box -->
+  <rect x="500" y="320" width="245" height="38" rx="6" fill="rgba(15, 23, 42, 0.8)" stroke="#334155" stroke-width="1"/>
+  <text x="510" y="335" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="8.5" font-weight="700" fill="#94a3b8" letter-spacing="0.5">PROTOCOL PARAMETERS</text>
+  <text x="510" y="349" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10.5" font-weight="600" fill="#38bdf8">Cadence: 3s lift / 3s lower · 8-10 Reps</text>
+
+  <!-- Safety Status Pill -->
+  <rect x="500" y="370" width="245" height="28" rx="14" fill="rgba(16, 185, 129, 0.12)" stroke="rgba(16, 185, 129, 0.35)" stroke-width="1"/>
+  <circle cx="516" cy="384" r="4" fill="#10b981"/>
+  <text x="528" y="388" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9.5" font-weight="700" fill="#34d399" letter-spacing="0.5">LUMBAR-SAFE · ZERO FACET SHEAR</text>
+</svg>

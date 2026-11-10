@@ -44,6 +44,7 @@ RUMBLE OS debugging.docx
 dashboard/.next/
 dashboard/node_modules/
 node_modules/
+scratch/
 dashboard/scratch/
 *.tsbuildinfo
 

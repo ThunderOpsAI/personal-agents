@@ -1,0 +1,136 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="800" height="450">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#070d19"/>
+      <stop offset="100%" stop-color="#0b1526"/>
+    </linearGradient>
+    <linearGradient id="cyanGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00e5ff"/>
+      <stop offset="100%" stop-color="#2dd4bf"/>
+    </linearGradient>
+    <linearGradient id="panelGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="rgba(15, 23, 42, 0.75)"/>
+      <stop offset="100%" stop-color="rgba(11, 21, 38, 0.85)"/>
+    </linearGradient>
+    <linearGradient id="waterGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="rgba(0, 229, 255, 0.25)"/>
+      <stop offset="100%" stop-color="rgba(14, 165, 233, 0.08)"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#00e5ff"/>
+    </marker>
+  </defs>
+
+  <!-- Background Base -->
+  <rect width="800" height="450" fill="url(#bgGrad)"/>
+
+  <!-- Subtle Precision Grid -->
+  <g stroke="#00e5ff" stroke-width="0.5" stroke-opacity="0.07">
+    <line x1="40" y1="75" x2="760" y2="75"/>
+    <line x1="40" y1="150" x2="760" y2="150"/>
+    <line x1="40" y1="225" x2="760" y2="225"/>
+    <line x1="40" y1="300" x2="760" y2="300"/>
+    <line x1="40" y1="375" x2="760" y2="375"/>
+    <line x1="160" y1="40" x2="160" y2="410"/>
+    <line x1="320" y1="40" x2="320" y2="410"/>
+    <line x1="480" y1="40" x2="480" y2="410"/>
+    <line x1="640" y1="40" x2="640" y2="410"/>
+  </g>
+
+  <!-- HUD Corner Reticles -->
+  <path d="M 24 45 L 24 24 L 45 24" stroke="#00e5ff" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <path d="M 776 45 L 776 24 L 755 24" stroke="#00e5ff" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <path d="M 24 405 L 24 426 L 45 426" stroke="#00e5ff" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <path d="M 776 405 L 776 426 L 755 426" stroke="#00e5ff" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+
+  <!-- Top Telemetry Header Bar -->
+  <rect x="35" y="20" width="730" height="32" rx="6" fill="rgba(15, 23, 42, 0.6)" stroke="#1e293b" stroke-width="1"/>
+  <circle cx="52" cy="36" r="4" fill="#00e5ff" filter="url(#glow)"/>
+  <text x="66" y="40" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="700" fill="#38bdf8" letter-spacing="1.5">CLINICAL PROTOCOL // TELEMETRY ENGINE</text>
+  <rect x="440" y="26" width="150" height="20" rx="10" fill="rgba(0, 229, 255, 0.1)" stroke="rgba(0, 229, 255, 0.3)" stroke-width="1"/>
+  <text x="455" y="39" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9" font-weight="700" fill="#00e5ff" letter-spacing="1">16:9 ACTIVE HUD</text>
+
+  <!-- Waveform Indicator -->
+  <path d="M 610 36 L 630 36 L 635 28 L 642 44 L 648 30 L 654 39 L 660 36 L 750 36" stroke="#2dd4bf" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/>
+
+  <!-- Main Illustration Canvas (Left / Center) -->
+  <g id="figureLayer">
+    
+    <!-- Wall -->
+    <line x1="330" y1="80" x2="330" y2="400" stroke="#475569" stroke-width="3"/>
+    <!-- Figure pushing chest AWAY from wall (protraction) -->
+    <line x1="190" y1="215" x2="180" y2="335" stroke="#38bdf8" stroke-width="6.5" stroke-linecap="round"/>
+    <circle cx="180" cy="170" r="16" fill="none" stroke="#38bdf8" stroke-width="4"/>
+    <!-- Arms extended straight touching wall at shoulder height -->
+    <line x1="190" y1="215" x2="328" y2="215" stroke="#00e5ff" stroke-width="5.5" stroke-linecap="round"/>
+    <circle cx="328" cy="215" r="5" fill="#2dd4bf"/>
+    <!-- Protraction push-back arrow -->
+    <path d="M 230 190 L 195 190" stroke="#00e5ff" stroke-width="2.5" fill="none"/>
+    <polyline points="203,185 193,190 203,195" stroke="#00e5ff" stroke-width="2.5" fill="none"/>
+    <text x="220" y="175" font-family="sans-serif" font-size="9" font-weight="700" fill="#00e5ff" text-anchor="middle">Push Chest Away ('Plus')</text>
+    <!-- Legs inclined -->
+    <line x1="180" y1="335" x2="150" y2="400" stroke="#38bdf8" stroke-width="5.5" stroke-linecap="round"/>
+    
+  </g>
+
+  <!-- Right Side Telemetry HUD Callout Box -->
+  <g transform="translate(480, 75)">
+    <rect width="285" height="335" rx="8" fill="url(#panelGrad)" stroke="#1e293b" stroke-width="1.2"/>
+    <rect x="0" y="0" width="285" height="4" rx="2" fill="url(#cyanGrad)"/>
+
+    <!-- Module Badge -->
+    <rect x="18" y="18" width="170" height="18" rx="4" fill="rgba(56, 189, 248, 0.12)" stroke="rgba(56, 189, 248, 0.3)" stroke-width="1"/>
+    <text x="26" y="31" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9" font-weight="700" fill="#38bdf8" letter-spacing="0.8">SERRATUS ANTERIOR // R4.3</text>
+
+    <!-- Pose Title -->
+    <text x="18" y="60" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14.5" font-weight="800" fill="#f8fafc" letter-spacing="0.5">SCAPULAR PUSH-PLUS (WALL)</text>
+
+    <!-- Target Muscles Tag -->
+    <text x="18" y="84" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="10" font-weight="600" fill="#94a3b8">Target: <tspan fill="#2dd4bf">Serratus Anterior Digitations</tspan></text>
+
+    <!-- Divider Line -->
+    <line x1="18" y1="96" x2="267" y2="96" stroke="#334155" stroke-width="0.8"/>
+
+    <!-- Clinical Key Benefits Section -->
+    <text x="18" y="118" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="10" font-weight="700" fill="#64748b" letter-spacing="1">CLINICAL OBJECTIVES</text>
+
+    <!-- Benefit 1 -->
+    <g transform="translate(18, 134)">
+      <circle cx="5" cy="5" r="3" fill="#00e5ff"/>
+      <text x="16" y="9" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="10" font-weight="500" fill="#cbd5e1">Maximum protraction force vector</text>
+    </g>
+
+    <!-- Benefit 2 -->
+    <g transform="translate(18, 168)">
+      <circle cx="5" cy="5" r="3" fill="#00e5ff"/>
+      <text x="16" y="9" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="10" font-weight="500" fill="#cbd5e1">Locks scapular border against ribs</text>
+    </g>
+
+    <!-- Benefit 3 -->
+    <g transform="translate(18, 202)">
+      <circle cx="5" cy="5" r="3" fill="#00e5ff"/>
+      <text x="16" y="9" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="10" font-weight="500" fill="#cbd5e1">Eliminates scapular winging</text>
+    </g>
+
+    <!-- Mini Telemetry Meter Panel -->
+    <rect x="18" y="238" width="249" height="78" rx="6" fill="rgba(15, 23, 42, 0.85)" stroke="#1e293b" stroke-width="1"/>
+    <text x="28" y="256" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9" font-weight="700" fill="#64748b" letter-spacing="0.5">BIO-METRIC EXECUTION PROFILE</text>
+
+    <!-- Bar 1: Primary Metric -->
+    <text x="28" y="274" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9" fill="#94a3b8">Joint Protection</text>
+    <rect x="120" y="267" width="135" height="7" rx="3.5" fill="#1e293b"/>
+    <rect x="120" y="267" width="122" height="7" rx="3.5" fill="url(#cyanGrad)"/>
+
+    <!-- Bar 2: Secondary Metric -->
+    <text x="28" y="291" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9" fill="#94a3b8">Neural Safety Index</text>
+    <rect x="120" y="284" width="135" height="7" rx="3.5" fill="#1e293b"/>
+    <rect x="120" y="284" width="128" height="7" rx="3.5" fill="url(#cyanGrad)"/>
+
+    <!-- Bottom Target Indicator -->
+    <text x="28" y="306" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="8.5" font-weight="600" fill="#38bdf8">Prescription: 10-12 Reps with 3s Protraction Hold</text>
+  </g>
+</svg>
