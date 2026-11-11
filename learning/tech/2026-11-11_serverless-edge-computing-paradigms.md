@@ -4,7 +4,7 @@ category: TECH
 chapter_id: tech-ch1
 title: "Serverless & Edge Computing Paradigms"
 date: 2026-11-11
-timestamp: 2026-11-11T04:27:22.288Z
+timestamp: 2026-11-11T06:03:14.572Z
 ---
 
 # Serverless & Edge Computing Paradigms

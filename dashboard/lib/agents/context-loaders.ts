@@ -64,13 +64,22 @@ export async function loadAgenda(): Promise<string> {
     const items = await getAgendaItems();
     const pending = (items || []).filter((i) => i.status === "pending");
     if (pending.length > 0) {
-      const itemsList = pending
+      // Prioritize urgent and chronological items, limiting to top 25 to protect prompt token budget
+      const sorted = [...pending].sort(
+        (a, b) => new Date(a.scheduled_time).getTime() - new Date(b.scheduled_time).getTime()
+      );
+      const topItems = sorted.slice(0, 25);
+      const itemsList = topItems
         .map(
           (i) =>
             `• [ID: ${i.id}] ${i.title} (${i.item_type}) | Scheduled: ${new Date(i.scheduled_time).toLocaleString("en-AU", { timeZone: "Australia/Melbourne" })} | Status: ${i.status}`
         )
         .join("\n");
-      return `[ACTIVE AGENDA ITEMS]\n${itemsList}`;
+      const extraNote =
+        pending.length > 25
+          ? `\n(Showing top 25 of ${pending.length} pending agenda items)`
+          : "";
+      return `[ACTIVE AGENDA ITEMS]\n${itemsList}${extraNote}`;
     }
     return `[ACTIVE AGENDA ITEMS]\nNo active agenda items.`;
   } catch (err: any) {
@@ -85,7 +94,18 @@ export async function loadNotes(): Promise<string> {
     const recent = (notes || []).slice(0, 5);
     if (recent.length > 0) {
       const notesList = recent
-        .map((n) => `• [${new Date(n.created_at).toLocaleDateString("en-AU")}] ${n.content}`)
+        .map((n) => {
+          let text = n.content || "";
+          // Strip out embedded data:image base64 payloads to prevent multi-megabyte context blowups
+          if (text.includes("data:image")) {
+            text = text.replace(/!\[(.*?)\]\(data:image\/[^;]+;base64,[^)]+\)/g, "[Attached Image: $1]");
+            text = text.replace(/data:image\/[^;]+;base64,[A-Za-z0-9+/=]+/g, "[Base64 Image Data]");
+          }
+          if (text.length > 500) {
+            text = text.slice(0, 500) + "... (truncated)";
+          }
+          return `• [${new Date(n.created_at).toLocaleDateString("en-AU")}] ${text}`;
+        })
         .join("\n");
       return `[RECENT USER NOTES]\n${notesList}`;
     }
@@ -326,6 +346,29 @@ export async function loadEmail(query: string = ""): Promise<string> {
         query: "from:police.vic.gov.au OR Carter OR police",
         maxResults: 10,
       });
+    }
+
+    // Dynamic targeted search if query asks for details or mentions specific case/req IDs
+    const reqMatch = query.match(/\b(REQ\d{4}-\d+|[A-Z0-9]{3,}-\d{3,})\b/i);
+    if (reqMatch) {
+      targetedSearches.push({
+        query: reqMatch[1],
+        maxResults: 5,
+      });
+    }
+
+    const detailsMatch = query.match(/(?:details\s+for|about|update\s+on):\s*([^?\n\r]+)/i);
+    if (detailsMatch) {
+      const subjectClean = detailsMatch[1]
+        .replace(/^Action Required:\s*/i, "")
+        .replace(/–/g, "-")
+        .trim();
+      if (subjectClean.length > 3) {
+        targetedSearches.push({
+          query: subjectClean,
+          maxResults: 5,
+        });
+      }
     }
 
     if (targetedSearches.length > 0) {
