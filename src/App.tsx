@@ -49,7 +49,7 @@ import { DailyInsightCard } from "./components/DailyInsightCard";
 
 export function App() {
   // --- Persistent Storage State ---
-  const AGENDA_VERSION = "2026-10-22_v3_tomorrow_agenda";
+  const AGENDA_VERSION = "2026-11-10_v4_urgent_7am_alerts";
   const [agendaItems, setAgendaItems] = useState<AgendaItem[]>(() => {
     const saved = localStorage.getItem("rumble_agenda_items");
     const ver = localStorage.getItem("rumble_agenda_ver");
@@ -80,7 +80,7 @@ export function App() {
     return saved ? JSON.parse(saved) : INITIAL_CALENDAR_EVENTS;
   });
 
-  const TASKS_VERSION = "2026-10-22_v3_tomorrow_agenda";
+  const TASKS_VERSION = "2026-11-10_v4_urgent_7am_alerts";
   const [tasks, setTasks] = useState<TaskItem[]>(() => {
     const saved = localStorage.getItem("rumble_tasks");
     const ver = localStorage.getItem("rumble_tasks_ver");
@@ -412,11 +412,15 @@ export function App() {
 
   // Filter agenda items
   const visibleAgendaItems = useMemo(() => {
-    // Non-dismissed items, with completed items moved to the bottom
+    // Non-dismissed items, with urgent/priority pinned to top, and completed items moved to the bottom
     const active = agendaItems.filter((i) => i.status !== "dismissed");
-    const pending = active.filter((i) => i.status === "pending");
+    const isUrgentItem = (i: AgendaItem) =>
+      i.title.toLowerCase().includes("urgent") || i.title.includes("🚨");
+
+    const urgentPending = active.filter((i) => i.status === "pending" && isUrgentItem(i));
+    const regularPending = active.filter((i) => i.status === "pending" && !isUrgentItem(i));
     const completed = active.filter((i) => i.status === "completed");
-    return [...pending, ...completed];
+    return [...urgentPending, ...regularPending, ...completed];
   }, [agendaItems]);
 
   const urgentTasks = useMemo(() => tasks.filter((t) => t.urgent && t.status === "needsAction"), [tasks]);
@@ -808,6 +812,7 @@ export function App() {
             {/* Dynamic Stream Items */}
             {visibleAgendaItems.map((item) => {
               const isCompleted = item.status === "completed";
+              const isUrgent = item.title.toLowerCase().includes("urgent") || item.title.includes("🚨");
               const timeDisplay = item.scheduled_time.includes("T")
                 ? item.scheduled_time.split("T")[1].slice(0, 5)
                 : "09:00";
@@ -822,14 +827,19 @@ export function App() {
                     alignItems: "center",
                     padding: "14px",
                     opacity: isCompleted ? 0.5 : 1,
-                    borderLeft: isCompleted ? "3px solid #666" : "3px solid var(--neon-blue)",
+                    borderLeft: isCompleted
+                      ? "3px solid #666"
+                      : isUrgent
+                      ? "4px solid var(--neon-red)"
+                      : "3px solid var(--neon-blue)",
+                    background: isUrgent && !isCompleted ? "rgba(220, 38, 38, 0.12)" : undefined,
                     flexWrap: "wrap",
                     gap: "10px",
                   }}
                 >
                   <div style={{ flex: 1, minWidth: "220px" }}>
                     <h3 style={{ margin: 0, fontSize: "1rem", textDecoration: isCompleted ? "line-through" : "none" }}>
-                      {timeDisplay} <span className="badge neon-blue" style={{ textTransform: "capitalize" }}>{item.item_type}</span>{" "}
+                      {timeDisplay} <span className={isUrgent && !isCompleted ? "badge neon-red" : "badge neon-blue"} style={{ textTransform: "capitalize" }}>{item.item_type}</span>{" "}
                       {item.title}
                     </h3>
                     {item.description && (

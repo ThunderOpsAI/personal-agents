@@ -35,6 +35,7 @@
                 </div>
                 
                 <div class="header-actions">
+                    <button class="btn btn-sm btn-outline" id="btnOpenStockDesk" title="Autonomous Stock Exchange Desk">📈 Stock Desk</button>
                     <button class="btn btn-sm btn-outline" id="btnOpenNotes" title="Notes & Scratchpad">Notes</button>
                     <button class="btn btn-sm btn-outline btn-icon btn-rumble" id="btnOpenRumbleChat" title="Rumble Chat" aria-label="Rumble Chat">
                         <img src="Rumble_Icon.png" alt="Rumble" class="rumble-header-icon">
@@ -994,6 +995,203 @@
             </div>
         </div>
 
+        <!-- Stock Exchange Modal -->
+        <div class="modal-overlay hidden" id="stockDeskModal">
+            <div class="modal-content glass-panel" style="max-width: 960px; width: 95%; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; gap: 14px;">
+                <!-- Header -->
+                <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px;">
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <h2 style="margin: 0; font-size: 1.15rem; display: flex; align-items: center; gap: 6px;">
+                            📈 Autonomous Stock Exchange Desk <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: normal;">($100 Sandbox)</span>
+                        </h2>
+                        <!-- Profile selector toggle -->
+                        <div style="display: inline-flex; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.12); border-radius: 6px; padding: 2px;">
+                            <button class="btn btn-sm" id="btnProfileCore" style="padding: 3px 10px; font-size: 0.78rem; border-radius: 4px; background: var(--neon-blue); color: #000; font-weight: bold; border: none; cursor: pointer;">Core</button>
+                            <button class="btn btn-sm btn-outline" id="btnProfileAggressive" style="padding: 3px 10px; font-size: 0.78rem; border-radius: 4px; border: none; cursor: pointer; color: var(--text-secondary);">Aggressive</button>
+                        </div>
+                        <!-- Status Badges -->
+                        <div id="stockHaltedBadge" style="display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: bold; background: rgba(0, 240, 255, 0.15); color: var(--neon-blue); border: 1px solid rgba(0, 240, 255, 0.3);">
+                            ● SYSTEM NORMAL
+                        </div>
+                        <div id="stockSnapshotBadge" style="display: none; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 4px; font-size: 0.7rem; background: rgba(255, 170, 0, 0.15); color: #ffaa00; border: 1px solid rgba(255, 170, 0, 0.3);">
+                            SYNCED SNAPSHOT
+                        </div>
+                    </div>
+                    <button class="btn-close" id="btnCloseStockDesk">&times;</button>
+                </div>
+
+                <!-- Control Bar -->
+                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; background: rgba(0,0,0,0.25); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);">
+                    <button class="btn btn-sm btn-neon-green" id="btnRunStockCycle" title="Execute single daily scan and risk check">▶ Run Daily Cycle</button>
+                    <button class="btn btn-sm btn-outline" id="btnRunBacktestT1" title="Macro Vectorized Backtest (5-10 yrs)">📈 Backtest Tier 1</button>
+                    <button class="btn btn-sm btn-outline" id="btnRunBacktestT2" title="Event-Driven Historical Replay">📊 Replay Tier 2</button>
+                    <button class="btn btn-sm btn-outline" id="btnOpenStreamlitDesk" title="Launch or Open Streamlit UI">🚀 Open Streamlit UI</button>
+                    <button class="btn btn-sm btn-outline" id="btnRefreshStockDesk" title="Refresh Live Data" style="margin-left: auto;">🔄 Refresh</button>
+                </div>
+
+                <!-- KPI Strip -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+                    <div class="glass-panel" style="padding: 10px 14px; border-radius: 8px;">
+                        <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Live Equity</div>
+                        <div id="kpiStockEquity" style="font-size: 1.35rem; font-weight: 800; color: var(--neon-blue); margin-top: 2px;">$100.00</div>
+                    </div>
+                    <div class="glass-panel" style="padding: 10px 14px; border-radius: 8px;">
+                        <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Cash Reserve</div>
+                        <div id="kpiStockCash" style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary); margin-top: 2px;">$100.00</div>
+                    </div>
+                    <div class="glass-panel" style="padding: 10px 14px; border-radius: 8px;">
+                        <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Open Slots</div>
+                        <div id="kpiStockSlots" style="font-size: 1.35rem; font-weight: 800; color: var(--neon-purple); margin-top: 2px;">0 / 3</div>
+                    </div>
+                    <div class="glass-panel" style="padding: 10px 14px; border-radius: 8px;">
+                        <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Circuit Tier</div>
+                        <div id="kpiStockCircuit" style="font-size: 1.35rem; font-weight: 800; color: var(--neon-green); margin-top: 2px;">Tier 0</div>
+                    </div>
+                    <div class="glass-panel" style="padding: 10px 14px; border-radius: 8px;">
+                        <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Last Run Status</div>
+                        <div id="kpiStockLastRun" style="font-size: 0.95rem; font-weight: bold; color: var(--text-primary); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">COMPLETED</div>
+                        <div id="kpiStockLastRunTime" style="font-size: 0.68rem; color: var(--text-muted);">--</div>
+                    </div>
+                </div>
+
+                <!-- Sub-tabs Header -->
+                <div style="display: flex; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 2px;">
+                    <button class="btn btn-sm" id="tabBtnStockOverview" style="border: none; background: transparent; border-bottom: 2px solid var(--neon-blue); color: var(--neon-blue); font-weight: bold; border-radius: 0; padding: 6px 12px; cursor: pointer;">Overview & Positions</button>
+                    <button class="btn btn-sm" id="tabBtnStockOrders" style="border: none; background: transparent; border-bottom: 2px solid transparent; color: var(--text-secondary); border-radius: 0; padding: 6px 12px; cursor: pointer;">Orders & Audit Trail</button>
+                    <button class="btn btn-sm" id="tabBtnStockReports" style="border: none; background: transparent; border-bottom: 2px solid transparent; color: var(--text-secondary); border-radius: 0; padding: 6px 12px; cursor: pointer;">Reports & Run Logs</button>
+                </div>
+
+                <!-- Tab 1: Overview & Positions -->
+                <div id="stockTabOverview" style="display: flex; flex-direction: column; gap: 14px;">
+                    <!-- Positions Table -->
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <h4 style="margin: 0; font-size: 0.9rem; color: var(--text-primary);">Active Positions</h4>
+                            <span id="stockPosCount" style="font-size: 0.75rem; color: var(--text-muted);">0 active</span>
+                        </div>
+                        <div class="glass-panel" style="border-radius: 8px; overflow: hidden;">
+                            <div style="max-height: 200px; overflow-y: auto;">
+                                <table style="width: 100%; border-collapse: collapse; font-size: 0.8rem; text-align: left;">
+                                    <thead>
+                                        <tr style="background: rgba(255,255,255,0.04); border-bottom: 1px solid rgba(255,255,255,0.08); color: var(--text-muted);">
+                                            <th style="padding: 8px 12px;">Ticker</th>
+                                            <th style="padding: 8px 12px;">Side</th>
+                                            <th style="padding: 8px 12px;">Qty</th>
+                                            <th style="padding: 8px 12px;">Entry</th>
+                                            <th style="padding: 8px 12px;">Current</th>
+                                            <th style="padding: 8px 12px;">Market Value</th>
+                                            <th style="padding: 8px 12px;">Unrealized P&L</th>
+                                            <th style="padding: 8px 12px;">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="stockPositionsTableBody">
+                                        <tr><td colspan="8" style="padding: 16px; text-align: center; color: var(--text-muted);">No open positions. 100% Cash Reserve.</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Screened Candidates & Triad Verdicts -->
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <h4 style="margin: 0; font-size: 0.9rem; color: var(--text-primary);">Screened Candidates & Committee Verdicts</h4>
+                            <span id="stockCandCount" style="font-size: 0.75rem; color: var(--text-muted);">Latest 15</span>
+                        </div>
+                        <div class="glass-panel" style="border-radius: 8px; overflow: hidden;">
+                            <div style="max-height: 220px; overflow-y: auto;">
+                                <table style="width: 100%; border-collapse: collapse; font-size: 0.8rem; text-align: left;">
+                                    <thead>
+                                        <tr style="background: rgba(255,255,255,0.04); border-bottom: 1px solid rgba(255,255,255,0.08); color: var(--text-muted);">
+                                            <th style="padding: 8px 12px;">Ticker</th>
+                                            <th style="padding: 8px 12px;">Strategy</th>
+                                            <th style="padding: 8px 12px;">Entry Est</th>
+                                            <th style="padding: 8px 12px;">Risk R</th>
+                                            <th style="padding: 8px 12px;">Allocated</th>
+                                            <th style="padding: 8px 12px;">Score</th>
+                                            <th style="padding: 8px 12px;">Verdict</th>
+                                            <th style="padding: 8px 12px;">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="stockCandidatesTableBody">
+                                        <tr><td colspan="8" style="padding: 16px; text-align: center; color: var(--text-muted);">No candidates screened in current cycle.</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Orders & Audit Trail -->
+                <div id="stockTabOrders" style="display: none; flex-direction: column; gap: 14px;">
+                    <!-- Reconciliation Banner -->
+                    <div id="stockReconBanner" class="glass-panel" style="padding: 8px 14px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; font-size: 0.8rem;">
+                        <span style="color: var(--text-muted);">Reconciliation:</span>
+                        <span id="stockReconStatus" style="color: var(--neon-green); font-weight: bold;">HEALTHY_MATCH</span>
+                        <span id="stockReconHash" style="color: var(--text-muted); font-size: 0.72rem; font-family: monospace;">--</span>
+                    </div>
+
+                    <!-- Orders Table -->
+                    <div>
+                        <h4 style="margin: 0 0 6px 0; font-size: 0.9rem; color: var(--text-primary);">Order History (Latest 15)</h4>
+                        <div class="glass-panel" style="border-radius: 8px; overflow: hidden;">
+                            <div style="max-height: 200px; overflow-y: auto;">
+                                <table style="width: 100%; border-collapse: collapse; font-size: 0.8rem; text-align: left;">
+                                    <thead>
+                                        <tr style="background: rgba(255,255,255,0.04); border-bottom: 1px solid rgba(255,255,255,0.08); color: var(--text-muted);">
+                                            <th style="padding: 8px 12px;">Client Order ID</th>
+                                            <th style="padding: 8px 12px;">Ticker</th>
+                                            <th style="padding: 8px 12px;">Side</th>
+                                            <th style="padding: 8px 12px;">Type</th>
+                                            <th style="padding: 8px 12px;">Allocated USD</th>
+                                            <th style="padding: 8px 12px;">Target Qty</th>
+                                            <th style="padding: 8px 12px;">State</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="stockOrdersTableBody">
+                                        <tr><td colspan="7" style="padding: 16px; text-align: center; color: var(--text-muted);">No orders recorded yet.</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Audit Logs Stream -->
+                    <div>
+                        <h4 style="margin: 0 0 6px 0; font-size: 0.9rem; color: var(--text-primary);">System Audit Trail (Latest 20)</h4>
+                        <div class="glass-panel" style="border-radius: 8px; max-height: 220px; overflow-y: auto; padding: 10px 14px; font-family: monospace; font-size: 0.75rem; display: flex; flex-direction: column; gap: 6px;" id="stockAuditLogsStream">
+                            <div style="color: var(--text-muted); text-align: center; padding: 12px;">No audit events recorded.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 3: Reports & Run Logs -->
+                <div id="stockTabReports" style="display: none; flex-direction: column; gap: 14px;">
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <h4 style="margin: 0; font-size: 0.9rem; color: var(--text-primary);">Weekly Markdown Reports (`docs/reports/*.md`)</h4>
+                            <select id="stockReportSelector" class="form-control" style="font-size: 0.78rem; padding: 3px 8px; width: auto; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); color: var(--text-primary); border-radius: 4px;">
+                                <option value="">Select report...</option>
+                            </select>
+                        </div>
+                        <div class="glass-panel" id="stockReportContent" style="border-radius: 8px; max-height: 240px; overflow-y: auto; padding: 14px; font-size: 0.82rem; line-height: 1.5; white-space: pre-wrap; color: var(--text-secondary);">
+                            Select a report from the dropdown above to view its contents.
+                        </div>
+                    </div>
+
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <h4 style="margin: 0; font-size: 0.9rem; color: var(--text-primary);">Execution Logs Tail (`daily_run.log`)</h4>
+                            <button class="btn btn-xs btn-outline" id="btnClearConsoleDrawer" style="font-size: 0.7rem; padding: 2px 8px;">Clear</button>
+                        </div>
+                        <div class="glass-panel" id="stockConsoleOutput" style="border-radius: 8px; max-height: 200px; overflow-y: auto; padding: 10px 14px; font-family: monospace; font-size: 0.75rem; background: #050a12; color: #a0aec0; white-space: pre-wrap; line-height: 1.4;">
+// Waiting for log output or execution...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Protocol Step Runner Modal -->
         <div class="modal-overlay hidden" id="runnerModal">
             <div class="modal-content glass-panel" style="max-width: 540px;">
@@ -1052,6 +1250,9 @@
                     <button class="btn-close" id="btnCloseSwap">&times;</button>
                 </div>
                 <p class="form-hint" id="swapModalHint" style="margin-bottom: 10px;">Select a different routine to start from the beginning.</p>
+                <div id="swapRestoreStepContainer" style="display: none; margin-bottom: 10px;">
+                    <button class="btn btn-sm btn-outline" id="btnRestoreOriginalStep" style="width: 100%; border-color: var(--neon-blue); color: var(--neon-blue); font-weight: bold; padding: 6px 12px; cursor: pointer;">↺ Restore Original Step</button>
+                </div>
                 <div style="margin-bottom: 12px;">
                     <input type="text" id="swapSearchInput" class="form-control" placeholder="Search routines or exercises..." style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 8px 12px; color: var(--text-primary); font-size: 0.85rem;">
                 </div>
@@ -1728,6 +1929,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="app.js?v=20261026_yogaupdate"></script>
+    <script src="app.js?v=20261111_stock_yoga"></script>
 </body>
 </html>

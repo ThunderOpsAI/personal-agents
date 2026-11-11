@@ -2460,3 +2460,72 @@ export function searchExercises(options: {
 
   return results;
 }
+
+export const ADAPTIVE_MORNING_POOL: ExerciseStep[] = [
+  { title: "Diaphragmatic Awakening Breathing", duration: 120, cue: "Lie supine or sit tall, 4-count inhale expanding belly and ribs, 6-count exhale relaxing shoulders.", frames: ["/exercises/diaphragmatic-breathing.svg"] },
+  { title: "Supine Pelvic Tilts & Neutral Finding", duration: 120, cue: "Gently flatten lumbar curve against floor on exhale, allow slight neutral arch on inhale.", frames: ["/exercises/supine_pelvic_tilts.jpg"] },
+  { title: "Single Knee to Chest Glide", duration: 120, cue: "Interlace fingers behind thigh, draw knee gently toward armpit, releasing lumbar compression.", frames: ["/exercises/knee_to_chest_stretch.jpg"] },
+  { title: "Gentle Cat-Cow Spinal Wave", duration: 120, cue: "Move slowly through mid-range spinal flexion and extension, keeping neck aligned with spine.", frames: ["/exercises/cat_cow_stretch.jpg"] },
+  { title: "Supported Sphinx Micro-Extension", duration: 120, cue: "Rest on forearms, engage lower abdomen lightly to support lumbar decompression.", frames: ["/exercises/supported_sphinx_pose.jpg"] },
+  { title: "Bird Dog Core Stabilisation", duration: 120, cue: "Reach opposite arm and heel, keeping hips level and lumbar stable.", frames: ["/exercises/bird-dog.svg"] },
+  { title: "Supported Low Lunge Psoas Release", duration: 120, cue: "Front knee over ankle, gentle forward pelvic shift releasing hip flexors.", frames: ["/exercises/low-lunge.svg"] },
+  { title: "Standing Gentle Side Bend", duration: 120, cue: "Feet hip-width, reach arm overhead and breathe into lateral intercostal muscles.", frames: ["/exercises/standing-side-bend.svg"] },
+  { title: "Constructive Rest Spinal Neutral", duration: 180, cue: "Knees bent, feet wide, knees resting together, hands resting on lower belly.", frames: ["/exercises/constructive-rest.svg"] },
+];
+
+export const ADAPTIVE_NIGHT_POOL: ExerciseStep[] = [
+  { title: "Diaphragmatic Parasympathetic Reset", duration: 150, cue: "Hand on heart and hand on belly, lengthen exhales to signal nervous system downregulation.", frames: ["/exercises/diaphragmatic-breathing.svg"] },
+  { title: "Supported Reclined Bound Angle", duration: 150, cue: "Feet together with pillow support beneath outer knees, softening groins and lower belly.", frames: ["/exercises/supported_reclined_bound_angle.jpg"] },
+  { title: "Gentle Pelvic Tilts & Lumbopelvic Clocks", duration: 150, cue: "Micro-tilts rocking sacrum between 12 and 6 o'clock to release lower back guarding.", frames: ["/exercises/supine_pelvic_tilts.jpg"] },
+  { title: "Wide Knee Child's Pose with Bolster", duration: 150, cue: "Allow belly to soften between thighs onto bolster, relaxing shoulders.", frames: ["/exercises/supported-childs-pose-bolster.svg"] },
+  { title: "Thread the Needle Shoulder Glide", duration: 150, cue: "Slide arm under chest to gently release posterior shoulder and upper thoracic tension.", frames: ["/exercises/thread-the-needle-modified.svg"] },
+  { title: "Supported Bridge on Soft Block", duration: 150, cue: "Pillow or block under sacrum, arms relaxed at sides, releasing anterior chain tension.", frames: ["/exercises/supported-bridge-block.svg"] },
+  { title: "Supine Gentle Twist with Bolster", duration: 150, cue: "Knees stacked over bolster on right side, breathe into ribcage, repeat left.", frames: ["/exercises/gentle_supine_torso_twist_hud.jpg"] },
+  { title: "Legs-Elevated Relaxation (Wall or Bolster)", duration: 150, cue: "Elevate lower legs on bolster or against wall to ease lower limb circulation.", frames: ["/exercises/legs-elevated-relaxation.svg"] },
+  { title: "Suboccipital Massage with Rolled Towel", duration: 150, cue: "Rest base of skull on rolled towel, gentle micro-turns of head relaxing suboccipital band.", frames: ["/exercises/cervical_chin_tuck.jpg"] },
+  { title: "Oculomotor Vagal Reset", duration: 150, cue: "Keep head straight, look fully right for 30s until spontaneous swallow or sigh, then repeat left.", frames: ["/exercises/restorative_savasana.jpg"] },
+  { title: "Acupressure Mat & Bolster Wind-Down", duration: 150, cue: "Rest spine on acupressure mat or soft bolster, complete parasympathetic stillness.", frames: ["/exercises/acupressure_mat_savasana_hud.jpg"] },
+  { title: "Corpse Pose Deep Relaxation (Savasana)", duration: 180, cue: "Full body surrender into mat or mattress, jaw loose, releasing all muscular hold.", frames: ["/exercises/restorative_savasana.jpg"] }
+];
+
+export function getAdaptiveYogaRoutine(dateStr: string, isNight = false): ExerciseItem {
+  let hash = 0;
+  for (let i = 0; i < dateStr.length; i++) {
+    hash = (hash * 31 + dateStr.charCodeAt(i)) & 0xffffffff;
+  }
+  const dayShift = Math.abs(hash) % 100;
+
+  const pool = isNight ? ADAPTIVE_NIGHT_POOL : ADAPTIVE_MORNING_POOL;
+  const coreAnchors = pool.slice(0, 5);
+  const variationPool = pool.slice(5);
+
+  const varIndex1 = dayShift % variationPool.length;
+  const varIndex2 = (dayShift + 1) % variationPool.length;
+
+  const selectedVariations = [
+    variationPool[varIndex1],
+    variationPool[varIndex2 === varIndex1 ? (varIndex2 + 1) % variationPool.length : varIndex2],
+  ];
+
+  const finalSteps = [...coreAnchors, ...selectedVariations, pool[pool.length - 1]];
+
+  const routineId = isNight ? "y_night_adaptive" : "y_morning_adaptive";
+  const title = isNight 
+    ? `Evening Adaptive Restorative Wind-Down (${selectedVariations.map(v => v.title.split(" ")[0]).join(" + ")})`
+    : `Morning Adaptive Spine Flow (${selectedVariations.map(v => v.title.split(" ")[0]).join(" + ")})`;
+
+  return {
+    id: routineId,
+    name: title,
+    title,
+    category: "yoga",
+    focus_areas: isNight ? ["nervous system", "restorative", "lumbar", "sleep"] : ["lumbar", "thoracic", "spine", "mobility"],
+    duration_minutes: isNight ? 22 : 18,
+    intensity: "Gentle Restorative",
+    instruction: `Daily adaptive restorative yoga sequence specifically varied for ${dateStr} with 2 dynamic rotational variations to prevent adaptation plateaus while protecting spinal integrity.`,
+    description: `Daily adaptive restorative yoga sequence specifically varied for ${dateStr} with 2 dynamic rotational variations to prevent adaptation plateaus while protecting spinal integrity.`,
+    precautions: ["Move gently within pain-free boundaries.", "Avoid aggressive flexion or end-range rotations."],
+    contraindications: ["acute disc herniation"],
+    steps: finalSteps,
+  };
+}

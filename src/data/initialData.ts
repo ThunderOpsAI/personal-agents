@@ -2,6 +2,30 @@ import { AgendaItem, BudgetItem, BudgetReportRecord, CalendarEvent, Note, PainLo
 
 export const INITIAL_AGENDA_ITEMS: AgendaItem[] = [
   {
+    id: 'urgent_cav_call_2026-11-11',
+    item_type: 'task',
+    title: '🚨 URGENT: Call Consumer Affairs Victoria (CAV) on 1300 558 181 (Ref: C2026/10/010775)',
+    scheduled_time: '2026-11-11T07:00:00+11:00',
+    status: 'pending',
+    completed_at: null,
+    dismissed_at: null,
+    audit_trail: [{ timestamp: '2026-11-10T16:38:00+11:00', new_status: 'pending', note: 'Persistent 7am urgent alert' }],
+    created_at: '2026-11-10T16:38:00+11:00',
+    description: 'Call CAV Advice Line on 1300 558 181 quoting Case Ref C2026/10/010775 regarding Chemist Warehouse Wangaratta.',
+  },
+  {
+    id: 'urgent_council_wsac_tracking_2026-11-11',
+    item_type: 'task',
+    title: '🚨 URGENT: Check Wangaratta Council Complaint (WSAC Ref: REQ2026-072232, Leon Newton 0448 743 865)',
+    scheduled_time: '2026-11-11T07:30:00+11:00',
+    status: 'pending',
+    completed_at: null,
+    dismissed_at: null,
+    audit_trail: [{ timestamp: '2026-11-10T16:38:00+11:00', new_status: 'pending', note: 'Persistent urgent council tracking alert' }],
+    created_at: '2026-11-10T16:38:00+11:00',
+    description: 'Follow up on Leon Newton investigation into WSAC mobile phone policy and pool deck complaint.',
+  },
+  {
     id: 'briefing_today',
     item_type: 'briefing',
     title: 'Morning Executive Briefing',
@@ -204,6 +228,26 @@ export const INITIAL_CALENDAR_EVENTS: CalendarEvent[] = [
 ];
 
 export const INITIAL_TASKS: TaskItem[] = [
+  {
+    id: 'task_urgent_cav_call_2026-11-11',
+    title: '🚨 Call CAV on 1300 558 181 re Chemist Warehouse Complaint (Ref: C2026/10/010775)',
+    dueDate: '2026-11-11',
+    dueTime: '07:00',
+    status: 'needsAction',
+    urgent: true,
+    notes: 'Urgent follow-up call with CAV Enquiry Officer regarding Chemist Warehouse Wangaratta script cancellations.',
+    source: 'local',
+  },
+  {
+    id: 'task_urgent_council_wsac_2026-11-11',
+    title: '🚨 Check Wangaratta Council Complaint (WSAC Ref: REQ2026-072232, Leon Newton 0448 743 865)',
+    dueDate: '2026-11-11',
+    dueTime: '07:30',
+    status: 'needsAction',
+    urgent: true,
+    notes: 'Follow up on Leon Newton investigation into WSAC mobile phone policy and pool deck complaint.',
+    source: 'local',
+  },
   {
     id: 'task_1',
     title: 'Confirm Dr Khan received MRI imaging report from I-MED',

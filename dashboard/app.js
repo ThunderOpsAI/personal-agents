@@ -136,6 +136,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const btnOpenRumbleChat = document.getElementById('btnOpenRumbleChat');
     const btnSyncOps = document.getElementById('btnSyncOps');
+    const btnOpenStockDesk = document.getElementById('btnOpenStockDesk');
+    const stockDeskModal = document.getElementById('stockDeskModal');
+    const btnCloseStockDesk = document.getElementById('btnCloseStockDesk');
     const btnOpenNotes = document.getElementById('btnOpenNotes');
     const btnSettings = document.getElementById('btnSettings');
     const settingsModal = document.getElementById('settingsModal');
@@ -2995,6 +2998,397 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // loadRumbleInsights();
+
+    // --- Autonomous Stock Exchange Desk Integration ($100 Sandbox) ---
+    let currentStockProfile = 'core';
+    let cachedStockData = null;
+
+    function switchStockTab(tabName) {
+        const tabOverview = document.getElementById('stockTabOverview');
+        const tabOrders = document.getElementById('stockTabOrders');
+        const tabReports = document.getElementById('stockTabReports');
+        const btnOverview = document.getElementById('tabBtnStockOverview');
+        const btnOrders = document.getElementById('tabBtnStockOrders');
+        const btnReports = document.getElementById('tabBtnStockReports');
+
+        if (tabOverview) tabOverview.style.display = tabName === 'overview' ? 'flex' : 'none';
+        if (tabOrders) tabOrders.style.display = tabName === 'orders' ? 'flex' : 'none';
+        if (tabReports) tabReports.style.display = tabName === 'reports' ? 'flex' : 'none';
+
+        if (btnOverview) {
+            btnOverview.style.borderBottom = tabName === 'overview' ? '2px solid var(--neon-blue)' : '2px solid transparent';
+            btnOverview.style.color = tabName === 'overview' ? 'var(--neon-blue)' : 'var(--text-secondary)';
+        }
+        if (btnOrders) {
+            btnOrders.style.borderBottom = tabName === 'orders' ? '2px solid var(--neon-blue)' : '2px solid transparent';
+            btnOrders.style.color = tabName === 'orders' ? 'var(--neon-blue)' : 'var(--text-secondary)';
+        }
+        if (btnReports) {
+            btnReports.style.borderBottom = tabName === 'reports' ? '2px solid var(--neon-blue)' : '2px solid transparent';
+            btnReports.style.color = tabName === 'reports' ? 'var(--neon-blue)' : 'var(--text-secondary)';
+        }
+    }
+
+    async function fetchStockDeskData(profile = currentStockProfile) {
+        currentStockProfile = profile;
+        const btnRefresh = document.getElementById('btnRefreshStockDesk');
+        if (btnRefresh) btnRefresh.innerText = 'Refreshing...';
+        try {
+            const res = await fetch(`/api/v1/stock-exchange?profile=${encodeURIComponent(profile)}`);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data = await res.json();
+            cachedStockData = data;
+            renderStockDeskUI(data);
+        } catch (err) {
+            console.error('Failed to load stock exchange data:', err);
+            const consoleOutput = document.getElementById('stockConsoleOutput');
+            if (consoleOutput) {
+                consoleOutput.innerText = `[ERROR] Failed to fetch stock desk state: ${err.message}\nMake sure stock-exchange repo or snapshot is available.`;
+            }
+        } finally {
+            if (btnRefresh) btnRefresh.innerText = '🔄 Refresh';
+        }
+    }
+
+    function renderStockDeskUI(data) {
+        if (!data) return;
+
+        // KPI Strip
+        const kpiEquity = document.getElementById('kpiStockEquity');
+        const kpiCash = document.getElementById('kpiStockCash');
+        const kpiSlots = document.getElementById('kpiStockSlots');
+        const kpiCircuit = document.getElementById('kpiStockCircuit');
+        const kpiLastRun = document.getElementById('kpiStockLastRun');
+        const kpiLastRunTime = document.getElementById('kpiStockLastRunTime');
+
+        const acct = data.account || {};
+        if (kpiEquity) kpiEquity.innerText = `$${Number(acct.equity ?? 100).toFixed(2)}`;
+        if (kpiCash) kpiCash.innerText = `$${Number(acct.cash ?? 100).toFixed(2)}`;
+        
+        const posList = Array.isArray(data.positions) ? data.positions : [];
+        if (kpiSlots) kpiSlots.innerText = `${posList.length} / 3`;
+        if (kpiCircuit) kpiCircuit.innerText = `Tier ${acct.circuit_tier ?? 0}`;
+
+        if (kpiLastRun) {
+            kpiLastRun.innerText = data.last_run?.status || 'IDLE';
+            kpiLastRun.style.color = data.last_run?.status === 'COMPLETED' ? 'var(--neon-green)' : 'var(--text-primary)';
+        }
+        if (kpiLastRunTime) {
+            kpiLastRunTime.innerText = data.last_run?.ended_at || data.last_run?.started_at || '--';
+        }
+
+        // Status Badges
+        const haltedBadge = document.getElementById('stockHaltedBadge');
+        if (haltedBadge) {
+            if (data.halted_lock) {
+                haltedBadge.innerHTML = '⚠️ CIRCUIT BREAKER HALTED';
+                haltedBadge.style.background = 'rgba(255, 68, 68, 0.2)';
+                haltedBadge.style.color = '#ff4444';
+                haltedBadge.style.borderColor = 'rgba(255, 68, 68, 0.4)';
+            } else {
+                haltedBadge.innerHTML = '● SYSTEM NORMAL';
+                haltedBadge.style.background = 'rgba(0, 240, 255, 0.15)';
+                haltedBadge.style.color = 'var(--neon-blue)';
+                haltedBadge.style.borderColor = 'rgba(0, 240, 255, 0.3)';
+            }
+        }
+
+        const snapBadge = document.getElementById('stockSnapshotBadge');
+        if (snapBadge) {
+            if (data.is_snapshot) {
+                snapBadge.style.display = 'inline-flex';
+                snapBadge.innerText = `SYNCED SNAPSHOT (${(data.snapshot_timestamp || '').slice(0, 16)})`;
+            } else {
+                snapBadge.style.display = 'none';
+            }
+        }
+
+        // Overview: Positions Table
+        const posBody = document.getElementById('stockPositionsTableBody');
+        const posCount = document.getElementById('stockPosCount');
+        if (posCount) posCount.innerText = `${posList.length} active`;
+        if (posBody) {
+            if (posList.length === 0) {
+                posBody.innerHTML = '<tr><td colspan="8" style="padding: 16px; text-align: center; color: var(--text-muted);">No open positions. 100% Cash Reserve.</td></tr>';
+            } else {
+                posBody.innerHTML = posList.map(p => {
+                    const unrealized = Number(p.unrealized_pnl || 0);
+                    const pnlColor = unrealized >= 0 ? 'var(--neon-green)' : '#ff5555';
+                    return `
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                            <td style="padding: 8px 12px; font-weight: bold; color: var(--text-primary);">${escapeHtml(p.ticker || '--')}</td>
+                            <td style="padding: 8px 12px;"><span class="badge ${p.side === 'BUY' ? 'neon-blue' : 'neon-purple'}">${escapeHtml(p.side || 'BUY')}</span></td>
+                            <td style="padding: 8px 12px;">${Number(p.qty || 0).toFixed(4)}</td>
+                            <td style="padding: 8px 12px;">$${Number(p.entry_price || 0).toFixed(2)}</td>
+                            <td style="padding: 8px 12px;">$${Number(p.current_price || p.entry_price || 0).toFixed(2)}</td>
+                            <td style="padding: 8px 12px;">$${Number(p.market_value || 0).toFixed(2)}</td>
+                            <td style="padding: 8px 12px; color: ${pnlColor}; font-weight: bold;">${unrealized >= 0 ? '+' : ''}$${unrealized.toFixed(2)}</td>
+                            <td style="padding: 8px 12px;"><span style="color: var(--neon-blue); font-size: 0.75rem;">${escapeHtml(p.status || 'OPEN')}</span></td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+        }
+
+        // Overview: Candidates Table
+        const candList = Array.isArray(data.candidates) ? data.candidates : [];
+        const candBody = document.getElementById('stockCandidatesTableBody');
+        const candCount = document.getElementById('stockCandCount');
+        if (candCount) candCount.innerText = `${candList.length} screened`;
+        if (candBody) {
+            if (candList.length === 0) {
+                candBody.innerHTML = '<tr><td colspan="8" style="padding: 16px; text-align: center; color: var(--text-muted);">No candidates screened in current cycle.</td></tr>';
+            } else {
+                candBody.innerHTML = candList.map(c => {
+                    const outcome = c.verdict_outcome || 'PENDING';
+                    const verdictColor = outcome === 'AUTO_APPROVED' ? 'var(--neon-green)' : outcome === 'VETOED' ? '#ff5555' : '#ffaa00';
+                    return `
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                            <td style="padding: 8px 12px; font-weight: bold; color: var(--text-primary);">${escapeHtml(c.ticker || '--')}</td>
+                            <td style="padding: 8px 12px; color: var(--text-secondary); font-size: 0.75rem;">${escapeHtml(c.strategy || '--')}</td>
+                            <td style="padding: 8px 12px;">$${Number(c.entry_est || 0).toFixed(2)}</td>
+                            <td style="padding: 8px 12px;">${Number(c.risk_r || 0).toFixed(2)}R</td>
+                            <td style="padding: 8px 12px;">$${Number(c.allocated_usd || 0).toFixed(2)}</td>
+                            <td style="padding: 8px 12px; font-weight: bold;">${Number(c.composite_score || c.rank_score || 0).toFixed(2)}</td>
+                            <td style="padding: 8px 12px; color: ${verdictColor}; font-weight: bold; font-size: 0.75rem;">${escapeHtml(outcome)}</td>
+                            <td style="padding: 8px 12px; font-size: 0.75rem;">${escapeHtml(c.status || '--')}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+        }
+
+        // Orders Table
+        const ordersList = Array.isArray(data.orders) ? data.orders : [];
+        const orderBody = document.getElementById('stockOrdersTableBody');
+        if (orderBody) {
+            if (ordersList.length === 0) {
+                orderBody.innerHTML = '<tr><td colspan="7" style="padding: 16px; text-align: center; color: var(--text-muted);">No orders recorded yet.</td></tr>';
+            } else {
+                orderBody.innerHTML = ordersList.map(o => `
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <td style="padding: 8px 12px; font-family: monospace; font-size: 0.72rem; color: var(--neon-blue);">${escapeHtml(o.client_order_id || o.order_id || '--')}</td>
+                        <td style="padding: 8px 12px; font-weight: bold;">${escapeHtml(o.ticker || '--')}</td>
+                        <td style="padding: 8px 12px;"><span class="badge ${o.side === 'BUY' ? 'neon-blue' : 'neon-purple'}">${escapeHtml(o.side || 'BUY')}</span></td>
+                        <td style="padding: 8px 12px; font-size: 0.75rem;">${escapeHtml(o.order_type || 'MARKET')}</td>
+                        <td style="padding: 8px 12px;">$${Number(o.allocated_usd || 0).toFixed(2)}</td>
+                        <td style="padding: 8px 12px;">${Number(o.target_qty || 0).toFixed(4)}</td>
+                        <td style="padding: 8px 12px; font-weight: bold; color: ${o.state === 'FILLED' ? 'var(--neon-green)' : o.state === 'ROUTED_TO_BROKER' ? 'var(--neon-blue)' : '#ffaa00'}; font-size: 0.75rem;">${escapeHtml(o.state || '--')}</td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        // Reconciliation
+        const reconStatus = document.getElementById('stockReconStatus');
+        const reconHash = document.getElementById('stockReconHash');
+        if (reconStatus) {
+            const st = data.reconciliation?.resolution_status || 'HEALTHY_MATCH';
+            reconStatus.innerText = st;
+            reconStatus.style.color = st === 'HEALTHY_MATCH' ? 'var(--neon-green)' : '#ffaa00';
+        }
+        if (reconHash) {
+            const lHash = (data.reconciliation?.local_snapshot_hash || '').slice(0, 10) || '--';
+            const bHash = (data.reconciliation?.broker_snapshot_hash || '').slice(0, 10) || '--';
+            reconHash.innerText = `Local: ${lHash} | Broker: ${bHash}`;
+        }
+
+        // Audit Logs Stream
+        const auditStream = document.getElementById('stockAuditLogsStream');
+        const audits = Array.isArray(data.audit_logs) ? data.audit_logs : [];
+        if (auditStream) {
+            if (audits.length === 0) {
+                auditStream.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 12px;">No audit events recorded.</div>';
+            } else {
+                auditStream.innerHTML = audits.map(a => {
+                    const color = a.severity === 'CRITICAL' ? '#ff4444' : a.severity === 'WARNING' ? '#ffaa00' : 'var(--neon-blue)';
+                    return `
+                        <div style="display: flex; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 4px;">
+                            <span style="color: var(--text-muted);">${(a.timestamp || '').slice(11, 19)}</span>
+                            <span style="color: ${color}; font-weight: bold;">[${escapeHtml(a.severity || 'INFO')}]</span>
+                            <span style="color: var(--text-primary); font-weight: bold;">${escapeHtml(a.component || '')}:</span>
+                            <span style="color: var(--text-secondary); flex: 1;">${escapeHtml(a.message || a.event_name || '')}</span>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        // Reports Selector
+        const repSelect = document.getElementById('stockReportSelector');
+        const repContent = document.getElementById('stockReportContent');
+        const reports = Array.isArray(data.reports) ? data.reports : [];
+        if (repSelect) {
+            repSelect.innerHTML = '<option value="">Select report...</option>' + reports.map((r, i) => `
+                <option value="${i}">${escapeHtml(r.name)} (${(r.modified || '').slice(0, 10)})</option>
+            `).join('');
+            repSelect.onchange = (e) => {
+                const idx = parseInt(e.target.value, 10);
+                if (!isNaN(idx) && reports[idx] && repContent) {
+                    repContent.innerText = reports[idx].content || 'Empty report.';
+                } else if (repContent) {
+                    repContent.innerText = 'Select a report from the dropdown above to view its contents.';
+                }
+            };
+            if (reports.length > 0 && repContent && repSelect.value === '') {
+                repSelect.value = '0';
+                repContent.innerText = reports[0].content || '';
+            }
+        }
+
+        // Console Output (Daily Run Log Tail)
+        const consoleEl = document.getElementById('stockConsoleOutput');
+        if (consoleEl) {
+            const logLines = data.logs?.[currentStockProfile === 'aggressive' ? 'daily_run_aggressive' : 'daily_run'] || [];
+            if (logLines.length > 0) {
+                consoleEl.innerText = logLines.join('\n');
+                consoleEl.scrollTop = consoleEl.scrollHeight;
+            }
+        }
+    }
+
+    async function triggerStockAction(action, btnEl, originalText) {
+        if (btnEl) {
+            btnEl.disabled = true;
+            btnEl.innerText = 'Executing...';
+        }
+        switchStockTab('reports');
+        const consoleEl = document.getElementById('stockConsoleOutput');
+        if (consoleEl) {
+            consoleEl.innerText = `[ACTION] Triggering ${action} (${currentStockProfile})...\n`;
+        }
+
+        try {
+            const res = await fetch('/api/v1/stock-exchange/run', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action, profile: currentStockProfile })
+            });
+            const result = await res.json();
+            if (consoleEl) {
+                if (result.stdout) consoleEl.innerText += `\n--- STDOUT ---\n${result.stdout}\n`;
+                if (result.stderr) consoleEl.innerText += `\n--- STDERR ---\n${result.stderr}\n`;
+                if (result.error) consoleEl.innerText += `\n[ERROR] ${result.error}\n`;
+                consoleEl.scrollTop = consoleEl.scrollHeight;
+            }
+            if (result.state) {
+                cachedStockData = result.state;
+                renderStockDeskUI(result.state);
+            } else {
+                fetchStockDeskData(currentStockProfile);
+            }
+        } catch (e) {
+            if (consoleEl) {
+                consoleEl.innerText += `\n[NETWORK ERROR] ${e.message}\n`;
+            }
+        } finally {
+            if (btnEl) {
+                btnEl.disabled = false;
+                btnEl.innerText = originalText;
+            }
+        }
+    }
+
+    if (btnOpenStockDesk && stockDeskModal) {
+        btnOpenStockDesk.addEventListener('click', () => {
+            stockDeskModal.classList.remove('hidden');
+            fetchStockDeskData(currentStockProfile);
+        });
+    }
+
+    if (btnCloseStockDesk && stockDeskModal) {
+        btnCloseStockDesk.addEventListener('click', () => {
+            stockDeskModal.classList.add('hidden');
+        });
+    }
+
+    const btnProfileCore = document.getElementById('btnProfileCore');
+    const btnProfileAggressive = document.getElementById('btnProfileAggressive');
+
+    if (btnProfileCore && btnProfileAggressive) {
+        btnProfileCore.addEventListener('click', () => {
+            currentStockProfile = 'core';
+            btnProfileCore.style.background = 'var(--neon-blue)';
+            btnProfileCore.style.color = '#000';
+            btnProfileCore.style.fontWeight = 'bold';
+            btnProfileAggressive.style.background = 'transparent';
+            btnProfileAggressive.style.color = 'var(--text-secondary)';
+            btnProfileAggressive.style.fontWeight = 'normal';
+            fetchStockDeskData('core');
+        });
+
+        btnProfileAggressive.addEventListener('click', () => {
+            currentStockProfile = 'aggressive';
+            btnProfileAggressive.style.background = 'var(--neon-purple)';
+            btnProfileAggressive.style.color = '#000';
+            btnProfileAggressive.style.fontWeight = 'bold';
+            btnProfileCore.style.background = 'transparent';
+            btnProfileCore.style.color = 'var(--text-secondary)';
+            btnProfileCore.style.fontWeight = 'normal';
+            fetchStockDeskData('aggressive');
+        });
+    }
+
+    const tabBtnOverview = document.getElementById('tabBtnStockOverview');
+    const tabBtnOrders = document.getElementById('tabBtnStockOrders');
+    const tabBtnReports = document.getElementById('tabBtnStockReports');
+
+    if (tabBtnOverview) tabBtnOverview.addEventListener('click', () => switchStockTab('overview'));
+    if (tabBtnOrders) tabBtnOrders.addEventListener('click', () => switchStockTab('orders'));
+    if (tabBtnReports) tabBtnReports.addEventListener('click', () => switchStockTab('reports'));
+
+    const btnRunCycle = document.getElementById('btnRunStockCycle');
+    if (btnRunCycle) {
+        btnRunCycle.addEventListener('click', () => triggerStockAction('run-once', btnRunCycle, '▶ Run Daily Cycle'));
+    }
+
+    const btnBacktest1 = document.getElementById('btnRunBacktestT1');
+    if (btnBacktest1) {
+        btnBacktest1.addEventListener('click', () => triggerStockAction('backtest-tier1', btnBacktest1, '📈 Backtest Tier 1'));
+    }
+
+    const btnBacktest2 = document.getElementById('btnRunBacktestT2');
+    if (btnBacktest2) {
+        btnBacktest2.addEventListener('click', () => triggerStockAction('backtest-tier2', btnBacktest2, '📊 Replay Tier 2'));
+    }
+
+    const btnOpenStreamlit = document.getElementById('btnOpenStreamlitDesk');
+    if (btnOpenStreamlit) {
+        btnOpenStreamlit.addEventListener('click', async () => {
+            const orig = btnOpenStreamlit.innerText;
+            btnOpenStreamlit.innerText = 'Opening...';
+            try {
+                const res = await fetch('/api/v1/stock-exchange/run', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'open-streamlit', profile: currentStockProfile })
+                });
+                const data = await res.json();
+                if (data.url) {
+                    window.open(data.url, '_blank');
+                } else if (data.error) {
+                    alert(data.error);
+                }
+            } catch (err) {
+                alert(`Failed to launch Streamlit: ${err.message}`);
+            } finally {
+                btnOpenStreamlit.innerText = orig;
+            }
+        });
+    }
+
+    const btnRefreshDesk = document.getElementById('btnRefreshStockDesk');
+    if (btnRefreshDesk) {
+        btnRefreshDesk.addEventListener('click', () => fetchStockDeskData(currentStockProfile));
+    }
+
+    const btnClearConsole = document.getElementById('btnClearConsoleDrawer');
+    if (btnClearConsole) {
+        btnClearConsole.addEventListener('click', () => {
+            const c = document.getElementById('stockConsoleOutput');
+            if (c) c.innerText = '// Console cleared.';
+        });
+    }
 
     // --- 2. Persistent Notes Modal ---
     const NOTES_PIN = '1446';
@@ -7410,14 +7804,55 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 };
 
-    // Backlog of alternative exercises for swapping
+    // Backlog of individual alternative exercises for swapping (deduplicated steps, never routine titles)
     const exerciseBacklog = [
-        { title: "Lumbar & Core Stability", duration: 225, frames: ["/exercises/supine_pelvic_tilts.jpg"] },
-        { title: "Child's Pose Decompression", duration: 225, frames: ["/exercises/supported_childs_pose.jpg"] },
-        { title: "Pelvic Tilt & Spinal Alignment", duration: 225, frames: ["/exercises/supine_pelvic_tilts.jpg"] },
-        { title: "Hip & Lower Body Mobility", duration: 225, frames: ["/exercises/hip_glute_bridge.jpg"] },
-        { title: "Shoulder & Scapular Rehab", duration: 225, frames: ["/exercises/scapular_wall_slide_setup_hud.svg"] }
+        { title: "Supine Pelvic Tilts", cue: "Flatten lower back against mat, gentle arch on inhale.", duration: 225, frames: ["/exercises/supine_pelvic_tilts.jpg"], category: "rehab" },
+        { title: "Supported Child's Pose", cue: "Widen knees, rest torso forward on bolster, lengthen spine.", duration: 225, frames: ["/exercises/supported_childs_pose.jpg"], category: "yoga" },
+        { title: "Glute Bridge Hold", cue: "Drive through heels, squeeze glutes, maintain neutral pelvis.", duration: 225, frames: ["/exercises/hip_glute_bridge.jpg"], category: "rehab" },
+        { title: "Bird Dog Alternating", cue: "Extend opposite arm and leg, brace core without hip rotation.", duration: 225, frames: ["/exercises/bird_dog.jpg"], category: "rehab" },
+        { title: "Scapular Wall Slides", cue: "Back flat to wall, elbows and wrists gliding upward.", duration: 225, frames: ["/exercises/scapular_wall_slide_setup_hud.svg"], category: "rehab" }
     ];
+
+    const getDailySwapStorageKey = () => 'rumble_daily_exercise_swaps_' + new Date().toLocaleDateString('en-CA');
+
+    function pruneOldExerciseSwaps() {
+        try {
+            const todayKey = getDailySwapStorageKey();
+            for (let i = localStorage.length - 1; i >= 0; i--) {
+                const k = localStorage.key(i);
+                if (k && k.startsWith('rumble_daily_exercise_swaps_') && k !== todayKey) {
+                    localStorage.removeItem(k);
+                }
+            }
+        } catch (e) {
+            console.warn('Failed to prune old exercise swaps:', e);
+        }
+    }
+    pruneOldExerciseSwaps();
+
+    function getTodaySwaps() {
+        try {
+            const raw = localStorage.getItem(getDailySwapStorageKey());
+            return raw ? JSON.parse(raw) : {};
+        } catch {
+            return {};
+        }
+    }
+
+    function setTodaySwap(routineId, stepIdx, swapData) {
+        try {
+            const key = getDailySwapStorageKey();
+            const current = getTodaySwaps();
+            if (swapData === null) {
+                delete current[`${routineId}:${stepIdx}`];
+            } else {
+                current[`${routineId}:${stepIdx}`] = swapData;
+            }
+            localStorage.setItem(key, JSON.stringify(current));
+        } catch (e) {
+            console.warn('Failed to persist exercise swap:', e);
+        }
+    }
 
     let currentRoutineRunning = null;
     let isRunnerPaused = false;
@@ -7493,7 +7928,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const routineMins = foundRoutine.duration_minutes || 15;
         totalRoutineDuration = routineMins * 60;
         
-        currentProtocolSteps = (foundRoutine.steps || []).map(s => ({ ...s }));
+        currentProtocolSteps = (foundRoutine.steps || []).map(s => ({
+            ...s,
+            originalTitle: s.title,
+            originalCue: s.cue,
+            originalFrames: Array.isArray(s.frames) ? [...s.frames] : [],
+            originalVideo: s.video || null
+        }));
         
         // Calibrate step durations so they strictly add up to the routine's declared duration
         if (currentProtocolSteps.length > 0) {
@@ -7511,6 +7952,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
         }
+
+        // Apply same-day swap overrides while strictly preserving the calibrated slot duration
+        const todaySwaps = getTodaySwaps();
+        const routineKey = foundRoutine.id || rawId;
+        currentProtocolSteps.forEach((step, idx) => {
+            const override = todaySwaps[`${routineKey}:${idx}`];
+            if (override) {
+                step.title = override.title;
+                if (override.cue) step.cue = override.cue;
+                if (override.frames) step.frames = override.frames;
+                if (override.video) step.video = override.video;
+                step.isSwapped = true;
+                step.swappedFrom = override.originalTitle || step.originalTitle;
+            }
+        });
 
         currentStepIndex = 0;
         timeLeft = currentProtocolSteps[0].duration;
@@ -7557,7 +8013,9 @@ document.addEventListener('DOMContentLoaded', () => {
             runnerTotalTimer.innerText = formatTime(totalTimeLeft);
         }
 
-        if (runnerStep) runnerStep.innerText = `Step ${currentStepIndex + 1} of ${currentProtocolSteps.length}: ${step.title}`;
+        if (runnerStep) {
+            runnerStep.innerText = `Step ${currentStepIndex + 1} of ${currentProtocolSteps.length}: ${step.title}${step.isSwapped ? ' (Swapped)' : ''}`;
+        }
         if (runnerTimer) runnerTimer.innerText = formatTime(timeLeft);
         const runnerStepTimer = document.getElementById('runnerStepTimer');
         if (runnerStepTimer) runnerStepTimer.innerText = formatTime(timeLeft);
@@ -7798,13 +8256,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function getAllUniqueExercises() {
         const map = new Map();
+        const routineTitles = new Set();
         if (typeof YOGA_ROUTINES === 'object' && YOGA_ROUTINES !== null) {
+            Object.values(YOGA_ROUTINES).forEach(routine => {
+                if (routine.title) routineTitles.add(routine.title.trim().toLowerCase());
+                if (routine.name) routineTitles.add(routine.name.trim().toLowerCase());
+            });
             Object.values(YOGA_ROUTINES).forEach(routine => {
                 const cat = (routine.category || 'yoga').toLowerCase();
                 if (Array.isArray(routine.steps)) {
                     routine.steps.forEach(step => {
                         const normTitle = (step.title || '').trim().toLowerCase();
-                        if (normTitle && !map.has(normTitle)) {
+                        if (normTitle && !routineTitles.has(normTitle) && !map.has(normTitle)) {
                             map.set(normTitle, {
                                 title: step.title.trim(),
                                 cue: step.cue || '',
@@ -7821,7 +8284,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (typeof exerciseBacklog !== 'undefined' && Array.isArray(exerciseBacklog)) {
             exerciseBacklog.forEach(item => {
                 const normTitle = (item.title || '').trim().toLowerCase();
-                if (normTitle && !map.has(normTitle)) {
+                if (normTitle && !routineTitles.has(normTitle) && !map.has(normTitle)) {
                     map.set(normTitle, {
                         title: item.title.trim(),
                         cue: item.cue || '',
@@ -7840,6 +8303,22 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!swapList) return;
         swapList.innerHTML = '';
         const q = (filterText || '').trim().toLowerCase();
+
+        // Check for same-day active swap on current step for restore button visibility
+        const swapRestoreStepContainer = document.getElementById('swapRestoreStepContainer');
+        const btnRestoreOriginalStep = document.getElementById('btnRestoreOriginalStep');
+        const routineId = currentRoutineRunning?.id || 'y1';
+        const todaySwaps = getTodaySwaps();
+        const currentOverride = todaySwaps[`${routineId}:${currentStepIndex}`];
+
+        if (currentSwapMode === 'exercise' && currentOverride && swapRestoreStepContainer) {
+            swapRestoreStepContainer.style.display = 'block';
+            if (btnRestoreOriginalStep) {
+                btnRestoreOriginalStep.innerText = `↺ Restore Original Step (${currentOverride.originalTitle || 'Original'})`;
+            }
+        } else if (swapRestoreStepContainer) {
+            swapRestoreStepContainer.style.display = 'none';
+        }
 
         if (currentSwapMode === 'routine') {
             const allRoutines = Object.values(YOGA_ROUTINES);
@@ -7915,15 +8394,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 item.addEventListener('mouseleave', () => item.style.background = 'rgba(255,255,255,0.02)');
                 item.addEventListener('click', () => {
                     if (currentProtocolSteps && currentProtocolSteps[currentStepIndex]) {
-                        // In-place exercise step replacement preserving step's allocated duration
-                        const preservedDuration = currentProtocolSteps[currentStepIndex].duration || ex.duration || 120;
+                        // In-place exercise step replacement strictly preserving the step's allocated duration slot
+                        const routineId = currentRoutineRunning?.id || 'y1';
+                        const slotDuration = currentProtocolSteps[currentStepIndex].duration || ex.duration || 120;
+                        const originalTitle = currentProtocolSteps[currentStepIndex].originalTitle || currentProtocolSteps[currentStepIndex].title;
+
+                        setTodaySwap(routineId, currentStepIndex, {
+                            title: ex.title,
+                            cue: ex.cue,
+                            frames: Array.isArray(ex.frames) ? [...ex.frames] : [],
+                            video: ex.video || null,
+                            swappedAt: new Date().toISOString(),
+                            originalTitle: originalTitle
+                        });
+
                         currentProtocolSteps[currentStepIndex] = {
                             ...currentProtocolSteps[currentStepIndex],
                             title: ex.title,
                             cue: ex.cue,
-                            frames: Array.isArray(ex.frames) ? [...ex.frames] : []
+                            frames: Array.isArray(ex.frames) ? [...ex.frames] : [],
+                            duration: slotDuration,
+                            isSwapped: true,
+                            swappedFrom: originalTitle
                         };
-                        timeLeft = preservedDuration;
+                        timeLeft = slotDuration;
                         updateStepUI();
                     }
                     if (swapModal) swapModal.classList.add('hidden');
@@ -7971,6 +8465,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (btnCloseSwap) {
         btnCloseSwap.addEventListener('click', () => {
+            if (swapModal) swapModal.classList.add('hidden');
+            isRunnerPaused = false;
+            if (btnTogglePauseRunner) btnTogglePauseRunner.innerText = 'Pause';
+        });
+    }
+
+    const btnRestoreOriginalStep = document.getElementById('btnRestoreOriginalStep');
+    if (btnRestoreOriginalStep) {
+        btnRestoreOriginalStep.addEventListener('click', () => {
+            const routineId = currentRoutineRunning?.id || 'y1';
+            setTodaySwap(routineId, currentStepIndex, null);
+            if (currentProtocolSteps && currentProtocolSteps[currentStepIndex]) {
+                const step = currentProtocolSteps[currentStepIndex];
+                const slotDuration = step.duration;
+                step.title = step.originalTitle || step.title;
+                step.cue = step.originalCue || step.cue;
+                step.frames = Array.isArray(step.originalFrames) ? [...step.originalFrames] : (step.frames || []);
+                step.video = step.originalVideo || null;
+                step.isSwapped = false;
+                step.swappedFrom = null;
+                timeLeft = slotDuration;
+                updateStepUI();
+            }
             if (swapModal) swapModal.classList.add('hidden');
             isRunnerPaused = false;
             if (btnTogglePauseRunner) btnTogglePauseRunner.innerText = 'Pause';
