@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rumble OS // Nephew 3D QA & AGY Workstation</title>
+    <title>Mason Jones Workstation // 3D QA & Engineering Portal</title>
     <link rel="icon" type="image/png" href="/Rumble_Icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -567,11 +567,11 @@
         <header>
             <div class="badge">
                 <span class="badge-dot"></span>
-                Rumble OS // Dev & 3D QA Station
+                Official Engineering Portal &bull; QA Workstation
             </div>
-            <h1>Nephew 3D QA & AGY Workstation</h1>
+            <h1>Mason Jones Workstation</h1>
             <p class="subtitle">
-                Turn-key setup guide to install <strong>Blender</strong>, activate <strong>Google Antigravity CLI (AGY)</strong>, and inspect 100 3D assets for Roblox UGC & Fortnite UEFN.
+                Official 3D asset QA & AI-assisted development station for the 100-Item Roblox UGC & Fortnite UEFN Production Catalog.
             </p>
 
             <!-- OS Platform Switcher -->
@@ -829,19 +829,14 @@
         </section>
 
         <footer>
-            <p>Rumble OS &bull; 100-Item Dual-Platform Production Pipeline &bull; Automated with Google Antigravity</p>
+            <p>Mason Jones Workstation &bull; ThunderOps AI &bull; 100-Item Dual-Platform Production Pipeline</p>
         </footer>
     </div>
 
     <script>
-        // Auto-detect OS on load
+        // Always default to Windows instructions
         window.addEventListener('DOMContentLoaded', () => {
-            const platform = (navigator.userAgent || '').toLowerCase();
-            if (platform.includes('mac') || platform.includes('iphone') || platform.includes('ipad')) {
-                setOS('mac');
-            } else {
-                setOS('win');
-            }
+            setOS('win');
         });
 
         function setOS(os) {

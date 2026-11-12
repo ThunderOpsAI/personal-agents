@@ -6,6 +6,10 @@ const nextConfig = {
       destination: '/index.html',
     },
     {
+      source: '/mason',
+      destination: '/setup.html',
+    },
+    {
       source: '/setup',
       destination: '/setup.html',
     },

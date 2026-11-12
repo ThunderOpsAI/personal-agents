@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mason Jones Workstation // 3D QA & Engineering Portal</title>
+    <link rel="icon" type="image/png" href="/Rumble_Icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0a0c14;
+            --card-bg: rgba(22, 27, 46, 0.7);
+            --card-border: rgba(0, 240, 255, 0.18);
+            --card-hover-border: rgba(0, 240, 255, 0.45);
+            --neon-cyan: #00f0ff;
+            --neon-blue: #38bdf8;
+            --neon-purple: #a855f7;
+            --neon-green: #10b981;
+            --neon-amber: #f59e0b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --code-bg: #05070d;
+            --font-heading: 'Outfit', sans-serif;
+            --font-body: 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow-x: hidden;
+            position: relative;
+            padding-bottom: 80px;
+        }
+
+        /* Ambient Background Glow */
+        .ambient-glow {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(120px);
+            z-index: -1;
+            opacity: 0.28;
+            pointer-events: none;
+        }
+        .glow-1 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, var(--neon-purple), transparent 70%);
+            top: -100px;
+            left: -100px;
+        }
+        .glow-2 {
+            width: 450px;
+            height: 450px;
+            background: radial-gradient(circle, var(--neon-cyan), transparent 70%);
+            bottom: 50px;
+            right: -100px;
+        }
+
+        .container {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 40px 24px;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            border-radius: 9999px;
+            background: rgba(0, 240, 255, 0.08);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--neon-cyan);
+            margin-bottom: 16px;
+        }
+        .badge-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--neon-cyan);
+            box-shadow: 0 0 10px var(--neon-cyan);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
+        }
+
+        h1 {
+            font-family: var(--font-heading);
+            font-size: 2.6rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #ffffff 40%, var(--neon-cyan) 80%, var(--neon-purple) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            max-width: 680px;
+            margin: 0 auto;
+        }
+
+        /* Platform Switcher */
+        .platform-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin: 30px 0 40px;
+        }
+
+        .platform-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .platform-btn:hover {
+            border-color: var(--neon-cyan);
+            color: #fff;
+        }
+        .platform-btn.active {
+            background: rgba(0, 240, 255, 0.12);
+            border-color: var(--neon-cyan);
+            color: #fff;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.2);
+        }
+
+        /* Step Card */
+        .step-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 28px 32px;
+            margin-bottom: 28px;
+            backdrop-filter: blur(16px);
+            transition: all 0.25s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .step-card:hover {
+            border-color: var(--card-hover-border);
+            box-shadow: 0 12px 40px -10px rgba(0, 240, 255, 0.15);
+        }
+
+        .step-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--neon-cyan), var(--neon-purple));
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+
+        .step-num {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+            color: #000;
+            font-family: var(--font-heading);
+            font-weight: 800;
+            font-size: 1.1rem;
+        }
+
+        .step-title {
+            font-family: var(--font-heading);
+            font-size: 1.45rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .step-desc {
+            color: var(--text-secondary);
+            font-size: 0.98rem;
+            margin-bottom: 20px;
+        }
+
+        /* Action Buttons */
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, var(--neon-cyan), #0284c7);
+            color: #000;
+            font-weight: 700;
+            font-size: 1rem;
+            padding: 13px 26px;
+            border-radius: 10px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+            border: none;
+            cursor: pointer;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.5);
+            color: #000;
+        }
+
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            color: #fff;
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 11px 20px;
+            border-radius: 10px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .btn-secondary:hover {
+            border-color: var(--neon-cyan);
+            background: rgba(0, 240, 255, 0.08);
+            color: var(--neon-cyan);
+        }
+
+        .btn-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            margin-top: 14px;
+        }
+
+        /* Code Snippet Box */
+        .code-box {
+            background: var(--code-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            position: relative;
+            margin: 14px 0;
+            overflow: hidden;
+        }
+
+        .code-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 14px;
+            background: rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            text-transform: uppercase;
+        }
+
+        .code-content {
+            padding: 14px 16px;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            color: var(--neon-cyan);
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .copy-btn {
+            background: rgba(0, 240, 255, 0.1);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            color: var(--neon-cyan);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .copy-btn:hover {
+            background: var(--neon-cyan);
+            color: #000;
+        }
+        .copy-btn.copied {
+            background: var(--neon-green);
+            border-color: var(--neon-green);
+            color: #000;
+        }
+
+        /* Prompts Grid */
+        .prompts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin-top: 18px;
+        }
+
+        .prompt-card {
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.2s ease;
+        }
+        .prompt-card:hover {
+            border-color: rgba(168, 85, 247, 0.4);
+            transform: translateY(-2px);
+        }
+        .prompt-title {
+            font-weight: 700;
+            color: #fff;
+            font-size: 0.95rem;
+            margin-bottom: 6px;
+        }
+        .prompt-text {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-style: italic;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        /* Checklist Grid */
+        .qa-checklist {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 16px;
+            margin-top: 18px;
+        }
+        .qa-item {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 16px;
+        }
+        .qa-item h4 {
+            color: var(--neon-cyan);
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .qa-item ul {
+            list-style: none;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        .qa-item li {
+            margin-bottom: 6px;
+            position: relative;
+            padding-left: 16px;
+        }
+        .qa-item li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: var(--neon-purple);
+            font-weight: bold;
+        }
+
+        /* Batch Downloads */
+        .batch-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 14px;
+        }
+        .batch-chip {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            text-decoration: none;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .batch-chip:hover {
+            border-color: var(--neon-cyan);
+            color: var(--neon-cyan);
+            background: rgba(0, 240, 255, 0.05);
+        }
+
+        /* Video Walkthrough Box */
+        .video-walkthrough-box {
+            background: #060913;
+            border: 1px solid rgba(0, 240, 255, 0.35);
+            border-radius: 12px;
+            margin: 18px 0 24px;
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 240, 255, 0.12);
+        }
+        .video-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 16px;
+            background: rgba(22, 27, 46, 0.85);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 0.88rem;
+        }
+        .video-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #fff;
+        }
+        .video-live-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ef4444;
+            box-shadow: 0 0 8px #ef4444;
+            animation: pulse 1.5s infinite;
+        }
+        .video-frame {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 800 / 480;
+            background: #0a0c14;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .demo-screen {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+        .video-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding: 12px 16px;
+            background: rgba(15, 20, 35, 0.95);
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            font-size: 0.86rem;
+        }
+        .video-tip {
+            color: var(--text-secondary);
+            flex: 1;
+            min-width: 260px;
+        }
+        .video-tip code {
+            color: var(--neon-cyan);
+            background: rgba(0, 240, 255, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: var(--font-mono);
+        }
+        .video-tip kbd {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            padding: 2px 5px;
+            font-size: 0.8rem;
+            color: #fff;
+        }
+        .btn-replay {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(0, 240, 255, 0.1);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            color: var(--neon-cyan);
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .btn-replay:hover {
+            background: var(--neon-cyan);
+            color: #000;
+        }
+
+        /* Hidden OS classes */
+        .os-win, .os-mac {
+            display: block;
+        }
+        body.is-windows .os-mac {
+            display: none !important;
+        }
+        body.is-mac .os-win {
+            display: none !important;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-top: 60px;
+        }
+
+        @media (max-width: 640px) {
+            h1 { font-size: 1.9rem; }
+            .step-card { padding: 20px; }
+            .btn-primary, .btn-secondary { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body class="is-windows">
+
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="badge">
+                <span class="badge-dot"></span>
+                Official Engineering Portal &bull; QA Workstation
+            </div>
+            <h1>Mason Jones Workstation</h1>
+            <p class="subtitle">
+                Official 3D asset QA & AI-assisted development station for the 100-Item Roblox UGC & Fortnite UEFN Production Catalog.
+            </p>
+
+            <!-- OS Platform Switcher -->
+            <div class="platform-bar">
+                <button class="platform-btn active" id="btn-win" onclick="setOS('win')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/></svg>
+                    Windows (PowerShell)
+                </button>
+                <button class="platform-btn" id="btn-mac" onclick="setOS('mac')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.61-.75 1.04-1.8 1.01-2.87-.96.04-2.15.65-2.82 1.44-.58.68-1.1 1.76-1.01 2.81 1.07.08 2.21-.57 2.82-1.38z"/></svg>
+                    macOS (Terminal)
+                </button>
+            </div>
+        </header>
+
+        <!-- STEP 1: Blender -->
+        <section class="step-card">
+            <div class="step-header">
+                <div class="step-num">1</div>
+                <div class="step-title">Download & Install Blender</div>
+            </div>
+            <p class="step-desc">
+                Blender (v4.3 or v5.x) is required to view <code>source.blend</code> files in <em>Material Preview</em>, examine dual cages, and run the automated inspection scripts.
+            </p>
+            <div class="btn-row">
+                <a href="https://www.blender.org/download/" target="_blank" class="btn-primary">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Download Blender (Official Site)
+                </a>
+                <span style="color: var(--text-muted); font-size: 0.9rem;">or install instantly via terminal:</span>
+            </div>
+
+            <!-- Windows Winget -->
+            <div class="os-win">
+                <div class="code-box">
+                    <div class="code-header">
+                        <span>PowerShell (Run as Administrator)</span>
+                        <button class="copy-btn" onclick="copySnippet('winget install BlenderFoundation.Blender', this)">Copy</button>
+                    </div>
+                    <div class="code-content">winget install BlenderFoundation.Blender</div>
+                </div>
+            </div>
+
+            <!-- macOS Brew -->
+            <div class="os-mac">
+                <div class="code-box">
+                    <div class="code-header">
+                        <span>macOS Terminal</span>
+                        <button class="copy-btn" onclick="copySnippet('brew install --cask blender', this)">Copy</button>
+                    </div>
+                    <div class="code-content">brew install --cask blender</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- STEP 2: AGY CLI -->
+        <section class="step-card">
+            <div class="step-header">
+                <div class="step-num">2</div>
+                <div class="step-title">Download & Install AGY CLI (Google Antigravity)</div>
+            </div>
+            <p class="step-desc">
+                <strong>AGY</strong> is your AI pair-programmer in the terminal. Once installed, it can inspect files, generate renders, test triangle counts, and update spreadsheets autonomously.
+            </p>
+
+            <!-- Windows PowerShell Installer -->
+            <div class="os-win">
+                <!-- 10-Second Visual Walkthrough Demo -->
+                <div class="video-walkthrough-box">
+                    <div class="video-header">
+                        <div class="video-title">
+                            <span class="video-live-dot"></span>
+                            <strong>10-Second Visual Walkthrough:</strong> Opening Search & Installing AGY in PowerShell
+                        </div>
+                        <button class="btn-replay" onclick="replayDemo()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                            Replay Demo
+                        </button>
+                    </div>
+                    <div class="video-frame">
+                        <img id="demo-img" src="/powershell_install_demo.webp" alt="Windows PowerShell Installation Walkthrough" class="demo-screen">
+                    </div>
+                    <div class="video-footer">
+                        <div class="video-tip">
+                            💡 <strong>What you're watching:</strong> Click <strong>Search</strong> on taskbar &rarr; type <code>powershell</code> &rarr; click <strong>Windows PowerShell</strong> &rarr; paste the command below and press <kbd>Enter</kbd>.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-box">
+                    <div class="code-header">
+                        <span>1. Run in PowerShell</span>
+                        <button class="copy-btn" onclick="copySnippet('irm https://antigravity.google/cli/install.ps1 | iex', this)">Copy</button>
+                    </div>
+                    <div class="code-content">irm https://antigravity.google/cli/install.ps1 | iex</div>
+                </div>
+            </div>
+
+            <!-- macOS Shell Installer -->
+            <div class="os-mac">
+                <div class="code-box">
+                    <div class="code-header">
+                        <span>1. Run in macOS / Linux Terminal</span>
+                        <button class="copy-btn" onclick="copySnippet('curl -fsSL https://antigravity.google/cli/install.sh | bash', this)">Copy</button>
+                    </div>
+                    <div class="code-content">curl -fsSL https://antigravity.google/cli/install.sh | bash</div>
+                </div>
+            </div>
+
+            <div class="code-box">
+                <div class="code-header">
+                    <span>2. Verify Installation</span>
+                    <button class="copy-btn" onclick="copySnippet('agy --version', this)">Copy</button>
+                </div>
+                <div class="code-content">agy --version</div>
+            </div>
+        </section>
+
+        <!-- STEP 3: Clone Project Files -->
+        <section class="step-card">
+            <div class="step-header">
+                <div class="step-num">3</div>
+                <div class="step-title">Get Project Files & 3D Assets</div>
+            </div>
+            <p class="step-desc">
+                Clone the complete 100-item asset catalog and automated test suites from GitHub:
+            </p>
+
+            <div class="code-box">
+                <div class="code-header">
+                    <span>Clone Repository</span>
+                    <button class="copy-btn" onclick="copySnippet('git clone https://github.com/ThunderOpsAI/patreon.git &amp;&amp; cd patreon', this)">Copy</button>
+                </div>
+                <div class="code-content">git clone https://github.com/ThunderOpsAI/patreon.git && cd patreon</div>
+            </div>
+
+            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 14px;">
+                Direct GitHub repository link:
+                <a href="https://github.com/ThunderOpsAI/patreon" target="_blank" style="color: var(--neon-cyan); text-decoration: none; font-weight: 600;">github.com/ThunderOpsAI/patreon</a>
+            </p>
+        </section>
+
+        <!-- STEP 4: Automated Commands -->
+        <section class="step-card">
+            <div class="step-header">
+                <div class="step-num">4</div>
+                <div class="step-title">Run Inspection Commands</div>
+            </div>
+            <p class="step-desc">
+                From inside the <code>patreon</code> folder, you can run automated 4-angle studio renders or full Section E engine validation:
+            </p>
+
+            <!-- Command 1: Turntable -->
+            <div class="code-box">
+                <div class="code-header">
+                    <span>Automated 4-Angle Turntable Studio (front, side, back, 3/4)</span>
+                    <button class="copy-btn" onclick="copySnippet('blender -b -P inspection/inspect_item.py -- roblox_uefn/items/001_R-01_oversized_grunge_star_zipup', this)">Copy</button>
+                </div>
+                <div class="code-content">blender -b -P inspection/inspect_item.py -- roblox_uefn/items/001_R-01_oversized_grunge_star_zipup</div>
+            </div>
+
+            <!-- Command 2: Engine Validation -->
+            <div class="code-box">
+                <div class="code-header">
+                    <span>Automated Engine Validator (Checks cages, triangles, UVs, UCX collision)</span>
+                    <button class="copy-btn" onclick="copySnippet('blender -b roblox_uefn/items/001_R-01_oversized_grunge_star_zipup/source.blend -P roblox_uefn/scripts/validate_item.py -- roblox_uefn/items/001_R-01_oversized_grunge_star_zipup/item.json', this)">Copy</button>
+                </div>
+                <div class="code-content">blender -b roblox_uefn/items/001_R-01_oversized_grunge_star_zipup/source.blend -P roblox_uefn/scripts/validate_item.py -- roblox_uefn/items/001_R-01_oversized_grunge_star_zipup/item.json</div>
+            </div>
+        </section>
+
+        <!-- STEP 5: Prompts to paste in AGY -->
+        <section class="step-card">
+            <div class="step-header">
+                <div class="step-num">5</div>
+                <div class="step-title">Prompts to Run Inside AGY (AI Assistant)</div>
+            </div>
+            <p class="step-desc">
+                Launch AGY by typing <code>agy</code> in your terminal inside the <code>patreon</code> folder. Then paste any of these prompts to let the AI do the heavy lifting:
+            </p>
+
+            <div class="prompts-grid">
+                <div class="prompt-card">
+                    <div>
+                        <div class="prompt-title">🔍 Inspect Single Asset</div>
+                        <div class="prompt-text">"Inspect item 001. Run the turntable render, evaluate source.blend, and tell me if there are any issues with triangle count, textures, or cages."</div>
+                    </div>
+                    <button class="copy-btn" onclick="copySnippet('Inspect item 001. Run the turntable render, evaluate source.blend, and tell me if there are any issues with triangle count, textures, or cages.', this)">Copy Prompt</button>
+                </div>
+
+                <div class="prompt-card">
+                    <div>
+                        <div class="prompt-title">📋 Review Entire Batch</div>
+                        <div class="prompt-text">"Review all items in Batch 1 (items 001 to 020). Run inspect_item.py on each, verify the turntable renders, and record PASS or FAIL in inspection/inspection_log.csv."</div>
+                    </div>
+                    <button class="copy-btn" onclick="copySnippet('Review all items in Batch 1 (items 001 to 020). Run inspect_item.py on each, verify the turntable renders, and record PASS or FAIL in inspection/inspection_log.csv.', this)">Copy Prompt</button>
+                </div>
+
+                <div class="prompt-card">
+                    <div>
+                        <div class="prompt-title">🛠️ Fix Visual / Mesh Issue</div>
+                        <div class="prompt-text">"Item 037 has a rotation issue on its attachment. Patch build.py so the attachment stays at (0, 0, 0) and re-export the FBX."</div>
+                    </div>
+                    <button class="copy-btn" onclick="copySnippet('Item 037 has a rotation issue on its attachment. Patch build.py so the attachment stays at (0, 0, 0) and re-export the FBX.', this)">Copy Prompt</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- STEP 6: Visual QA Checklist -->
+        <section class="step-card">
+            <div class="step-header">
+                <div class="step-num">6</div>
+                <div class="step-title">Quick Visual QA Cheat Sheet (What to Check)</div>
+            </div>
+            <p class="step-desc">
+                When inspecting <code>source.blend</code> in the Blender 3D Viewport (press <strong>Z</strong> &rarr; <em>Material Preview</em>):
+            </p>
+
+            <div class="qa-checklist">
+                <div class="qa-item">
+                    <h4>👕 Roblox Layered Clothing</h4>
+                    <ul>
+                        <li>Unhide <code>_InnerCage</code> & <code>_OuterCage</code>.</li>
+                        <li>Both cages must have <strong>exactly 1,358 vertices</strong>.</li>
+                        <li>UV map must be named <strong><code>map1</code></strong>.</li>
+                        <li>Rotate spine/leg bones in Pose Mode to check deformation.</li>
+                    </ul>
+                </div>
+
+                <div class="qa-item">
+                    <h4>👑 Roblox Rigid Accessories</h4>
+                    <ul>
+                        <li>Check for <code>Attachment</code> empty (e.g. <code>HatAttachment</code>).</li>
+                        <li>Position must be precisely at <strong>(0.0, 0.0, 0.0)</strong>.</li>
+                        <li>Rings & halos rotated 90° on X so opening aligns with head/body.</li>
+                        <li>PBR textures bound cleanly in Material Preview.</li>
+                    </ul>
+                </div>
+
+                <div class="qa-item">
+                    <h4>⚡ Fortnite UEFN Props</h4>
+                    <ul>
+                        <li>Unhide all <code>UCX_</code> collision objects.</li>
+                        <li>Each UCX hull must be convex with <strong>&le; 256 vertices</strong>.</li>
+                        <li>Centimeter scale: 1 Blender unit = 1 cm.</li>
+                        <li><code>.verse</code> file present in <code>export/</code> for interactive props.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <p style="margin-top: 18px; color: var(--text-secondary); font-size: 0.9rem;">
+                📄 Detailed step-by-step guide is inside: <code style="color: var(--neon-cyan);">inspection/INSPECTION_GUIDE.md</code><br>
+                📊 Record your review status in: <code style="color: var(--neon-cyan);">inspection/inspection_log.csv</code>
+            </p>
+        </section>
+
+        <footer>
+            <p>Mason Jones Workstation &bull; ThunderOps AI &bull; 100-Item Dual-Platform Production Pipeline</p>
+        </footer>
+    </div>
+
+    <script>
+        // Always default to Windows instructions
+        window.addEventListener('DOMContentLoaded', () => {
+            setOS('win');
+        });
+
+        function setOS(os) {
+            const body = document.body;
+            const btnWin = document.getElementById('btn-win');
+            const btnMac = document.getElementById('btn-mac');
+
+            if (os === 'win') {
+                body.classList.remove('is-mac');
+                body.classList.add('is-windows');
+                btnWin.classList.add('active');
+                btnMac.classList.remove('active');
+            } else {
+                body.classList.remove('is-windows');
+                body.classList.add('is-mac');
+                btnMac.classList.add('active');
+                btnWin.classList.remove('active');
+            }
+        }
+
+        function replayDemo() {
+            const img = document.getElementById('demo-img');
+            if (img) {
+                const base = img.src.split('?')[0];
+                img.src = base + '?t=' + new Date().getTime();
+            }
+        }
+
+        function copySnippet(text, btn) {
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = btn.innerText;
+                btn.innerText = 'Copied!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy text: ', err);
+            });
+        }
+    </script>
+</body>
+</html>
