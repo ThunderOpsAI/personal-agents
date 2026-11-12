@@ -433,6 +433,104 @@
             background: rgba(0, 240, 255, 0.05);
         }
 
+        /* Video Walkthrough Box */
+        .video-walkthrough-box {
+            background: #060913;
+            border: 1px solid rgba(0, 240, 255, 0.35);
+            border-radius: 12px;
+            margin: 18px 0 24px;
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 240, 255, 0.12);
+        }
+        .video-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 16px;
+            background: rgba(22, 27, 46, 0.85);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 0.88rem;
+        }
+        .video-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #fff;
+        }
+        .video-live-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ef4444;
+            box-shadow: 0 0 8px #ef4444;
+            animation: pulse 1.5s infinite;
+        }
+        .video-frame {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 800 / 480;
+            background: #0a0c14;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .demo-screen {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+        .video-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding: 12px 16px;
+            background: rgba(15, 20, 35, 0.95);
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            font-size: 0.86rem;
+        }
+        .video-tip {
+            color: var(--text-secondary);
+            flex: 1;
+            min-width: 260px;
+        }
+        .video-tip code {
+            color: var(--neon-cyan);
+            background: rgba(0, 240, 255, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: var(--font-mono);
+        }
+        .video-tip kbd {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            padding: 2px 5px;
+            font-size: 0.8rem;
+            color: #fff;
+        }
+        .btn-replay {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(0, 240, 255, 0.1);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            color: var(--neon-cyan);
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .btn-replay:hover {
+            background: var(--neon-cyan);
+            color: #000;
+        }
+
         /* Hidden OS classes */
         .os-win, .os-mac {
             display: block;
@@ -541,6 +639,28 @@
 
             <!-- Windows PowerShell Installer -->
             <div class="os-win">
+                <!-- 10-Second Visual Walkthrough Demo -->
+                <div class="video-walkthrough-box">
+                    <div class="video-header">
+                        <div class="video-title">
+                            <span class="video-live-dot"></span>
+                            <strong>10-Second Visual Walkthrough:</strong> Opening Search & Installing AGY in PowerShell
+                        </div>
+                        <button class="btn-replay" onclick="replayDemo()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                            Replay Demo
+                        </button>
+                    </div>
+                    <div class="video-frame">
+                        <img id="demo-img" src="/powershell_install_demo.webp" alt="Windows PowerShell Installation Walkthrough" class="demo-screen">
+                    </div>
+                    <div class="video-footer">
+                        <div class="video-tip">
+                            💡 <strong>What you're watching:</strong> Click <strong>Search</strong> on taskbar &rarr; type <code>powershell</code> &rarr; click <strong>Windows PowerShell</strong> &rarr; paste the command below and press <kbd>Enter</kbd>.
+                        </div>
+                    </div>
+                </div>
+
                 <div class="code-box">
                     <div class="code-header">
                         <span>1. Run in PowerShell</span>
@@ -739,6 +859,14 @@
                 body.classList.add('is-mac');
                 btnMac.classList.add('active');
                 btnWin.classList.remove('active');
+            }
+        }
+
+        function replayDemo() {
+            const img = document.getElementById('demo-img');
+            if (img) {
+                const base = img.src.split('?')[0];
+                img.src = base + '?t=' + new Date().getTime();
             }
         }
 
