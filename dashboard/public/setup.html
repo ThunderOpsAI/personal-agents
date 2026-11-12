@@ -531,6 +531,150 @@
             color: #000;
         }
 
+        /* Troubleshooting / GPU Driver Card */
+        .troubleshoot-card {
+            background: rgba(245, 158, 11, 0.04);
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            border-radius: 16px;
+            padding: 24px 28px;
+            margin-bottom: 32px;
+            backdrop-filter: blur(16px);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px -10px rgba(245, 158, 11, 0.15);
+        }
+        .troubleshoot-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(to bottom, #f59e0b, #ef4444);
+        }
+        .alert-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            background: rgba(245, 158, 11, 0.12);
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            color: #f59e0b;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 12px;
+        }
+        .troubleshoot-title {
+            font-family: var(--font-heading);
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .troubleshoot-desc {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+        .fix-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+            gap: 18px;
+            margin-top: 16px;
+        }
+        .fix-box {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .fix-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .fix-num {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px;
+            height: 26px;
+            border-radius: 6px;
+            background: #f59e0b;
+            color: #000;
+            font-weight: 800;
+            font-size: 0.85rem;
+        }
+        .fix-title {
+            font-size: 1.02rem;
+            font-weight: 700;
+            color: #fff;
+        }
+        .fix-text {
+            color: var(--text-secondary);
+            font-size: 0.88rem;
+            line-height: 1.45;
+            margin-bottom: 14px;
+        }
+        .gpu-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .btn-gpu {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 9px 14px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.15s ease;
+        }
+        .btn-gpu:hover {
+            border-color: #f59e0b;
+            background: rgba(245, 158, 11, 0.08);
+            color: #f59e0b;
+        }
+        .btn-download-lts {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #000;
+            font-weight: 700;
+            font-size: 0.95rem;
+            padding: 12px 18px;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.3);
+            text-align: center;
+            margin-top: 8px;
+        }
+        .btn-download-lts:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 25px rgba(245, 158, 11, 0.5);
+            color: #000;
+        }
+
         /* Hidden OS classes */
         .os-win, .os-mac {
             display: block;
@@ -586,6 +730,79 @@
                 </button>
             </div>
         </header>
+
+        <!-- Troubleshooting: GPU Driver / Older Blender Fix -->
+        <section class="troubleshoot-card">
+            <div class="alert-badge">
+                <span>⚠️</span>
+                Quick Fix &bull; "Unsupported Graphics Card or Driver" Error
+            </div>
+            <div class="troubleshoot-title">
+                Getting a Graphics Driver Error when Opening Blender?
+            </div>
+            <p class="troubleshoot-desc">
+                Blender 4.x / 5.x requires modern graphics drivers with OpenGL 4.3+. If your Windows laptop shows an error saying you need to update drivers, pick either quick solution below:
+            </p>
+
+            <div class="fix-grid">
+                <!-- Option A: Update Driver -->
+                <div class="fix-box">
+                    <div>
+                        <div class="fix-header">
+                            <div class="fix-num">A</div>
+                            <div class="fix-title">Update Your Graphics Driver (2 Mins)</div>
+                        </div>
+                        <p class="fix-text">
+                            Press <kbd style="background:rgba(255,255,255,0.1);padding:2px 5px;border-radius:4px;border:1px solid rgba(255,255,255,0.2);">Ctrl</kbd> + <kbd style="background:rgba(255,255,255,0.1);padding:2px 5px;border-radius:4px;border:1px solid rgba(255,255,255,0.2);">Shift</kbd> + <kbd style="background:rgba(255,255,255,0.1);padding:2px 5px;border-radius:4px;border:1px solid rgba(255,255,255,0.2);">Esc</kbd> &rarr; click <strong>Performance</strong> &rarr; click <strong>GPU</strong> at the bottom to check your card model. Then download the update:
+                        </p>
+                        <div class="gpu-buttons">
+                            <a href="https://www.nvidia.com/download/index.aspx" target="_blank" class="btn-gpu">
+                                <span>🟢 NVIDIA GeForce Drivers</span>
+                                <span>&rarr;</span>
+                            </a>
+                            <a href="https://www.amd.com/en/support" target="_blank" class="btn-gpu">
+                                <span>🔴 AMD Radeon Auto-Detect</span>
+                                <span>&rarr;</span>
+                            </a>
+                            <a href="https://www.intel.com/content/www/us/en/support/detect.html" target="_blank" class="btn-gpu">
+                                <span>🔵 Intel Driver & Support Assistant</span>
+                                <span>&rarr;</span>
+                            </a>
+                        </div>
+                    </div>
+                    <div style="font-size:0.8rem;color:var(--text-muted);margin-top:14px;line-height:1.4;">
+                        💡 <em>Tip:</em> You can also open <strong>Windows Update</strong> &rarr; <em>Check for updates</em> &rarr; <em>Advanced options</em> &rarr; <em>Optional updates</em> to install graphics drivers automatically.
+                    </div>
+                </div>
+
+                <!-- Option B: Blender 3.6 LTS -->
+                <div class="fix-box">
+                    <div>
+                        <div class="fix-header">
+                            <div class="fix-num" style="background:var(--neon-cyan);">B</div>
+                            <div class="fix-title">Download Blender 3.6 LTS (Instant 100% Fix)</div>
+                        </div>
+                        <p class="fix-text">
+                            If updating drivers doesn't work or you have older hardware, download <strong>Blender 3.6 LTS</strong>. It supports legacy OpenGL, runs smoothly on any laptop, and opens all 100 assets perfectly:
+                        </p>
+                        <a href="https://download.blender.org/release/Blender3.6/blender-3.6.18-windows-x64.msi" target="_blank" class="btn-download-lts">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            Download Blender 3.6.18 LTS (.msi)
+                        </a>
+                        <div class="code-box" style="margin-top:14px;">
+                            <div class="code-header">
+                                <span>Install 3.6 via PowerShell</span>
+                                <button class="copy-btn" onclick="copySnippet('winget install BlenderFoundation.Blender -v 3.6.18', this)">Copy</button>
+                            </div>
+                            <div class="code-content" style="font-size:0.84rem;">winget install BlenderFoundation.Blender -v 3.6.18</div>
+                        </div>
+                    </div>
+                    <div style="font-size:0.8rem;color:var(--text-muted);margin-top:10px;">
+                        Need standalone ZIP? <a href="https://download.blender.org/release/Blender3.6/blender-3.6.18-windows-x64.zip" target="_blank" style="color:var(--neon-cyan);text-decoration:none;font-weight:600;">Download Portable 3.6.18 .zip (No Install Required) &rarr;</a>
+                    </div>
+                </div>
+            </div>
+        </section>
 
         <!-- STEP 1: Blender -->
         <section class="step-card">
