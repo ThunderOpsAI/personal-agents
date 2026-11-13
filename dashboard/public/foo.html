@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   
-  <!-- Leaflet CSS for Interactive Map -->
+  <!-- Leaflet CSS for Map -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 
   <style>
@@ -44,7 +44,7 @@
     }
 
     .container {
-      max-width: 900px;
+      max-width: 860px;
       margin: 0 auto;
       padding-bottom: 80px;
     }
@@ -55,19 +55,19 @@
       justify-content: space-between;
       align-items: center;
       background: #21262d;
-      padding: 10px 16px;
+      padding: 8px 14px;
       border-radius: 12px;
       border: 2px solid #38bdf8;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
       position: sticky;
       top: 6px;
       z-index: 1000;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.6);
     }
 
     .a11y-title {
       font-weight: 800;
-      font-size: 1.05rem;
+      font-size: 1rem;
       color: #38bdf8;
       display: flex;
       align-items: center;
@@ -76,7 +76,7 @@
 
     .font-controls {
       display: flex;
-      gap: 8px;
+      gap: 6px;
       align-items: center;
     }
 
@@ -85,12 +85,12 @@
       color: #fff;
       border: 2px solid #8b949e;
       border-radius: 8px;
-      padding: 6px 14px;
-      font-size: 1.1rem;
+      padding: 4px 12px;
+      font-size: 1rem;
       font-weight: 800;
       cursor: pointer;
-      min-width: 44px;
-      min-height: 44px;
+      min-width: 40px;
+      min-height: 40px;
     }
 
     .btn-font:active, .btn-font.active {
@@ -103,25 +103,25 @@
     header {
       background: linear-gradient(135deg, #1f2937, #111827);
       border: 2px solid #f59e0b;
-      border-radius: 16px;
-      padding: 14px 18px;
-      margin-bottom: 14px;
+      border-radius: 14px;
+      padding: 12px 16px;
+      margin-bottom: 12px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 8px;
     }
 
     .header-info h1 {
-      font-size: calc(1.6rem * var(--font-scale));
+      font-size: calc(1.4rem * var(--font-scale));
       font-weight: 900;
       line-height: 1.2;
       color: #fff;
     }
 
     .header-info p {
-      font-size: calc(1rem * var(--font-scale));
+      font-size: calc(0.95rem * var(--font-scale));
       color: #cbd5e1;
       font-weight: 600;
     }
@@ -130,85 +130,121 @@
       background: #ef4444;
       color: #fff;
       font-weight: 900;
-      padding: 6px 14px;
+      padding: 4px 12px;
       border-radius: 999px;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       letter-spacing: 1px;
       text-transform: uppercase;
-      white-space: nowrap;
     }
 
-    /* MAP DOMINANCE (MAIN FOCUS) */
-    .map-wrapper {
+    /* ================================================= */
+    /* 🗺️ SMALL COMPACT MAP SECTION (CLICKABLE -> GOOGLE MAPS) */
+    /* ================================================= */
+    .compact-map-card {
+      position: relative;
       background: #111827;
-      border: 4px solid #38bdf8;
-      border-radius: 20px;
+      border: 3px solid #38bdf8;
+      border-radius: 16px;
       overflow: hidden;
-      margin-bottom: 16px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      margin-bottom: 14px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      cursor: pointer;
+      transition: transform 0.15s ease, border-color 0.15s ease;
     }
 
-    .map-header {
+    .compact-map-card:hover, .compact-map-card:active {
+      border-color: #f59e0b;
+      transform: translateY(-2px);
+    }
+
+    .compact-map-header {
       background: #1e293b;
-      padding: 12px 18px;
+      padding: 8px 14px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       border-bottom: 2px solid #334155;
-      flex-wrap: wrap;
-      gap: 10px;
     }
 
-    .map-title {
-      font-size: calc(1.2rem * var(--font-scale));
+    .compact-map-title {
+      font-size: calc(1.05rem * var(--font-scale));
       font-weight: 900;
       color: #38bdf8;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
 
-    #trip-map {
+    .gmaps-badge {
+      background: #2563eb;
+      color: #ffffff;
+      font-weight: 800;
+      font-size: calc(0.85rem * var(--font-scale));
+      padding: 4px 10px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      border: 1px solid #60a5fa;
+    }
+
+    /* Small Map Canvas */
+    #small-trip-map {
       width: 100%;
-      height: 65vh;
-      min-height: 480px;
-      max-height: 650px;
+      height: 240px;
       background: #1e293b;
-      z-index: 10;
+      z-index: 1;
     }
 
-    /* Quick Map Jump Bar */
-    .map-quick-bar {
+    /* Big Clickable Overlay on the Map */
+    .map-click-overlay {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      z-index: 500;
+      background: rgba(15, 23, 42, 0.92);
+      border: 2px solid #f59e0b;
+      color: #fef08a;
+      font-weight: 900;
+      font-size: calc(0.95rem * var(--font-scale));
+      padding: 8px 14px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      pointer-events: none; /* Allows card click to pass through */
+    }
+
+    /* Direct Destination Buttons Bar */
+    .destinations-quick-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
       gap: 8px;
-      padding: 10px;
-      background: #0f172a;
-      border-top: 2px solid #334155;
+      margin-bottom: 16px;
     }
 
-    .btn-quick-jump {
+    .btn-dest {
       background: #1e293b;
-      color: #f8fafc;
+      color: #ffffff;
+      text-decoration: none;
       border: 2px solid #475569;
       border-radius: 10px;
       padding: 10px 8px;
       font-weight: 800;
       font-size: calc(0.95rem * var(--font-scale));
-      cursor: pointer;
-      text-align: center;
-      min-height: 48px;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
-      transition: all 0.15s ease;
+      text-align: center;
+      min-height: 48px;
     }
 
-    .btn-quick-jump:hover, .btn-quick-jump:active {
-      background: #38bdf8;
-      color: #000;
-      border-color: #38bdf8;
+    .btn-dest:active, .btn-dest:hover {
+      background: #2563eb;
+      border-color: #60a5fa;
+      color: #fff;
     }
 
     /* Custom Leaflet Pin Styling */
@@ -218,98 +254,25 @@
       justify-content: center;
       border-radius: 999px;
       font-weight: 900;
-      font-size: 1.1rem;
-      border: 3px solid #ffffff;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.6);
-      cursor: pointer;
+      border: 2px solid #ffffff;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.6);
     }
 
-    .pin-hub { background: #0284c7; color: #fff; width: 44px; height: 44px; }
-    .pin-stadium { background: #f59e0b; color: #000; width: 50px; height: 50px; border-color: #fef08a; font-size: 1.4rem; }
-    .pin-crown { background: #9333ea; color: #fff; width: 44px; height: 44px; }
-    .pin-pub { background: #16a34a; color: #fff; width: 44px; height: 44px; }
-    .pin-hotel { background: #2563eb; color: #fff; width: 38px; height: 38px; font-size: 0.95rem; }
-
-    /* Leaflet Popups */
-    .leaflet-popup-content-wrapper {
-      background: #1e293b !important;
-      color: #f8fafc !important;
-      border: 2px solid #38bdf8 !important;
-      border-radius: 14px !important;
-      font-family: inherit !important;
-      padding: 4px !important;
-    }
-
-    .leaflet-popup-tip {
-      background: #1e293b !important;
-    }
-
-    .popup-box {
-      padding: 10px;
-    }
-
-    .popup-box h4 {
-      font-size: 1.25rem;
-      font-weight: 900;
-      color: #f59e0b;
-      margin-bottom: 6px;
-    }
-
-    .popup-box p {
-      font-size: 1.05rem;
-      font-weight: 600;
-      color: #e2e8f0;
-      margin-bottom: 10px;
-    }
-
-    .popup-nav-btn {
-      display: block;
-      background: #2563eb;
-      color: #fff !important;
-      text-decoration: none;
-      font-weight: 800;
-      padding: 10px;
-      border-radius: 8px;
-      text-align: center;
-      font-size: 1rem;
-    }
-
-    /* Map Legend */
-    .map-legend {
-      background: #161b22;
-      border: 2px solid #30363d;
-      border-radius: 14px;
-      padding: 14px 18px;
-      margin-bottom: 24px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 14px;
-      align-items: center;
-      font-weight: 700;
-      font-size: calc(0.95rem * var(--font-scale));
-    }
-
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .legend-color {
-      width: 18px;
-      height: 18px;
-      border-radius: 4px;
-    }
+    .pin-hub { background: #0284c7; color: #fff; width: 34px; height: 34px; font-size: 1rem; }
+    .pin-stadium { background: #f59e0b; color: #000; width: 40px; height: 40px; border-color: #fef08a; font-size: 1.2rem; }
+    .pin-crown { background: #9333ea; color: #fff; width: 34px; height: 34px; font-size: 1rem; }
+    .pin-pub { background: #16a34a; color: #fff; width: 34px; height: 34px; font-size: 1rem; }
+    .pin-hotel { background: #2563eb; color: #fff; width: 32px; height: 32px; font-size: 0.9rem; }
 
     /* Section Headings */
     h2 {
-      font-size: calc(1.45rem * var(--font-scale));
+      font-size: calc(1.35rem * var(--font-scale));
       font-weight: 800;
       color: #f59e0b;
-      margin: 28px 0 14px 0;
+      margin: 24px 0 12px 0;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       border-bottom: 2px solid #30363d;
       padding-bottom: 6px;
     }
@@ -318,9 +281,9 @@
     .card {
       background: var(--card-bg);
       border: 2px solid var(--card-border);
-      border-radius: 18px;
-      padding: 20px;
-      margin-bottom: 18px;
+      border-radius: 16px;
+      padding: 18px;
+      margin-bottom: 16px;
       box-shadow: 0 4px 16px rgba(0,0,0,0.3);
     }
 
@@ -338,22 +301,22 @@
     .hotel-card {
       background: #161e2e;
       border: 2px solid #3b82f6;
-      border-radius: 18px;
-      padding: 20px;
-      margin-bottom: 18px;
+      border-radius: 16px;
+      padding: 18px;
+      margin-bottom: 16px;
     }
 
     .hotel-header {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 6px;
     }
 
     .hotel-name {
-      font-size: calc(1.3rem * var(--font-scale));
+      font-size: calc(1.25rem * var(--font-scale));
       font-weight: 900;
       color: #ffffff;
     }
@@ -361,36 +324,36 @@
     .hotel-price {
       background: #16a34a;
       color: #ffffff;
-      font-size: calc(1.25rem * var(--font-scale));
+      font-size: calc(1.2rem * var(--font-scale));
       font-weight: 900;
-      padding: 6px 14px;
-      border-radius: 10px;
+      padding: 4px 12px;
+      border-radius: 8px;
       white-space: nowrap;
     }
 
     .hotel-meta {
-      font-size: calc(1.05rem * var(--font-scale));
+      font-size: calc(1rem * var(--font-scale));
       color: #93c5fd;
       font-weight: 700;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
 
     .btn-action {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
+      gap: 8px;
       background: #2563eb;
       color: #ffffff;
       text-decoration: none;
       font-weight: 800;
       font-size: calc(1.05rem * var(--font-scale));
-      padding: 12px 20px;
+      padding: 12px 18px;
       border-radius: 10px;
       width: 100%;
-      min-height: 52px;
+      min-height: 50px;
       text-align: center;
-      margin-top: 12px;
+      margin-top: 10px;
       border: 2px solid #60a5fa;
       cursor: pointer;
     }
@@ -398,11 +361,11 @@
     /* Timeline Items */
     .timeline-item {
       display: flex;
-      gap: 14px;
-      margin-bottom: 16px;
+      gap: 12px;
+      margin-bottom: 14px;
       background: #161b22;
       border-left: 6px solid #f59e0b;
-      padding: 16px 18px;
+      padding: 14px 16px;
       border-radius: 0 14px 14px 0;
       align-items: flex-start;
     }
@@ -413,21 +376,21 @@
     }
 
     .timeline-time {
-      font-size: calc(1.3rem * var(--font-scale));
+      font-size: calc(1.25rem * var(--font-scale));
       font-weight: 900;
       color: #f59e0b;
-      min-width: 105px;
+      min-width: 100px;
     }
 
     .timeline-content h4 {
-      font-size: calc(1.15rem * var(--font-scale));
+      font-size: calc(1.1rem * var(--font-scale));
       font-weight: 800;
       color: #ffffff;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
     }
 
     .timeline-content p {
-      font-size: calc(1rem * var(--font-scale));
+      font-size: calc(0.95rem * var(--font-scale));
       color: #cbd5e1;
     }
 
@@ -435,17 +398,17 @@
     .setlist-grid {
       background: #0f172a;
       border: 2px solid #334155;
-      border-radius: 16px;
-      padding: 18px;
+      border-radius: 14px;
+      padding: 16px;
     }
 
     .setlist-ol {
-      margin-left: 28px;
+      margin-left: 26px;
     }
 
     .setlist-ol li {
-      padding: 6px 0;
-      font-size: calc(1.05rem * var(--font-scale));
+      padding: 4px 0;
+      font-size: calc(1rem * var(--font-scale));
       font-weight: 600;
       border-bottom: 1px solid #1e293b;
     }
@@ -454,20 +417,20 @@
       background: #f59e0b;
       color: #000;
       font-weight: 800;
-      padding: 2px 8px;
-      border-radius: 6px;
+      padding: 2px 6px;
+      border-radius: 4px;
       font-size: 0.85em;
-      margin-left: 6px;
+      margin-left: 4px;
     }
 
     /* Footer */
     footer {
       text-align: center;
-      margin-top: 40px;
-      padding-top: 20px;
+      margin-top: 36px;
+      padding-top: 18px;
       border-top: 2px solid #30363d;
       color: #8b949e;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
     }
   </style>
 </head>
@@ -478,107 +441,96 @@
   <!-- ACCESSIBILITY BAR -->
   <div class="a11y-bar">
     <div class="a11y-title">
-      👓 BIG TEXT HELPER
+      👓 BIG TEXT
     </div>
     <div class="font-controls">
-      <span style="font-size: 0.9rem; font-weight:700; color:#cbd5e1;">Size:</span>
+      <span style="font-size: 0.85rem; font-weight:700; color:#cbd5e1;">Size:</span>
       <button class="btn-font" onclick="setFontScale(1)">A</button>
       <button class="btn-font active" onclick="setFontScale(1.15)">A+</button>
       <button class="btn-font" onclick="setFontScale(1.3)">A++</button>
     </div>
   </div>
 
-  <!-- COMPACT HEADER -->
+  <!-- HEADER -->
   <header>
     <div class="header-info">
       <h1>Foo Fighters Melbourne Trip</h1>
-      <p>Saturday 14 November 2026 • Live Navigation & Schedule</p>
+      <p>Saturday 14 November 2026 • Destinations & Times</p>
     </div>
-    <div class="badge-live">⚡ LIVE GUIDE</div>
+    <div class="badge-live">⚡ LIVE</div>
   </header>
 
-  <!-- ============================================== -->
-  <!-- 🗺️ ACTUAL INTERACTIVE MAP FRONT & CENTER AT TOP -->
-  <!-- ============================================== -->
-  <div class="map-wrapper">
-    <div class="map-header">
-      <div class="map-title">
-        📍 MELBOURNE CBD & VENUE INTERACTIVE MAP
+  <!-- ============================================================== -->
+  <!-- 🗺️ SMALL COMPACT MAP (RIGHT AT TOP - CLICKABLE TO GOOGLE MAPS) -->
+  <!-- ============================================================== -->
+  <div class="compact-map-card" onclick="openAllInGoogleMaps()" title="Click to open route in Google Maps">
+    <div class="compact-map-header">
+      <div class="compact-map-title">
+        📍 DESTINATIONS MAP (CLICK TO OPEN GOOGLE MAPS)
       </div>
-      <a href="https://maps.google.com/?q=Southern+Cross+Station+Melbourne" target="_blank" style="color: #38bdf8; font-weight: 800; text-decoration: underline; font-size: 0.95rem;">
-        Open in Google Maps App ↗
-      </a>
+      <div class="gmaps-badge">
+        🗺️ Google Maps ↗
+      </div>
     </div>
 
-    <!-- Leaflet Interactive Map Canvas -->
-    <div id="trip-map"></div>
+    <!-- Small Map Canvas -->
+    <div id="small-trip-map"></div>
 
-    <!-- Quick Map Jump Buttons for Jamie -->
-    <div class="map-quick-bar">
-      <button class="btn-quick-jump" onclick="focusLoc([-37.8185, 144.9525], 16, 'hub')">
-        🚉 Hub Station
-      </button>
-      <button class="btn-quick-jump" style="border-color:#f59e0b; color:#fbbf24;" onclick="focusLoc([-37.8165, 144.9475], 16, 'stadium')">
-        🏟️ Marvel Gig
-      </button>
-      <button class="btn-quick-jump" style="border-color:#a855f7; color:#d8b4fe;" onclick="focusLoc([-37.8235, 144.9580], 16, 'crown')">
-        🎰 Crown Casino
-      </button>
-      <button class="btn-quick-jump" style="border-color:#22c55e; color:#86efac;" onclick="focusLoc([-37.8108, 144.9680], 16, 'pub')">
-        🍺 Golden Nugget
-      </button>
-      <button class="btn-quick-jump" style="border-color:#38bdf8; color:#7dd3fc;" onclick="focusLoc([-37.8202, 144.9547], 17, 'hotel1')">
-        🏨 Hotel Option
-      </button>
+    <!-- Overlay Badge for Jamie -->
+    <div class="map-click-overlay">
+      👉 Click Map to Open Google Maps App ↗
     </div>
   </div>
 
-  <!-- MAP LEGEND -->
-  <div class="map-legend">
-    <div class="legend-item">
-      <div class="legend-color" style="background:#f59e0b;"></div>
-      <span>🚶 Footbridge to Marvel (3 min walk)</span>
-    </div>
-    <div class="legend-item">
-      <div class="legend-color" style="background:#22c55e;"></div>
-      <span>🚋 Tram 86/96 (Free Tram Zone to Golden Nugget)</span>
-    </div>
-    <div class="legend-item">
-      <div class="legend-color" style="background:#a855f7;"></div>
-      <span>🚋 Tram 96 / 12 (2 Stops South to Crown Casino)</span>
-    </div>
+  <!-- QUICK DIRECT DESTINATION BUTTONS FOR JAMIE -->
+  <div class="destinations-quick-grid">
+    <a href="https://maps.google.com/?q=Southern+Cross+Station+Melbourne" target="_blank" class="btn-dest" style="border-color:#0284c7;">
+      🚉 Southern Cross
+    </a>
+    <a href="https://maps.google.com/?q=Marvel+Stadium+Melbourne" target="_blank" class="btn-dest" style="border-color:#f59e0b; color:#fef08a;">
+      🏟️ Marvel Stadium
+    </a>
+    <a href="https://maps.google.com/?q=Crown+Melbourne" target="_blank" class="btn-dest" style="border-color:#a855f7; color:#e9d5ff;">
+      🎰 Crown Casino
+    </a>
+    <a href="https://maps.google.com/?q=Golden+Nugget+Hotel+Melbourne" target="_blank" class="btn-dest" style="border-color:#22c55e; color:#bbf7d0;">
+      🍺 Golden Nugget
+    </a>
+    <a href="https://maps.google.com/?q=Great+Southern+Hotel+Melbourne" target="_blank" class="btn-dest" style="border-color:#38bdf8;">
+      🏨 Hotel
+    </a>
   </div>
 
   <!-- CRITICAL CROWN PASSPORT WARNING -->
   <div class="card card-warning">
-    <h3 style="color: #fca5a5; font-size: calc(1.25rem * var(--font-scale)); font-weight: 900; margin-bottom: 6px;">
+    <h3 style="color: #fca5a5; font-size: calc(1.2rem * var(--font-scale)); font-weight: 900; margin-bottom: 4px;">
       ⚠️ CRITICAL FOR JAMIE: Crown Casino Signup Notice
     </h3>
-    <p style="font-weight: 700; color: #fff; margin-bottom: 6px;">
+    <p style="font-weight: 700; color: #fff; margin-bottom: 4px;">
       Because you are using an <strong>Australian Passport</strong>, Crown Casino <u>REQUIRES</u> a secondary document showing your current residential address!
     </p>
-    <p style="color: #fecaca; margin-bottom: 8px;">
-      Australian passports do NOT display an address. You <strong>MUST</strong> bring one of the following physical original documents:
+    <p style="color: #fecaca; margin-bottom: 6px; font-size: 0.95em;">
+      Australian passports do NOT display an address. You <strong>MUST</strong> bring one physical original document:
     </p>
-    <ul style="margin-left: 24px; color: #fff; font-weight: 600;">
+    <ul style="margin-left: 20px; color: #fff; font-weight: 600; font-size: 0.95em;">
       <li>Recent Utility Bill (Power, Gas, or Water within 3 months)</li>
       <li>Bank Statement with your address (within 3 months)</li>
       <li>Centrelink or ATO Official Letter (within 12 months)</li>
       <li>Physical Driver’s Licence or Proof of Age Card</li>
     </ul>
-    <p style="margin-top: 8px; font-weight: 800; color: #fef08a;">
+    <p style="margin-top: 6px; font-weight: 800; color: #fef08a; font-size: 0.9em;">
       *Screenshots or phone photos are NOT accepted at Crown verification desks.
     </p>
   </div>
 
   <!-- UPDATED TIMELINE FOR 2:30 PM TRAIN -->
-  <h2>⏱️ Schedule & Game Plan (Rebooked for 2:30 PM Train)</h2>
+  <h2>⏱️ Schedule (Rebooked 2:30 PM Train)</h2>
 
   <div class="timeline-item">
     <div class="timeline-time">2:30 PM</div>
     <div class="timeline-content">
       <h4>Board V/Line Train</h4>
-      <p>Board the 2:30 PM regional V/Line train to Melbourne Southern Cross. Relax and check mobile concert tickets.</p>
+      <p>Depart on the 2:30 PM regional V/Line train to Melbourne Southern Cross.</p>
     </div>
   </div>
 
@@ -586,7 +538,7 @@
     <div class="timeline-time">~5:15 PM</div>
     <div class="timeline-content">
       <h4>Arrive at Southern Cross & Bag Drop</h4>
-      <p>Arrive at Southern Cross Station. Walk straight across Spencer St to <strong>Great Southern Hotel</strong> (or use station lockers) to drop overnight bags. Grab a quick bite.</p>
+      <p>Arrive at Southern Cross Station. Walk across Spencer St to <strong>Great Southern Hotel</strong> (or use station lockers) to drop overnight bags.</p>
     </div>
   </div>
 
@@ -594,7 +546,7 @@
     <div class="timeline-time">6:00 PM</div>
     <div class="timeline-content">
       <h4>Walk into Marvel Stadium (FRENZEE)</h4>
-      <p>Walk across the Bourke St pedestrian footbridge straight into Marvel Stadium. Opening punk trio <strong>FRENZEE</strong> hits the stage at 6:00 PM.</p>
+      <p>Walk across the Bourke St pedestrian footbridge straight into Marvel Stadium. Opening act <strong>FRENZEE</strong> hits the stage at 6:00 PM.</p>
     </div>
   </div>
 
@@ -602,15 +554,15 @@
     <div class="timeline-time">6:55 PM</div>
     <div class="timeline-content">
       <h4>The Belair Lip Bombs (Main Support)</h4>
-      <p>Melbourne indie-rock sensations get the stadium crowd roaring.</p>
+      <p>Melbourne indie-rock sensations warm up the stadium.</p>
     </div>
   </div>
 
   <div class="timeline-item highlight">
     <div class="timeline-time" style="color: #22c55e;">8:00 PM</div>
     <div class="timeline-content">
-      <h4 style="color: #4ade80; font-size: calc(1.3rem * var(--font-scale));">🔥 FOO FIGHTERS HEADLINE SET</h4>
-      <p>Dave Grohl and the band hit the stage for a massive 2.5 to 3-hour stadium rock marathon until 11:00 PM curfew!</p>
+      <h4 style="color: #4ade80; font-size: calc(1.25rem * var(--font-scale));">🔥 FOO FIGHTERS HEADLINE SET</h4>
+      <p>Dave Grohl and the band rock Marvel Stadium until 11:00 PM curfew!</p>
     </div>
   </div>
 
@@ -618,36 +570,33 @@
     <div class="timeline-time">11:15 PM</div>
     <div class="timeline-content">
       <h4>Crown Casino Rewards Sign-Up & Nightcap (24/7)</h4>
-      <p>Concert wraps up. Stroll south down Spencer St across the bridge to <strong>Crown Casino</strong>. The Crown Rewards desk is <strong>open 24/7</strong>—sign up with your <strong>physical passport + address proof</strong> with zero pre-gig stress. Late-night food, gaming, and drinks along Southbank!</p>
+      <p>Concert wraps up. Stroll south down Spencer St across the bridge to <strong>Crown Casino</strong>. The Rewards desk is <strong>open 24/7</strong>—sign up with your <strong>physical passport + address proof</strong> with zero pre-gig rushing!</p>
     </div>
   </div>
 
   <div class="timeline-item">
     <div class="timeline-time">Late Night</div>
     <div class="timeline-content">
-      <h4>The Golden Nugget (Open till 4:00 AM) or Crash at Hotel</h4>
-      <p>The Golden Nugget pub (117-121 Lonsdale St) is open until <strong>4:00 AM</strong> for late pints, or walk 5 mins back to Great Southern Hotel for sleep.</p>
+      <h4>The Golden Nugget (Open till 4:00 AM) or Bed</h4>
+      <p>The Golden Nugget pub (117-121 Lonsdale St) is open until <strong>4:00 AM</strong> for late pints, or crash at Great Southern Hotel across the road.</p>
     </div>
   </div>
 
   <!-- 3 LAST-MINUTE HOTEL OPTIONS -->
-  <h2>🏨 3 Cheapest Last-Minute Hotel Options (1 Room, 2 Guests)</h2>
+  <h2>🏨 3 Hotel Options (1 Room, 2 Guests)</h2>
 
   <!-- HOTEL 1 (TOP PICK) -->
   <div class="hotel-card card-featured">
     <div class="hotel-header">
       <div>
-        <span style="background: #22c55e; color: #000; font-weight: 900; padding: 4px 10px; border-radius: 6px; font-size: 0.85rem;">★ BEST LOCATION (WALK TO BED)</span>
-        <div class="hotel-name" style="margin-top: 6px;">1. Great Southern Hotel Melbourne</div>
+        <span style="background: #22c55e; color: #000; font-weight: 900; padding: 3px 8px; border-radius: 6px; font-size: 0.8rem;">★ BEST LOCATION (WALK TO BED)</span>
+        <div class="hotel-name" style="margin-top: 4px;">1. Great Southern Hotel Melbourne</div>
       </div>
       <div class="hotel-price">$99 – $120 AUD</div>
     </div>
     <div class="hotel-meta">📍 44 Spencer Street (Directly opposite Southern Cross Station)</div>
-    <p style="color: #cbd5e1; font-weight: 600; margin-bottom: 8px;">
-      • <strong>Why Jamie will love it:</strong> It's literally a 2-minute walk from Southern Cross Station and a 5-minute walk across the footbridge from Marvel Stadium. Stumble straight back to bed after the concert—no waiting in massive tram crowds or paying $80 for surge Ubers!
-    </p>
-    <p style="color: #a7f3d0; font-size: 0.95em; font-weight: 700;">
-      ✓ Private Ensuite Double Room • ✓ Air Conditioning • ✓ 24/7 Staffed Front Desk
+    <p style="color: #cbd5e1; font-weight: 600; margin-bottom: 6px;">
+      • <strong>Why Jamie will love it:</strong> 2-min walk from Southern Cross Station and 5-min walk across the footbridge from Marvel Stadium. Stumble straight back to bed after the concert—no waiting in massive tram crowds!
     </p>
     <a href="https://maps.google.com/?q=Great+Southern+Hotel+Melbourne" target="_blank" class="btn-action" style="background:#15803d; border-color:#22c55e;">
       🗺️ Open Location in Google Maps
@@ -658,17 +607,14 @@
   <div class="hotel-card">
     <div class="hotel-header">
       <div>
-        <span style="background: #38bdf8; color: #000; font-weight: 900; padding: 4px 10px; border-radius: 6px; font-size: 0.85rem;">LOWEST FLAT PRICE</span>
-        <div class="hotel-name" style="margin-top: 6px;">2. ibis budget Melbourne CBD</div>
+        <span style="background: #38bdf8; color: #000; font-weight: 900; padding: 3px 8px; border-radius: 6px; font-size: 0.8rem;">LOWEST FLAT PRICE</span>
+        <div class="hotel-name" style="margin-top: 4px;">2. ibis budget Melbourne CBD</div>
       </div>
       <div class="hotel-price">$85 – $105 AUD</div>
     </div>
     <div class="hotel-meta">📍 167 Elizabeth Street (Heart of the CBD)</div>
-    <p style="color: #cbd5e1; font-weight: 600; margin-bottom: 8px;">
-      • <strong>Why it's great:</strong> The cheapest reliable private hotel room in the city. Clean, compact double bed with private ensuite bathroom and shower.
-    </p>
-    <p style="color: #93c5fd; font-size: 0.95em; font-weight: 700;">
-      ✓ Free Tram Zone (Route 86/96 along Bourke St directly to Marvel Stadium)
+    <p style="color: #cbd5e1; font-weight: 600; margin-bottom: 6px;">
+      • <strong>Why it's great:</strong> The cheapest reliable private hotel room in the city. Clean double bed with private ensuite.
     </p>
     <a href="https://maps.google.com/?q=ibis+budget+Melbourne+CBD" target="_blank" class="btn-action">
       🗺️ Open Location in Google Maps
@@ -679,17 +625,14 @@
   <div class="hotel-card">
     <div class="hotel-header">
       <div>
-        <span style="background: #a855f7; color: #fff; font-weight: 900; padding: 4px 10px; border-radius: 6px; font-size: 0.85rem;">CENTRAL CBD PICK</span>
-        <div class="hotel-name" style="margin-top: 6px;">3. Yehs Hotel Melbourne CBD</div>
+        <span style="background: #a855f7; color: #fff; font-weight: 900; padding: 3px 8px; border-radius: 6px; font-size: 0.8rem;">CENTRAL CBD PICK</span>
+        <div class="hotel-name" style="margin-top: 4px;">3. Yehs Hotel Melbourne CBD</div>
       </div>
       <div class="hotel-price">$99 – $115 AUD</div>
     </div>
     <div class="hotel-meta">📍 337-339 Little Lonsdale Street (Near King St)</div>
-    <p style="color: #cbd5e1; font-weight: 600; margin-bottom: 8px;">
-      • <strong>Why it's great:</strong> Comfortable double room positioned right between the Southern Cross transit hub and The Golden Nugget pub on Lonsdale St.
-    </p>
-    <p style="color: #d8b4fe; font-size: 0.95em; font-weight: 700;">
-      ✓ 8-minute walk to Southern Cross • ✓ Clean quiet rooms
+    <p style="color: #cbd5e1; font-weight: 600; margin-bottom: 6px;">
+      • <strong>Why it's great:</strong> Comfortable double room positioned between Southern Cross and The Golden Nugget pub.
     </p>
     <a href="https://maps.google.com/?q=Yehs+Hotel+Melbourne+CBD" target="_blank" class="btn-action">
       🗺️ Open Location in Google Maps
@@ -697,7 +640,7 @@
   </div>
 
   <!-- EXPECTED SETLIST -->
-  <h2>🎸 Expected Tour Setlist (Brisbane & Sydney Template)</h2>
+  <h2>🎸 Expected Tour Setlist (Brisbane & Sydney)</h2>
   
   <div class="setlist-grid">
     <ol class="setlist-ol">
@@ -712,13 +655,13 @@
       <li>Walk</li>
       <li>This Is a Call</li>
       <li>No Son of Mine <span class="setlist-badge">w/ Motörhead Riff</span></li>
-      <li style="color: #38bdf8; margin: 6px 0; font-weight:800;">[B-Stage Acoustic Set]</li>
+      <li style="color: #38bdf8; margin: 4px 0; font-weight:800;">[B-Stage Acoustic Set]</li>
       <li>Wheels</li>
       <li>Marigold <span class="setlist-badge">Nirvana/Late! Gem</span></li>
       <li>Window</li>
       <li>Big Me</li>
       <li>Under You</li>
-      <li style="color: #38bdf8; margin: 6px 0; font-weight:800;">[Back to Main Stage]</li>
+      <li style="color: #38bdf8; margin: 4px 0; font-weight:800;">[Back to Main Stage]</li>
       <li>Your Favorite Toy</li>
       <li>Run</li>
       <li>Band Intros & Rock Medley</li>
@@ -726,7 +669,7 @@
       <li>Breakout</li>
       <li>Aurora <span class="setlist-badge">Taylor Hawkins Tribute</span></li>
       <li>Best of You</li>
-      <li style="color: #22c55e; margin: 6px 0; font-weight:800;">[Encore]</li>
+      <li style="color: #22c55e; margin: 4px 0; font-weight:800;">[Encore]</li>
       <li>Baker Street <span class="setlist-badge">Gerry Rafferty Cover</span></li>
       <li>Hey, Johnny Park!</li>
       <li style="font-weight:900; color:#fff;">EVERLONG</li>
@@ -752,140 +695,64 @@
     else if (scale === 1.3) event.target.classList.add('active');
   }
 
-  // Map Initialization
+  // Open Full Google Maps
+  function openAllInGoogleMaps() {
+    window.open("https://www.google.com/maps/dir/?api=1&origin=Southern+Cross+Station,+Melbourne&destination=Marvel+Stadium,+Melbourne", "_blank");
+  }
+
+  // Map Initialization (Small & Compact for Jamie)
   let map;
-  const markers = {};
 
   document.addEventListener("DOMContentLoaded", () => {
-    // Center Melbourne CBD between Southern Cross and Marvel
-    map = L.map('trip-map', {
-      zoomControl: true,
-      scrollWheelZoom: true
-    }).setView([-37.8175, 144.9540], 15);
+    // Tightly framed around the 5 destinations in Melbourne CBD
+    map = L.map('small-trip-map', {
+      zoomControl: false,
+      scrollWheelZoom: false,
+      dragging: true,
+      touchZoom: true
+    }).setView([-37.8180, 144.9545], 14.6);
 
     // High-visibility CartoDB Voyager Tile Layer
     L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
       subdomains: 'abcd',
       maxZoom: 19
     }).addTo(map);
 
-    // Helper to build custom HTML pin icon
     function createCustomIcon(className, iconText) {
       return L.divIcon({
         className: 'custom-pin-wrapper',
         html: `<div class="custom-pin ${className}">${iconText}</div>`,
-        iconSize: [46, 46],
-        iconAnchor: [23, 23],
-        popupAnchor: [0, -24]
+        iconSize: [36, 36],
+        iconAnchor: [18, 18],
+        popupAnchor: [0, -18]
       });
     }
 
     // 1. SOUTHERN CROSS STATION (HUB)
-    markers.hub = L.marker([-37.8185, 144.9525], {
-      icon: createCustomIcon('pin-hub', '🚉')
-    }).addTo(map).bindPopup(`
-      <div class="popup-box">
-        <h4>🚉 SOUTHERN CROSS STATION</h4>
-        <p><strong>Main Travel Hub</strong><br>V/Line train arrival & departure platform. Central base for the entire day.</p>
-        <a class="popup-nav-btn" href="https://maps.google.com/?q=Southern+Cross+Station+Melbourne" target="_blank">Open Navigation ↗</a>
-      </div>
-    `);
+    L.marker([-37.8185, 144.9525], { icon: createCustomIcon('pin-hub', '🚉') }).addTo(map);
 
     // 2. MARVEL STADIUM (CONCERT)
-    markers.stadium = L.marker([-37.8165, 144.9475], {
-      icon: createCustomIcon('pin-stadium', '🏟️')
-    }).addTo(map).bindPopup(`
-      <div class="popup-box">
-        <h4 style="color:#f59e0b;">🏟️ MARVEL STADIUM</h4>
-        <p><strong>Foo Fighters Live!</strong><br>Direct 3-minute walk over the elevated footbridge from Southern Cross.</p>
-        <a class="popup-nav-btn" style="background:#d97706;" href="https://maps.google.com/?q=Marvel+Stadium+Melbourne" target="_blank">Open Navigation ↗</a>
-      </div>
-    `).openPopup(); // Open on start so Jamie sees it immediately
+    L.marker([-37.8165, 144.9475], { icon: createCustomIcon('pin-stadium', '🏟️') }).addTo(map);
 
     // 3. CROWN CASINO (SOUTHBANK)
-    markers.crown = L.marker([-37.8235, 144.9580], {
-      icon: createCustomIcon('pin-crown', '🎰')
-    }).addTo(map).bindPopup(`
-      <div class="popup-box">
-        <h4 style="color:#a855f7;">🎰 CROWN CASINO & ENTERTAINMENT</h4>
-        <p><strong>Open 24/7</strong><br>Southbank. Crown Rewards signup desk, restaurants, bars, and tables.</p>
-        <a class="popup-nav-btn" style="background:#7e22ce;" href="https://maps.google.com/?q=Crown+Melbourne" target="_blank">Open Navigation ↗</a>
-      </div>
-    `);
+    L.marker([-37.8235, 144.9580], { icon: createCustomIcon('pin-crown', '🎰') }).addTo(map);
 
     // 4. THE GOLDEN NUGGET (PUB)
-    markers.pub = L.marker([-37.8108, 144.9680], {
-      icon: createCustomIcon('pin-pub', '🍺')
-    }).addTo(map).bindPopup(`
-      <div class="popup-box">
-        <h4 style="color:#22c55e;">🍺 THE GOLDEN NUGGET HOTEL</h4>
-        <p><strong>117-121 Lonsdale St</strong><br>Sports bar, TAB screens, cold pints. Open till 4:00 AM!</p>
-        <a class="popup-nav-btn" style="background:#15803d;" href="https://maps.google.com/?q=Golden+Nugget+Hotel+Melbourne" target="_blank">Open Navigation ↗</a>
-      </div>
-    `);
+    L.marker([-37.8108, 144.9680], { icon: createCustomIcon('pin-pub', '🍺') }).addTo(map);
 
-    // 5. GREAT SOUTHERN HOTEL (TOP PICK)
-    markers.hotel1 = L.marker([-37.8202, 144.9547], {
-      icon: createCustomIcon('pin-hotel', '🏨')
-    }).addTo(map).bindPopup(`
-      <div class="popup-box">
-        <h4 style="color:#38bdf8;">🏨 GREAT SOUTHERN HOTEL</h4>
-        <p><strong>44 Spencer Street</strong><br>2-min walk from Southern Cross Station. $99–$120/night. Walk to bed!</p>
-        <a class="popup-nav-btn" href="https://maps.google.com/?q=Great+Southern+Hotel+Melbourne" target="_blank">Open Navigation ↗</a>
-      </div>
-    `);
+    // 5. GREAT SOUTHERN HOTEL
+    L.marker([-37.8202, 144.9547], { icon: createCustomIcon('pin-hotel', '🏨') }).addTo(map);
 
-    // --- DRAW TRANSIT ROUTES ---
-    // A. Footbridge between Southern Cross and Marvel Stadium (Gold Dashed)
-    const bridgeCoords = [
-      [-37.8185, 144.9525],
-      [-37.8178, 144.9500],
-      [-37.8165, 144.9475]
-    ];
-    L.polyline(bridgeCoords, {
-      color: '#f59e0b',
-      weight: 6,
-      opacity: 0.9,
-      dashArray: '8, 8'
-    }).addTo(map);
+    // Routes
+    L.polyline([[-37.8185, 144.9525], [-37.8165, 144.9475]], { color: '#f59e0b', weight: 5, dashArray: '6, 6' }).addTo(map);
+    L.polyline([[-37.8185, 144.9525], [-37.8235, 144.9580]], { color: '#a855f7', weight: 4 }).addTo(map);
+    L.polyline([[-37.8175, 144.9535], [-37.8108, 144.9680]], { color: '#22c55e', weight: 4 }).addTo(map);
 
-    // B. Tram Route to Crown Casino (Spencer St Bridge South) (Purple)
-    const crownTramCoords = [
-      [-37.8185, 144.9525],
-      [-37.8210, 144.9540],
-      [-37.8235, 144.9580]
-    ];
-    L.polyline(crownTramCoords, {
-      color: '#a855f7',
-      weight: 5,
-      opacity: 0.85
-    }).addTo(map);
-
-    // C. Tram 86/96 along Bourke St to Golden Nugget (Green)
-    const pubTramCoords = [
-      [-37.8175, 144.9535],
-      [-37.8145, 144.9620],
-      [-37.8130, 144.9665],
-      [-37.8108, 144.9680]
-    ];
-    L.polyline(pubTramCoords, {
-      color: '#22c55e',
-      weight: 5,
-      opacity: 0.85
-    }).addTo(map);
+    // Clicking anywhere inside Leaflet triggers Google Maps
+    map.on('click', () => {
+      openAllInGoogleMaps();
+    });
   });
-
-  // Quick Jump Function
-  function focusLoc(coords, zoomLevel, markerKey) {
-    if (!map) return;
-    map.flyTo(coords, zoomLevel, { duration: 1.2 });
-    if (markers[markerKey]) {
-      setTimeout(() => {
-        markers[markerKey].openPopup();
-      }, 1250);
-    }
-  }
 </script>
 
 </body>
